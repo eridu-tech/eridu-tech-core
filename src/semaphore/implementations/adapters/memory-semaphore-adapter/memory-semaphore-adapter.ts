@@ -50,7 +50,7 @@ export class MemorySemaphoreAdapter
      * ```ts
      * import { MemorySemaphoreAdapter } from "eridu-tech/semaphore/memory-semaphore-adapter";
      *
-     * const map = new Map<any, any>();
+     * const map = new Map<string, any>();
      * const semaphoreAdapter = new MemorySemaphoreAdapter(map);
      * ```
      */

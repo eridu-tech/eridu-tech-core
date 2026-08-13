@@ -82,7 +82,7 @@ export class MemorySharedLockAdapter
      * ```ts
      * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
      *
-     * const map = new Map<any, any>();
+     * const map = new Map<string, any>();
      * const sharedLockAdapter = new MemorySharedLockAdapter(map);
      * ```
      */
