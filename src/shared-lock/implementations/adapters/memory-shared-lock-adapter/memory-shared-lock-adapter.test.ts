@@ -26,6 +26,9 @@ describe("class: MemorySharedLockAdapter", () => {
         expect,
         describe,
     });
+    describe("method: removeAllExpired", () => {
+        test.todo("Write tests!!!");
+    });
     describe("method: deInit", () => {
         test("Should clear map", async () => {
             await adapter.acquireWriter("a", "1", null, noOpContext);
