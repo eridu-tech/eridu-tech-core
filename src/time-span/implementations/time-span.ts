@@ -7,7 +7,7 @@ import { parse, format } from "@lukeed/ms";
 import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
 import { UnexpectedError } from "@/utilities/_module.js";
 
-import type { ISerializable } from "@/serde/contracts/_module.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module.js";
 import type { IComparable } from "@/utilities/_module.js";
 
@@ -49,20 +49,30 @@ export type TimeSpanFromDateRangeSettings = {
  * IMPORT_PATH: `"eridu-tech/time-span"`
  * @group Implementations
  */
-export class TimeSpan
-    implements
-        ITimeSpan,
-        ISerializable<SerializedTimeSpan>,
-        IComparable<ITimeSpan>
-{
+export class TimeSpan implements ITimeSpan, IComparable<ITimeSpan> {
+    static readonly serdeTransformer: ISerdeTransformer<
+        TimeSpan,
+        SerializedTimeSpan
+    > = {
+        name: "eridu-tech/FileSize",
+        isApplicable: (value): value is TimeSpan => {
+            return value instanceof TimeSpan;
+        },
+        serialize: (deserialized) => {
+            return {
+                version: "1",
+                timeInMs: deserialized.toMilliseconds(),
+            };
+        },
+        deserialize: (serialized) => {
+            return new TimeSpan(serialized.timeInMs);
+        },
+    };
+
     private static secondInMilliseconds = 1000;
     private static minuteInMilliseconds = 60 * TimeSpan.secondInMilliseconds;
     private static hourInMilliseconds = 60 * TimeSpan.minuteInMilliseconds;
     private static dayInMilliseconds = 24 * TimeSpan.hourInMilliseconds;
-
-    static deserialize(serializedValue: SerializedTimeSpan): TimeSpan {
-        return new TimeSpan(serializedValue.timeInMs);
-    }
 
     private constructor(private readonly milliseconds: number = 0) {
         this.milliseconds = Math.max(0, this.milliseconds);
@@ -86,13 +96,6 @@ export class TimeSpan
 
     lte(value: ITimeSpan): boolean {
         return value[TO_MILLISECONDS]() >= this.toMilliseconds();
-    }
-
-    serialize(): SerializedTimeSpan {
-        return {
-            version: "1",
-            timeInMs: this.toMilliseconds(),
-        };
     }
 
     /**
