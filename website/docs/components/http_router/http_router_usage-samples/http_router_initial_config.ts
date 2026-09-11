@@ -1,4 +1,4 @@
-import { HttpRouter, defaultHttpRouterAdapter } from "eridu-tech/http-router";
+import { HttpRouter } from "eridu-tech/http-router";
 import { RegExpRouter } from "hono/router/reg-exp-router";
 import { SmartRouter } from "hono/router/smart-router";
 import { TrieRouter } from "hono/router/trie-router";

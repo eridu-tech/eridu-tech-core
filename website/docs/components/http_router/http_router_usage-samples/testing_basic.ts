@@ -1,5 +1,4 @@
 import {
-    HttpReq,
     HttpRouter,
     defaultHttpRouterAdapter,
 } from "eridu-tech/http-router";
