@@ -40,7 +40,6 @@ serde.registerClass(User);
 **After:**
 
 ```ts
-
 class User {
     static readonly serdeTransformer: ISerdeTransformer<User, ISerializedUser> =
         {
@@ -67,11 +66,13 @@ serde.registerCustom<User, ISerializedUser>(User.serdeTransformer);
 Built-in types expose the transformer to register:
 
 **Before:**
+
 ```ts
 serde.registerClass(FileSize);
 ```
 
 **After:**
+
 ```ts
 serde.registerCustom(FileSize.serdeTransformer);
 ```
