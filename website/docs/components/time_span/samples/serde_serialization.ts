@@ -4,7 +4,7 @@ import { TimeSpan } from "eridu-tech/time-span";
 
 const serde = new Serde(new SuperJsonSerdeAdapter());
 
-serde.registerClass(TimeSpan);
+serde.registerCustom(TimeSpan.serdeTransformer);
 
 const timeSpan = TimeSpan.fromSeconds(12);
 const serializedTimeSpan = serde.serialize(timeSpan);

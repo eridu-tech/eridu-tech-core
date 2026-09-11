@@ -4,7 +4,7 @@ import { FileSize } from "eridu-tech/file-size";
 
 const serde = new Serde(new SuperJsonSerdeAdapter());
 
-serde.registerClass(FileSize);
+serde.registerCustom(FileSize.serdeTransformer);
 
 const fileSize = FileSize.fromBytes(12);
 const serializedFileSize = serde.serialize(fileSize);

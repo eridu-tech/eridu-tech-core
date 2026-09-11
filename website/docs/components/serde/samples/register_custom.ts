@@ -7,21 +7,29 @@ type ISerializedUser = {
     age: number;
 };
 
-const userSerdeTransformer: ISerdeTransformer<User, ISerializedUser> = {
-    name: User.name,
-    isApplicable(value: unknown): value is User {
-        return value instanceof User;
-    },
-    deserialize(serializedValue: TSerializedValue): User {
-        return new User(serializedValue.name, serializedValue.age);
-    },
-    serialize(deserializedValue: User): TSerializedValue {
-        return {
-            version: "1",
-            name: user.name,
-            age: user.age,
+class User {
+    static readonly serdeTransformer: ISerdeTransformer<User, ISerializedUser> =
+        {
+            name: "User",
+            isApplicable(value: unknown): value is User {
+                return value instanceof User;
+            },
+            deserialize(serializedValue: ISerializedUser): User {
+                return new User(serializedValue.name, serializedValue.age);
+            },
+            serialize(deserializedValue: User): ISerializedUser {
+                return {
+                    version: "1",
+                    name: deserializedValue.name,
+                    age: deserializedValue.age,
+                };
+            },
         };
-    },
-};
+        
+    constructor(
+        readonly name: string,
+        readonly age: number,
+    ) {}
+}
 
-serde.registerCustom(userSerdeTransformer);
+serde.registerCustom(User.serdeTransformer);

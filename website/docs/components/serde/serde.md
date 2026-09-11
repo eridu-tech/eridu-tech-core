@@ -38,27 +38,6 @@ The `registerCustom` method offers control over serialization and deserializatio
 Note the `ISerdeTranformer` object can be dynamically created.
 :::
 
-### Custom serialization and deserialization logic of classes
-
-The `registerClass` method provides a simplified abstraction over `registerCustom` method for serialization and deserialization classes.
-
-```ts file=./samples/register_class.ts
-
-```
-
-:::danger
-Note you need to register the class before serializing or deserializing any class instances.
-:::
-
-:::warning
-To ensure correct serialization and deserialization, class names must be unique. If multiple classes share the same name, conflicts may occur when serializing and deserializing the objects. To resolve this, you can assign a unique prefix to differentiate between them during the process.
-
-```ts file=./samples/register_class_with_prefix.ts
-
-```
-
-:::
-
 ## Patterns
 
 ### Usage with other components

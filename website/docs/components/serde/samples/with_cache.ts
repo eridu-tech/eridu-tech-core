@@ -7,7 +7,7 @@ import type { ICollection } from "eridu-tech/collection/contracts";
 import { Redis } from "ioredis";
 
 const serde = new Serde(new SuperJsonSerdeAdapter());
-serde.registerClass(ListCollection);
+serde.registerCustom(ListCollection.serdeTransformer);
 
 const cache = new Cache<ICollection<string>>({
     adapter: new RedisCacheAdapter({
