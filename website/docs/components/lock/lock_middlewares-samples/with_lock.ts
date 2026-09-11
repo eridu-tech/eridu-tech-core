@@ -17,7 +17,7 @@ const processJob = async (jobId: string): Promise<void> => {
 const safeProcess = use(
     processJob,
     withLock({
-        key: (jobId) => `job:${jobId}`,
+        key: ([jobId]) => `job:${jobId}`,
     }),
 );
 

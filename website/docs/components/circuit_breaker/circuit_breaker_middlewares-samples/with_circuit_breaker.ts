@@ -20,7 +20,7 @@ const callExternalApi = async (endpoint: string): Promise<unknown> => {
 const protectedCall = use(
     callExternalApi,
     withCircuitBreaker({
-        key: (endpoint) => `api:${endpoint}`,
+        key: ([endpoint]) => `api:${endpoint}`,
     }),
 );
 

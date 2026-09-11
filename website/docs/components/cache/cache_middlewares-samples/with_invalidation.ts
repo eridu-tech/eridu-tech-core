@@ -19,7 +19,7 @@ const updateUser = async (userId: string, name: string): Promise<void> => {
 const invalidatingUpdateUser = use(
     updateUser,
     withInvalidation({
-        key: (userId) => `user:${userId}`,
+        key: ([userId]) => `user:${userId}`,
     }),
 );
 
