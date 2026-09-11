@@ -72,6 +72,7 @@ import type {
     EnsureRecord,
     SerializedCollection,
 } from "@/collection/contracts/_module.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
 import type { IterableValue, Lazyable, Option } from "@/utilities/_module.js";
 
 /**
@@ -83,6 +84,25 @@ import type { IterableValue, Lazyable, Option } from "@/utilities/_module.js";
 export class IterableCollection<
     TInput = unknown,
 > implements ICollection<TInput> {
+    static readonly serdeTransformer: ISerdeTransformer<
+        ICollection,
+        SerializedCollection
+    > = {
+        name: "eridu-tech/IterableCollection",
+        isApplicable: (value): value is ICollection => {
+            return value instanceof IterableCollection;
+        },
+        serialize: (deserialized) => {
+            return {
+                version: "1",
+                items: deserialized.toArray(),
+            };
+        },
+        deserialize: (serialized) => {
+            return new IterableCollection(serialized.items);
+        },
+    };
+
     /**
      * The `concat` static method is a convenient utility for easily concatenating multiple {@link Iterable | `Iterable`}.
      * @example
@@ -199,12 +219,6 @@ export class IterableCollection<
         return new IterableCollection(iterableA).zip(iterableB);
     }
 
-    static deserialize<TInput_>(
-        serializedValue: SerializedCollection<TInput_>,
-    ): ICollection<TInput_> {
-        return new IterableCollection(serializedValue.items);
-    }
-
     private static DEFAULT_CHUNK_SIZE = 1024;
 
     private static makeCollection = <TInput_>(
@@ -267,13 +281,6 @@ export class IterableCollection<
      */
     constructor(iterable: IterableValue<TInput>) {
         this.iterable = resolveIterableValue(iterable);
-    }
-
-    serialize(): SerializedCollection<TInput> {
-        return {
-            version: "1",
-            items: this.toArray(),
-        };
     }
 
     *[Symbol.iterator](): Iterator<TInput> {

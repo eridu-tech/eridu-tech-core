@@ -40,6 +40,7 @@ import type {
     EnsureRecord,
     SerializedCollection,
 } from "@/collection/contracts/_module.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
 import type { IterableValue, Lazyable, Option } from "@/utilities/_module.js";
 
 /**
@@ -49,6 +50,25 @@ import type { IterableValue, Lazyable, Option } from "@/utilities/_module.js";
  * @group Implementations
  */
 export class ListCollection<TInput = unknown> implements ICollection<TInput> {
+    static readonly serdeTransformer: ISerdeTransformer<
+        ICollection,
+        SerializedCollection
+    > = {
+        name: "eridu-tech/ListCollection",
+        isApplicable: (value): value is ICollection => {
+            return value instanceof ListCollection;
+        },
+        serialize: (deserialized) => {
+            return {
+                version: "1",
+                items: deserialized.toArray(),
+            };
+        },
+        deserialize: (serialized) => {
+            return new ListCollection(serialized.items);
+        },
+    };
+
     /**
      * The `concat` static method is a convenient utility for easily concatenating multiple {@link Iterable | `Iterable`}.
      * @example
@@ -164,12 +184,6 @@ export class ListCollection<TInput = unknown> implements ICollection<TInput> {
         return new ListCollection(iterableA).zip(iterableB);
     }
 
-    static deserialize<TInput_>(
-        serializedValue: SerializedCollection<TInput_>,
-    ): ICollection<TInput_> {
-        return new ListCollection(serializedValue.items);
-    }
-
     private array: Array<TInput>;
 
     /**
@@ -224,13 +238,6 @@ export class ListCollection<TInput = unknown> implements ICollection<TInput> {
      */
     constructor(iterable: IterableValue<TInput> = []) {
         this.array = [...resolveIterableValue(iterable)];
-    }
-
-    serialize(): SerializedCollection<TInput> {
-        return {
-            version: "1",
-            items: this.toArray(),
-        };
     }
 
     *[Symbol.iterator](): Iterator<TInput> {

@@ -25,7 +25,6 @@ import type {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     EmptyCollectionError,
 } from "@/collection/contracts/collection.errors.js";
-import type { ISerializable } from "@/serde/contracts/_module.js";
 import type { IterableValue, Lazyable } from "@/utilities/_module.js";
 
 /**
@@ -69,8 +68,7 @@ export type SerializedCollection<TInput = unknown> = {
  * IMPORT_PATH: `"eridu-tech/collection/contracts"`
  * @group Contracts
  */
-export interface ICollection<TInput = unknown>
-    extends Iterable<TInput>, ISerializable<SerializedCollection<TInput>> {
+export interface ICollection<TInput = unknown> extends Iterable<TInput> {
     /**
      * The `toIterator` method converts the collection to a new iterator.
      */
