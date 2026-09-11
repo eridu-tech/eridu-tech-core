@@ -26,17 +26,12 @@ import {
     URLSerdeTransformer,
     URLSearchParamsSerdeTransformer,
 } from "@/serde/implementations/derivables/serde-transformers.js";
-import {
-    getConstructorName,
-    resolveOneOrMoreStr,
-} from "@/utilities/_module.js";
+import { resolveOneOrMoreStr } from "@/utilities/_module.js";
 
 import type {
     IFlexibleSerde,
     IFlexibleSerdeAdapter,
     ISerdeTransformer,
-    ISerializable,
-    SerializableClass,
     SerializedValueBase,
 } from "@/serde/contracts/_module.js";
 import type { OneOrMore } from "@/utilities/_module.js";
@@ -347,88 +342,6 @@ export class Serde<
      */
     deserialize<TValue>(serializedValue: TSerializedValue): TValue {
         return this.serdeAdapter.deserialize(serializedValue);
-    }
-
-    /**
-     * @example
-     * ```ts
-     * import type { IFlexibleSerde } from "eridu-tech/serde/contracts";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { ISerializable } from "eridu-tech/serde/contracts";
-     *
-     * const serde: IFlexibleSerde = new Serde(new SuperJsonSerdeAdapter());
-     *
-     * type ISerializedUser = {
-     *   name: string;
-     *   age: number
-     * };
-     *
-     * class User implements ISerializable<ISerializedUser> {
-     *   static deserialize(serializedUser: ISerializedUser): User {
-     *     return new User(serializedUser.name, serializedUser.age);
-     *   }
-     *
-     *   constructor(public readonly name: string, public readonly age: number) {}
-     *
-     *   serialize(): ISerializedUser {
-     *     return {
-     *       name: this.name,
-     *       age: this.age,
-     *     };
-     *   }
-     * }
-     *
-     * serde.registerClass(AddEvent);
-     *
-     * const user = new User("Carl", 30);
-     * const deserializedUser = serde.deserialize<User>(serde.serialize(user));
-     *
-     * // Will print "Carl"
-     * console.log(deserializedUser.name);
-     *
-     * // Will print 30
-     * console.log(deserializedUser.age);
-     *
-     * // Will print true
-     * console.log(deserializedUser instanceof User);
-     *
-     * // Will print false
-     * console.log(user === deserializedUser);
-     * ```
-     */
-    registerClass<TSerializedClassInstance extends SerializedValueBase>(
-        class_: SerializableClass<TSerializedClassInstance>,
-        prefix?: OneOrMore<string>,
-    ): this {
-        return this.registerCustom<
-            ISerializable<TSerializedClassInstance>,
-            SerializedClass
-        >(
-            {
-                isApplicable(
-                    value,
-                ): value is ISerializable<TSerializedClassInstance> {
-                    return (
-                        value instanceof class_ &&
-                        getConstructorName(value) === class_.name
-                    );
-                },
-                deserialize(serializedValue) {
-                    return class_.deserialize(
-                        serializedValue.class_ as TSerializedClassInstance,
-                    );
-                },
-                serialize(deserializedValue) {
-                    return {
-                        version: "1",
-                        class_: deserializedValue.serialize(),
-                    };
-                },
-                name: class_.name,
-            },
-            prefix,
-        );
     }
 
     /**

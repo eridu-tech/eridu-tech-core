@@ -11,7 +11,7 @@ import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock
 import { TimeSpan } from "@/time-span/implementations/_module.js";
 import { CORE, resolveOneOrMore, callInvocable } from "@/utilities/_module.js";
 
-import type { ISerderRegister } from "@/serde/contracts/_module.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module.js";
 import type {
     ISharedLock,
     ISharedLockAdapter,
@@ -29,7 +29,7 @@ import type { Invocable, OneOrMore } from "@/utilities/_module.js";
  */
 export type SharedLockFactorySettingsBase = {
     /**
-     * You can pass an {@link ISerderRegister | `ISerderRegister`} instance to the {@link SharedLockFactory | `SharedLockFactory`} to register the shared lock's serialization and deserialization logic for the provided adapter.
+     * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link SharedLockFactory | `SharedLockFactory`} to register the shared lock's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
      * import { Serde } from "eridu-tech/serde";
@@ -38,7 +38,7 @@ export type SharedLockFactorySettingsBase = {
      * new Serde(new NoOpSerdeAdapter())
      * ```
      */
-    serde?: OneOrMore<ISerderRegister>;
+    serde?: OneOrMore<ISerdeRegister>;
 
     /**
      * The serde transformer name used to identify shared-lock serializer and deserializer adapters when there are adapters with the same name.
@@ -97,7 +97,7 @@ export type SharedLockFactorySettings = SharedLockFactorySettingsBase & {
  *
  * Note the {@link ISharedLock | `ISharedLock`} instances created by the `SharedLockFactory` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
- * This can be done directly using {@link ISerderRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerderRegister | `ISerderRegister`} internally.
+ * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
  *
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
  * @group Derivables
@@ -107,7 +107,7 @@ export class SharedLockFactory implements ISharedLockFactory {
     private readonly creatLockId: Invocable<[], string>;
     private readonly defaultTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
-    private readonly serde: OneOrMore<ISerderRegister>;
+    private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serdeTransformerName: string;
 
     /**

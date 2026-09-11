@@ -25,60 +25,6 @@ export type SerializedValueBase = {
 };
 
 /**
- * Class contract for types that support both serialization and static deserialization.
- * Defines the interface that custom classes must implement for flexible serde.
- *
- * Implementers provide:
- * - Instance method serialize() to convert to serialized form
- * - Static method deserialize() to reconstruct from serialized form
- *
- * @template TSerializedValue - The serialized representation type (must extend SerializedValueBase)
- *
- * IMPORT_PATH: `"eridu-tech/serde/contracts"`
- * @group Contracts
- */
-export type SerializableClass<TSerializedValue extends SerializedValueBase> = {
-    /**
-     * Constructor creating new instance (typically used internally during deserialization).
-     *
-     * @param arguments_ - Constructor arguments
-     * @returns New instance of the class
-     */
-    new (...arguments_: Array<any>): ISerializable<TSerializedValue>;
-
-    /**
-     * Static deserialization method reconstructing an instance from serialized data.
-     * Inverse operation of serialize() method on instances.
-     *
-     * @param serializedValue - The serialized representation to reconstruct from
-     * @returns New instance populated with deserialized data
-     */
-    deserialize(
-        serializedValue: TSerializedValue,
-    ): ISerializable<TSerializedValue>;
-};
-
-/**
- * Instance contract for types supporting serialization to a versioned format.
- * Classes implementing this contract can convert their state to a serialized representation.
- *
- * @template TSerializedValue - The serialized representation type (must extend SerializedValueBase with version)
- *
- * IMPORT_PATH: `"eridu-tech/serde/contracts"`
- * @group Contracts
- */
-export type ISerializable<TSerializedValue extends SerializedValueBase> = {
-    /**
-     * Serializes this instance to a versioned format.
-     * Instance method that converts the current state to a storable/transportable form.
-     * Must include a version field for deserialization to know how to reconstruct.
-     *
-     * @returns Serialized representation with version field
-     */
-    serialize(): TSerializedValue;
-};
-
-/**
  * Custom serialization transformer for specialized handling of non-class objects.
  * Provides type detection, serialization, and deserialization logic for custom types.
  *
@@ -137,21 +83,7 @@ export type ISerdeTransformer<
  * IMPORT_PATH: `"eridu-tech/serde/contracts"`
  * @group Contracts
  */
-export interface ISerderRegister {
-    /**
-     * Registers a class and its deserialization logic for custom serialization handling.
-     * The class must implement the {@link SerializableClass | `SerializableClass`} interface.
-     *
-     * @template TSerializedClassInstance - The serialized representation type
-     * @param class_ - Class implementing SerializableClass interface
-     * @param prefix - Optional name prefix(es) for distinguishing this class in serialized output
-     * @returns this for method chaining
-     */
-    registerClass<TSerializedClassInstance extends SerializedValueBase>(
-        class_: SerializableClass<TSerializedClassInstance>,
-        prefix?: OneOrMore<string>,
-    ): this;
-
+export interface ISerdeRegister {
     /**
      * Registers a custom transformer for arbitrary serialization and deserialization logic.
      * Use this for non-class objects or special serialization behavior.
@@ -191,4 +123,4 @@ export interface ISerderRegister {
  * @group Contracts
  */
 export type IFlexibleSerde<TSerializedValue = unknown> =
-    ISerde<TSerializedValue> & ISerderRegister;
+    ISerde<TSerializedValue> & ISerdeRegister;

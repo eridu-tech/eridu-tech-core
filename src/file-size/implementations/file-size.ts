@@ -5,7 +5,7 @@
 import { TO_BYTES } from "@/file-size/contracts/_module.js";
 
 import type { IFileSize } from "@/file-size/contracts/_module.js";
-import type { ISerializable } from "@/serde/contracts/_module.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
 import type { IComparable } from "@/utilities/_module.js";
 
 /**
@@ -24,21 +24,31 @@ export type SerializedFileSize = {
  * IMPORT_PATH: `"eridu-tech/file-size"`
  * @group Implementations
  */
-export class FileSize
-    implements
-        IFileSize,
-        ISerializable<SerializedFileSize>,
-        IComparable<IFileSize>
-{
+export class FileSize implements IFileSize, IComparable<IFileSize> {
+    static readonly serdeTransformer: ISerdeTransformer<
+        FileSize,
+        SerializedFileSize
+    > = {
+        name: "eridu-tech/FileSize",
+        isApplicable: (value): value is FileSize => {
+            return value instanceof FileSize;
+        },
+        serialize: (deserialized) => {
+            return {
+                version: "1",
+                fileSizeInBytes: deserialized.toBytes(),
+            };
+        },
+        deserialize: (serialized) => {
+            return new FileSize(serialized.fileSizeInBytes);
+        },
+    };
+
     private static kbInBytes = 1000;
     private static mbInBytes = 1000 * FileSize.kbInBytes;
     private static gbInBytes = 1000 * FileSize.mbInBytes;
     private static tbInBytes = 1000 * FileSize.gbInBytes;
     private static pbInBytes = 1000 * FileSize.tbInBytes;
-
-    static deserialize(serializedValue: SerializedFileSize): FileSize {
-        return new FileSize(serializedValue.fileSizeInBytes);
-    }
 
     static fromBytes(bytes: number): FileSize {
         return new FileSize(bytes);
@@ -90,13 +100,6 @@ export class FileSize
 
     lte(value: IFileSize): boolean {
         return value[TO_BYTES]() >= this.toBytes();
-    }
-
-    serialize(): SerializedFileSize {
-        return {
-            version: "1",
-            fileSizeInBytes: this.fileSizeInBytes,
-        };
     }
 
     toBytes(): number {

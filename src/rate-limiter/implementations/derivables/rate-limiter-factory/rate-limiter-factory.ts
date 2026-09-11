@@ -18,7 +18,7 @@ import type {
     IRateLimiterFactory,
     RateLimiterFactoryCreateSettings,
 } from "@/rate-limiter/contracts/_module.js";
-import type { ISerderRegister } from "@/serde/contracts/_module.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module.js";
 import type { ErrorPolicy, OneOrMore, WaitUntil } from "@/utilities/_module.js";
 
 /**
@@ -52,7 +52,7 @@ export type RateLimiterFactorySettingsBase = {
     enableAsyncTracking?: boolean;
 
     /**
-     * You can pass an {@link ISerderRegister | `ISerderRegister`} instance to the {@link RateLimiterFactory | `RateLimiterFactory`} to register the rate limiter's serialization and deserialization logic for the provided adapter.
+     * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link RateLimiterFactory | `RateLimiterFactory`} to register the rate limiter's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
      * import { Serde } from "eridu-tech/serde";
@@ -61,7 +61,7 @@ export type RateLimiterFactorySettingsBase = {
      * new Serde(new NoOpSerdeAdapter())
      * ```
      */
-    serde?: OneOrMore<ISerderRegister>;
+    serde?: OneOrMore<ISerdeRegister>;
 
     /**
      * The serde transformer name used to identify rate-limiter serializers and deserializers when there are adapters with the same name.
@@ -105,7 +105,7 @@ export class RateLimiterFactory implements IRateLimiterFactory {
     private readonly onlyError: boolean;
     private readonly defaultErrorPolicy: ErrorPolicy;
     private readonly enableAsyncTracking: boolean;
-    private readonly serde: OneOrMore<ISerderRegister>;
+    private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serdeTransformerName: string;
     private readonly waitUntil: WaitUntil;
 
