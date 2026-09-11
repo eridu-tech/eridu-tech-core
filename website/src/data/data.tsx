@@ -6,7 +6,6 @@ import type {
     CodeExample,
     ComparisonItem,
 } from "./types.js";
-import { SiTypescript, SiVitest } from "@icons-pack/react-simple-icons";
 import {
     Box,
     ShieldCheck,
@@ -40,7 +39,6 @@ import {
     Leaf,
     Image,
     Activity,
-    Package,
 } from "lucide-react";
 
 export const INSTALL_CMD = "npm install eridu-tech";
