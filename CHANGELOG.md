@@ -1,5 +1,118 @@
 # @daiso-tech/core
 
+## 0.62.0
+
+### Minor Changes
+
+- c71084f: Middleware settings callbacks that derive a key from the wrapped function's arguments now receive those arguments as a single tuple instead of as spread positional arguments.
+
+    This affects the `key` setting of `withCacheFactory`, `withInvalidationFactory`, `withCircuitBreakerFactory`, `withLockFactory`, `withRateLimiterFactory`, `withSemaphoreFactory`, and `withSharedLockFactory`, as well as the `lockId` setting of `withLockFactory` / `withSharedLockFactory` and the `slotId` setting of `withSemaphoreFactory`.
+
+    These settings are now typed as `Invocable<[args: TParameters], string>` and are invoked with the argument tuple (`callInvocable(key, args)`) instead of with the arguments spread.
+
+    This change was made so that type inference works correctly: because the callbacks previously received the parameters spread out, TypeScript could not infer the wrapped function's parameter tuple from the callback (it fell back to the `unknown[]` default, causing the middleware to lose the exact parameter types and produce type errors). Passing the arguments as a single tuple lets TypeScript infer the exact tuple type of the wrapped function's parameters.
+
+    ### Migration
+
+    Destructure the arguments tuple in the callback instead of declaring one parameter per argument:
+
+    ```ts
+    // Before
+    withCache({
+        key: (userId: string) => `user:${userId}`,
+    });
+
+    withLock({
+        key: (userId: string, postId: string) =>
+            `user:${userId}:post:${postId}`,
+    });
+
+    // After
+    withCache({
+        key: ([userId]) => `user:${userId}`,
+    });
+
+    withLock({
+        key: ([userId, postId]) => `user:${userId}:post:${postId}`,
+    });
+    ```
+
+- 7afc09f: Serialization registration is no longer based on runtime class names. `ISerderRegister` was renamed to `ISerdeRegister` and its `registerClass` method was removed, along with the `ISerializable` and `SerializableClass` contracts.
+
+    Bundlers and minifiers rename classes, so `registerClass` could assign the same deserialization identifier to unrelated classes and deserialize values into the wrong type. Registration now always requires an explicit name, which is only possible through `registerCustom`.
+
+    ### Breaking changes
+    - Renamed `ISerderRegister` to `ISerdeRegister`.
+    - Removed `ISerderRegister.registerClass`, `ISerializable`, and `SerializableClass`.
+    - `ICollection` no longer implements `ISerializable`. `FileSize`, `TimeSpan`, `ListCollection`, and `IterableCollection` no longer implement it either; their `serialize()` and static `deserialize()` methods were replaced by a static `serdeTransformer` property that is passed to `registerCustom`.
+
+    ### Migration
+
+    Replace `registerClass` with `registerCustom`, giving the transformer an explicit `name`:
+
+    **Before:**
+
+    ```ts
+    class User implements ISerializable<ISerializedUser> {
+        static deserialize(serializedUser: ISerializedUser): User {
+            return new User(serializedUser.name, serializedUser.age);
+        }
+
+        constructor(
+            public readonly name: string,
+            public readonly age: number,
+        ) {}
+
+        serialize(): ISerializedUser {
+            return { version: "1", name: this.name, age: this.age };
+        }
+    }
+
+    serde.registerClass(User);
+    ```
+
+    **After:**
+
+    ```ts
+    class User {
+        static readonly serdeTransformer: ISerdeTransformer<
+            User,
+            ISerializedUser
+        > = {
+            name: "User",
+            isApplicable: (value): value is User => value instanceof User,
+            serialize: (user) => ({
+                version: "1",
+                name: user.name,
+                age: user.age,
+            }),
+            deserialize: (serializedUser) =>
+                new User(serializedUser.name, serializedUser.age),
+        };
+
+        constructor(
+            public readonly name: string,
+            public readonly age: number,
+        ) {}
+    }
+
+    serde.registerCustom<User, ISerializedUser>(User.serdeTransformer);
+    ```
+
+    Built-in types expose the transformer to register:
+
+    **Before:**
+
+    ```ts
+    serde.registerClass(FileSize);
+    ```
+
+    **After:**
+
+    ```ts
+    serde.registerCustom(FileSize.serdeTransformer);
+    ```
+
 ## 0.61.1
 
 ### Patch Changes
