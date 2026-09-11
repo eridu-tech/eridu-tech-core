@@ -9,7 +9,6 @@ import type { TestAPI, ExpectStatic } from "vitest";
 import type {
     IFlexibleSerdeAdapter,
     ISerdeTransformerAdapter,
-    ISerializable,
 } from "@/serde/contracts/_module.js";
 
 /**
@@ -53,7 +52,7 @@ export function flexibleSerdeAdapterTestSuite(
         name: string;
         age: number;
     };
-    class User implements ISerializable<SerializedUser> {
+    class User {
         static deserialize(serializedUser: SerializedUser): User {
             return new User(serializedUser.name, serializedUser.age);
         }

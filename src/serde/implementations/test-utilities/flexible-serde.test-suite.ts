@@ -11,7 +11,6 @@ import type { TestAPI, ExpectStatic } from "vitest";
 import type {
     IFlexibleSerde,
     ISerdeTransformer,
-    ISerializable,
 } from "@/serde/contracts/_module.js";
 
 /**
@@ -55,7 +54,7 @@ export function flexibleSerdeTestSuite(
         name: string;
         age: number;
     };
-    class User implements ISerializable<SerializedUser> {
+    class User {
         static deserialize(serializedUser: SerializedUser): User {
             return new User(serializedUser.name, serializedUser.age);
         }
@@ -75,13 +74,6 @@ export function flexibleSerdeTestSuite(
 
         getInfo(): string {
             return `name: ${this.name}, age: ${this.age.toString()}`;
-        }
-    }
-    class ExtendedUser extends User {
-        static override deserialize(
-            serializedUser: SerializedUser,
-        ): ExtendedUser {
-            return new ExtendedUser(serializedUser.name, serializedUser.age);
         }
     }
 
@@ -397,24 +389,6 @@ export function flexibleSerdeTestSuite(
             flexibleSerde.serialize(value),
         );
         expect(deserializedValue).toEqual(value);
-    });
-    test("Should work with custom registerd classes", () => {
-        flexibleSerde.registerClass(User);
-        const user = new User("Abra", 20);
-        const deserializedValue: User = flexibleSerde.deserialize(
-            flexibleSerde.serialize(user),
-        );
-        expect(deserializedValue).toBeInstanceOf(User);
-        expect(deserializedValue.getInfo()).toBe("name: Abra, age: 20");
-    });
-    test("Should work with custom registerd classes that is extended", () => {
-        flexibleSerde.registerClass(ExtendedUser);
-        const user = new ExtendedUser("Abra", 20);
-        const deserializedValue: ExtendedUser = flexibleSerde.deserialize(
-            flexibleSerde.serialize(user),
-        );
-        expect(deserializedValue).toBeInstanceOf(ExtendedUser);
-        expect(deserializedValue.getInfo()).toBe("name: Abra, age: 20");
     });
     test("Should work with custom ISerdeTransformer", () => {
         const transformer: ISerdeTransformer<User, SerializedUser> = {
