@@ -1,7 +1,3 @@
-import {
-    type IEventBusAdapter,
-    type BaseEvent,
-} from "eridu-tech/event-bus/contracts";
 import { EventBusResolver } from "eridu-tech/event-bus";
 import { RedisPubSubEventBusAdapter } from "eridu-tech/event-bus/redis-pub-sub-event-bus-adapter";
 import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-adapter";
