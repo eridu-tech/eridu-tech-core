@@ -1,5 +1,5 @@
-import { defineMiddleware } from "eridu-tech/middleware";
-import type { MiddlewareArgs } from "eridu-tech/middleware/contracts";
+import { defineMiddleware } from "eridu-tech/middleware/contracts";
+import type { MiddlewareArgs, } from "eridu-tech/middleware/contracts";
 
 const loggingMiddleware = defineMiddleware(
     <T extends unknown[], R>({ args, next }: MiddlewareArgs<T, R>): R => {
