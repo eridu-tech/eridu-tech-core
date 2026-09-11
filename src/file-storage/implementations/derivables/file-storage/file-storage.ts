@@ -13,7 +13,7 @@ import type {
     IFileStorage,
     ISignedFileStorageAdapter,
 } from "@/file-storage/contracts/_module.js";
-import type { ISerderRegister } from "@/serde/contracts/_module.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module.js";
 import type { OneOrMore } from "@/utilities/_module.js";
 
 /**
@@ -50,7 +50,7 @@ export type FileStorageSettingsBase = {
     defaultContentLanguage?: string | null;
 
     /**
-     * You can pass an {@link ISerderRegister | `ISerderRegister`} instance to the {@link FileStorage | `FileStorage`} to register the file's serialization and deserialization logic for the provided adapter.
+     * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link FileStorage | `FileStorage`} to register the file's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
      * import { Serde } from "eridu-tech/serde";
@@ -59,7 +59,7 @@ export type FileStorageSettingsBase = {
      * new Serde(new NoOpSerdeAdapter())
      * ```
      */
-    serde?: OneOrMore<ISerderRegister>;
+    serde?: OneOrMore<ISerdeRegister>;
 
     /**
      * The serde transformer name used to identify file storage serializers and deserializers when there are adapters with the same name.
@@ -84,14 +84,14 @@ export type FileStorageSettings = FileStorageSettingsBase & {
  *
  * Note the {@link IFile | `IFile`} instances created by the `FileStorage` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
- * This can be done directly using {@link ISerderRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerderRegister | `ISerderRegister`} internally.
+ * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
  *
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */
 export class FileStorage implements IFileStorage {
     private readonly adapter: ISignedFileStorageAdapter;
-    private readonly serde: OneOrMore<ISerderRegister>;
+    private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serdeTransformerName: string;
     private readonly defaultContentDisposition: string | null;
     private readonly defaultContentEncoding: string | null;

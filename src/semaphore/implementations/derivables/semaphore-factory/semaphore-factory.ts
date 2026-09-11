@@ -22,7 +22,7 @@ import type {
     SemaphoreFactoryCreateSettings,
     ISemaphoreFactory,
 } from "@/semaphore/contracts/_module.js";
-import type { ISerderRegister } from "@/serde/contracts/_module.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module.js";
 import type { Invocable, OneOrMore } from "@/utilities/_module.js";
 
@@ -34,7 +34,7 @@ import type { Invocable, OneOrMore } from "@/utilities/_module.js";
  */
 export type SemaphoreFactorySettingsBase = {
     /**
-     * You can pass an {@link ISerderRegister | `ISerderRegister`} instance to the {@link SemaphoreFactory | `SemaphoreFactory`} to register the semaphore's serialization and deserialization logic for the provided adapter.
+     * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link SemaphoreFactory | `SemaphoreFactory`} to register the semaphore's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
      * import { Serde } from "eridu-tech/serde";
@@ -43,7 +43,7 @@ export type SemaphoreFactorySettingsBase = {
      * new Serde(new NoOpSerdeAdapter())
      * ```
      */
-    serde?: OneOrMore<ISerderRegister>;
+    serde?: OneOrMore<ISerdeRegister>;
 
     /**
      * The serde transformer name used to identify semaphore serializer and deserializer adapters when there are adapters with the same name.
@@ -102,7 +102,7 @@ export type SemaphoreFactorySettings = SemaphoreFactorySettingsBase & {
  *
  * Note the {@link ISemaphore | `ISemaphore`} instances created by the `SemaphoreFactory` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
- * This can be done directly using {@link ISerderRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerderRegister | `ISerderRegister`} internally.
+ * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
  *
  * IMPORT_PATH: `"eridu-tech/semaphore"`
  * @group Derivables
@@ -111,7 +111,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
     private readonly adapter: ISemaphoreAdapter;
     private readonly defaultTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
-    private readonly serde: OneOrMore<ISerderRegister>;
+    private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serdeTransformerName: string;
     private readonly createSlotId: Invocable<[], string>;
 

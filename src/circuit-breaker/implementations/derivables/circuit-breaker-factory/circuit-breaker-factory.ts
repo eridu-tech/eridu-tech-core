@@ -21,7 +21,7 @@ import type {
     ICircuitBreakerAdapter,
     CircuitBreakerTrigger,
 } from "@/circuit-breaker/contracts/_module.js";
-import type { ISerderRegister } from "@/serde/contracts/_module.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module.js";
 import type { ErrorPolicy, OneOrMore, WaitUntil } from "@/utilities/_module.js";
 
@@ -73,7 +73,7 @@ export type CircuitBreakerFactorySettingsBase = {
     enableAsyncTracking?: boolean;
 
     /**
-     * You can pass an {@link ISerderRegister | `ISerderRegister`} instance to the {@link CircuitBreakerFactory | `CircuitBreakerFactory`} to register the circuit breaker's serialization and deserialization logic for the provided adapter.
+     * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link CircuitBreakerFactory | `CircuitBreakerFactory`} to register the circuit breaker's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
      * import { Serde } from "eridu-tech/serde";
@@ -82,7 +82,7 @@ export type CircuitBreakerFactorySettingsBase = {
      * new Serde(new NoOpSerdeAdapter())
      * ```
      */
-    serde?: OneOrMore<ISerderRegister>;
+    serde?: OneOrMore<ISerdeRegister>;
 
     /**
      * The serde transformer name used to identify circuit-breaker serializers and deserializers when there are adapters with the same name.
@@ -121,7 +121,7 @@ export type CircuitBreakerFactorySettings =
  *
  * Note the {@link ICircuitBreaker | `ICircuitBreaker`} instances created by the `CircuitBreakerFactory` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
- * This can be done directly using {@link ISerderRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerderRegister | `ISerderRegister`} internally.
+ * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
  *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
  * @group Derivables
@@ -131,7 +131,7 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
     private readonly defaultSlowCallTime: TimeSpan;
     private readonly defaultTrigger: CircuitBreakerTrigger;
     private readonly defaultErrorPolicy: ErrorPolicy;
-    private readonly serde: OneOrMore<ISerderRegister>;
+    private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serdeTransformerName: string;
     private readonly enableAsyncTracking: boolean;
     private readonly waitUntil: WaitUntil;

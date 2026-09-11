@@ -17,7 +17,7 @@ import type {
     ILockFactory,
     ILockAdapter,
 } from "@/lock/contracts/_module.js";
-import type { ISerderRegister } from "@/serde/contracts/_module.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module.js";
 import type { OneOrMore, Invocable } from "@/utilities/_module.js";
 
@@ -29,7 +29,7 @@ import type { OneOrMore, Invocable } from "@/utilities/_module.js";
  */
 export type LockFactorySettingsBase = {
     /**
-     * You can pass an {@link ISerderRegister | `ISerderRegister`} instance to the {@link LockFactory | `LockFactory`} to register the lock's serialization and deserialization logic for the provided adapter.
+     * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link LockFactory | `LockFactory`} to register the lock's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
      * import { Serde } from "eridu-tech/serde";
@@ -38,7 +38,7 @@ export type LockFactorySettingsBase = {
      * new Serde(new NoOpSerdeAdapter())
      * ```
      */
-    serde?: OneOrMore<ISerderRegister>;
+    serde?: OneOrMore<ISerdeRegister>;
 
     /**
      * The registered serde transformer name used to identify lock serializer and deserializer adapters when there are adapters with the same name.
@@ -97,7 +97,7 @@ export type LockFactorySettings = LockFactorySettingsBase & {
  *
  * Note the {@link ILock | `ILock`} instances created by the `LockFactory` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
- * This can be done directly using {@link ISerderRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerderRegister | `ISerderRegister`} internally.
+ * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
  *
  * IMPORT_PATH: `"eridu-tech/lock"`
  * @group Derivables
@@ -107,7 +107,7 @@ export class LockFactory implements ILockFactory {
     private readonly creatLockId: Invocable<[], string>;
     private readonly defaultTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
-    private readonly serde: OneOrMore<ISerderRegister>;
+    private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serdeTransformerName: string;
 
     /**
