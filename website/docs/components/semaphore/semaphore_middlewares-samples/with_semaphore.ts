@@ -17,7 +17,7 @@ const processFile = async (filePath: string): Promise<void> => {
 const throttledProcess = use(
     processFile,
     withSemaphore({
-        key: (filePath) => "file-processing",
+        key: ([filePath]) => `file-path:${filePath}`,
         limit: 3,
     }),
 );

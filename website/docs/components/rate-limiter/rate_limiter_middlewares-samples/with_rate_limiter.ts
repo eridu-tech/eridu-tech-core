@@ -20,7 +20,7 @@ const fetchHandler = async (request: Request): Promise<Response> => {
 const rateLimitedCall = use(
     fetchHandler,
     withRateLimiter({
-        key: (req: Request) => `api:${String(req.headers.get("x-ip"))}`,
+        key: ([req]) => `api:${String(req.headers.get("x-ip"))}`,
         limit: 10,
     }),
 );

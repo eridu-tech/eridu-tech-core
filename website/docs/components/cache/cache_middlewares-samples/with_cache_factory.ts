@@ -18,7 +18,7 @@ const fetchUser = async (userId: string): Promise<{ name: string }> => {
 const cachedFetchUser = use(
     fetchUser,
     withCache({
-        key: (userId) => `user:${userId}`,
+        key: ([userId]) => `user:${userId}`,
         ttl: TimeSpan.fromMinutes(10), // Cache for 10 minutes
     }),
 );

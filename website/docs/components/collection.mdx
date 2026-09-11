@@ -256,8 +256,8 @@ import { ListCollection, IterableCollection } from "eridu-tech/collection";
 
 const serde = new Serde(new SuperJsonSerdeAdapter());
 
-serde.registerClass(ListCollection);
-serde.registerClass(IterableCollection);
+serde.registerCustom(ListCollection.serdeTransformer);
+serde.registerCustom(IterableCollection.serdeTransformer);
 
 const listCollection = new ListCollection([1, 2, 3, 4, 5]);
 const serializedListCollection = serde.serialize(listCollection);
@@ -278,8 +278,8 @@ import { ListCollection, IterableCollection } from "eridu-tech/collection";
 
 const serde = new Serde(new SuperJsonSerdeAdapter());
 
-serde.registerClass(ListCollection);
-serde.registerClass(IterableCollection);
+serde.registerCustom(ListCollection.serdeTransformer);
+serde.registerCustom(IterableCollection.serdeTransformer);
 
 const listCollection = new ListCollection([1, 2, 3, 4, 5]);
 const serializedListCollection = serde.serialize(listCollection);

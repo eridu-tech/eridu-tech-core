@@ -20,7 +20,7 @@ const readData = async (key: string): Promise<unknown> => {
 const safeRead = use(
     readData,
     withSharedLock({
-        key: (resourceKey) => `data:${resourceKey}`,
+        key: ([resourceKey]) => `data:${resourceKey}`,
         when: SHARED_LOCK_WHEN.READER,
         limit: 10, // Up to 10 concurrent readers
     }),
@@ -34,7 +34,7 @@ const writeData = async (key: string): Promise<void> => {
 const safeWrite = use(
     writeData,
     withSharedLock({
-        key: (resourceKey) => `data:${resourceKey}`,
+        key: ([resourceKey]) => `data:${resourceKey}`,
         when: SHARED_LOCK_WHEN.WRITER,
         limit: 10,
     }),

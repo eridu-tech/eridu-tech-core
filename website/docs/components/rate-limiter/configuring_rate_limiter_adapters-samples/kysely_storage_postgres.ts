@@ -1,4 +1,3 @@
-import { TimeSpan } from "eridu-tech/time-span";
 import { KyselyRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter";
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";

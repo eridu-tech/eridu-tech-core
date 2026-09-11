@@ -1,5 +1,4 @@
 import type {
-    IEventBus,
     IEventListenable,
     IEventDispatcher,
 } from "eridu-tech/event-bus/contracts";

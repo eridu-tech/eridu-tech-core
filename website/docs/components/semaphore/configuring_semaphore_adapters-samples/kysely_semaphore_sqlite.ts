@@ -1,4 +1,3 @@
-import { TimeSpan } from "eridu-tech/time-span";
 import { KyselySemaphoreAdapter } from "eridu-tech/semaphore/kysely-semaphore-adapter";
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";

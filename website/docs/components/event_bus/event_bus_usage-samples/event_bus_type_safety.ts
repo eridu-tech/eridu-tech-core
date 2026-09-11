@@ -1,5 +1,5 @@
+// @ts-nocheck
 import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-adapter";
-import type { IEventBus } from "eridu-tech/event-bus/contracts";
 import { EventBus } from "eridu-tech/event-bus";
 
 type AddEvent = {

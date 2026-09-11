@@ -1,4 +1,3 @@
-import { TimeSpan } from "eridu-tech/time-span";
 import { KyselyCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/kysely-circuit-breaker-storage-adapter";
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";

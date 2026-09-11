@@ -1,4 +1,3 @@
-import { TimeSpan } from "eridu-tech/time-span";
 import { KyselyCacheAdapter } from "eridu-tech/cache/kysely-cache-adapter";
 import { Serde } from "eridu-tech/serde";
 import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
