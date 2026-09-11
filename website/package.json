@@ -38,7 +38,7 @@
         "@skillit/typedoc": "^2.0.3",
         "@vercel/og": "^1.0.1",
         "archiver": "^8.0.0",
-        "eridu-tech": "^0.61.1",
+        "eridu-tech": "^0.62.0",
         "remark-code-import": "^1.2.0",
         "rimraf": "^6.1.3",
         "typedoc": "^0.28.20",
