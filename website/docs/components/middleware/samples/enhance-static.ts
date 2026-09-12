@@ -1,5 +1,5 @@
 import { enhance } from "eridu-tech/middleware";
-import { loggingMiddleware } from "./enhance_greeter.js";
+import { loggingMiddleware } from "./enhance-greeter.js";
 
 class MathUtils {
     static multiply(a: number, b: number) {

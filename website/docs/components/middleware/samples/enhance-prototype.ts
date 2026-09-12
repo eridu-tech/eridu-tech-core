@@ -1,5 +1,5 @@
 import { enhance } from "eridu-tech/middleware";
-import { loggingMiddleware } from "./enhance_greeter.js";
+import { loggingMiddleware } from "./enhance-greeter.js";
 
 class Person {
     say(message: string) {
