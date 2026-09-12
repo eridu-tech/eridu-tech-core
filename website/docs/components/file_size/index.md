@@ -13,37 +13,37 @@ The `eridu-tech/file-size` component provides an easy way for defining, manipula
 
 Creating `FileSize` from bytes:
 
-```ts file=./samples/creating_from_bytes.ts
+```ts file=./samples/creating-from-bytes.ts
 
 ```
 
 Creating `FileSize` from kilo bytes:
 
-```ts file=./samples/creating_from_kilo_bytes.ts
+```ts file=./samples/creating-from-kilo-bytes.ts
 
 ```
 
 Creating `FileSize` from mega bytes:
 
-```ts file=./samples/creating_from_mega_bytes.ts
+```ts file=./samples/creating-from-mega-bytes.ts
 
 ```
 
 Creating `FileSize` from giga bytes:
 
-```ts file=./samples/creating_from_giga_bytes.ts
+```ts file=./samples/creating-from-giga-bytes.ts
 
 ```
 
 Creating `FileSize` from tera bytes:
 
-```ts file=./samples/creating_from_tera_bytes.ts
+```ts file=./samples/creating-from-tera-bytes.ts
 
 ```
 
 Creating `FileSize` from peta bytes:
 
-```ts file=./samples/creating_from_peta_bytes.ts
+```ts file=./samples/creating-from-peta-bytes.ts
 
 ```
 
@@ -51,31 +51,31 @@ Creating `FileSize` from peta bytes:
 
 Equals:
 
-```ts file=./samples/comparing_equal.ts
+```ts file=./samples/comparing-equal.ts
 
 ```
 
 Greater than:
 
-```ts file=./samples/comparing_gt.ts
+```ts file=./samples/comparing-gt.ts
 
 ```
 
 Greater than or equals:
 
-```ts file=./samples/comparing_gte.ts
+```ts file=./samples/comparing-gte.ts
 
 ```
 
 Less than:
 
-```ts file=./samples/comparing_lt.ts
+```ts file=./samples/comparing-lt.ts
 
 ```
 
 Less than or equals:
 
-```ts file=./samples/comparing_lte.ts
+```ts file=./samples/comparing-lte.ts
 
 ```
 
@@ -83,31 +83,31 @@ Less than or equals:
 
 You can get amount of bytes contained in the `FileSize`:
 
-```ts file=./samples/converting_to_bytes.ts
+```ts file=./samples/converting-to-bytes.ts
 
 ```
 
 You can get amount of kilo bytes contained in the `FileSize`:
 
-```ts file=./samples/converting_to_kilo_bytes.ts
+```ts file=./samples/converting-to-kilo-bytes.ts
 
 ```
 
 You can get amount of giga bytes contained in the `FileSize`:
 
-```ts file=./samples/converting_to_giga_bytes.ts
+```ts file=./samples/converting-to-giga-bytes.ts
 
 ```
 
 You can get amount of tera bytes contained in the `FileSize`:
 
-```ts file=./samples/converting_to_tera_bytes.ts
+```ts file=./samples/converting-to-tera-bytes.ts
 
 ```
 
 You can get amount of peta bytes contained in the `FileSize`:
 
-```ts file=./samples/converting_to_peta_bytes.ts
+```ts file=./samples/converting-to-peta-bytes.ts
 
 ```
 
@@ -115,7 +115,7 @@ You can get amount of peta bytes contained in the `FileSize`:
 
 The `FileSize` class supports serialization and deserialization, allowing you to easily convert instances to and from serialized formats. However, registration is required first:
 
-```ts file=./samples/serde_serialization.ts
+```ts file=./samples/serde-serialization.ts
 
 ```
 
@@ -134,7 +134,7 @@ Note `FileSize` class implements `IFileSize` contract.
 
 The `IFileSize` contract requires you to implement the `TO_MILLISECONDS` method on the file-size object, which must return the file-size in milliseconds.
 
-```ts file=./samples/implementing_ifile_size.ts
+```ts file=./samples/implementing-ifile-size.ts
 
 ```
 
