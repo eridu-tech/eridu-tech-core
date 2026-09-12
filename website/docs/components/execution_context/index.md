@@ -13,7 +13,7 @@ The `eridu-tech/execution-context` module provides a type-safe, composable, and 
 
 To begin using the execution-context, you'll need to create and configure an instance:
 
-```ts file=./samples/execution_context_initial_config.ts
+```ts file=./samples/execution-context-initial-config.ts
 
 ```
 
@@ -41,7 +41,7 @@ You can bind a function to the current context, so it always executes with the c
 
 You can enforce compile-time type safety by defining context tokens with specific types:
 
-```ts file=./samples/type_safety.ts
+```ts file=./samples/type-safety.ts
 
 ```
 
