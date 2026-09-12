@@ -7,18 +7,19 @@ import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 
 const serde = new Serde(new SuperJsonSerdeAdapter());
-export const circuitBreakerFactoryResolver = new DatabaseCircuitBreakerFactoryResolver({
-    serde,
-    adapters: {
-        memory: new MemoryCircuitBreakerStorageAdapter(),
-        sqlite: new KyselyCircuitBreakerStorageAdapter({
-            kysely: new Kysely({
-                dialect: new SqliteDialect({
-                    database: new Sqlite("local.db"),
+export const circuitBreakerFactoryResolver =
+    new DatabaseCircuitBreakerFactoryResolver({
+        serde,
+        adapters: {
+            memory: new MemoryCircuitBreakerStorageAdapter(),
+            sqlite: new KyselyCircuitBreakerStorageAdapter({
+                kysely: new Kysely({
+                    dialect: new SqliteDialect({
+                        database: new Sqlite("local.db"),
+                    }),
                 }),
+                serde,
             }),
-            serde,
-        }),
-    },
-    defaultAdapter: "memory",
-});
+        },
+        defaultAdapter: "memory",
+    });

@@ -5,5 +5,5 @@ const adapter = new DatabaseRateLimiterAdapter({
     adapter: new MemoryRateLimiterStorageAdapter(),
 });
 
-adapter.getState("api:login");
+await adapter.getState("api:login");
 // -> checks rate limit for "api:login"

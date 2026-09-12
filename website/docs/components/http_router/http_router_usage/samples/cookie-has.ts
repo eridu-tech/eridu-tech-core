@@ -1,4 +1,4 @@
-handler: async ({ res }) => {
+async ({ res }) => {
     if (res.hasCookies("session")) {
         res.removeCookie("session");
     }

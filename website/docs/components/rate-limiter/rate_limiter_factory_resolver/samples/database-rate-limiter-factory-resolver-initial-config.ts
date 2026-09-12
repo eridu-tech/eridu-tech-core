@@ -7,18 +7,19 @@ import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 
 const serde = new Serde(new SuperJsonSerdeAdapter());
-export const rateLimiterFactoryResolver = new DatabaseRateLimiterFactoryResolver({
-    serde,
-    adapters: {
-        memory: new MemoryRateLimiterStorageAdapter(),
-        sqlite: new KyselyRateLimiterStorageAdapter({
-            kysely: new Kysely({
-                dialect: new SqliteDialect({
-                    database: new Sqlite("local.db"),
+export const rateLimiterFactoryResolver =
+    new DatabaseRateLimiterFactoryResolver({
+        serde,
+        adapters: {
+            memory: new MemoryRateLimiterStorageAdapter(),
+            sqlite: new KyselyRateLimiterStorageAdapter({
+                kysely: new Kysely({
+                    dialect: new SqliteDialect({
+                        database: new Sqlite("local.db"),
+                    }),
                 }),
+                serde,
             }),
-            serde,
-        }),
-    },
-    defaultAdapter: "memory",
-});
+        },
+        defaultAdapter: "memory",
+    });

@@ -5,7 +5,10 @@ import { withFileStoragePrefix } from "eridu-tech/file-storage/plugins";
 const adapter = new MemoryFileStorageAdapter();
 
 // Apply the prefix plugin to the adapter
-const prefixedAdapter = withPlugin(adapter, withFileStoragePrefix("tenant-42/"));
+const prefixedAdapter = withPlugin(
+    adapter,
+    withFileStoragePrefix("tenant-42/"),
+);
 
-prefixedAdapter.getBytes("uploads/report.pdf");
+await prefixedAdapter.getBytes("uploads/report.pdf");
 // -> retrieves "tenant-42/uploads/report.pdf"

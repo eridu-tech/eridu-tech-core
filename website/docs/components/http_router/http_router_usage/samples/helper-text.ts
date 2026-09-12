@@ -1,2 +1,2 @@
-handler: async ({ text }) => text("Hello World");
+async ({ text }) => text("Hello World");
 // Content-Type: text/plain

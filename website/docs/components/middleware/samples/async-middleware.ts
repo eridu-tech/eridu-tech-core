@@ -25,10 +25,7 @@ const createAsyncValidationMiddleware = (
 };
 
 // Async function being wrapped
-const originalFn = async (
-    name: string,
-    age: number,
-): Promise<string> => {
+const originalFn = async (name: string, age: number): Promise<string> => {
     return `${name} is ${age} years old`;
 };
 

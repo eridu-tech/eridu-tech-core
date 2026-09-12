@@ -19,4 +19,4 @@ container.registerFactory({
     lifetime: LIFETIME.TRANSIENT,
 });
 
-container.init()  // will not throw InvalidGraphDiError
+await container.init(); // will not throw InvalidGraphDiError

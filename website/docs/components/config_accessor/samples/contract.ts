@@ -1,4 +1,7 @@
-import type { RestrictedPaths, PathValue } from "eridu-tech/config-accessor/contracts";
+import type {
+    RestrictedPaths,
+    PathValue,
+} from "eridu-tech/config-accessor/contracts";
 import type { Get } from "type-fest";
 import type { OneOrArray } from "eridu-tech/utilities";
 

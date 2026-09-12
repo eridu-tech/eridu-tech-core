@@ -13,5 +13,5 @@ const prefixedAdapter = withPlugin(
     withCircuitBreakerPrefix("service-a:"),
 );
 
-prefixedAdapter.getState("api:users");
+await prefixedAdapter.getState("api:users");
 // -> looks up circuit "service-a:api:users"

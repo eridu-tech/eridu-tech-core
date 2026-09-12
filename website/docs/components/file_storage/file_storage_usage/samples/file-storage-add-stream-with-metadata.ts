@@ -1,7 +1,7 @@
 import { fileStorage } from "./file-storage-initial-config.js";
 import { createReadStream } from "node:fs";
 
-const fileStream = createReadStream("./file.txt")
+const fileStream = createReadStream("./file.txt");
 
 const hasAdded = await fileStorage.create("file.txt").addStream({
     data: fileStream,
