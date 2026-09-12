@@ -18,7 +18,7 @@ The `eridu-tech/shared-lock` component provides a way for managing shared-locks 
 
 To begin using the `SharedLockFactory` class, you'll need to create and configure an instance:
 
-```ts file=./shared_lock_usage-samples/shared_lock_factory_initial_config.ts
+```ts file=./samples/shared_lock_factory_initial_config.ts
 
 ```
 
@@ -30,19 +30,19 @@ Here is a complete list of settings for the [`SharedLockFactory`](https://eridu-
 
 ### Creating a shared-lock
 
-```ts file=./shared_lock_usage-samples/shared_lock_create.ts
+```ts file=./samples/shared_lock_create.ts
 
 ```
 
 ### Acquiring and releasing the shared-lock as reader
 
-```ts file=./shared_lock_usage-samples/shared_lock_acquire_reader.ts
+```ts file=./samples/shared_lock_acquire_reader.ts
 
 ```
 
 Alternatively you could write it as follows:
 
-```ts file=./shared_lock_usage-samples/shared_lock_acquire_reader_or_fail.ts
+```ts file=./samples/shared_lock_acquire_reader_or_fail.ts
 
 ```
 
@@ -52,13 +52,13 @@ You need always to wrap the concurrent section with `try-finally` so the shared-
 
 ### Acquiring and releasing the shared-lock as writer
 
-```ts file=./shared_lock_usage-samples/shared_lock_acquire_writer.ts
+```ts file=./samples/shared_lock_acquire_writer.ts
 
 ```
 
 Alternatively you could write it as follows:
 
-```ts file=./shared_lock_usage-samples/shared_lock_acquire_writer_or_fail.ts
+```ts file=./samples/shared_lock_acquire_writer_or_fail.ts
 
 ```
 
@@ -70,7 +70,7 @@ You need always to wrap the critical section with `try-finally` so the shared-lo
 
 You can provide a custom TTL for the shared-lock.
 
-```ts file=./shared_lock_usage-samples/shared_lock_custom_ttl.ts
+```ts file=./samples/shared_lock_custom_ttl.ts
 
 ```
 
@@ -78,7 +78,7 @@ You can provide a custom TTL for the shared-lock.
 
 You can get the shared-lock state by using the `getState` method, it returns [`ISharedLockState`](https://eridu-tech.github.io/eridu-tech-core/types/SharedLock.ISharedLockState.html).
 
-```ts file=./shared_lock_usage-samples/shared_lock_get_state.ts
+```ts file=./samples/shared_lock_get_state.ts
 
 ```
 
@@ -91,20 +91,20 @@ instead of setting an excessively long TTL initially, you can start with a short
 
 #### As reader
 
-```ts file=./shared_lock_usage-samples/shared_lock_refresh_reader.ts
+```ts file=./samples/shared_lock_refresh_reader.ts
 
 ```
 
 #### As writer
 
-```ts file=./shared_lock_usage-samples/shared_lock_refresh_writer.ts
+```ts file=./samples/shared_lock_refresh_writer.ts
 
 ```
 
 :::warning
 Note: A shared-lock must have an expiration (a `ttl` value) to be refreshed. You cannot refresh a shared-lock that was created without an expiration (with `ttl: null`)
 
-```ts file=./shared_lock_usage-samples/shared_lock_non_refreshable.ts
+```ts file=./samples/shared_lock_non_refreshable.ts
 
 ```
 
@@ -114,20 +114,20 @@ Note: A shared-lock must have an expiration (a `ttl` value) to be refreshed. You
 
 The `releaseWriterOrFail` method is the same `releaseWriter` method but it throws an error when not enable to release the shared-lock as writer:
 
-```ts file=./shared_lock_usage-samples/shared_lock_release_writer_or_fail.ts
+```ts file=./samples/shared_lock_release_writer_or_fail.ts
 
 ```
 
 The `refreshWriterOrFail` method is the same `refreshWriter` method but it throws an error when not enable to refresh the shared-lock as writer:
 
-```ts file=./shared_lock_usage-samples/shared_lock_refresh_writer_or_fail.ts
+```ts file=./samples/shared_lock_refresh_writer_or_fail.ts
 
 ```
 
 The `runWriterOrFail` method automatically manages shared-lock acquisition and release as writer around function execution.
 It calls `acquireWriterOrFail` before invoking the function and calls `releaseWriter` in a finally block, ensuring the shared-lock is always freed, even if an error occurs during execution.
 
-```ts file=./shared_lock_usage-samples/shared_lock_run_writer_or_fail.ts
+```ts file=./samples/shared_lock_run_writer_or_fail.ts
 
 ```
 
@@ -143,20 +143,20 @@ You can provide synchronous Invocable or async/promisable invocable as values fo
 
 The `releaseReaderOrFail` method is the same `releaseReader` method but it throws an error when not enable to release the shared-lock as reader:
 
-```ts file=./shared_lock_usage-samples/shared_lock_release_reader_or_fail.ts
+```ts file=./samples/shared_lock_release_reader_or_fail.ts
 
 ```
 
 The `refreshReaderOrFail` method is the same `refreshReader` method but it throws an error when not enable to refresh the shared-lock as reader:
 
-```ts file=./shared_lock_usage-samples/shared_lock_refresh_reader_or_fail.ts
+```ts file=./samples/shared_lock_refresh_reader_or_fail.ts
 
 ```
 
 The `runReaderOrFail` method automatically manages shared-lock acquisition and release as reader around function execution.
 It calls `acquireReaderOrFail` before invoking the function and calls `releaseReader` in a finally block, ensuring the shared-lock is always freed, even if an error occurs during execution.
 
-```ts file=./shared_lock_usage-samples/shared_lock_run_reader_or_fail.ts
+```ts file=./samples/shared_lock_run_reader_or_fail.ts
 
 ```
 
@@ -172,7 +172,7 @@ You can provide synchronous Invocable or async/promisable invocable as values fo
 
 The `forceRelease` method releases the shared-lock regardless it its in reader or writer mode:
 
-```ts file=./shared_lock_usage-samples/shared_lock_force_release.ts
+```ts file=./samples/shared_lock_force_release.ts
 
 ```
 
@@ -180,7 +180,7 @@ The `forceRelease` method releases the shared-lock regardless it its in reader o
 
 The `SharedLock` class exposes instance variables such as:
 
-```ts file=./shared_lock_usage-samples/shared_lock_instance_variables.ts
+```ts file=./samples/shared_lock_instance_variables.ts
 
 ```
 
@@ -188,7 +188,7 @@ The `SharedLock` class exposes instance variables such as:
 
 By default the shared-lock id is autogenerated but it can also manually defined.
 
-```ts file=./shared_lock_usage-samples/shared_lock_custom_id.ts
+```ts file=./samples/shared_lock_custom_id.ts
 
 ```
 
@@ -202,67 +202,67 @@ In most cases, setting a shared-lock id is unnecessary.
 
 ### Retrying acquiring shared-lock as writer by attempts
 
-To retry acquiring shared-lock as writer you can use the [`retry`](../resilience/resilience.md) middleware.
+To retry acquiring shared-lock as writer you can use the [`retry`](../../resilience/resilience.md) middleware.
 
 Retrying acquiring shared-lock as writer with `acquireWriterOrFail` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_writer_acquire_or_fail.ts
+```ts file=./samples/shared_lock_retry_writer_acquire_or_fail.ts
 
 ```
 
 Retrying acquiring sharedLock as writer with `acquireWriter` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_writer_acquire.ts
+```ts file=./samples/shared_lock_retry_writer_acquire.ts
 
 ```
 
 Retrying acquiring shared-lock as writer with `runWriterOrFail` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_writer_run_or_fail.ts
+```ts file=./samples/shared_lock_retry_writer_run_or_fail.ts
 
 ```
 
 ### Retrying acquiring shared-lock as reader by attempts
 
-To retry acquiring shared-lock as reader you can use the [`retry`](../resilience/resilience.md) middleware.
+To retry acquiring shared-lock as reader you can use the [`retry`](../../resilience/resilience.md) middleware.
 
 Retrying acquiring shared-lock as reader with `acquireReaderOrFail` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_reader_acquire_or_fail.ts
+```ts file=./samples/shared_lock_retry_reader_acquire_or_fail.ts
 
 ```
 
 Retrying acquiring sharedLock as reader with `acquireReader` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_reader_acquire.ts
+```ts file=./samples/shared_lock_retry_reader_acquire.ts
 
 ```
 
 Retrying acquiring shared-lock as reader with `runReaderOrFail` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_reader_run_or_fail.ts
+```ts file=./samples/shared_lock_retry_reader_run_or_fail.ts
 
 ```
 
 ### Retrying acquiring shared-lock as writer by interval
 
-To retry acquiring shared-lockas as writer at regular intervals you can use the [`retryInterval`](../resilience/resilience.md) middleware.
+To retry acquiring shared-lockas as writer at regular intervals you can use the [`retryInterval`](../../resilience/resilience.md) middleware.
 
 Retrying acquiring shared-lock with `acquireWriterOrFail` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_interval_writer_acquire_or_fail.ts
+```ts file=./samples/shared_lock_retry_interval_writer_acquire_or_fail.ts
 
 ```
 
 Retrying acquiring shared-lock with `acquireWriter` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_interval_writer_acquire.ts
+```ts file=./samples/shared_lock_retry_interval_writer_acquire.ts
 
 ```
 
 Retrying acquiring shared-lock with `runWriterOrFail` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_interval_writer_run_or_fail.ts
+```ts file=./samples/shared_lock_retry_interval_writer_run_or_fail.ts
 
 ```
 
@@ -272,23 +272,23 @@ Note using `retryInterval` middleware with shared-lock acquiring in a HTTP reque
 
 ### Retrying acquiring shared-lock as reader by interval
 
-To retry acquiring shared-lockas as reader at regular intervals you can use the [`retryInterval`](../resilience/resilience.md) middleware.
+To retry acquiring shared-lockas as reader at regular intervals you can use the [`retryInterval`](../../resilience/resilience.md) middleware.
 
 Retrying acquiring shared-lock with `acquireReaderOrFail` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_interval_reader_acquire_or_fail.ts
+```ts file=./samples/shared_lock_retry_interval_reader_acquire_or_fail.ts
 
 ```
 
 Retrying acquiring shared-lock with `acquireReader` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_interval_reader_acquire.ts
+```ts file=./samples/shared_lock_retry_interval_reader_acquire.ts
 
 ```
 
 Retrying acquiring shared-lock with `runReaderOrFail` method:
 
-```ts file=./shared_lock_usage-samples/shared_lock_retry_interval_reader_run_or_fail.ts
+```ts file=./samples/shared_lock_retry_interval_reader_run_or_fail.ts
 
 ```
 
@@ -300,11 +300,11 @@ Note using `retryInterval` middleware with shared-lock acquiring in a HTTP reque
 
 SharedLocks can be serialized, allowing them to be transmitted over the network to another server and later deserialized for reuse.
 This means you can, for example, acquire the shared-lock on the main server, transfer it to a queue worker server, and release it there.
-In order to serialize or deserialize a shared-lock you need pass an object that implements [`ISerderRegister`](../serde/serde.md) contract like the [`Serde`](../serde/serde.md) class to `SharedLockFactory`.
+In order to serialize or deserialize a shared-lock you need pass an object that implements [`ISerderRegister`](../../serde/serde.md) contract like the [`Serde`](../../serde/serde.md) class to `SharedLockFactory`.
 
 Manually serializing and deserializing the shared-lock:
 
-```ts file=./shared_lock_usage-samples/shared_lock_manual_serialization.ts
+```ts file=./samples/shared_lock_manual_serialization.ts
 
 ```
 
@@ -318,7 +318,7 @@ Note you only need manuall serialization and deserialization when integrating wi
 
 As long you pass the same `Serde` instances with all other components you dont need to serialize and deserialize the shared-lock manually.
 
-```ts file=./shared_lock_usage-samples/shared_lock_event_bus_serialization.ts
+```ts file=./samples/shared_lock_event_bus_serialization.ts
 
 ```
 
