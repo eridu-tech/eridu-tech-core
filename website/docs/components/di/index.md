@@ -1,5 +1,4 @@
 ---
-slug: /components/di
 sidebar_position: 1
 sidebar_label: DI Container
 pagination_label: DI Container usage
