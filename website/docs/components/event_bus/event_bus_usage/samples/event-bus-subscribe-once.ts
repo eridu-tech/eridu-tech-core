@@ -1,4 +1,4 @@
-import { eventBus } from "./event_bus_initial_config.js";
+import { eventBus } from "./event-bus-initial-config.js";
 
 const unsubscribe = await eventBus.subscribeOnce("add", (event) => {
     console.log(event);

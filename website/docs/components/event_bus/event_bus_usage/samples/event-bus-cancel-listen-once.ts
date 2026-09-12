@@ -1,11 +1,11 @@
-import { eventBus } from "./event_bus_initial_config.js";
+import { eventBus } from "./event-bus-initial-config.js";
 import type { BaseEvent } from "eridu-tech/event-bus/contracts";
 
 const listener = (event: BaseEvent) => {
     console.log(event);
 };
 
-await eventBus.addListener("add", listener);
+await eventBus.listenOnce("add", listener);
 
 await eventBus.removeListener("add", listener);
 

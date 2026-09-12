@@ -26,7 +26,7 @@ testing.
 
 Usage example:
 
-```ts file=./samples/event_bus_adapter_test_suite.ts
+```ts file=./samples/event-bus-adapter-test-suite.ts
 
 ```
 
@@ -43,7 +43,7 @@ case coverage and standardized event-bus contract conformance testing.
 
 Usage example:
 
-```ts file=./samples/event_bus_test_suite.ts
+```ts file=./samples/event-bus-test-suite.ts
 
 ```
 

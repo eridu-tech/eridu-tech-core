@@ -22,13 +22,13 @@ keywords:
 
 To use the `MemoryEventBusAdapter` you only need to create instance of it.
 
-```ts file=./samples/memory_event_bus_adapter.ts
+```ts file=./samples/memory-event-bus-adapter.ts
 
 ```
 
 You can also provide an `EventEmitter` that will be used for dispatching the events in memory:
 
-```ts file=./samples/memory_event_bus_adapter_with_emitter.ts
+```ts file=./samples/memory-event-bus-adapter-with-emitter.ts
 
 ```
 
@@ -45,7 +45,7 @@ To use the `RedisPubSubEventBusAdapter`, you'll need to:
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./samples/redis_pub_sub_event_bus_adapter.ts
+```ts file=./samples/redis-pub-sub-event-bus-adapter.ts
 
 ```
 
@@ -53,7 +53,7 @@ To use the `RedisPubSubEventBusAdapter`, you'll need to:
 
 The `NoOpEventBusAdapter` is a no-operation implementation, it performs no actions when called.
 
-```ts file=./samples/no_op_event_bus_adapter.ts
+```ts file=./samples/no-op-event-bus-adapter.ts
 
 ```
 

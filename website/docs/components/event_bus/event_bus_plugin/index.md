@@ -39,7 +39,7 @@ The plugin prefixes event names for the following methods:
 
 ### Usage
 
-```ts file=./samples/with_event_bus_prefix.ts
+```ts file=./samples/with-event-bus-prefix.ts
 
 ```
 
@@ -47,13 +47,13 @@ The plugin prefixes event names for the following methods:
 
 **Before** — Event names are used as-is:
 
-```ts file=./samples/unprefixed_dispatch.ts
+```ts file=./samples/unprefixed-dispatch.ts
 
 ```
 
 **After** — Event names are automatically prefixed:
 
-```ts file=./samples/prefixed_dispatch.ts
+```ts file=./samples/prefixed-dispatch.ts
 
 ```
 
@@ -92,7 +92,7 @@ The plugin execution order is:
 
 ### Usage
 
-```ts file=./samples/with_listener_tracking.ts
+```ts file=./samples/with-listener-tracking.ts
 
 ```
 
@@ -100,7 +100,7 @@ The plugin execution order is:
 
 Multiple `withListenerTracking` calls can be composed together:
 
-```ts file=./samples/listener_tracking_chaining.ts
+```ts file=./samples/listener-tracking-chaining.ts
 
 ```
 
