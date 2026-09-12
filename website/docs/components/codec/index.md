@@ -1,5 +1,4 @@
 ---
-slug: /components/codec
 tags:
     - Utilities
 keywords:
