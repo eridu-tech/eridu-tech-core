@@ -1,5 +1,4 @@
 ---
-slug: /components/middleware
 sidebar_label: Middleware
 pagination_label: Middleware
 tags:
