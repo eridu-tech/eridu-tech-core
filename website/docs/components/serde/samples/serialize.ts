@@ -1,4 +1,4 @@
-import { serde } from "./serde_initial_config.js";
+import { serde } from "./serde-initial-config.js";
 
 const serializedValue = serde.serialize({
     name: "abra",

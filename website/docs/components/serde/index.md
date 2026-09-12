@@ -11,7 +11,7 @@ The `eridu-tech/serde` component provides seamless way to serialize/deserialize 
 
 ## Initial configuration
 
-```ts file=./samples/serde_initial_config.ts
+```ts file=./samples/serde-initial-config.ts
 
 ```
 
@@ -29,7 +29,7 @@ Here is an example of serializing and deserializing a value.
 
 The `registerCustom` method offers control over serialization and deserialization behavior.
 
-```ts file=./samples/register_custom.ts
+```ts file=./samples/register-custom.ts
 
 ```
 
@@ -43,7 +43,7 @@ Note the `ISerdeTranformer` object can be dynamically created.
 
 When using `Serde` class instance there is no need to call `serialize` and `deserialize` manually. Because components like `Cache` handle it automatically through their adapter.
 
-```ts file=./samples/with_cache.ts
+```ts file=./samples/with-cache.ts
 
 ```
 
