@@ -41,7 +41,7 @@ The plugin prefixes keys for the following methods:
 
 ### Usage
 
-```ts file=./circuit_breaker_plugin-samples/with_circuit_breaker_prefix.ts
+```ts file=./samples/with_circuit_breaker_prefix.ts
 
 ```
 
@@ -49,13 +49,13 @@ The plugin prefixes keys for the following methods:
 
 **Before** — Circuit keys are used as-is:
 
-```ts file=./circuit_breaker_plugin-samples/unprefixed_circuit_lookup.ts
+```ts file=./samples/unprefixed_circuit_lookup.ts
 
 ```
 
 **After** — Circuit keys are automatically prefixed:
 
-```ts file=./circuit_breaker_plugin-samples/prefixed_circuit_lookup.ts
+```ts file=./samples/prefixed_circuit_lookup.ts
 
 ```
 

@@ -20,7 +20,7 @@ In order to create an adapter you need to implement the [`ICircuitBreakerAdapter
 
 ## Implementing your custom ICircuitBreakerStorageAdapter
 
-We provide an additional contract [`ICircuitBreakerStorageAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerStorageAdapter.html) for building custom circuit-breaker storage adapters tailored to [`DatabaseCircuitBreakerAdapter`](./configuring_circuit_breaker_adapters.md#databasecircuitbreakeradapter) and [`DatabaseCircuitBreakerProviderFactory`](./circuit_breaker_factory_resolver.md#databasecircuitbreakerfactoryresolver).
+We provide an additional contract [`ICircuitBreakerStorageAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerStorageAdapter.html) for building custom circuit-breaker storage adapters tailored to [`DatabaseCircuitBreakerAdapter`](../configuring_circuit_breaker_adapters/index.md#databasecircuitbreakeradapter) and [`DatabaseCircuitBreakerProviderFactory`](../circuit_breaker_factory_resolver/index.md#databasecircuitbreakerfactoryresolver).
 
 ## Testing your custom ICircuitBreakerStorageAdapter
 
@@ -31,7 +31,7 @@ We provide a complete test suite to test your circuit-breaker storage adapter im
 
 Usage example:
 
-```ts file=./creating_circuit_breaker_adapters-samples/circuit_breaker_storage_test_suite.ts
+```ts file=./samples/circuit_breaker_storage_test_suite.ts
 
 ```
 
