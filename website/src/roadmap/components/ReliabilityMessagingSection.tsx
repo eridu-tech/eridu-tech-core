@@ -3,5 +3,9 @@ import { PlannedCardGrid } from "./PlannedCardGrid.js";
 import styles from "../roadmap.module.css";
 
 export function ReliabilityMessagingSection() {
-  return (<section className={styles.futureSection}><PlannedCardGrid items={RELIABILITY_MESSAGING_ITEMS} /></section>);
+    return (
+        <section className={styles.futureSection}>
+            <PlannedCardGrid items={RELIABILITY_MESSAGING_ITEMS} />
+        </section>
+    );
 }

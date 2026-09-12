@@ -7,5 +7,5 @@ const adapter = new MemoryCacheAdapter();
 // Apply the prefix plugin to the adapter
 const prefixedAdapter = withPlugin(adapter, withCachePrefix("tenant-42:"));
 
-prefixedAdapter.removeMany(["a", "b", "c"]);
+await prefixedAdapter.removeMany(["a", "b", "c"]);
 // -> prefixedAdapter.removeMany(["tenant-42:a", "tenant-42:b", "tenant-42:c"])

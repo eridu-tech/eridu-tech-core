@@ -1,7 +1,4 @@
-import {
-    HttpRouter,
-    defaultHttpRouterAdapter,
-} from "eridu-tech/http-router";
+import { HttpRouter, defaultHttpRouterAdapter } from "eridu-tech/http-router";
 import { describe, expect, test } from "vitest";
 
 describe("My router", () => {

@@ -72,7 +72,11 @@ const headerStyle = {
     width: "100%",
 } as const;
 
-const brandStyle = { display: "flex", flexDirection: "row", alignItems: "center" } as const;
+const brandStyle = {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+} as const;
 
 const wordmarkStyle = {
     fontSize: 30,
@@ -152,7 +156,11 @@ const taglineStyle = {
     color: COLORS.textFaint,
 } as const;
 
-const badgesStyle = { display: "flex", flexDirection: "row", alignItems: "center" } as const;
+const badgesStyle = {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+} as const;
 
 const badgeStyle = {
     fontSize: 18,
@@ -183,7 +191,9 @@ function buildModuleSquares(): ReturnType<typeof h> {
                         height: 28,
                         borderRadius: 7,
                         border: `2px solid rgba(62,204,95,${filled ? 0.5 : 0.32})`,
-                        background: filled ? "rgba(62,204,95,0.22)" : "transparent",
+                        background: filled
+                            ? "rgba(62,204,95,0.22)"
+                            : "transparent",
                         marginRight: col === 0 ? 16 : 0,
                         marginBottom: row < 3 ? 16 : 0,
                     },
@@ -212,7 +222,9 @@ function buildModuleSquares(): ReturnType<typeof h> {
 export async function ogGenerator(params: OgGeneratorParams): Promise<Buffer> {
     const { metadata } = params;
     const routePath = metadata?.routePath || "/";
-    const title = cleanTitle(metadata?.title || metadata?.contentTitle || PACKAGE_NAME);
+    const title = cleanTitle(
+        metadata?.title || metadata?.contentTitle || PACKAGE_NAME,
+    );
     const description = decodeHtmlEntities(metadata?.description || "")
         .replace(/\s+/g, " ")
         .trim();
@@ -268,12 +280,20 @@ export async function ogGenerator(params: OgGeneratorParams): Promise<Buffer> {
             h(
                 "div",
                 { style: footerStyle },
-                h("div", { style: taglineStyle }, "Adapter-first backend toolkit for TypeScript"),
+                h(
+                    "div",
+                    { style: taglineStyle },
+                    "Adapter-first backend toolkit for TypeScript",
+                ),
                 h(
                     "div",
                     { style: badgesStyle },
                     h("div", { style: badgeStyle }, `v${PACKAGE_VERSION}`),
-                    h("div", { style: badgeStyle }, `${COMPONENT_COUNT} modules`),
+                    h(
+                        "div",
+                        { style: badgeStyle },
+                        `${COMPONENT_COUNT} modules`,
+                    ),
                 ),
             ),
         ),

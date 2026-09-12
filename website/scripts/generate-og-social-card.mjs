@@ -17,7 +17,9 @@ const jiti = require("jiti")(import.meta.url, {
     requireCache: false,
 });
 
-const { ogGenerator } = jiti(path.join(here, "..", "utilities", "og-generator.ts"));
+const { ogGenerator } = jiti(
+    path.join(here, "..", "utilities", "og-generator.ts"),
+);
 const { PACKAGE_NAME, PACKAGE_VERSION } = jiti(
     path.join(here, "..", "utilities", "package-json-data.ts"),
 );
@@ -38,4 +40,6 @@ fs.mkdirSync(outDir, { recursive: true });
 const outPath = path.join(outDir, "og-social-card.png");
 fs.writeFileSync(outPath, buffer);
 
-console.log(`Wrote ${path.relative(process.cwd(), outPath)} (${buffer.length} bytes)`);
+console.log(
+    `Wrote ${path.relative(process.cwd(), outPath)} (${buffer.length} bytes)`,
+);

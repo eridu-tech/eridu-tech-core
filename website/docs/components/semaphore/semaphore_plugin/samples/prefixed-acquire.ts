@@ -7,5 +7,10 @@ const adapter = new MemorySemaphoreAdapter();
 // Apply the prefix plugin to the adapter
 const prefixedAdapter = withPlugin(adapter, withSemaphorePrefix("pool-1:"));
 
-prefixedAdapter.acquire({ key: "connections", slotId: "slot-1", limit: 1, ttl: null });
+await prefixedAdapter.acquire({
+    key: "connections",
+    slotId: "slot-1",
+    limit: 1,
+    ttl: null,
+});
 // -> acquires slot on "pool-1:connections"

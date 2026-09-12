@@ -10,7 +10,10 @@ import docusaurusPluginLlmsTxt, {
     type PluginOptions,
 } from "@signalwire/docusaurus-plugin-llms-txt";
 import { ogGenerator } from "./utilities/og-generator.js";
-import { PACKAGE_NAME, PACKAGE_VERSION } from "./utilities/package-json-data.js";
+import {
+    PACKAGE_NAME,
+    PACKAGE_VERSION,
+} from "./utilities/package-json-data.js";
 import codeImport from "remark-code-import";
 import remarkCodeFileTitle from "./plugins/remark-code-file-title/index.js";
 import path from "path";

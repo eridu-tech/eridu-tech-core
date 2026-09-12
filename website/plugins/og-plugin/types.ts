@@ -20,7 +20,9 @@ export interface OgGeneratorParams {
     assetsDir: string;
 }
 
-export type OgGenerator = (params: OgGeneratorParams) => Promise<Buffer> | Buffer;
+export type OgGenerator = (
+    params: OgGeneratorParams,
+) => Promise<Buffer> | Buffer;
 
 export interface PluginOptions {
     ogGenerator?: OgGenerator;

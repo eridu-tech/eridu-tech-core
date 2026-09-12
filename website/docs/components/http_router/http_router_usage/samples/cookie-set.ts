@@ -1,6 +1,6 @@
 import { TimeSpan } from "eridu-tech/time-span";
 
-handler: async ({ res }) => {
+async ({ res }) => {
     return res
         .putCookie("session", "abc123", {
             httpOnly: true,

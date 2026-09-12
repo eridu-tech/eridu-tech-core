@@ -11,7 +11,9 @@ const allComponents = [
                 (path) =>
                     path
                         .split("/")
-                        .filter((segment) => segment !== "." && segment !== "")[0],
+                        .filter(
+                            (segment) => segment !== "." && segment !== "",
+                        )[0],
             )
             .filter((value) => value !== undefined)
             .map((component) => component.toLowerCase()),

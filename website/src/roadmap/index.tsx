@@ -20,4 +20,3 @@ export {
 } from "../data/data.js";
 
 export type { ComponentItemProps } from "../data/types.js";
-

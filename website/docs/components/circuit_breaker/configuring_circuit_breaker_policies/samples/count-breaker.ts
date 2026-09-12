@@ -1,4 +1,4 @@
-import { CountBreaker } from "eridu-tech/circuit-breaker/policies"
+import { CountBreaker } from "eridu-tech/circuit-breaker/policies";
 
 new CountBreaker({
     /**
@@ -24,4 +24,4 @@ new CountBreaker({
      * The field is optional.
      */
     minimumNumberOfCalls: 20,
-})
+});

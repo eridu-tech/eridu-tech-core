@@ -1,5 +1,5 @@
-import { SlidingWindowLimiter } from "eridu-tech/rate-limiter/policies"
-import { TimeSpan } from "eridu-tech/time-span"
+import { SlidingWindowLimiter } from "eridu-tech/rate-limiter/policies";
+import { TimeSpan } from "eridu-tech/time-span";
 
 new SlidingWindowLimiter({
     /**
@@ -13,5 +13,5 @@ new SlidingWindowLimiter({
      * The field is optional.
      * ```
      */
-    margin: TimeSpan.fromSeconds(4).divide(4)
-})
+    margin: TimeSpan.fromSeconds(4).divide(4),
+});

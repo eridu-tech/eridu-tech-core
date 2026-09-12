@@ -8,7 +8,7 @@ const listener = (event) => {
     console.log("Received event:", event);
 };
 
-adapter.dispatch("user.created", data);
+await adapter.dispatch("user.created", data);
 // -> dispatches "user.created"
-adapter.addListener("user.created", listener);
+await adapter.addListener("user.created", listener);
 // -> listens to "user.created"

@@ -47,7 +47,7 @@ type FontSpec = {
 let cachedFonts: FontSpec[] | null = null;
 
 function toArrayBuffer(buf: Buffer): ArrayBuffer {
-    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 }
 
 function findAssetRoot(): string {
@@ -97,7 +97,9 @@ function getLogoDataUri(): string {
         ];
         const logoPath = candidates.find((p) => fs.existsSync(p));
         if (!logoPath) {
-            throw new Error("OG generator: could not locate static/img/logo.svg");
+            throw new Error(
+                "OG generator: could not locate static/img/logo.svg",
+            );
         }
         const svg = fs.readFileSync(logoPath, "utf8");
         cachedLogoDataUri = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
@@ -174,7 +176,8 @@ export function backgroundLayers(): ReturnType<typeof h>[] {
                 left: 0,
                 width: "100%",
                 height: "100%",
-                background: "linear-gradient(135deg, #07130d 0%, #0d2216 48%, #133320 100%)",
+                background:
+                    "linear-gradient(135deg, #07130d 0%, #0d2216 48%, #133320 100%)",
             },
         }),
         h("div", {

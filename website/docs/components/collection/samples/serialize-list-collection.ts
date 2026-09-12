@@ -9,7 +9,9 @@ serde.registerCustom(IterableCollection.serdeTransformer);
 
 const listCollection = new ListCollection([1, 2, 3, 4, 5]);
 const serializedListCollection = serde.serialize(listCollection);
-const deserializedListCollection = serde.deserialize<ListCollection>(serializedListCollection);
+const deserializedListCollection = serde.deserialize<ListCollection>(
+    serializedListCollection,
+);
 
 // Logs false
 console.log(listCollection === deserializedListCollection);

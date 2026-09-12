@@ -5,7 +5,10 @@ import { withFileStoragePrefix } from "eridu-tech/file-storage/plugins";
 const adapter = new MemoryFileStorageAdapter();
 
 // Apply the prefix plugin to the adapter
-const prefixedAdapter = withPlugin(adapter, withFileStoragePrefix("tenant-42/"));
+const prefixedAdapter = withPlugin(
+    adapter,
+    withFileStoragePrefix("tenant-42/"),
+);
 
-prefixedAdapter.removeMany(["a.pdf", "b.pdf"]);
+await prefixedAdapter.removeMany(["a.pdf", "b.pdf"]);
 // -> prefixedAdapter.removeMany(["tenant-42/a.pdf", "tenant-42/b.pdf"])

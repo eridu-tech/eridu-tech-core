@@ -1,3 +1,3 @@
-handler: async ({ res }) => {
+async ({ res }) => {
     return res.withoutCookies().setBody("All cookies stripped");
 };

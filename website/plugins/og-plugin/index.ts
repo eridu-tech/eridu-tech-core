@@ -168,7 +168,8 @@ export default function previewImageGeneratorPlugin(
     options: PluginOptions,
 ): Plugin<void> {
     const { outDir, siteConfig } = context;
-    const { ogGenerator = defaultOgGenerator, assetsDir = "og-assets" } = options;
+    const { ogGenerator = defaultOgGenerator, assetsDir = "og-assets" } =
+        options;
 
     return {
         name: "preview-image-generator",
@@ -213,7 +214,9 @@ export default function previewImageGeneratorPlugin(
                 }
             }
 
-            console.log(`✅ Generated ${props.routesPaths.length} preview images`);
+            console.log(
+                `✅ Generated ${props.routesPaths.length} preview images`,
+            );
         },
     };
 }

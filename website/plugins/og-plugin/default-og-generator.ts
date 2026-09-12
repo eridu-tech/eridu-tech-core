@@ -73,10 +73,14 @@ const descStyle = {
     maxWidth: 860,
 } as const;
 
-export async function defaultOgGenerator(params: OgGeneratorParams): Promise<Buffer> {
+export async function defaultOgGenerator(
+    params: OgGeneratorParams,
+): Promise<Buffer> {
     const { metadata } = params;
     const routePath = metadata?.routePath || "/";
-    const title = cleanTitle(metadata?.title || metadata?.contentTitle || "Eridu Tech");
+    const title = cleanTitle(
+        metadata?.title || metadata?.contentTitle || "Eridu Tech",
+    );
     const description = decodeHtmlEntities(metadata?.description || "")
         .replace(/\s+/g, " ")
         .trim();

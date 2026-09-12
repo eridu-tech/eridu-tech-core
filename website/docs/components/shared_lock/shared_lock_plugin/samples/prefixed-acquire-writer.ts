@@ -9,5 +9,5 @@ const prefixedAdapter = withPlugin(adapter, withSharedLockPrefix("tenant-42:"));
 
 const ttl = new Date(Date.now() + 60_000);
 
-prefixedAdapter.acquireWriter("doc:42", "writer-1", ttl);
+await prefixedAdapter.acquireWriter("doc:42", "writer-1", ttl);
 // -> acquires writer lock on "tenant-42:doc:42"

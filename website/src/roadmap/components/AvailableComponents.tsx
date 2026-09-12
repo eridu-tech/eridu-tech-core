@@ -31,7 +31,10 @@ export function AvailableComponents() {
                 items={MESSAGING_EXISTING_ITEMS}
             />
             <AvailableCategory label="Web" items={WEB_EXISTING_ITEMS} />
-            <AvailableCategory label="Utilities" items={UTILITIES_EXISTING_ITEMS} />
+            <AvailableCategory
+                label="Utilities"
+                items={UTILITIES_EXISTING_ITEMS}
+            />
         </section>
     );
 }

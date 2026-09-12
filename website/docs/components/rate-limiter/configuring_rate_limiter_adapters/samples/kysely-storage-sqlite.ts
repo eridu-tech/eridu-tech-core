@@ -9,10 +9,11 @@ const kysely = new Kysely<any>({
         database,
     }),
 });
-export const kyselyRateLimiterStorageAdapter = new KyselyRateLimiterStorageAdapter({
-    kysely,
-    serde,
-});
+export const kyselyRateLimiterStorageAdapter =
+    new KyselyRateLimiterStorageAdapter({
+        kysely,
+        serde,
+    });
 
 // You need initialize the adapter once before using it.
 // During the initialization the schema will be created

@@ -36,7 +36,7 @@ async function dispatchingFunc(
     });
 }
 
-const eventBus= new EventBus<EventMap>({
+const eventBus = new EventBus<EventMap>({
     // You can choose the adapter to use
     adapter: new MemoryEventBusAdapter(),
 });

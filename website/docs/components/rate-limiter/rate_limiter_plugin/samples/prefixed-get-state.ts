@@ -13,5 +13,5 @@ const prefixedAdapter = withPlugin(
     withRateLimiterPrefix("tenant-42:"),
 );
 
-prefixedAdapter.getState("api:login");
+await prefixedAdapter.getState("api:login");
 // -> checks rate limit for "tenant-42:api:login"

@@ -13,7 +13,7 @@ const listener = (event) => {
     console.log("Received event:", event);
 };
 
-prefixedAdapter.dispatch("user.created", data);
+await prefixedAdapter.dispatch("user.created", data);
 // -> dispatches "tenant-42:user.created"
-prefixedAdapter.addListener("user.created", listener);
+await prefixedAdapter.addListener("user.created", listener);
 // -> listens to "tenant-42:user.created"

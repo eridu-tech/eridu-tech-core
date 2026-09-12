@@ -2,5 +2,5 @@ import { MemoryFileStorageAdapter } from "eridu-tech/file-storage/memory-file-st
 
 const adapter = new MemoryFileStorageAdapter();
 
-adapter.getBytes("uploads/report.pdf");
+await adapter.getBytes("uploads/report.pdf");
 // -> retrieves "uploads/report.pdf"

@@ -5,5 +5,5 @@ const adapter = new DatabaseCircuitBreakerAdapter({
     adapter: new MemoryCircuitBreakerStorageAdapter(),
 });
 
-adapter.getState("api:users");
+await adapter.getState("api:users");
 // -> looks up circuit "api:users"

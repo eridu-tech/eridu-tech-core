@@ -16,9 +16,7 @@ describe("Multipart body", () => {
                 const formData = await req.formData();
                 const file = formData["avatar"];
                 const content =
-                    file &&
-                    !Array.isArray(file) &&
-                    typeof file !== "string"
+                    file && !Array.isArray(file) && typeof file !== "string"
                         ? await file.asText()
                         : null;
                 return json({ uploaded: !!content });
