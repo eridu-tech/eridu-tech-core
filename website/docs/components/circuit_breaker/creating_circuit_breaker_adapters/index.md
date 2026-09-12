@@ -31,7 +31,7 @@ We provide a complete test suite to test your circuit-breaker storage adapter im
 
 Usage example:
 
-```ts file=./samples/circuit_breaker_storage_test_suite.ts
+```ts file=./samples/circuit-breaker-storage-test-suite.ts
 
 ```
 

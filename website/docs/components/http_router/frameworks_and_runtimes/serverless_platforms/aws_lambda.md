@@ -23,7 +23,7 @@ npm install -D esbuild
 
 ### 2. Create the handler
 
-```ts file=./aws_lambda-samples/create_handler.ts
+```ts file=./aws_lambda-samples/create-handler.ts
 
 ```
 
@@ -41,7 +41,7 @@ npm install -D esbuild
 
 ### 3. Set up CDK deployment
 
-```ts file=./aws_lambda-samples/cdk_deployment.ts
+```ts file=./aws_lambda-samples/cdk-deployment.ts
 
 ```
 

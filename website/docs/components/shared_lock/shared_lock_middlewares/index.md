@@ -20,7 +20,7 @@ The SharedLock middleware wraps function calls with a distributed shared lock (r
 
 ### Usage
 
-```ts file=./samples/with_shared_lock.ts
+```ts file=./samples/with-shared-lock.ts
 
 ```
 

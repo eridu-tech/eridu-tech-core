@@ -23,7 +23,7 @@ The `eridu-tech/event-bus` component provides a way for dispatching and listenin
 
 To begin using the `EventBus` class, you'll need to create and configure an instance:
 
-```ts file=./samples/event_bus_initial_config.ts
+```ts file=./samples/event-bus-initial-config.ts
 
 ```
 
@@ -37,7 +37,7 @@ Here is a complete list of settings for the [`EventBus`](https://eridu-tech.gith
 
 Event listeners can be added to respond to specific events:
 
-```ts file=./samples/event_bus_listeners.ts
+```ts file=./samples/event-bus-listeners.ts
 
 ```
 
@@ -45,7 +45,7 @@ Event listeners can be added to respond to specific events:
 
 To properly remove a listener, you must use a named function:
 
-```ts file=./samples/event_bus_listener_management.ts
+```ts file=./samples/event-bus-listener-management.ts
 
 ```
 
@@ -55,7 +55,7 @@ To properly remove a listener, you must use a named function:
 
 An event map can be used to strictly type the events:
 
-```ts file=./samples/event_bus_type_safety.ts
+```ts file=./samples/event-bus-type-safety.ts
 
 ```
 
@@ -70,7 +70,7 @@ When a schema map is provided, event data is validated:
 
 If no schema is defined for a particular event name, that event is passed through without validation. If validation fails, a `ValidationError` is thrown.
 
-```ts file=./samples/event_bus_runtime_validation.ts
+```ts file=./samples/event-bus-runtime-validation.ts
 
 ```
 
@@ -78,7 +78,7 @@ If no schema is defined for a particular event name, that event is passed throug
 
 If you only want to validate event data on dispatch and skip validation when delivering to listeners, set `shouldValidateListeners` to `false`:
 
-```ts file=./samples/event_bus_disable_listener_validation.ts
+```ts file=./samples/event-bus-disable-listener-validation.ts
 
 ```
 
@@ -86,7 +86,7 @@ If you only want to validate event data on dispatch and skip validation when del
 
 The subscription pattern provides automatic cleanup through an unsubscribe function:
 
-```ts file=./samples/event_bus_subscribe.ts
+```ts file=./samples/event-bus-subscribe.ts
 
 ```
 
@@ -94,19 +94,19 @@ The subscription pattern provides automatic cleanup through an unsubscribe funct
 
 For listeners that should only trigger once:
 
-```ts file=./samples/event_bus_listen_once.ts
+```ts file=./samples/event-bus-listen-once.ts
 
 ```
 
 You can also cancel one-time listeners before they trigger:
 
-```ts file=./samples/event_bus_cancel_listen_once.ts
+```ts file=./samples/event-bus-cancel-listen-once.ts
 
 ```
 
 The `subscribeOnce` method creates a one-time listener and returns an unsubscribe function:
 
-```ts file=./samples/event_bus_subscribe_once.ts
+```ts file=./samples/event-bus-subscribe-once.ts
 
 ```
 
@@ -114,7 +114,7 @@ The `subscribeOnce` method creates a one-time listener and returns an unsubscrib
 
 Wait for events using promises:
 
-```ts file=./samples/event_bus_as_promise.ts
+```ts file=./samples/event-bus-as-promise.ts
 
 ```
 
@@ -122,13 +122,13 @@ Wait for events using promises:
 
 The `addListener`, `removeListener`, and `subscribe` methods all accept either a single event name or an array of event names, allowing you to register one listener for multiple events at once:
 
-```ts file=./samples/event_bus_multi_events.ts
+```ts file=./samples/event-bus-multi-events.ts
 
 ```
 
 You can also use `subscribe` to get a single cleanup function that unsubscribes from all listed events at once:
 
-```ts file=./samples/event_bus_subscribe_multi.ts
+```ts file=./samples/event-bus-subscribe-multi.ts
 
 ```
 
@@ -142,7 +142,7 @@ The library includes two additional contracts:
 
 This separation makes it easy to visually distinguish the two contracts, making it immediately obvious that they serve different purposes.
 
-```ts file=./samples/event_bus_contracts.ts
+```ts file=./samples/event-bus-contracts.ts
 
 ```
 
@@ -154,7 +154,7 @@ An event listener is `Invocable` meaning you can also pass in an object (class i
 For further information refer the [`Invocable`](/docs/utilities/invocable/) docs.
 :::
 
-```ts file=./samples/event_bus_invocable_listener.ts
+```ts file=./samples/event-bus-invocable-listener.ts
 
 ```
 

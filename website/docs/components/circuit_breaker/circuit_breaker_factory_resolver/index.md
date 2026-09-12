@@ -20,7 +20,7 @@ The `CircuitBreakerFactoryResolver` class provides a flexible way to configure a
 
 To begin using the `CircuitBreakerFactoryResolver`, You will need to register all required adapters during initialization.
 
-```ts file=./samples/circuit_breaker_factory_resolver_initial_config.ts
+```ts file=./samples/circuit-breaker-factory-resolver-initial-config.ts
 
 ```
 
@@ -28,7 +28,7 @@ To begin using the `CircuitBreakerFactoryResolver`, You will need to register al
 
 #### 1. Using the default adapter
 
-```ts file=./samples/circuit_breaker_factory_resolver_default_adapter.ts
+```ts file=./samples/circuit-breaker-factory-resolver-default-adapter.ts
 
 ```
 
@@ -38,7 +38,7 @@ Note that if you dont set a default adapter, an error will be thrown.
 
 #### 2. Specifying an adapter explicitly
 
-```ts file=./samples/circuit_breaker_factory_resolver_specific_adapter.ts
+```ts file=./samples/circuit-breaker-factory-resolver-specific-adapter.ts
 
 ```
 
@@ -48,7 +48,7 @@ Note that if you specify a non-existent adapter, an error will be thrown.
 
 #### 3. Overriding default settings
 
-```ts file=./samples/circuit_breaker_factory_resolver_override_settings.ts
+```ts file=./samples/circuit-breaker-factory-resolver-override-settings.ts
 
 ```
 
@@ -64,7 +64,7 @@ The `DatabaseCircuitBreakerFactoryResolver` class provides a flexible way to con
 
 To begin using the `DatabaseCircuitBreakerFactoryResolver`, You will need to register all required adapters during initialization.
 
-```ts file=./samples/database_circuit_breaker_factory_resolver_initial_config.ts
+```ts file=./samples/database-circuit-breaker-factory-resolver-initial-config.ts
 
 ```
 
@@ -72,7 +72,7 @@ To begin using the `DatabaseCircuitBreakerFactoryResolver`, You will need to reg
 
 #### 1. Using the default adapter
 
-```ts file=./samples/database_circuit_breaker_factory_resolver_default_adapter.ts
+```ts file=./samples/database-circuit-breaker-factory-resolver-default-adapter.ts
 
 ```
 
@@ -82,7 +82,7 @@ Note that if you dont set a default adapter, an error will be thrown.
 
 #### 2. Specifying an adapter explicitly
 
-```ts file=./samples/database_circuit_breaker_factory_resolver_specific_adapter.ts
+```ts file=./samples/database-circuit-breaker-factory-resolver-specific-adapter.ts
 
 ```
 
@@ -92,7 +92,7 @@ Note that if you specify a non-existent adapter, an error will be thrown.
 
 #### 3. Overriding default settings
 
-```ts file=./samples/database_circuit_breaker_factory_resolver_override_settings.ts
+```ts file=./samples/database-circuit-breaker-factory-resolver-override-settings.ts
 
 ```
 

@@ -24,7 +24,7 @@ This is useful for emitting lifecycle events such as "about to create a user" or
 
 ### Usage
 
-```ts file=./samples/with_dispatch_before.ts
+```ts file=./samples/with-dispatch-before.ts
 
 ```
 
@@ -47,7 +47,7 @@ This is useful for emitting completion events such as "user created" or for reco
 
 ### Usage
 
-```ts file=./samples/with_dispatch_after.ts
+```ts file=./samples/with-dispatch-after.ts
 
 ```
 
@@ -70,7 +70,7 @@ This is useful for emitting failure events such as "user creation failed" or for
 
 ### Usage
 
-```ts file=./samples/with_dispatch_on_error.ts
+```ts file=./samples/with-dispatch-on-error.ts
 
 ```
 

@@ -18,7 +18,7 @@ The `eridu-tech/circuit-breaker` component provides a way for managing circuit-b
 
 To begin using the `CircuitBreakerFactory` class, you'll need to create and configure an instance:
 
-```ts file=./samples/circuit_breaker_initial_config.ts
+```ts file=./samples/circuit-breaker-initial-config.ts
 
 ```
 
@@ -30,13 +30,13 @@ Here is a complete list of settings for the [`CircuitBreakerFactory`](https://er
 
 ### Creating a circuit-breaker
 
-```ts file=./samples/circuit_breaker_create.ts
+```ts file=./samples/circuit-breaker-create.ts
 
 ```
 
 ### Using the circuit-breaker
 
-```ts file=./samples/circuit_breaker_run_or_fail.ts
+```ts file=./samples/circuit-breaker-run-or-fail.ts
 
 ```
 
@@ -50,7 +50,7 @@ You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TVa
 
 ### Applying circuit-breaker on certiain errors
 
-```ts file=./samples/circuit_breaker_error_policy.ts
+```ts file=./samples/circuit-breaker-error-policy.ts
 
 ```
 
@@ -60,19 +60,19 @@ By default the the circuit-breaker will treat errors and slow calls as failures.
 
 The `CIRCUIT_BREAKER_TRIGGER.BOTH` will treat error and slow calls as failures.
 
-```ts file=./samples/circuit_breaker_trigger_both.ts
+```ts file=./samples/circuit-breaker-trigger-both.ts
 
 ```
 
 The `CIRCUIT_BREAKER_TRIGGER.ONLY_ERROR` will treat only errors as failures.
 
-```ts file=./samples/circuit_breaker_trigger_only_error.ts
+```ts file=./samples/circuit-breaker-trigger-only-error.ts
 
 ```
 
 The `CIRCUIT_BREAKER_TRIGGER.ONLY_SLOW_CALL` will treat slow calls as failures.
 
-```ts file=./samples/circuit_breaker_trigger_only_slow_call.ts
+```ts file=./samples/circuit-breaker-trigger-only-slow-call.ts
 
 ```
 
@@ -80,7 +80,7 @@ The `CIRCUIT_BREAKER_TRIGGER.ONLY_SLOW_CALL` will treat slow calls as failures.
 
 You can set custom slow call threshold that will be used when treating slow calls as failures.
 
-```ts file=./samples/circuit_breaker_slow_call_threshold.ts
+```ts file=./samples/circuit-breaker-slow-call-threshold.ts
 
 ```
 
@@ -88,7 +88,7 @@ You can set custom slow call threshold that will be used when treating slow call
 
 You can reset circuit-breaker state to the closed state manually.
 
-```ts file=./samples/circuit_breaker_reset.ts
+```ts file=./samples/circuit-breaker-reset.ts
 
 ```
 
@@ -96,7 +96,7 @@ You can reset circuit-breaker state to the closed state manually.
 
 You can manually hold circuit-breaker in open state until reseted.
 
-```ts file=./samples/circuit_breaker_isolate.ts
+```ts file=./samples/circuit-breaker-isolate.ts
 
 ```
 
@@ -104,7 +104,7 @@ You can manually hold circuit-breaker in open state until reseted.
 
 You can get the circuit-breaker state by using the `getState` method, it returns [`CircuitBreakerState`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.CircuitBreakerState.html).
 
-```ts file=./samples/circuit_breaker_get_state.ts
+```ts file=./samples/circuit-breaker-get-state.ts
 
 ```
 
@@ -112,7 +112,7 @@ You can get the circuit-breaker state by using the `getState` method, it returns
 
 The `CircuitBreaker` class exposes instance variables such as:
 
-```ts file=./samples/circuit_breaker_instance_variables.ts
+```ts file=./samples/circuit-breaker-instance-variables.ts
 
 ```
 
@@ -126,7 +126,7 @@ In order to serialize or deserialize a circuit-breaker you need pass an object t
 
 Manually serializing and deserializing the circuit-breaker:
 
-```ts file=./samples/circuit_breaker_manual_serialization.ts
+```ts file=./samples/circuit-breaker-manual-serialization.ts
 
 ```
 
@@ -140,7 +140,7 @@ Note you only need manuall serialization and deserialization when integrating wi
 
 As long you pass the same `Serde` instances with all other components you dont need to serialize and deserialize the circuit-breaker manually.
 
-```ts file=./samples/circuit_breaker_event_bus_serialization.ts
+```ts file=./samples/circuit-breaker-event-bus-serialization.ts
 
 ```
 

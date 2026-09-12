@@ -1,3 +1,3 @@
-import { accessor } from "./env_accessor_initial_config.js";
+import { accessor } from "./env-accessor-initial-config.js";
 
 accessor.get("PORT");

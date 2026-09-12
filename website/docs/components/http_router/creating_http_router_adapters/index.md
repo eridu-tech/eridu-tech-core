@@ -18,7 +18,7 @@ keywords:
 
 In order to create an adapter you need to implement the [`Router`](https://github.com/honojs/hono/blob/main/src/router.ts) contract from Hono. The interface defines three members:
 
-```ts file=./samples/router_adapter_contract.ts
+```ts file=./samples/router-adapter-contract.ts
 
 ```
 

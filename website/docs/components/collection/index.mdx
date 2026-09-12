@@ -16,37 +16,37 @@ You can create a collection from an any object thats implements the `Iterable` o
 
 Create a collection from an `Array`:
 
-```ts file=./samples/create_from_array.ts
+```ts file=./samples/create-from-array.ts
 
 ```
 
 Create a collection from an `string`:
 
-```ts file=./samples/create_from_string.ts
+```ts file=./samples/create-from-string.ts
 
 ```
 
 Create a collection from a `Set`:
 
-```ts file=./samples/create_from_set.ts
+```ts file=./samples/create-from-set.ts
 
 ```
 
 Create a collection from a `Map`:
 
-```ts file=./samples/create_from_map.ts
+```ts file=./samples/create-from-map.ts
 
 ```
 
 Create collection from your own object that implements `Iterable` contract:
 
-```ts file=./samples/create_from_iterable.ts
+```ts file=./samples/create-from-iterable.ts
 
 ```
 
 Create collection from your own object that implements `ArrayLike` contract:
 
-```ts file=./samples/create_from_array_like.ts
+```ts file=./samples/create-from-array-like.ts
 
 ```
 
@@ -64,21 +64,21 @@ To access elements from a collection you can use the [`get`](#get) method.
 The [`get`](#get) method will return the item at the specified index.
 If the index is out of bounds, it will return null.
 
-```ts file=./samples/access_get.ts
+```ts file=./samples/access-get.ts
 
 ```
 
 If you want to get the item at the specified index but return a default value if the index is out of bounds,
 you can use the [`getOr`](#getor) method.
 
-```ts file=./samples/access_get_or.ts
+```ts file=./samples/access-get-or.ts
 
 ```
 
 If you want to get the item at the specified index and throw an error if the index is out of bounds,
 you can use the [`getOrFail`](#getorfail) method.
 
-```ts file=./samples/access_get_or_fail.ts
+```ts file=./samples/access-get-or-fail.ts
 
 ```
 
@@ -100,13 +100,13 @@ Since it is `Iterable` you can also use the `for of` loop to iterate over a coll
 
 You can modify the collection by using for example the [`map`](#map) method:
 
-```ts file=./samples/modify_map.ts
+```ts file=./samples/modify-map.ts
 
 ```
 
 You can filter the collection by using for example the [`filter`](#filter) method:
 
-```ts file=./samples/modify_filter.ts
+```ts file=./samples/modify-filter.ts
 
 ```
 
@@ -119,7 +119,7 @@ All methods that iterate, modify, or filter the collection expect a callback fun
 
 3.  `collection`: The original collection being traversed.
 
-```ts file=./samples/callback_arguments.ts
+```ts file=./samples/callback-arguments.ts
 
 ```
 
@@ -143,13 +143,13 @@ The `ListCollection` and `IterableCollection` classes supports serialization and
 
 Serializing and deserializing `ListCollection`:
 
-```ts file=./samples/serialize_list_collection.ts
+```ts file=./samples/serialize-list-collection.ts
 
 ```
 
 Serializing and deserializing `IterableCollection`:
 
-```ts file=./samples/serialize_iterable_collection.ts
+```ts file=./samples/serialize-iterable-collection.ts
 
 ```
 
@@ -349,7 +349,7 @@ If the collection is empty or the `predicateFn` does not match or matches the la
 The `afterOr` method returns the item that comes after the first item that matches `predicateFn`.
 If the collection is empty or the `predicateFn` does not match or matches the last item then `defaultValue` is returned.
 
-```ts file=./samples/after_or.ts
+```ts file=./samples/after-or.ts
 
 ```
 
@@ -358,7 +358,7 @@ If the collection is empty or the `predicateFn` does not match or matches the la
 The `afterOrFail` method returns the item that comes after the first item that matches `predicateFn`.
 If the collection is empty or the `predicateFn` does not match or matches the last item then an error is thrown.
 
-```ts file=./samples/after_or_fail.ts
+```ts file=./samples/after-or-fail.ts
 
 ```
 
@@ -393,7 +393,7 @@ If the `predicateFn` does not match or matches the first item then null is retur
 The `beforeOr` method returns the item that comes before the first item that matches `predicateFn`.
 If the collection is empty or the `predicateFn` does not match or matches the first item then `defaultValue` is returned.
 
-```ts file=./samples/before_or.ts
+```ts file=./samples/before-or.ts
 
 ```
 
@@ -402,7 +402,7 @@ If the collection is empty or the `predicateFn` does not match or matches the fi
 The `beforeOrFail` method returns the item that comes before the first item that matches `predicateFn`.
 If the collection is empty or the `predicateFn` does not match or matches the first item then an error is thrown.
 
-```ts file=./samples/before_or_fail.ts
+```ts file=./samples/before-or-fail.ts
 
 ```
 
@@ -428,7 +428,7 @@ If `chunkSize` is not divisible with total number of items then the last chunk w
 The `chunkWhile` method breaks the collection into multiple, smaller collections based on the evaluation of `predicateFn`.
 The chunk variable passed to the `predicateFn` may be used to inspect the previous item.
 
-```ts file=./samples/chunk_while.ts
+```ts file=./samples/chunk-while.ts
 
 ```
 
@@ -453,7 +453,7 @@ The `count` method returns the total number of items in the collection that pass
 The `countBy` method counts the occurrences of values in the collection by `selectFn`.
 By default the equality check occurs on the item.
 
-```ts file=./samples/count_by.ts
+```ts file=./samples/count-by.ts
 
 ```
 
@@ -461,7 +461,7 @@ By default the equality check occurs on the item.
 
 The `crossJoin` method cross joins the collection's values among `iterables`, returning a Cartesian product with all possible permutations.
 
-```ts file=./samples/cross_join.ts
+```ts file=./samples/cross-join.ts
 
 ```
 
@@ -512,7 +512,7 @@ By default it will get the first item. If the collection is empty or no items pa
 The `firstOr` method returns the first item in the collection that passes `predicateFn`
 By default it will get the first item. If the collection is empty or no items passes `predicateFn` than `defaultValue`.
 
-```ts file=./samples/first_or.ts
+```ts file=./samples/first-or.ts
 
 ```
 
@@ -521,7 +521,7 @@ By default it will get the first item. If the collection is empty or no items pa
 The `firstOrFail` method returns the first item in the collection that passes `predicateFn`.
 By default it will get the first item. If the collection is empty or no items passes `predicateFn` than error is thrown.
 
-```ts file=./samples/first_or_fail.ts
+```ts file=./samples/first-or-fail.ts
 
 ```
 
@@ -530,7 +530,7 @@ By default it will get the first item. If the collection is empty or no items pa
 The `flatMap` method returns a new array formed by applying `mapFn` to each item of the array, and then collapses the result by one level.
 It is identical to a `map` method followed by a `collapse` method.
 
-```ts file=./samples/flat_map.ts
+```ts file=./samples/flat-map.ts
 
 ```
 
@@ -538,7 +538,7 @@ It is identical to a `map` method followed by a `collapse` method.
 
 The `forEach` method iterates through all items in the collection.
 
-```ts file=./samples/for_each.ts
+```ts file=./samples/for-each.ts
 
 ```
 
@@ -554,7 +554,7 @@ The `get` method returns the item by index. If the item is not found null will b
 
 The `getOr` method returns the item by index. If the item is not found, a default value will be returned.
 
-```ts file=./samples/get_or.ts
+```ts file=./samples/get-or.ts
 
 ```
 
@@ -562,7 +562,7 @@ The `getOr` method returns the item by index. If the item is not found, a defaul
 
 The `getOrFail` method returns the item by index. If the item is not found an error will be thrown.
 
-```ts file=./samples/get_or_fail.ts
+```ts file=./samples/get-or-fail.ts
 
 ```
 
@@ -571,7 +571,7 @@ The `getOrFail` method returns the item by index. If the item is not found an er
 The `groupBy` method groups the collection's items by `selectFn`.
 By default the equality check occurs on the item.
 
-```ts file=./samples/group_by.ts
+```ts file=./samples/group-by.ts
 
 ```
 
@@ -579,7 +579,7 @@ By default the equality check occurs on the item.
 
 The `insertAfter` method adds `Iterable` after the first item that matches `predicateFn`.
 
-```ts file=./samples/insert_after.ts
+```ts file=./samples/insert-after.ts
 
 ```
 
@@ -587,7 +587,7 @@ The `insertAfter` method adds `Iterable` after the first item that matches `pred
 
 The `insertBefore` method adds `Iterable` before the first item that matches `predicateFn`.
 
-```ts file=./samples/insert_before.ts
+```ts file=./samples/insert-before.ts
 
 ```
 
@@ -595,7 +595,7 @@ The `insertBefore` method adds `Iterable` before the first item that matches `pr
 
 The `isEmpty` returns true if the collection is empty.
 
-```ts file=./samples/is_empty.ts
+```ts file=./samples/is-empty.ts
 
 ```
 
@@ -603,7 +603,7 @@ The `isEmpty` returns true if the collection is empty.
 
 The `isEmpty` returns true if the collection is empty.
 
-```ts file=./samples/is_not_empty.ts
+```ts file=./samples/is-not-empty.ts
 
 ```
 
@@ -615,7 +615,7 @@ The `join` method joins the collection's items with `separator`. An error will b
 
 ```
 
-```ts file=./samples/join_with_separator.ts
+```ts file=./samples/join-with-separator.ts
 
 ```
 
@@ -637,7 +637,7 @@ By default it will get the last item. If the collection is empty or no items pas
 The `lastOr` method returns the last item in the collection that passes `predicateFn`.
 By default it will get the last item. If the collection is empty or no items passes `predicateFn` than `defaultValue`.
 
-```ts file=./samples/last_or.ts
+```ts file=./samples/last-or.ts
 
 ```
 
@@ -646,7 +646,7 @@ By default it will get the last item. If the collection is empty or no items pas
 The `lastOrFail` method returns the last item in the collection that passes `predicateFn`.
 By default it will get the last item. If the collection is empty or no items passes `predicateFn` than error is thrown.
 
-```ts file=./samples/last_or_fail.ts
+```ts file=./samples/last-or-fail.ts
 
 ```
 
@@ -699,7 +699,7 @@ The `nth` method creates a new collection consisting of every n-th item.
 The `padEnd` method pads this collection with `fillItems` until the resulting collection size reaches `maxLength`.
 The padding is applied from the end of this collection.
 
-```ts file=./samples/pad_end.ts
+```ts file=./samples/pad-end.ts
 
 ```
 
@@ -708,7 +708,7 @@ The padding is applied from the end of this collection.
 The `padStart` method pads this collection with `fillItems` until the resulting collection size reaches `maxLength`.
 The padding is applied from the start of this collection.
 
-```ts file=./samples/pad_start.ts
+```ts file=./samples/pad-start.ts
 
 ```
 
@@ -791,7 +791,7 @@ The reversing of the collection will be applied in chunks that are the size of `
 
 The `searchFirst` return the index of the first item that matches `predicateFn`.
 
-```ts file=./samples/search_first.ts
+```ts file=./samples/search-first.ts
 
 ```
 
@@ -799,7 +799,7 @@ The `searchFirst` return the index of the first item that matches `predicateFn`.
 
 The `searchLast` return the index of the last item that matches `predicateFn`.
 
-```ts file=./samples/search_last.ts
+```ts file=./samples/search-last.ts
 
 ```
 
@@ -839,7 +839,7 @@ The `skip` method skips the first `offset` items.
 
 The `skipUntil` method skips items until `predicateFn` returns true.
 
-```ts file=./samples/skip_until.ts
+```ts file=./samples/skip-until.ts
 
 ```
 
@@ -847,7 +847,7 @@ The `skipUntil` method skips items until `predicateFn` returns true.
 
 The `skipWhile` method skips items until `predicateFn` returns false.
 
-```ts file=./samples/skip_while.ts
+```ts file=./samples/skip-while.ts
 
 ```
 
@@ -918,7 +918,7 @@ The `take` method takes the first `limit` items.
 
 ```
 
-```ts file=./samples/take_negative.ts
+```ts file=./samples/take-negative.ts
 
 ```
 
@@ -926,7 +926,7 @@ The `take` method takes the first `limit` items.
 
 The `takeUntil` method takes items until `predicateFn` returns true.
 
-```ts file=./samples/take_until.ts
+```ts file=./samples/take-until.ts
 
 ```
 
@@ -934,7 +934,7 @@ The `takeUntil` method takes items until `predicateFn` returns true.
 
 The `takeWhile` method takes items until `predicateFn` returns false.
 
-```ts file=./samples/take_while.ts
+```ts file=./samples/take-while.ts
 
 ```
 
@@ -950,7 +950,7 @@ The `tap` method passes a copy of the original collection to `callback`, allowin
 
 The `toArray` method converts the collection to a new `Array`.
 
-```ts file=./samples/to_array.ts
+```ts file=./samples/to-array.ts
 
 ```
 
@@ -958,7 +958,7 @@ The `toArray` method converts the collection to a new `Array`.
 
 The `toIterator` method converts the collection to a `Iterator`.
 
-```ts file=./samples/to_iterator.ts
+```ts file=./samples/to-iterator.ts
 
 ```
 
@@ -967,7 +967,7 @@ The `toIterator` method converts the collection to a `Iterator`.
 The `toMap` method converts the collection to a new `Map`.
 An error will be thrown if item is not a tuple of size 2.
 
-```ts file=./samples/to_map.ts
+```ts file=./samples/to-map.ts
 
 ```
 
@@ -976,7 +976,7 @@ An error will be thrown if item is not a tuple of size 2.
 The `toRecord` method converts the collection to a new `Record`.
 An error will be thrown if item is not a tuple of size 2 where the first element is a string or a number.
 
-```ts file=./samples/to_record.ts
+```ts file=./samples/to-record.ts
 
 ```
 
@@ -991,7 +991,7 @@ By default the equality check occurs on the item.
 
 Equality check on a field in the item.
 
-```ts file=./samples/unique_by_field.ts
+```ts file=./samples/unique-by-field.ts
 
 ```
 
@@ -1015,11 +1015,11 @@ The `when` method will execute `callback` when `condition` evaluates to true.
 
 The `whenEmpty` method will execute `callback` when the collection is empty.
 
-```ts file=./samples/when_empty.ts
+```ts file=./samples/when-empty.ts
 
 ```
 
-```ts file=./samples/when_empty_skip.ts
+```ts file=./samples/when-empty-skip.ts
 
 ```
 
@@ -1027,7 +1027,7 @@ The `whenEmpty` method will execute `callback` when the collection is empty.
 
 The `whenNot` method will execute `callback` when `condition` evaluates to false.
 
-```ts file=./samples/when_not.ts
+```ts file=./samples/when-not.ts
 
 ```
 
@@ -1035,11 +1035,11 @@ The `whenNot` method will execute `callback` when `condition` evaluates to false
 
 The `whenNotEmpty` method will execute `callback` when the collection is not empty.
 
-```ts file=./samples/when_not_empty_skip.ts
+```ts file=./samples/when-not-empty-skip.ts
 
 ```
 
-```ts file=./samples/when_not_empty.ts
+```ts file=./samples/when-not-empty.ts
 
 ```
 
@@ -1064,13 +1064,13 @@ By default the equality check occurs on the item.
 
 Equality check on a field in the item.
 
-```ts file=./samples/difference_by_field.ts
+```ts file=./samples/difference-by-field.ts
 
 ```
 
 The `difference` method is also available as a static method.
 
-```ts file=./samples/difference_static.ts
+```ts file=./samples/difference-static.ts
 
 ```
 

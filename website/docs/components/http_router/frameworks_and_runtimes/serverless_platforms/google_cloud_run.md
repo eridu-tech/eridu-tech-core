@@ -88,7 +88,7 @@ npm install eridu-tech hono @hono/node-server
 
 ### 4. Create the application
 
-```ts file=./google_cloud_run-samples/create_app.ts
+```ts file=./google_cloud_run-samples/create-app.ts
 
 ```
 

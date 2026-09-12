@@ -26,7 +26,7 @@ testing.
 
 Usage example:
 
-```ts file=./samples/cache_adapter_test_suite.ts
+```ts file=./samples/cache-adapter-test-suite.ts
 
 ```
 
@@ -43,7 +43,7 @@ case coverage and standardized cache contract conformance testing.
 
 Usage example:
 
-```ts file=./samples/cache_test_suite.ts
+```ts file=./samples/cache-test-suite.ts
 
 ```
 

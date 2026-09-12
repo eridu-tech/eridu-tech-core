@@ -40,7 +40,7 @@ The plugin prefixes keys for the following methods:
 
 ### Usage
 
-```ts file=./samples/with_semaphore_prefix.ts
+```ts file=./samples/with-semaphore-prefix.ts
 
 ```
 
@@ -48,13 +48,13 @@ The plugin prefixes keys for the following methods:
 
 **Before** — Semaphore keys are used as-is:
 
-```ts file=./samples/unprefixed_acquire.ts
+```ts file=./samples/unprefixed-acquire.ts
 
 ```
 
 **After** — Semaphore keys are automatically prefixed:
 
-```ts file=./samples/prefixed_acquire.ts
+```ts file=./samples/prefixed-acquire.ts
 
 ```
 

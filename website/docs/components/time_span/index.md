@@ -21,43 +21,43 @@ Note `TimeSpan` cannot be negative.
 
 Creating `TimeSpan` from milliseconds:
 
-```ts file=./samples/creating_from_milliseconds.ts
+```ts file=./samples/creating-from-milliseconds.ts
 
 ```
 
 Creating `TimeSpan` from seconds:
 
-```ts file=./samples/creating_from_seconds.ts
+```ts file=./samples/creating-from-seconds.ts
 
 ```
 
 Creating `TimeSpan` from minutes:
 
-```ts file=./samples/creating_from_minutes.ts
+```ts file=./samples/creating-from-minutes.ts
 
 ```
 
 Creating `TimeSpan` from hours:
 
-```ts file=./samples/creating_from_hours.ts
+```ts file=./samples/creating-from-hours.ts
 
 ```
 
 Creating `TimeSpan` from days:
 
-```ts file=./samples/creating_from_days.ts
+```ts file=./samples/creating-from-days.ts
 
 ```
 
 Creating `TimeSpan` from date range:
 
-```ts file=./samples/creating_from_date_range.ts
+```ts file=./samples/creating-from-date-range.ts
 
 ```
 
 Creating `TimeSpan` from `string`:
 
-```ts file=./samples/creating_from_str.ts
+```ts file=./samples/creating-from-str.ts
 
 ```
 
@@ -70,37 +70,37 @@ Refer to its documentation for a complete list of supported time formats and uni
 
 You can add milliseconds to a `TimeSpan`:
 
-```ts file=./samples/adding_milliseconds.ts
+```ts file=./samples/adding-milliseconds.ts
 
 ```
 
 You can add seconds to a `TimeSpan`:`
 
-```ts file=./samples/adding_seconds.ts
+```ts file=./samples/adding-seconds.ts
 
 ```
 
 You can add minutes to a `TimeSpan`:
 
-```ts file=./samples/adding_minutes.ts
+```ts file=./samples/adding-minutes.ts
 
 ```
 
 You can add hours to a `TimeSpan`:
 
-```ts file=./samples/adding_hours.ts
+```ts file=./samples/adding-hours.ts
 
 ```
 
 You can add days to a `TimeSpan`:
 
-```ts file=./samples/adding_days.ts
+```ts file=./samples/adding-days.ts
 
 ```
 
 You can add 2 `TimeSpan` together:
 
-```ts file=./samples/adding_time_span.ts
+```ts file=./samples/adding-time-span.ts
 
 ```
 
@@ -108,37 +108,37 @@ You can add 2 `TimeSpan` together:
 
 You can subtract milliseconds from a `TimeSpan`:
 
-```ts file=./samples/subtracting_milliseconds.ts
+```ts file=./samples/subtracting-milliseconds.ts
 
 ```
 
 You can subtract seconds from a `TimeSpan`:`
 
-```ts file=./samples/subtracting_seconds.ts
+```ts file=./samples/subtracting-seconds.ts
 
 ```
 
 You can subtract minutes from a `TimeSpan`:
 
-```ts file=./samples/subtracting_minutes.ts
+```ts file=./samples/subtracting-minutes.ts
 
 ```
 
 You can subtract hours from a `TimeSpan`:
 
-```ts file=./samples/subtracting_hours.ts
+```ts file=./samples/subtracting-hours.ts
 
 ```
 
 You can subtract days from a `TimeSpan`:
 
-```ts file=./samples/subtracting_days.ts
+```ts file=./samples/subtracting-days.ts
 
 ```
 
 You can subtract 2 `TimeSpan` together:
 
-```ts file=./samples/subtracting_time_span.ts
+```ts file=./samples/subtracting-time-span.ts
 
 ```
 
@@ -160,31 +160,31 @@ Multiplying a timespan:
 
 Equals:
 
-```ts file=./samples/comparing_equal.ts
+```ts file=./samples/comparing-equal.ts
 
 ```
 
 Greater than:
 
-```ts file=./samples/comparing_gt.ts
+```ts file=./samples/comparing-gt.ts
 
 ```
 
 Greater than or equals:
 
-```ts file=./samples/comparing_gte.ts
+```ts file=./samples/comparing-gte.ts
 
 ```
 
 Less than:
 
-```ts file=./samples/comparing_lt.ts
+```ts file=./samples/comparing-lt.ts
 
 ```
 
 Less than or equals:
 
-```ts file=./samples/comparing_lte.ts
+```ts file=./samples/comparing-lte.ts
 
 ```
 
@@ -192,43 +192,43 @@ Less than or equals:
 
 You can get amount of milliseconds contained in the `TimeSpan`:
 
-```ts file=./samples/converting_to_milliseconds.ts
+```ts file=./samples/converting-to-milliseconds.ts
 
 ```
 
 You can get amount of seconds contained in the `TimeSpan`:
 
-```ts file=./samples/converting_to_seconds.ts
+```ts file=./samples/converting-to-seconds.ts
 
 ```
 
 You can get amount of minutes contained in the `TimeSpan`:
 
-```ts file=./samples/converting_to_minutes.ts
+```ts file=./samples/converting-to-minutes.ts
 
 ```
 
 You can get amount of hours contained in the `TimeSpan`:
 
-```ts file=./samples/converting_to_hours.ts
+```ts file=./samples/converting-to-hours.ts
 
 ```
 
 You can get amount of days contained in the `TimeSpan`:
 
-```ts file=./samples/converting_to_days.ts
+```ts file=./samples/converting-to-days.ts
 
 ```
 
 You can get end date relative to a start date:
 
-```ts file=./samples/converting_to_end_date.ts
+```ts file=./samples/converting-to-end-date.ts
 
 ```
 
 You can get start date relative to a end date:
 
-```ts file=./samples/converting_to_start_date.ts
+```ts file=./samples/converting-to-start-date.ts
 
 ```
 
@@ -236,7 +236,7 @@ You can get start date relative to a end date:
 
 The `TimeSpan` class supports serialization and deserialization, allowing you to easily convert instances to and from serialized formats. However, registration is required first:
 
-```ts file=./samples/serde_serialization.ts
+```ts file=./samples/serde-serialization.ts
 
 ```
 
@@ -255,7 +255,7 @@ Note `TimeSpan` class implements `ITimeSpan` contract.
 
 The `ITimeSpan` contract requires you to implement the `TO_MILLISECONDS` method on the duration object, which must return the duration in milliseconds.
 
-```ts file=./samples/implementing_itimespan.ts
+```ts file=./samples/implementing-itimespan.ts
 
 ```
 

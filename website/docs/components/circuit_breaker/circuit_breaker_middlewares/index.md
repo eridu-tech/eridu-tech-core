@@ -20,7 +20,7 @@ The CircuitBreaker middleware wraps function calls with a circuit-breaker, provi
 
 ### Usage
 
-```ts file=./samples/with_circuit_breaker.ts
+```ts file=./samples/with-circuit-breaker.ts
 
 ```
 

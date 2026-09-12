@@ -20,7 +20,7 @@ You can directly pass an class to match if errors are instance of the class:
 
 You can also pass multiple error classes:
 
-```ts file=./samples/multiple_classes.ts
+```ts file=./samples/multiple-classes.ts
 
 ```
 
@@ -28,7 +28,7 @@ You can also pass multiple error classes:
 
 You can use any [standard schema](https://standardschema.dev/) as error policy:
 
-```ts file=./samples/standard_schema.ts
+```ts file=./samples/standard-schema.ts
 
 ```
 
@@ -36,7 +36,7 @@ You can use any [standard schema](https://standardschema.dev/) as error policy:
 
 You can treat false return values as errors. This useful when you want to retry functions that return boolean.
 
-```ts file=./samples/treat_false_as_error.ts
+```ts file=./samples/treat-false-as-error.ts
 
 ```
 

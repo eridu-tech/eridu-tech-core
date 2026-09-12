@@ -23,7 +23,7 @@ npm install -D @cloudflare/workers-types wrangler
 
 ### 2. Create the handler
 
-```ts file=./cloudflare_workers-samples/create_handler.ts
+```ts file=./cloudflare_workers-samples/create-handler.ts
 
 ```
 
