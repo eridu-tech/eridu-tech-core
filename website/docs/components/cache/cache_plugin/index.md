@@ -49,7 +49,7 @@ Methods that do not accept a key (`removeAll`) are unaffected.
 
 ### Usage
 
-```ts file=./samples/with_cache_prefix.ts
+```ts file=./samples/with-cache-prefix.ts
 
 ```
 
@@ -57,13 +57,13 @@ Methods that do not accept a key (`removeAll`) are unaffected.
 
 **Before** — Keys are stored as-is:
 
-```ts file=./samples/unprefixed_lookup.ts
+```ts file=./samples/unprefixed-lookup.ts
 
 ```
 
 **After** — Keys are automatically prefixed:
 
-```ts file=./samples/prefixed_lookup.ts
+```ts file=./samples/prefixed-lookup.ts
 
 ```
 
@@ -79,7 +79,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 The `removeMany` method receives an array of keys. The plugin maps over the array, prefixing each entry:
 
-```ts file=./samples/remove_many_prefix.ts
+```ts file=./samples/remove-many-prefix.ts
 
 ```
 
@@ -107,7 +107,7 @@ The jitter is calculated as a random percentage of the original TTL. For example
 
 ### Usage
 
-```ts file=./samples/with_cache_jitter.ts
+```ts file=./samples/with-cache-jitter.ts
 
 ```
 
@@ -158,7 +158,7 @@ Read-only methods (`get`, `removeAll`, `removeByPrefix`) are unaffected.
 
 ### Usage
 
-```ts file=./samples/with_cache_write_lock.ts
+```ts file=./samples/with-cache-write-lock.ts
 
 ```
 

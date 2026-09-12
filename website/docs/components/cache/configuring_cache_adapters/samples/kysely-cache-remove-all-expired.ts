@@ -1,4 +1,4 @@
-import { kyselyCacheAdapter } from "./kysely_cache_sqlite.js";
+import { kyselyCacheAdapter } from "./kysely-cache-sqlite.js";
 
 // Remove all expired cache keys manually.
 await kyselyCacheAdapter.removeAllExpired();

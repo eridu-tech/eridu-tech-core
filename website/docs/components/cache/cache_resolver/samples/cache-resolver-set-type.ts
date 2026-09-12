@@ -1,4 +1,4 @@
-import { cacheResolver } from "./cache_resolver_initial_config.js";
+import { cacheResolver } from "./cache-resolver-initial-config.js";
 
 await cacheResolver
     .setType<string>()

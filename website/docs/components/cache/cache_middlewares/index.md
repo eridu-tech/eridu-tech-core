@@ -20,7 +20,7 @@ The Cache middleware intercepts function calls and caches their return values us
 
 ### Usage
 
-```ts file=./samples/with_cache_factory.ts
+```ts file=./samples/with-cache-factory.ts
 
 ```
 
@@ -36,7 +36,7 @@ This is useful for write-invalidation caching patterns, where stale cached data 
 
 ### Usage
 
-```ts file=./samples/with_invalidation.ts
+```ts file=./samples/with-invalidation.ts
 
 ```
 

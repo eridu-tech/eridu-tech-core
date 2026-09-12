@@ -36,13 +36,13 @@ keywords:
 
 To use the `MemoryCacheAdapter` you only need to create instance of it:
 
-```ts file=./samples/memory_cache_adapter.ts
+```ts file=./samples/memory-cache-adapter.ts
 
 ```
 
 You can also provide an `Map` that will be used for storing the data in memory:
 
-```ts file=./samples/memory_cache_adapter_with_map.ts
+```ts file=./samples/memory-cache-adapter-with-map.ts
 
 ```
 
@@ -54,7 +54,7 @@ You can also provide an `Map` that will be used for storing the data in memory:
 
 To clean up expired cache keys, call `removeAllExpired` at a regular interval (for example, using a cron job):
 
-```ts file=./samples/memory_cache_remove_all_expired.ts
+```ts file=./samples/memory-cache-remove-all-expired.ts
 
 ```
 
@@ -65,7 +65,7 @@ Note `removeAllExpired` must be called to remove expired data that is no longer 
 :::info
 To remove the cache map and all stored cache data, use `deInit` method:
 
-```ts file=./samples/memory_cache_adapter_deinit.ts
+```ts file=./samples/memory-cache-adapter-deinit.ts
 
 ```
 
@@ -81,26 +81,26 @@ To use the `MongodbCacheAdapter`, you'll need to:
 
 -We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./samples/mongodb_cache_adapter_init.ts
+```ts file=./samples/mongodb-cache-adapter-init.ts
 
 ```
 
 You can change the collection name:
 
-```ts file=./samples/mongodb_cache_collection_name.ts
+```ts file=./samples/mongodb-cache-collection-name.ts
 
 ```
 
 You can change the collection settings:
 
-```ts file=./samples/mongodb_cache_collection_settings.ts
+```ts file=./samples/mongodb-cache-collection-settings.ts
 
 ```
 
 :::info
 To remove the cache collection and all stored cache data, use `deInit` method:
 
-```ts file=./samples/mongodb_cache_adapter_deinit.ts
+```ts file=./samples/mongodb-cache-adapter-deinit.ts
 
 ```
 
@@ -115,7 +115,7 @@ To use the `RedisCacheAdapter`, you'll need to:
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./samples/redis_cache_adapter.ts
+```ts file=./samples/redis-cache-adapter.ts
 
 ```
 
@@ -132,7 +132,7 @@ To use the `KyselyCacheAdapter`, you'll need to:
 
 You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3) package:
 
-```ts file=./samples/kysely_cache_sqlite.ts
+```ts file=./samples/kysely-cache-sqlite.ts
 
 ```
 
@@ -140,7 +140,7 @@ You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better
 
 You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
-```ts file=./samples/kysely_cache_postgres.ts
+```ts file=./samples/kysely-cache-postgres.ts
 
 ```
 
@@ -148,7 +148,7 @@ You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
 You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) package:
 
-```ts file=./samples/kysely_cache_mysql.ts
+```ts file=./samples/kysely-cache-mysql.ts
 
 ```
 
@@ -156,7 +156,7 @@ You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) packag
 
 You will need to install [`@libsql/kysely-libsql`](https://www.npmjs.com/package/@libsql/kysely-libsql) package:
 
-```ts file=./samples/kysely_cache_libsql.ts
+```ts file=./samples/kysely-cache-libsql.ts
 
 ```
 
@@ -173,14 +173,14 @@ you won't be able to use following methods `put` and `increment`, as they requir
 
 To clean up expired cache keys, call `removeAllExpired` at a regular interval (for example, using a cron job):
 
-```ts file=./samples/kysely_cache_remove_all_expired.ts
+```ts file=./samples/kysely-cache-remove-all-expired.ts
 
 ```
 
 :::info
 To remove the cache table and all stored cache data, use `deInit` method:
 
-```ts file=./samples/kysely_cache_adapter_deinit.ts
+```ts file=./samples/kysely-cache-adapter-deinit.ts
 
 ```
 
@@ -190,7 +190,7 @@ To remove the cache table and all stored cache data, use `deInit` method:
 
 The `NoOpCacheAdapter` is a no-operation implementation, it performs no actions when called:
 
-```ts file=./samples/no_op_cache_adapter.ts
+```ts file=./samples/no-op-cache-adapter.ts
 
 ```
 
