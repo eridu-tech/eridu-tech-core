@@ -1,5 +1,4 @@
 ---
-slug: /components/resilience
 tags:
     - Utilities
 keywords:
