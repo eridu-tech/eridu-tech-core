@@ -31,7 +31,7 @@ We provide a complete test suite to test your rate-limiter storage adapter imple
 
 Usage example:
 
-```ts file=./samples/rate_limiter_storage_test_suite.ts
+```ts file=./samples/rate-limiter-storage-test-suite.ts
 
 ```
 

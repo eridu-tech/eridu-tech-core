@@ -1,7 +1,7 @@
 import { KyselyRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter";
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
-import { serde } from "./serde_instance.js";
+import { serde } from "./serde-instance.js";
 
 const database = new Pool({
     database: "DATABASE_NAME",

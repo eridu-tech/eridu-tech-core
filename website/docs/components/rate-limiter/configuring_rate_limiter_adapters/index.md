@@ -38,7 +38,7 @@ To use the `RedisRateLimiterAdapter`, you'll need to:
 
 1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package:
 
-```ts file=./samples/redis_rate_limiter_adapter.ts
+```ts file=./samples/redis-rate-limiter-adapter.ts
 
 ```
 
@@ -46,7 +46,7 @@ To use the `RedisRateLimiterAdapter`, you'll need to:
 
 The `type` field is the only required field. All other fields are optional.
 
-```ts file=./samples/redis_rate_limiter_backoff_policy.ts
+```ts file=./samples/redis-rate-limiter-backoff-policy.ts
 
 ```
 
@@ -56,7 +56,7 @@ The settings are the same as [backoff policies](/docs/components/backoff_policie
 
 The `type` field is the only required field. All other fields are optional.
 
-```ts file=./samples/redis_rate_limiter_policy.ts
+```ts file=./samples/redis-rate-limiter-policy.ts
 
 ```
 
@@ -68,13 +68,13 @@ To use the `DatabaseRateLimiterAdapter`, you'll need to use `IRateLimiterStorage
 
 1. Creating `IRateLimiterStorageAdapter`:
 
-```ts file=./samples/rate_limiter_storage_adapter.ts
+```ts file=./samples/rate-limiter-storage-adapter.ts
 
 ```
 
 2. Creating `DatabaseRateLimiterAdapter`:
 
-```ts file=./samples/database_rate_limiter_adapter.ts
+```ts file=./samples/database-rate-limiter-adapter.ts
 
 ```
 
@@ -82,7 +82,7 @@ To use the `DatabaseRateLimiterAdapter`, you'll need to use `IRateLimiterStorage
 
 You can use any of defined [backoff policies](/docs/components/backoff_policies).
 
-```ts file=./samples/database_rate_limiter_backoff_policy.ts
+```ts file=./samples/database-rate-limiter-backoff-policy.ts
 
 ```
 
@@ -90,7 +90,7 @@ You can use any of defined [backoff policies](/docs/components/backoff_policies)
 
 You can use any of defined [rate-limiter policies](/docs/components/rate-limiter/configuring_rate_limiter_policies/) or [create your own](/docs/components/rate-limiter/creating_rate_limiter_policies/).
 
-```ts file=./samples/database_rate_limiter_policy.ts
+```ts file=./samples/database-rate-limiter-policy.ts
 
 ```
 
@@ -98,7 +98,7 @@ You can use any of defined [rate-limiter policies](/docs/components/rate-limiter
 
 The `NoOpRateLimiterAdapter` is a no-operation implementation, it performs no actions when called:
 
-```ts file=./samples/no_op_rate_limiter_adapter.ts
+```ts file=./samples/no-op-rate-limiter-adapter.ts
 
 ```
 
@@ -118,7 +118,7 @@ To use the `KyselyRateLimiterStorageAdapter`, you'll need to:
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./samples/serde_instance.ts
+```ts file=./samples/serde-instance.ts
 
 ```
 
@@ -126,7 +126,7 @@ To use the `KyselyRateLimiterStorageAdapter`, you'll need to:
 
 You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3) package:
 
-```ts file=./samples/kysely_storage_sqlite.ts
+```ts file=./samples/kysely-storage-sqlite.ts
 
 ```
 
@@ -134,7 +134,7 @@ You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better
 
 You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
-```ts file=./samples/kysely_storage_postgres.ts
+```ts file=./samples/kysely-storage-postgres.ts
 
 ```
 
@@ -142,7 +142,7 @@ You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
 You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) package:
 
-```ts file=./samples/kysely_storage_mysql.ts
+```ts file=./samples/kysely-storage-mysql.ts
 
 ```
 
@@ -154,7 +154,7 @@ Works with both MySQL and MariaDB.
 
 You will need to install `@libsql/kysely-libsql` package:
 
-```ts file=./samples/kysely_storage_libsql.ts
+```ts file=./samples/kysely-storage-libsql.ts
 
 ```
 
@@ -162,7 +162,7 @@ You will need to install `@libsql/kysely-libsql` package:
 
 To clean up expired rate-limiter records, call `removeAllExpired` at a regular interval (for example, using a cron job):
 
-```ts file=./samples/kysely_storage_remove_all_expired.ts
+```ts file=./samples/kysely-storage-remove-all-expired.ts
 
 ```
 
@@ -170,13 +170,13 @@ To clean up expired rate-limiter records, call `removeAllExpired` at a regular i
 
 To use the `MemoryRateLimiterStorageAdapter` you only need to create instance of it:
 
-```ts file=./samples/memory_rate_limiter_storage_adapter.ts
+```ts file=./samples/memory-rate-limiter-storage-adapter.ts
 
 ```
 
 You can also provide an `Map` that will be used for storing the data in memory:
 
-```ts file=./samples/memory_rate_limiter_storage_with_map.ts
+```ts file=./samples/memory-rate-limiter-storage-with-map.ts
 
 ```
 
@@ -188,7 +188,7 @@ You can also provide an `Map` that will be used for storing the data in memory:
 
 To clean up expired rate-limiter records, call `removeAllExpired` at a regular interval (for example, using a cron job):
 
-```ts file=./samples/memory_rate_limiter_remove_all_expired.ts
+```ts file=./samples/memory-rate-limiter-remove-all-expired.ts
 
 ```
 
@@ -204,7 +204,7 @@ To use the `MongodbRateLimiterStorageAdapter`, you'll need to:
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./samples/mongodb_rate_limiter_storage_adapter.ts
+```ts file=./samples/mongodb-rate-limiter-storage-adapter.ts
 
 ```
 
@@ -212,7 +212,7 @@ To use the `MongodbRateLimiterStorageAdapter`, you'll need to:
 
 The `NoOpRateLimiterStorageAdapter` is a no-operation implementation, it performs no actions when called:
 
-```ts file=./samples/no_op_rate_limiter_storage_adapter.ts
+```ts file=./samples/no-op-rate-limiter-storage-adapter.ts
 
 ```
 

@@ -1,4 +1,4 @@
-import { rateLimiter } from "./rate_limiter_create.js";
+import { rateLimiter } from "./rate-limiter-create.js";
 
 // The function will only be called when the rate-limiter allows the attempt.
 await rateLimiter.runOrFail(async () => {

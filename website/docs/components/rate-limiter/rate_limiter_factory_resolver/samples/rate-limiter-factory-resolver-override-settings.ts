@@ -1,4 +1,4 @@
-import { rateLimiterFactoryResolver } from "./rate_limiter_factory_resolver_initial_config.js";
+import { rateLimiterFactoryResolver } from "./rate-limiter-factory-resolver-initial-config.js";
 
 await rateLimiterFactoryResolver
     .use("redis")

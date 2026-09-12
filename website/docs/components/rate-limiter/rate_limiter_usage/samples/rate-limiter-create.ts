@@ -1,4 +1,4 @@
-import { rateLimiterFactory } from "./rate_limiter_factory_initial_config.js";
+import { rateLimiterFactory } from "./rate-limiter-factory-initial-config.js";
 
 export const rateLimiter = rateLimiterFactory.create("resource", {
     limit: 10,

@@ -10,7 +10,7 @@ pagination_label: Configuring RateLimiter policies
 
 <!-- The `SlidingWindowLimiter` breaks after n requests in a row fail. -->
 
-```ts file=./samples/sliding_window_limiter.ts
+```ts file=./samples/sliding-window-limiter.ts
 
 ```
 
@@ -18,7 +18,7 @@ pagination_label: Configuring RateLimiter policies
 
 <!-- The `FixedWindowLimiter` breaks after a proportion of requests in a count based sliding window fail. -->
 
-```ts file=./samples/fixed_window_limiter.ts
+```ts file=./samples/fixed-window-limiter.ts
 
 ```
 

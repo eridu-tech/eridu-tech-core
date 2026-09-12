@@ -20,7 +20,7 @@ The RateLimiter middleware wraps function calls with a rate limiter, controlling
 
 ### Usage
 
-```ts file=./samples/with_rate_limiter.ts
+```ts file=./samples/with-rate-limiter.ts
 
 ```
 

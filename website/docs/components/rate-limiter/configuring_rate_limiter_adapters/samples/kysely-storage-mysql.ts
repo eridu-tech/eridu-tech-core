@@ -1,7 +1,7 @@
 import { KyselyRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter";
 import { createPool } from "mysql2";
 import { Kysely, MysqlDialect } from "kysely";
-import { serde } from "./serde_instance.js";
+import { serde } from "./serde-instance.js";
 
 const database = createPool({
     host: "DATABASE_HOST",

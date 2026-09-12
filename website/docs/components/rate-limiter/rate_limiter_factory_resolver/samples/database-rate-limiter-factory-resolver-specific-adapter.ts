@@ -1,4 +1,4 @@
-import { rateLimiterFactoryResolver } from "./database_rate_limiter_factory_resolver_initial_config.js";
+import { rateLimiterFactoryResolver } from "./database-rate-limiter-factory-resolver-initial-config.js";
 
 // Will apply rate-limiter logic using the sqlite adapter
 await rateLimiterFactoryResolver
