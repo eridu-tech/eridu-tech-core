@@ -65,7 +65,7 @@ For the `copy`, `copyAndReplace`, `move`, and `moveAndReplace` methods, booth th
 
 ### Usage
 
-```ts file=./file_storage_plugin-samples/with_file_storage_prefix.ts
+```ts file=./samples/with_file_storage_prefix.ts
 
 ```
 
@@ -73,13 +73,13 @@ For the `copy`, `copyAndReplace`, `move`, and `moveAndReplace` methods, booth th
 
 **Before** — File keys are used as-is:
 
-```ts file=./file_storage_plugin-samples/unprefixed_get_bytes.ts
+```ts file=./samples/unprefixed_get_bytes.ts
 
 ```
 
 **After** — File keys are automatically prefixed:
 
-```ts file=./file_storage_plugin-samples/prefixed_get_bytes.ts
+```ts file=./samples/prefixed_get_bytes.ts
 
 ```
 
@@ -95,13 +95,13 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 The `removeMany` method receives an array of keys. The plugin maps over the array, prefixing each entry:
 
-```ts file=./file_storage_plugin-samples/remove_many_prefix.ts
+```ts file=./samples/remove_many_prefix.ts
 
 ```
 
 ## withFileStorageLock plugin
 
-The FileStorage lock plugin acquires a distributed lock before executing operations on a file-storage adapter. It wraps all methods (both reads and writes) with a lock acquired via an [`ILockFactory`](../lock/lock_usage.md), ensuring that concurrent access to the same file key is serialised.
+The FileStorage lock plugin acquires a distributed lock before executing operations on a file-storage adapter. It wraps all methods (both reads and writes) with a lock acquired via an [`ILockFactory`](../../lock/lock_usage/index.md), ensuring that concurrent access to the same file key is serialised.
 
 ### Use cases
 
@@ -142,13 +142,13 @@ All methods are protected by default:
 
 ### Usage
 
-```ts file=./file_storage_plugin-samples/with_file_storage_lock.ts
+```ts file=./samples/with_file_storage_lock.ts
 
 ```
 
 #### Restricting protected methods
 
-```ts file=./file_storage_plugin-samples/file_storage_lock_only_methods.ts
+```ts file=./samples/file_storage_lock_only_methods.ts
 
 ```
 
@@ -165,7 +165,7 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/middleware#plugin) documentation.
-For more information about lock factories, see the [Lock](../lock/lock_usage.md) documentation.
+For more information about lock factories, see the [Lock](../../lock/lock_usage/index.md) documentation.
 :::
 
 ## withFileStorageKeyValidator plugin
@@ -211,13 +211,13 @@ The plugin validates keys for the following methods:
 
 ### Usage
 
-```ts file=./file_storage_plugin-samples/with_file_storage_key_validator.ts
+```ts file=./samples/with_file_storage_key_validator.ts
 
 ```
 
 #### Custom validator
 
-```ts file=./file_storage_plugin-samples/file_storage_key_validator_custom.ts
+```ts file=./samples/file_storage_key_validator_custom.ts
 
 ```
 
@@ -269,7 +269,7 @@ The plugin lowercases keys for the following methods:
 
 ### Usage
 
-```ts file=./file_storage_plugin-samples/with_file_storage_lower_case.ts
+```ts file=./samples/with_file_storage_lower_case.ts
 
 ```
 
@@ -310,13 +310,13 @@ The plugin infers the content type for the following methods:
 
 ### Usage
 
-```ts file=./file_storage_plugin-samples/with_file_storage_infer_content_type_on_write.ts
+```ts file=./samples/with_file_storage_infer_content_type_on_write.ts
 
 ```
 
 #### Disabling inference for signed URLs
 
-```ts file=./file_storage_plugin-samples/file_storage_infer_content_type_disable_signed.ts
+```ts file=./samples/file_storage_infer_content_type_disable_signed.ts
 
 ```
 
@@ -337,7 +337,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withFileStorageInferContentTypeOnRead plugin
 
-The FileStorage read content-type plugin infers the content type from the file key extension when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](./configuring_file_storage_adapters.md). It enhances the `getMetaData` method so the returned metadata reports a content type that matches the file key extension.
+The FileStorage read content-type plugin infers the content type from the file key extension when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](../configuring_file_storage_adapters/index.md). It enhances the `getMetaData` method so the returned metadata reports a content type that matches the file key extension.
 
 ### Use cases
 
@@ -352,7 +352,7 @@ The plugin only affects the `getMetaData` method.
 
 ### Usage
 
-```ts file=./file_storage_plugin-samples/with_file_storage_infer_content_type_on_read.ts
+```ts file=./samples/with_file_storage_infer_content_type_on_read.ts
 
 ```
 
@@ -387,7 +387,7 @@ The plugin infers the content type for the following methods:
 
 ### Usage
 
-```ts file=./file_storage_plugin-samples/with_file_storage_infer_file_type_on_write.ts
+```ts file=./samples/with_file_storage_infer_file_type_on_write.ts
 
 ```
 
@@ -401,7 +401,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withFileStorageInferFileTypeOnRead plugin
 
-The FileStorage read file-type plugin infers the content type from the actual file content when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](./configuring_file_storage_adapters.md). It enhances the `getMetaData` method so the returned metadata reports a content type detected from the file bytes via the `file-type` library.
+The FileStorage read file-type plugin infers the content type from the actual file content when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](../configuring_file_storage_adapters/index.md). It enhances the `getMetaData` method so the returned metadata reports a content type detected from the file bytes via the `file-type` library.
 
 ### Use cases
 
@@ -418,7 +418,7 @@ The plugin only affects the `getMetaData` method.
 
 ### Usage
 
-```ts file=./file_storage_plugin-samples/with_file_storage_infer_file_type_on_read.ts
+```ts file=./samples/with_file_storage_infer_file_type_on_read.ts
 
 ```
 
