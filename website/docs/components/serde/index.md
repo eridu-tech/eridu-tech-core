@@ -1,5 +1,4 @@
 ---
-slug: /components/serde
 tags:
     - Utilities
 keywords:
