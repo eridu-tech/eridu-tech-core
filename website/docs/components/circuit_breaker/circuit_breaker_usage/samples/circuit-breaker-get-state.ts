@@ -1,4 +1,4 @@
-import { circuitBreaker } from "./circuit_breaker_create.js";
+import { circuitBreaker } from "./circuit-breaker-create.js";
 import { CIRCUIT_BREAKER_STATE } from "eridu-tech/circuit-breaker/contracts";
 
 const state = await circuitBreaker.getState();

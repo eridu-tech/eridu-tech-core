@@ -38,7 +38,7 @@ To use the `RedisCircuitBreakerAdapter`, you'll need to:
 
 1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package:
 
-```ts file=./samples/redis_circuit_breaker_adapter.ts
+```ts file=./samples/redis-circuit-breaker-adapter.ts
 
 ```
 
@@ -46,7 +46,7 @@ To use the `RedisCircuitBreakerAdapter`, you'll need to:
 
 The `type` field is the only required field. All other fields are optional.
 
-```ts file=./samples/redis_circuit_breaker_backoff_policy.ts
+```ts file=./samples/redis-circuit-breaker-backoff-policy.ts
 
 ```
 
@@ -56,7 +56,7 @@ The settings are the same as [backoff policies](/docs/components/backoff_policie
 
 The `type` field is the only required field. All other fields are optional.
 
-```ts file=./samples/redis_circuit_breaker_policy.ts
+```ts file=./samples/redis-circuit-breaker-policy.ts
 
 ```
 
@@ -68,13 +68,13 @@ To use the `DatabaseCircuitBreakerAdapter`, you'll need to use `ICircuitBreakerS
 
 1. Creating `ICircuitBreakerStorageAdapter`:
 
-```ts file=./samples/circuit_breaker_storage_adapter.ts
+```ts file=./samples/circuit-breaker-storage-adapter.ts
 
 ```
 
 2. Creating `DatabaseCircuitBreakerAdapter`:
 
-```ts file=./samples/database_circuit_breaker_adapter.ts
+```ts file=./samples/database-circuit-breaker-adapter.ts
 
 ```
 
@@ -82,7 +82,7 @@ To use the `DatabaseCircuitBreakerAdapter`, you'll need to use `ICircuitBreakerS
 
 You can use any of defined [backoff policies](/docs/components/backoff_policies).
 
-```ts file=./samples/database_circuit_breaker_backoff_policy.ts
+```ts file=./samples/database-circuit-breaker-backoff-policy.ts
 
 ```
 
@@ -90,7 +90,7 @@ You can use any of defined [backoff policies](/docs/components/backoff_policies)
 
 You can use any of defined [circuit-breaker policies](/docs/components/circuit_breaker/configuring_circuit_breaker_policies/) or [create your own](/docs/components/circuit_breaker/creating_circuit_breaker_policies/).
 
-```ts file=./samples/database_circuit_breaker_policy.ts
+```ts file=./samples/database-circuit-breaker-policy.ts
 
 ```
 
@@ -98,7 +98,7 @@ You can use any of defined [circuit-breaker policies](/docs/components/circuit_b
 
 The `NoOpCircuitBreakerAdapter` is a no-operation implementation, it performs no actions when called:
 
-```ts file=./samples/no_op_circuit_breaker_adapter.ts
+```ts file=./samples/no-op-circuit-breaker-adapter.ts
 
 ```
 
@@ -118,7 +118,7 @@ To use the `KyselyCircuitBreakerStorageAdapter`, you'll need to:
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./samples/serde_instance.ts
+```ts file=./samples/serde-instance.ts
 
 ```
 
@@ -126,7 +126,7 @@ To use the `KyselyCircuitBreakerStorageAdapter`, you'll need to:
 
 You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3) package:
 
-```ts file=./samples/kysely_storage_sqlite.ts
+```ts file=./samples/kysely-storage-sqlite.ts
 
 ```
 
@@ -134,7 +134,7 @@ You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better
 
 You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
-```ts file=./samples/kysely_storage_postgres.ts
+```ts file=./samples/kysely-storage-postgres.ts
 
 ```
 
@@ -142,7 +142,7 @@ You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
 You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) package:
 
-```ts file=./samples/kysely_storage_mysql.ts
+```ts file=./samples/kysely-storage-mysql.ts
 
 ```
 
@@ -154,7 +154,7 @@ Works with both MySQL and MariaDB.
 
 You will need to install `@libsql/kysely-libsql` package:
 
-```ts file=./samples/kysely_storage_libsql.ts
+```ts file=./samples/kysely-storage-libsql.ts
 
 ```
 
@@ -162,13 +162,13 @@ You will need to install `@libsql/kysely-libsql` package:
 
 To use the `MemoryCircuitBreakerStorageAdapter` you only need to create instance of it:
 
-```ts file=./samples/memory_circuit_breaker_storage_adapter.ts
+```ts file=./samples/memory-circuit-breaker-storage-adapter.ts
 
 ```
 
 You can also provide an `Map` that will be used for storing the data in memory:
 
-```ts file=./samples/memory_circuit_breaker_storage_with_map.ts
+```ts file=./samples/memory-circuit-breaker-storage-with-map.ts
 
 ```
 
@@ -188,7 +188,7 @@ To use the `MongodbCircuitBreakerStorageAdapter`, you'll need to:
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./samples/mongodb_circuit_breaker_storage_adapter.ts
+```ts file=./samples/mongodb-circuit-breaker-storage-adapter.ts
 
 ```
 
@@ -196,7 +196,7 @@ To use the `MongodbCircuitBreakerStorageAdapter`, you'll need to:
 
 The `NoOpCircuitBreakerStorageAdapter` is a no-operation implementation, it performs no actions when called:
 
-```ts file=./samples/no_op_circuit_breaker_storage_adapter.ts
+```ts file=./samples/no-op-circuit-breaker-storage-adapter.ts
 
 ```
 

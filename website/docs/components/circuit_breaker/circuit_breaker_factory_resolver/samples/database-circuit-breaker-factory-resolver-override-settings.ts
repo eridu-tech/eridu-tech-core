@@ -1,6 +1,6 @@
 import { CountBreaker } from "eridu-tech/circuit-breaker/policies";
 import { constantBackoff } from "eridu-tech/backoff-policies";
-import { circuitBreakerFactoryResolver } from "./database_circuit_breaker_factory_resolver_initial_config.js";
+import { circuitBreakerFactoryResolver } from "./database-circuit-breaker-factory-resolver-initial-config.js";
 
 await circuitBreakerFactoryResolver
     .setDefaultBackoffPolicy(constantBackoff())

@@ -10,7 +10,7 @@ pagination_label: Configuring CircuitBreaker policies
 
 The `ConsecutiveBreaker` breaks after n requests in a row fail.
 
-```ts file=./samples/consecutive_breaker.ts
+```ts file=./samples/consecutive-breaker.ts
 
 ```
 
@@ -18,7 +18,7 @@ The `ConsecutiveBreaker` breaks after n requests in a row fail.
 
 The `CountBreaker` breaks after a proportion of requests in a count based sliding window fail.
 
-```ts file=./samples/count_breaker.ts
+```ts file=./samples/count-breaker.ts
 
 ```
 
@@ -26,7 +26,7 @@ The `CountBreaker` breaks after a proportion of requests in a count based slidin
 
 The `SamplingBreaker` breaks after a proportion of requests over a time period fail.
 
-```ts file=./samples/sampling_breaker.ts
+```ts file=./samples/sampling-breaker.ts
 
 ```
 

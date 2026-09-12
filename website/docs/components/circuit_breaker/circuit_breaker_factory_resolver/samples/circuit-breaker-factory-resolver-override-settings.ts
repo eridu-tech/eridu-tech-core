@@ -1,4 +1,4 @@
-import { circuitBreakerFactoryResolver } from "./circuit_breaker_factory_resolver_initial_config.js";
+import { circuitBreakerFactoryResolver } from "./circuit-breaker-factory-resolver-initial-config.js";
 import { CIRCUIT_BREAKER_TRIGGER } from "eridu-tech/circuit-breaker/contracts";
 
 await circuitBreakerFactoryResolver

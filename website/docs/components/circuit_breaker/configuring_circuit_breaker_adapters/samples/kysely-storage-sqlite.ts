@@ -1,7 +1,7 @@
 import { KyselyCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/kysely-circuit-breaker-storage-adapter";
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import { serde } from "./serde_instance.js";
+import { serde } from "./serde-instance.js";
 
 const database = new Sqlite("DATABASE_NAME.db");
 const kysely = new Kysely<any>({

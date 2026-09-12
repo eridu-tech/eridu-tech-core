@@ -1,19 +1,19 @@
 import { KyselyCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/kysely-circuit-breaker-storage-adapter";
-import { createPool } from "mysql2";
-import { Kysely, MysqlDialect } from "kysely";
-import { serde } from "./serde_instance.js";
+import { Pool } from "pg";
+import { Kysely, PostgresDialect } from "kysely";
+import { serde } from "./serde-instance.js";
 
-const database = createPool({
-    host: "DATABASE_HOST",
-    // Database port
-    port: 3306,
+const database = new Pool({
     database: "DATABASE_NAME",
+    host: "DATABASE_HOST",
     user: "DATABASE_USER",
+    // DATABASE port
+    port: 5432,
     password: "DATABASE_PASSWORD",
-    connectionLimit: 10,
+    max: 10,
 });
 const kysely = new Kysely<any>({
-    dialect: new MysqlDialect({
+    dialect: new PostgresDialect({
         pool: database,
     }),
 });

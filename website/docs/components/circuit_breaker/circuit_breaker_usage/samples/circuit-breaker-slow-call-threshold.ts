@@ -1,4 +1,4 @@
-import { circuitBreakerFactory } from "./circuit_breaker_initial_config.js";
+import { circuitBreakerFactory } from "./circuit-breaker-initial-config.js";
 import { TimeSpan } from "eridu-tech/time-span";
 
 const circuitBreaker = circuitBreakerFactory.create("resource", {
