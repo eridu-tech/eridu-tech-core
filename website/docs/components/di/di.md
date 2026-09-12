@@ -35,7 +35,7 @@ The container follows a strict lifecycle.
 
 #### Register Services and Container Hooks
 
-Register your services by defining their lifespans, dependencies, and service factories. Register hooks that will run after container initialization or de-initialization. All registrations must occur before initialization. The following methods are used to register services: [`registerFactory`](#registerfactory), [`registerValue`](#registervalue), [`registerDynamic`](#dynamic-registration), [`registerProvider`](#registerprovider). The following are used to register container hooks: [`onContainerInit`](#container-hooks) and [`onContainerDeInit`](#container-hooks).
+Register your services by defining their lifespans, dependencies, and service factories. Register hooks that will run after container initialization or de-initialization. All registrations must occur before initialization. The following methods are used to register services: [`registerFactory`](#registerfactory), [`registerValue`](#registervalue), [`registerDynamic`](#dynamic), [`registerProvider`](#registerprovider). The following are used to register container hooks: [`onContainerInit`](#container-hooks) and [`onContainerDeInit`](#container-hooks).
 
 :::info
 Services and hooks can only be registered before the container is initialized. Once the container is initialized, registering new services or hooks will throw [`InvalidMethodCallDiError`](#invalidmethodcalldierror).
@@ -51,7 +51,7 @@ The current implementation of `IContainer` is _**eager**_. The container will in
 
 #### Use the Container
 
-Resolve service instances and run scoped executions. The following methods are used to resolve services: [`resolve`](#resolve), [`resolveOr`](#resolveor), [`resolveOrFail`](#resolveorfail). The following method is used to check if a service is resolvable: [`has`](#has). The following method is used to run scoped executions: [`run`](#scoped-execution).
+Resolve service instances and run scoped executions. The following methods are used to resolve services: [`resolve`](#resolve), [`resolveOr`](#resolveor), [`resolveOrFail`](#resolveorfail). The following method is used to check if a service is resolvable: [`has`](#has). The following method is used to run scoped executions: [`run`](#scoped).
 
 :::info
 Services can only be resolved while the container is in an active state (after initialization and before de-initialization). Resolving services before initialization or after de-initialization will throw [`InvalidMethodCallDiError`](#invalidmethodcalldierror).
@@ -101,11 +101,11 @@ When registering a service, you also define its lifetime. There are four differe
 
 - **Singleton** — The container creates a single instance of the service for its entire lifetime and shares it across every resolve call and scope.
 
-- **Scoped** — The container creates one instance of the service per [`run()`](#scoped-execution) scope and shares it whenever you resolve the service within that scope. For more details, see the [scoped execution](#scoped-execution) section.
+- **Scoped** — The container creates one instance of the service per [`run()`](#scoped) scope and shares it whenever you resolve the service within that scope. For more details, see the [scoped execution](#scoped) section.
 
 - **Transient** — The container creates a new instance of the service every time you resolve the service and never shares it.
 
-- **Dynamic** — The service is declared but has no service factory registered with it. The service factory will be provided dynamically within a [`run()`](#scoped-execution) scope before it can be resolved. For more details, see the [dynamic registration](#dynamic-registration) section.
+- **Dynamic** — The service is declared but has no service factory registered with it. The service factory will be provided dynamically within a [`run()`](#scoped) scope before it can be resolved. For more details, see the [dynamic registration](#dynamic) section.
 
 ### Registration
 
@@ -113,7 +113,7 @@ The container provides four registration methods:
 
 - **`registerFactory`** — Registers a service using a factory function that creates the instance. Use it to register **Singleton**, **Scoped**, or **Transient** services with full control over how the instance is constructed.
 - **`registerValue`** — Registers a pre-constructed value or constant. Values are always resolved as singletons.
-- **`registerDynamic`** — Registers a token whose value is not known at registration time and is provided later at runtime, per [`run()`](#scoped-execution) scope.
+- **`registerDynamic`** — Registers a token whose value is not known at registration time and is provided later at runtime, per [`run()`](#scoped) scope.
 - **`registerProvider`** — Registers a service provider that batches a group of related registrations into one reusable code block.
 
 #### `registerFactory`
@@ -201,7 +201,7 @@ Service providers are the recommended way to organize your registrations. Group 
 
 #### Registering a Service as Dynamic
 
-Registering a service as dynamic is covered in its own section. For details on how to register and use dynamic services, see the [Dynamic Registration](#dynamic-registration) section.
+Registering a service as dynamic is covered in its own section. For details on how to register and use dynamic services, see the [Dynamic Registration](#dynamic) section.
 
 ### Resolving a Service
 
@@ -271,7 +271,7 @@ Use `registerDynamic()` when a token's value is not known at registration time a
 
 ```
 
-Dynamic values are set at runtime using the `IDynamicServiceRegister` interface, inside a scoped [`run()`](#scoped-execution) execution.
+Dynamic values are set at runtime using the `IDynamicServiceRegister` interface, inside a scoped [`run()`](#scoped) execution.
 
 ```ts file=./samples/dynamic_value_set.ts
 
@@ -439,9 +439,9 @@ Thrown when a service cannot be resolved. It has the following flags:
 | Flag                                                        | Description                                                                                                               |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `NOT_REGISTERED_TOKEN`                                      | Thrown when the token is not registered.                                                                                  |
-| `SCOPED_SERVICE_OUTSIDE_RUN`                                | Thrown when a scoped service is resolved outside a [`run()`](#scoped-execution) scope.                                    |
-| `DYNAMIC_SERVICE_OUTSIDE_RUN`                               | Thrown when a dynamic service is resolved outside a [`run()`](#scoped-execution) scope.                                   |
-| `TRANSIENT_SERVICE_DEPEND_ON_SCOPED_WHO_CALLED_OUTSIDE_RUN` | Thrown when a transient service depends on a scoped service and is resolved outside a [`run()`](#scoped-execution) scope. |
+| `SCOPED_SERVICE_OUTSIDE_RUN`                                | Thrown when a scoped service is resolved outside a [`run()`](#scoped) scope.                                    |
+| `DYNAMIC_SERVICE_OUTSIDE_RUN`                               | Thrown when a dynamic service is resolved outside a [`run()`](#scoped) scope.                                   |
+| `TRANSIENT_SERVICE_DEPEND_ON_SCOPED_WHO_CALLED_OUTSIDE_RUN` | Thrown when a transient service depends on a scoped service and is resolved outside a [`run()`](#scoped) scope. |
 | `RESOLVED_VALUE_IS_NULL`                                    | Thrown when the resolved value is `null`.                                                                                 |
 | `NO_DYNAMIC_VALUE_SET_FOR_TOKENS`                           | Thrown when a dynamic token has no value set.                                                                             |
 | `DYNAMIC_SERVICE_PROVIDER_NOT_DYNAMIC_TOKEN`                | Thrown when the token provided to a dynamic service provider is not a dynamic token.                                      |
@@ -474,9 +474,9 @@ Thrown when a container method is called at an invalid time or context. It has t
 | ----------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `NOT_ACTIVE`                  | Thrown when a method is called while the container is not active (not initialized).                    |
 | `ALREADY_INITIALIZED`         | Thrown when a registration method is called after the container was initialized.                       |
-| `INSIDE_RUN`                  | Thrown when a method is called inside a [`run()`](#scoped-execution) scope where it is not allowed.    |
+| `INSIDE_RUN`                  | Thrown when a method is called inside a [`run()`](#scoped) scope where it is not allowed.    |
 | `INSIDE_DYNAMIC_REGISTRATION` | Thrown when a method is called inside the dynamic `registration` callback.                             |
-| `OUTSIDE_RUN`                 | Thrown when a method is called outside a [`run()`](#scoped-execution) scope where a scope is required. |
+| `OUTSIDE_RUN`                 | Thrown when a method is called outside a [`run()`](#scoped) scope where a scope is required. |
 
 Here is an example where `InvalidMethodCallDiError` is thrown.
 
@@ -490,18 +490,18 @@ Here is an example where `InvalidMethodCallDiError` is thrown.
 
 The container exposes several contracts that separate concerns for different use cases:
 
-- `IServiceRegister` — for **registering** services ([`registerFactory`](#registerfactory), [`registerValue`](#registervalue), [`registerDynamic`](#dynamic-registration), [`registerProvider`](#registerprovider)) and registering container lifecycle hooks.
+- `IServiceRegister` — for **registering** services ([`registerFactory`](#registerfactory), [`registerValue`](#registervalue), [`registerDynamic`](#dynamic), [`registerProvider`](#registerprovider)) and registering container lifecycle hooks.
 - `IServiceResolver` — for **resolving** services ([`resolve`](#resolve), [`resolveOr`](#resolveor), [`resolveOrFail`](#resolveorfail), [`has`](#has)).
 - `IServiceOverrider` — for **overriding** existing registrations ([`overrideFactory`](#overriding-registrations), [`overrideValue`](#overriding-registrations)), useful for testing.
-- `IContainerScope` — for running scoped container executions ([`run`](#scoped-execution)).
+- `IContainerScope` — for running scoped container executions ([`run`](#scoped)).
 - `IContainerFork` — for **forking** a child container ([`fork`](#forking-a-container)), useful for testing.
-- `IDynamicServiceRegister` — for setting dynamic values at runtime ([`set`](#dynamic-registration)).
+- `IDynamicServiceRegister` — for setting dynamic values at runtime ([`set`](#dynamic)).
 
 #### `IServiceRegister`
 
 - [`registerFactory(settings)`](#registerfactory)
 - [`registerValue(settings)`](#registervalue)
-- [`registerDynamic(token)`](#dynamic-registration)
+- [`registerDynamic(token)`](#dynamic)
 - [`registerProvider(provider)`](#registerprovider)
 - [`onContainerInit(handler)`](#container-hooks)
 - [`onContainerDeInit(handler)`](#container-hooks)
@@ -520,7 +520,7 @@ The container exposes several contracts that separate concerns for different use
 
 #### `IContainerScope`
 
-- [`run(settings)`](#scoped-execution)
+- [`run(settings)`](#scoped)
 
 #### `IContainerFork`
 
