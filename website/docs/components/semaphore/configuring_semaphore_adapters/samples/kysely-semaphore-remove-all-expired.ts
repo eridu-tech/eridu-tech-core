@@ -1,4 +1,4 @@
-import { kyselySemaphoreAdapter } from "./kysely_semaphore_sqlite.js";
+import { kyselySemaphoreAdapter } from "./kysely-semaphore-sqlite.js";
 
 // Remove all expired semaphore keys manually.
 await kyselySemaphoreAdapter.removeAllExpired();

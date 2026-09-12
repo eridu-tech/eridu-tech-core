@@ -1,4 +1,4 @@
-import { semaphoreFactoryResolver } from "./semaphore_factory_resolver_initial_config.js";
+import { semaphoreFactoryResolver } from "./semaphore-factory-resolver-initial-config.js";
 
 await semaphoreFactoryResolver
     .use()

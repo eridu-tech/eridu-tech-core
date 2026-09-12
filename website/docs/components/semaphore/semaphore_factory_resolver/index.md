@@ -18,7 +18,7 @@ The `SemaphoreFactoryResolver` class provides a flexible way to configure and sw
 
 To begin using the `ISemaphoreFactoryResolver`, you will need to register all required adapters during initialization.
 
-```ts file=./samples/semaphore_factory_resolver_initial_config.ts
+```ts file=./samples/semaphore-factory-resolver-initial-config.ts
 
 ```
 
@@ -26,7 +26,7 @@ To begin using the `ISemaphoreFactoryResolver`, you will need to register all re
 
 ### 1. Using the default adapter
 
-```ts file=./samples/semaphore_factory_resolver_default_adapter.ts
+```ts file=./samples/semaphore-factory-resolver-default-adapter.ts
 
 ```
 
@@ -36,7 +36,7 @@ Note that if you dont set a default adapter, an error will be thrown.
 
 ### 2. Specifying an adapter explicitly
 
-```ts file=./samples/semaphore_factory_resolver_specific_adapter.ts
+```ts file=./samples/semaphore-factory-resolver-specific-adapter.ts
 
 ```
 
@@ -46,7 +46,7 @@ Note that if you specify a non-existent adapter, an error will be thrown.
 
 ### 3. Overriding default settings
 
-```ts file=./samples/semaphore_factory_resolver_override_settings.ts
+```ts file=./samples/semaphore-factory-resolver-override-settings.ts
 
 ```
 

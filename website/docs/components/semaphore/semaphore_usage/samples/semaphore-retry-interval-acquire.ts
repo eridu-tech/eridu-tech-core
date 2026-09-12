@@ -1,4 +1,4 @@
-import { semaphoreFactory } from "./semaphore_factory_initial_config.js";
+import { semaphoreFactory } from "./semaphore-factory-initial-config.js";
 import { retryInterval } from "eridu-tech/resilience";
 import { use } from "eridu-tech/middleware";
 import { TimeSpan } from "eridu-tech/time-span";

@@ -26,7 +26,7 @@ testing.
 
 Usage example:
 
-```ts file=./samples/semaphore_adapter_test_suite.ts
+```ts file=./samples/semaphore-adapter-test-suite.ts
 
 ```
 
@@ -44,7 +44,7 @@ testing.
 
 Usage example:
 
-```ts file=./samples/semaphore_factory_test_suite.ts
+```ts file=./samples/semaphore-factory-test-suite.ts
 
 ```
 
