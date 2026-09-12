@@ -20,7 +20,7 @@ The Lock middleware wraps function calls with a distributed lock, ensuring mutua
 
 ### Usage
 
-```ts file=./lock_middlewares-samples/with_lock.ts
+```ts file=./samples/with_lock.ts
 
 ```
 

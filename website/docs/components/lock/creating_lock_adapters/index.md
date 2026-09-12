@@ -26,7 +26,7 @@ testing.
 
 Usage example:
 
-```ts file=./creating_lock_adapters-samples/lock_adapter_test_suite.ts
+```ts file=./samples/lock_adapter_test_suite.ts
 
 ```
 
@@ -44,7 +44,7 @@ testing.
 
 Usage example:
 
-```ts file=./creating_lock_adapters-samples/lock_factory_test_suite.ts
+```ts file=./samples/lock_factory_test_suite.ts
 
 ```
 
