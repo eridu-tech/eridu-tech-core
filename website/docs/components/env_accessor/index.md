@@ -1,5 +1,4 @@
 ---
-slug: /components/env_accessor
 tags:
     - Utilities
 keywords:
