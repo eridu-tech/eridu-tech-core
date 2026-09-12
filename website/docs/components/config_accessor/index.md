@@ -1,5 +1,4 @@
 ---
-slug: /components/config_accessor
 tags:
     - Utilities
 keywords:
