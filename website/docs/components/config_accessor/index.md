@@ -13,7 +13,7 @@ The `eridu-tech/config-accessor` component provides standardized type-safe acces
 
 ### Initial configuration
 
-```ts file=./samples/config_accessor_initial_config.ts
+```ts file=./samples/config-accessor-initial-config.ts
 
 ```
 
@@ -35,7 +35,7 @@ Note you can only access fields up to 2 levels deep.
 
 Will return default value if path is missing:
 
-```ts file=./samples/get_or.ts
+```ts file=./samples/get-or.ts
 
 ```
 
