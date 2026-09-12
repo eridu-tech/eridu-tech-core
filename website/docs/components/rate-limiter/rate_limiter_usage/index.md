@@ -18,7 +18,7 @@ The `eridu-tech/rate-limiter` component provides a way for managing rate-limiter
 
 To begin using the `RateLimiterFactory` class, you'll need to create and configure an instance:
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_factory_initial_config.ts
+```ts file=./samples/rate_limiter_factory_initial_config.ts
 
 ```
 
@@ -30,13 +30,13 @@ Here is a complete list of settings for the [`RateLimiterFactory`](https://eridu
 
 ### Creating a rate-limiter
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_create.ts
+```ts file=./samples/rate_limiter_create.ts
 
 ```
 
 ### Using the rate-limiter
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_run_or_fail.ts
+```ts file=./samples/rate_limiter_run_or_fail.ts
 
 ```
 
@@ -45,20 +45,20 @@ Note the method throws an error when the rate-limiter is blocked.
 :::
 
 :::info
-You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](../../utilities/invocable/invocable.md) as values for the `runOrFail` method.
+You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](../../../utilities/invocable/invocable.md) as values for the `runOrFail` method.
 :::
 
 ### Applying rate-limiter on only erros
 
 The rate-limiter defaults to counting all attempts. You can optionally configure it to track only failed requests.
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_only_error.ts
+```ts file=./samples/rate_limiter_only_error.ts
 
 ```
 
 ### Applying rate-limiter on certiain errors
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_error_policy.ts
+```ts file=./samples/rate_limiter_error_policy.ts
 
 ```
 
@@ -66,7 +66,7 @@ The rate-limiter defaults to counting all attempts. You can optionally configure
 
 You can reset rate-limiter state to the allowed state manually.
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_reset.ts
+```ts file=./samples/rate_limiter_reset.ts
 
 ```
 
@@ -74,7 +74,7 @@ You can reset rate-limiter state to the allowed state manually.
 
 You can get the rate-limiter state by using the `getState` method, it returns [`RateLimiterState`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.RateLimiterState.html).
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_get_state.ts
+```ts file=./samples/rate_limiter_get_state.ts
 
 ```
 
@@ -82,7 +82,7 @@ You can get the rate-limiter state by using the `getState` method, it returns [`
 
 The `RateLimiter` class exposes instance variables such as:
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_instance_variables.ts
+```ts file=./samples/rate_limiter_instance_variables.ts
 
 ```
 
@@ -92,11 +92,11 @@ The `RateLimiter` class exposes instance variables such as:
 
 rate-limiters can be serialized, allowing them to be transmitted over the network to another server and later deserialized for reuse.
 This means you can, for example, acquire the rate-limiter on the main server, transfer it to a queue worker server, and release it there.
-In order to serialize or deserialize a rate-limiter you need pass an object that implements [`ISerderRegister`](../serde/serde.md) contract like the [`Serde`](../serde/serde.md) class to `RateLimiterFactory`.
+In order to serialize or deserialize a rate-limiter you need pass an object that implements [`ISerderRegister`](../../serde/serde.md) contract like the [`Serde`](../../serde/serde.md) class to `RateLimiterFactory`.
 
 Manually serializing and deserializing the rate-limiter:
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_manual_serialization.ts
+```ts file=./samples/rate_limiter_manual_serialization.ts
 
 ```
 
@@ -110,7 +110,7 @@ Note you only need manuall serialization and deserialization when integrating wi
 
 As long you pass the same `Serde` instances with all other components you dont need to serialize and deserialize the rate-limiter manually.
 
-```ts file=./rate_limiter_usage-samples/rate_limiter_event_bus_serialization.ts
+```ts file=./samples/rate_limiter_event_bus_serialization.ts
 
 ```
 
