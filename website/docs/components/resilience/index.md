@@ -19,7 +19,7 @@ The `fallback` middleware adds fallback value when an error occurs:
 
 ### Usage
 
-```ts file=./samples/fallback_usage.ts
+```ts file=./samples/fallback-usage.ts
 
 ```
 
@@ -31,7 +31,7 @@ You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TVa
 
 You can define an [`ErrorPolicy`](/docs/utilities/error_policy_type/) to specify fallback values for specific error cases:
 
-```ts file=./samples/fallback_error_policy.ts
+```ts file=./samples/fallback-error-policy.ts
 
 ```
 
@@ -39,7 +39,7 @@ You can define an [`ErrorPolicy`](/docs/utilities/error_policy_type/) to specify
 
 You can add callback [`Invocable`](/docs/utilities/invocable/) that will be called before the fallback value is returned.
 
-```ts file=./samples/fallback_on_fallback.ts
+```ts file=./samples/fallback-on-fallback.ts
 
 ```
 
@@ -53,7 +53,7 @@ The `retry` middleware enables automatic retries for all errors or specific erro
 
 ### Usage
 
-```ts file=./samples/retry_usage.ts
+```ts file=./samples/retry-usage.ts
 
 ```
 
@@ -61,7 +61,7 @@ The `retry` middleware enables automatic retries for all errors or specific erro
 
 You can define an [`ErrorPolicy`](/docs/utilities/error_policy_type/) to retry specific error cases:
 
-```ts file=./samples/retry_error_policy.ts
+```ts file=./samples/retry-error-policy.ts
 
 ```
 
@@ -69,7 +69,7 @@ You can define an [`ErrorPolicy`](/docs/utilities/error_policy_type/) to retry s
 
 By default, a `RetryResilienceError` is thrown when the time window expires. This error aggregates all errors encountered during the retry process. You can instead rethrow the last encountered error:
 
-```ts file=./samples/retry_throw_last_error.ts
+```ts file=./samples/retry-throw-last-error.ts
 
 ```
 
@@ -77,7 +77,7 @@ By default, a `RetryResilienceError` is thrown when the time window expires. Thi
 
 You can use custom [`BackoffPolicy`](/docs/components/backoff_policies):
 
-```ts file=./samples/retry_backoff_policy.ts
+```ts file=./samples/retry-backoff-policy.ts
 
 ```
 
@@ -85,7 +85,7 @@ You can use custom [`BackoffPolicy`](/docs/components/backoff_policies):
 
 You can add callback [`Invocable`](/docs/utilities/invocable/) that will be called before execution attempt:
 
-```ts file=./samples/retry_on_execution_attempt.ts
+```ts file=./samples/retry-on-execution-attempt.ts
 
 ```
 
@@ -95,7 +95,7 @@ You can add callback [`Invocable`](/docs/utilities/invocable/) that will be call
 For more details about `onExecutionAttempt` callback data, see the `OnRetryAttemptData` type.
 :::
 
-```ts file=./samples/retry_on_retry_delay.ts
+```ts file=./samples/retry-on-retry-delay.ts
 
 ```
 
@@ -109,7 +109,7 @@ The `retryInterval` middleware retries a function repeatedly within a given time
 
 ### Usage
 
-```ts file=./samples/retry_interval_usage.ts
+```ts file=./samples/retry-interval-usage.ts
 
 ```
 
@@ -117,7 +117,7 @@ The `retryInterval` middleware retries a function repeatedly within a given time
 
 You can define an [`ErrorPolicy`](/docs/utilities/error_policy_type/) to retry only specific error cases:
 
-```ts file=./samples/retry_interval_error_policy.ts
+```ts file=./samples/retry-interval-error-policy.ts
 
 ```
 
@@ -125,7 +125,7 @@ You can define an [`ErrorPolicy`](/docs/utilities/error_policy_type/) to retry o
 
 By default, a `RetryIntervalResilienceError` is thrown when the time window expires. This error aggregates all errors encountered during the retry process. You can instead rethrow the last encountered error:
 
-```ts file=./samples/retry_interval_throw_last_error.ts
+```ts file=./samples/retry-interval-throw-last-error.ts
 
 ```
 
@@ -133,7 +133,7 @@ By default, a `RetryIntervalResilienceError` is thrown when the time window expi
 
 You can add callback [`Invocable`](/docs/utilities/invocable/) that will be called before each execution attempt:
 
-```ts file=./samples/retry_interval_on_execution_attempt.ts
+```ts file=./samples/retry-interval-on-execution-attempt.ts
 
 ```
 
@@ -143,7 +143,7 @@ For more details about `onExecutionAttempt` callback data, see the `OnRetryAttem
 
 You can add callback [`Invocable`](/docs/utilities/invocable/) that will be called before the retry delay starts:
 
-```ts file=./samples/retry_interval_on_retry_delay.ts
+```ts file=./samples/retry-interval-on-retry-delay.ts
 
 ```
 
@@ -157,7 +157,7 @@ The `timeout` middleware automatically aborts functions after a specified time p
 
 ### Usage
 
-```ts file=./samples/timeout_usage.ts
+```ts file=./samples/timeout-usage.ts
 
 ```
 
@@ -165,7 +165,7 @@ The `timeout` middleware automatically aborts functions after a specified time p
 
 You can add callback [`Invocable`](/docs/utilities/invocable/) that will be called before the timeout occurs.
 
-```ts file=./samples/timeout_on_timeout.ts
+```ts file=./samples/timeout-on-timeout.ts
 
 ```
 
