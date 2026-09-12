@@ -127,7 +127,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withCacheWriteLock plugin
 
-The Cache write lock plugin acquires a distributed lock before executing mutating cache operations. It wraps write operations (`add`, `put`, `update`, `increment`, `getAndRemove`, `removeMany`) with a lock acquired via an [`ILockFactory`](../../lock/lock_usage/index.md), ensuring that concurrent writes to the same cache entry are serialised.
+The Cache write lock plugin acquires a distributed lock before executing mutating cache operations. It wraps write operations (`add`, `put`, `update`, `increment`, `getAndRemove`, `removeMany`) with a lock acquired via an [`ILockFactory`](/docs/components/lock/lock_usage/), ensuring that concurrent writes to the same cache entry are serialised.
 
 ### Use cases
 
@@ -175,5 +175,5 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/middleware#plugin) documentation.
-For more information about lock factories, see the [Lock](../../lock/lock_usage/index.md) documentation.
+For more information about lock factories, see the [Lock](/docs/components/lock/lock_usage/) documentation.
 :::

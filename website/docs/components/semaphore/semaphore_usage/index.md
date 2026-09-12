@@ -118,7 +118,7 @@ Note the method throws an error when the semaphore cannot be acquired.
 :::
 
 :::info
-You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](../../../utilities/invocable/invocable.md) as values for the `runOrFail` method.
+You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable/) as values for the `runOrFail` method.
 :::
 
 ### Semaphore instance variables
@@ -147,7 +147,7 @@ In most cases, setting a slot id is unnecessary.
 
 ### Retrying acquiring semaphore by attempts
 
-To retry acquiring semaphore you can use the [`retry`](../../resilience/resilience.md) middleware.
+To retry acquiring semaphore you can use the [`retry`](/docs/components/resilience) middleware.
 
 Retrying acquiring semaphore with `acquireOrFail` method:
 
@@ -169,7 +169,7 @@ Retrying acquiring semaphore with `runOrFail` method:
 
 ### Retrying acquiring semaphore by interval
 
-To retry acquiring semaphore at regular intervals you can use the [`retryInterval`](../../resilience/resilience.md) middleware:
+To retry acquiring semaphore at regular intervals you can use the [`retryInterval`](/docs/components/resilience) middleware:
 
 Retrying acquiring semaphore with `acquireOrFail` method:
 
@@ -197,7 +197,7 @@ Note using `retryInterval` middleware with semaphore acquiring in a HTTP request
 
 Semaphores can be serialized, allowing them to be transmitted over the network to another server and later deserialized for reuse.
 This means you can, for example, acquire the semaphore on the main server, transfer it to a queue worker server, and release it there.
-In order to serialize or deserialize a semaphore you need pass an object that implements [`ISerderRegister`](../../serde/serde.md) contract like the [`Serde`](../../serde/serde.md) class to `SemaphoreFactory`.
+In order to serialize or deserialize a semaphore you need pass an object that implements [`ISerderRegister`](/docs/components/serde) contract like the [`Serde`](/docs/components/serde) class to `SemaphoreFactory`.
 
 Manually serializing and deserializing the semaphore:
 

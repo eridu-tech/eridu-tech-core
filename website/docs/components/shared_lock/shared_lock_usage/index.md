@@ -202,7 +202,7 @@ In most cases, setting a shared-lock id is unnecessary.
 
 ### Retrying acquiring shared-lock as writer by attempts
 
-To retry acquiring shared-lock as writer you can use the [`retry`](../../resilience/resilience.md) middleware.
+To retry acquiring shared-lock as writer you can use the [`retry`](/docs/components/resilience) middleware.
 
 Retrying acquiring shared-lock as writer with `acquireWriterOrFail` method:
 
@@ -224,7 +224,7 @@ Retrying acquiring shared-lock as writer with `runWriterOrFail` method:
 
 ### Retrying acquiring shared-lock as reader by attempts
 
-To retry acquiring shared-lock as reader you can use the [`retry`](../../resilience/resilience.md) middleware.
+To retry acquiring shared-lock as reader you can use the [`retry`](/docs/components/resilience) middleware.
 
 Retrying acquiring shared-lock as reader with `acquireReaderOrFail` method:
 
@@ -246,7 +246,7 @@ Retrying acquiring shared-lock as reader with `runReaderOrFail` method:
 
 ### Retrying acquiring shared-lock as writer by interval
 
-To retry acquiring shared-lockas as writer at regular intervals you can use the [`retryInterval`](../../resilience/resilience.md) middleware.
+To retry acquiring shared-lockas as writer at regular intervals you can use the [`retryInterval`](/docs/components/resilience) middleware.
 
 Retrying acquiring shared-lock with `acquireWriterOrFail` method:
 
@@ -272,7 +272,7 @@ Note using `retryInterval` middleware with shared-lock acquiring in a HTTP reque
 
 ### Retrying acquiring shared-lock as reader by interval
 
-To retry acquiring shared-lockas as reader at regular intervals you can use the [`retryInterval`](../../resilience/resilience.md) middleware.
+To retry acquiring shared-lockas as reader at regular intervals you can use the [`retryInterval`](/docs/components/resilience) middleware.
 
 Retrying acquiring shared-lock with `acquireReaderOrFail` method:
 
@@ -300,7 +300,7 @@ Note using `retryInterval` middleware with shared-lock acquiring in a HTTP reque
 
 SharedLocks can be serialized, allowing them to be transmitted over the network to another server and later deserialized for reuse.
 This means you can, for example, acquire the shared-lock on the main server, transfer it to a queue worker server, and release it there.
-In order to serialize or deserialize a shared-lock you need pass an object that implements [`ISerderRegister`](../../serde/serde.md) contract like the [`Serde`](../../serde/serde.md) class to `SharedLockFactory`.
+In order to serialize or deserialize a shared-lock you need pass an object that implements [`ISerderRegister`](/docs/components/serde) contract like the [`Serde`](/docs/components/serde) class to `SharedLockFactory`.
 
 Manually serializing and deserializing the shared-lock:
 

@@ -45,7 +45,7 @@ Note the method throws an error when the circuit-breaker is in open state or iso
 :::
 
 :::info
-You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](../../../utilities/invocable/invocable.md) as values for the `runOrFail` method.
+You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable/) as values for the `runOrFail` method.
 :::
 
 ### Applying circuit-breaker on certiain errors
@@ -122,7 +122,7 @@ The `CircuitBreaker` class exposes instance variables such as:
 
 circuit-breakers can be serialized, allowing them to be transmitted over the network to another server and later deserialized for reuse.
 This means you can, for example, acquire the circuit-breaker on the main server, transfer it to a queue worker server, and release it there.
-In order to serialize or deserialize a circuit-breaker you need pass an object that implements [`ISerderRegister`](../../serde/serde.md) contract like the [`Serde`](../../serde/serde.md) class to `CircuitBreakerFactory`.
+In order to serialize or deserialize a circuit-breaker you need pass an object that implements [`ISerderRegister`](/docs/components/serde) contract like the [`Serde`](/docs/components/serde) class to `CircuitBreakerFactory`.
 
 Manually serializing and deserializing the circuit-breaker:
 

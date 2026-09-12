@@ -50,7 +50,7 @@ The `type` field is the only required field. All other fields are optional.
 
 ```
 
-The settings are the same as [backoff policies](../../backoff_policies/backoff_policies.md) settings.
+The settings are the same as [backoff policies](/docs/components/backoff_policies) settings.
 
 ### Configuring CircuitBreaker policy
 
@@ -60,7 +60,7 @@ The `type` field is the only required field. All other fields are optional.
 
 ```
 
-The settings are the same as [circuit-breaker policies](../configuring_circuit_breaker_policies/index.md) settings.
+The settings are the same as [circuit-breaker policies](/docs/components/circuit_breaker/configuring_circuit_breaker_policies/) settings.
 
 ## DatabaseCircuitBreakerAdapter
 
@@ -80,7 +80,7 @@ To use the `DatabaseCircuitBreakerAdapter`, you'll need to use `ICircuitBreakerS
 
 ### Configuring backoff policy
 
-You can use any of defined [backoff policies](../../backoff_policies/backoff_policies.md).
+You can use any of defined [backoff policies](/docs/components/backoff_policies).
 
 ```ts file=./samples/database_circuit_breaker_backoff_policy.ts
 
@@ -88,7 +88,7 @@ You can use any of defined [backoff policies](../../backoff_policies/backoff_pol
 
 ### Configuring CircuitBreaker policy
 
-You can use any of defined [circuit-breaker policies](../configuring_circuit_breaker_policies/index.md) or [create your own](../creating_circuit_breaker_policies/index.md).
+You can use any of defined [circuit-breaker policies](/docs/components/circuit_breaker/configuring_circuit_breaker_policies/) or [create your own](/docs/components/circuit_breaker/creating_circuit_breaker_policies/).
 
 ```ts file=./samples/database_circuit_breaker_policy.ts
 
@@ -114,7 +114,7 @@ To use the `KyselyCircuitBreakerStorageAdapter`, you'll need to:
 
 2. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package:
 
-3. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
+3. Provide a string serializer ([`ISerde`](/docs/components/serde)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
@@ -184,7 +184,7 @@ To use the `MongodbCircuitBreakerStorageAdapter`, you'll need to:
 
 2. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package:
 
-3. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
+3. Provide a string serializer ([`ISerde`](/docs/components/serde)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 

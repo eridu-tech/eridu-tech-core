@@ -101,7 +101,7 @@ The `removeMany` method receives an array of keys. The plugin maps over the arra
 
 ## withFileStorageLock plugin
 
-The FileStorage lock plugin acquires a distributed lock before executing operations on a file-storage adapter. It wraps all methods (both reads and writes) with a lock acquired via an [`ILockFactory`](../../lock/lock_usage/index.md), ensuring that concurrent access to the same file key is serialised.
+The FileStorage lock plugin acquires a distributed lock before executing operations on a file-storage adapter. It wraps all methods (both reads and writes) with a lock acquired via an [`ILockFactory`](/docs/components/lock/lock_usage/), ensuring that concurrent access to the same file key is serialised.
 
 ### Use cases
 
@@ -165,7 +165,7 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/middleware#plugin) documentation.
-For more information about lock factories, see the [Lock](../../lock/lock_usage/index.md) documentation.
+For more information about lock factories, see the [Lock](/docs/components/lock/lock_usage/) documentation.
 :::
 
 ## withFileStorageKeyValidator plugin
@@ -337,7 +337,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withFileStorageInferContentTypeOnRead plugin
 
-The FileStorage read content-type plugin infers the content type from the file key extension when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](../configuring_file_storage_adapters/index.md). It enhances the `getMetaData` method so the returned metadata reports a content type that matches the file key extension.
+The FileStorage read content-type plugin infers the content type from the file key extension when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](/docs/components/file_storage/configuring_file_storage_adapters/). It enhances the `getMetaData` method so the returned metadata reports a content type that matches the file key extension.
 
 ### Use cases
 
@@ -401,7 +401,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withFileStorageInferFileTypeOnRead plugin
 
-The FileStorage read file-type plugin infers the content type from the actual file content when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](../configuring_file_storage_adapters/index.md). It enhances the `getMetaData` method so the returned metadata reports a content type detected from the file bytes via the `file-type` library.
+The FileStorage read file-type plugin infers the content type from the actual file content when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](/docs/components/file_storage/configuring_file_storage_adapters/). It enhances the `getMetaData` method so the returned metadata reports a content type detected from the file bytes via the `file-type` library.
 
 ### Use cases
 

@@ -77,7 +77,7 @@ To use the `MongodbCacheAdapter`, you'll need to:
 
 1. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package:
 
-2. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
+2. Provide a string serializer ([`ISerde`](/docs/components/serde)):
 
 -We recommend using `SuperJsonSerdeAdapter` for this purpose
 
@@ -111,7 +111,7 @@ To remove the cache collection and all stored cache data, use `deInit` method:
 To use the `RedisCacheAdapter`, you'll need to:
 
 1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package:
-2. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
+2. Provide a string serializer ([`ISerde`](/docs/components/serde)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
@@ -124,7 +124,7 @@ To use the `RedisCacheAdapter`, you'll need to:
 To use the `KyselyCacheAdapter`, you'll need to:
 
 1. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package:
-2. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
+2. Provide a string serializer ([`ISerde`](/docs/components/serde)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 

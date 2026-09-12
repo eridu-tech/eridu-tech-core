@@ -1,6 +1,6 @@
 # ErrorPolicy type
 
-The `ErrorPolicy` type determines which errors should be handled for example in resilience middlewares like [`retry`](../../components/resilience/resilience.md) or [`fallback`](../../components/resilience/resilience.md).
+The `ErrorPolicy` type determines which errors should be handled for example in resilience middlewares like [`retry`](/docs/components/resilience) or [`fallback`](/docs/components/resilience).
 
 ## Predicate as ErrorPolicy
 

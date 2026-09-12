@@ -50,7 +50,7 @@ The `type` field is the only required field. All other fields are optional.
 
 ```
 
-The settings are the same as [backoff policies](../../backoff_policies/backoff_policies.md) settings.
+The settings are the same as [backoff policies](/docs/components/backoff_policies) settings.
 
 ### Configuring RateLimiter policy
 
@@ -60,7 +60,7 @@ The `type` field is the only required field. All other fields are optional.
 
 ```
 
-The settings are the same as [rate-limiter policies](../configuring_rate_limiter_policies/index.md) settings.
+The settings are the same as [rate-limiter policies](/docs/components/rate-limiter/configuring_rate_limiter_policies/) settings.
 
 ## DatabaseRateLimiterAdapter
 
@@ -80,7 +80,7 @@ To use the `DatabaseRateLimiterAdapter`, you'll need to use `IRateLimiterStorage
 
 ### Configuring backoff policy
 
-You can use any of defined [backoff policies](../../backoff_policies/backoff_policies.md).
+You can use any of defined [backoff policies](/docs/components/backoff_policies).
 
 ```ts file=./samples/database_rate_limiter_backoff_policy.ts
 
@@ -88,7 +88,7 @@ You can use any of defined [backoff policies](../../backoff_policies/backoff_pol
 
 ### Configuring RateLimiter policy
 
-You can use any of defined [rate-limiter policies](../configuring_rate_limiter_policies/index.md) or [create your own](../creating_rate_limiter_policies/index.md).
+You can use any of defined [rate-limiter policies](/docs/components/rate-limiter/configuring_rate_limiter_policies/) or [create your own](/docs/components/rate-limiter/creating_rate_limiter_policies/).
 
 ```ts file=./samples/database_rate_limiter_policy.ts
 
@@ -114,7 +114,7 @@ To use the `KyselyRateLimiterStorageAdapter`, you'll need to:
 
 2. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package:
 
-3. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
+3. Provide a string serializer ([`ISerde`](/docs/components/serde)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
@@ -200,7 +200,7 @@ To use the `MongodbRateLimiterStorageAdapter`, you'll need to:
 
 2. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package:
 
-3. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
+3. Provide a string serializer ([`ISerde`](/docs/components/serde)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 

@@ -41,7 +41,7 @@ You can also provide an `EventEmitter` that will be used for dispatching the eve
 To use the `RedisPubSubEventBusAdapter`, you'll need to:
 
 1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package:
-2. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
+2. Provide a string serializer ([`ISerde`](/docs/components/serde)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 

@@ -118,7 +118,7 @@ Note the method throws an error when the lock cannot be acquired.
 :::
 
 :::info
-You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](../../../utilities/invocable/invocable.md) as values for the `runOrFail` method.
+You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable/) as values for the `runOrFail` method.
 :::
 
 ### Lock instance variables
@@ -149,7 +149,7 @@ In most cases, setting a custom lock id is unnecessary. Misusing this feature co
 
 ### Retrying acquiring lock by attempts
 
-To retry acquiring lock you can use the [`retry`](../../resilience/resilience.md) middleware.
+To retry acquiring lock you can use the [`retry`](/docs/components/resilience) middleware.
 
 Retrying acquiring lock with `acquireOrFail` method:
 
@@ -171,7 +171,7 @@ Retrying acquiring lock with `runOrFail` method:
 
 ### Retrying acquiring lock by interval
 
-To retry acquiring lock at regular intervals you can use the [`retryInterval`](../../resilience/resilience.md) middleware:
+To retry acquiring lock at regular intervals you can use the [`retryInterval`](/docs/components/resilience) middleware:
 
 Retrying acquiring lock with `acquireOrFail` method:
 
@@ -201,7 +201,7 @@ Locks can be serialized, allowing them to be transmitted over the network to ano
 
 This means you can, for example, acquire the lock on the main server, transfer it to a queue worker server, and release it there.
 
-In order to serialize or deserialize a lock you need pass an object that implements [`ISerderRegister`](../../serde/serde.md) contract like the [`Serde`](../../serde/serde.md) class to `LockFactory`.
+In order to serialize or deserialize a lock you need pass an object that implements [`ISerderRegister`](/docs/components/serde) contract like the [`Serde`](/docs/components/serde) class to `LockFactory`.
 
 Manually serializing and deserializing the lock:
 

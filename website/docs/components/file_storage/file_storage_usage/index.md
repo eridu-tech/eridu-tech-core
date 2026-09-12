@@ -314,7 +314,7 @@ Note only file name will be saved when serialized and not it' content.
 Which makes it efficient to send file over the network.
 :::
 
-In order to serialize or deserialize a file object you need pass an object that implements [`ISerderRegister`](../../serde/serde.md) contract like the [`Serde`](../../serde/serde.md) class to `FileStorage`.
+In order to serialize or deserialize a file object you need pass an object that implements [`ISerderRegister`](/docs/components/serde) contract like the [`Serde`](/docs/components/serde) class to `FileStorage`.
 
 Manually serializing and deserializing the file object:
 
