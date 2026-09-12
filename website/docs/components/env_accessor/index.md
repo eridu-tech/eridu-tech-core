@@ -14,7 +14,7 @@ It supports multiple sources (sync/async), schema validation, and convenient acc
 
 ### Initial configuration
 
-```ts file=./samples/env_accessor_initial_config.ts
+```ts file=./samples/env-accessor-initial-config.ts
 
 ```
 
@@ -32,7 +32,7 @@ Will return null if PORT enviroment field is missing:
 
 Will return default value if NODE_ENV enviroment field is missing:
 
-```ts file=./samples/get_or.ts
+```ts file=./samples/get-or.ts
 
 ```
 

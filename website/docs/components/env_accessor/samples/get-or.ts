@@ -1,3 +1,3 @@
 import { accessor } from "./env-accessor-initial-config.js";
 
-accessor.get("PORT");
+accessor.getOr("NODE_ENV", "DEV");
