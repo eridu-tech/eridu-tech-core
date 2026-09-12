@@ -1,7 +1,7 @@
 import { LIFETIME } from "eridu-tech/di/contracts";
 import { container } from "./container.js";
 import { Database } from "./database.js";
-import { UserProvider } from "./user_provider.js";
+import { UserProvider } from "./user-provider.js";
 
 container.registerFactory({
     token: Database,

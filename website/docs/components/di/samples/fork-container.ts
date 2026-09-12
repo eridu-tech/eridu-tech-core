@@ -1,5 +1,5 @@
 import { container } from "./container.js";
-import { CONFIG } from "./app_config.js";
+import { CONFIG } from "./app-config.js";
 
 container.registerValue({
     token: CONFIG,

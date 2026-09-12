@@ -1,6 +1,6 @@
 import { InvalidGraphDiError, LIFETIME } from "eridu-tech/di/contracts";
 import { container } from "./container.js";
-import { A, B, C } from "./dependency_chain.js";
+import { A, B, C } from "./dependency-chain.js";
 
 container.registerFactory({
     token: A,
@@ -16,8 +16,7 @@ container.registerFactory({
     lifetime: LIFETIME.TRANSIENT,
 });
 
-// ❌ Service is registered as `LIFETIME.SINGLETON`
-// and its `transient` dependency is `LIFETIME.TRANSIENT`
+// ❌ A singleton (C) cannot depend on a transient (B)
 container.registerFactory({
     token: C,
     factory: ({ b }) => new C(b),
@@ -25,7 +24,7 @@ container.registerFactory({
     lifetime: LIFETIME.SINGLETON,
 });
 
-// will throw InvalidGraphDiError
+// Throws InvalidGraphDiError because a singleton depends on a transient service
 try {
     await container.init();
 } catch (error) {

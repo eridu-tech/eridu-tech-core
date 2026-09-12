@@ -6,7 +6,7 @@ import {
 import { container } from "./container.js";
 import { Database } from "./database.js";
 import { FileLogger, Logger } from "./logger.js";
-import { UserProvider } from "./user_provider.js";
+import { UserProvider } from "./user-provider.js";
 
 // As a plain function
 function loggingProvider(register: IServiceRegister): void {

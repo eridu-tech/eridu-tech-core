@@ -1,7 +1,7 @@
 import { LIFETIME } from "eridu-tech/di/contracts";
 import { container } from "./container.js";
-import { REQUEST_ID } from "./request_id.js";
-import { RequestHandler } from "./request_handler.js";
+import { REQUEST_ID } from "./request-id.js";
+import { RequestHandler } from "./request-handler.js";
 
 // Declare the token as dynamic — its value is only known per request
 container.registerDynamic(REQUEST_ID);

@@ -1,9 +1,9 @@
 import { LIFETIME } from "eridu-tech/di/contracts";
 import { container } from "./container.js";
-import { CONFIG } from "./app_config.js";
+import { CONFIG } from "./app-config.js";
 import { Database } from "./database.js";
 import type { IDatabase } from "./idatabase.js";
-import { IDATABASE } from "./generic_token.js";
+import { IDATABASE } from "./generic-token.js";
 
 container.registerFactory({
     token: IDATABASE,
