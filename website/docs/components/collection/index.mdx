@@ -1,0 +1,1088 @@
+---
+sidebar_label: Collection
+tags:
+    - Utilities
+keywords:
+    - Utilities
+---
+
+# Collection
+
+The `eridu-tech/collection` component provides a fluent, convenient wrapper for working with a `Array`, `Iterable` and `AsyncIterable`.
+
+## Creating a collection
+
+You can create a collection from an any object thats implements the `Iterable` or `ArrayLike` contract.
+
+Create a collection from an `Array`:
+
+```ts file=./samples/create_from_array.ts
+
+```
+
+Create a collection from an `string`:
+
+```ts file=./samples/create_from_string.ts
+
+```
+
+Create a collection from a `Set`:
+
+```ts file=./samples/create_from_set.ts
+
+```
+
+Create a collection from a `Map`:
+
+```ts file=./samples/create_from_map.ts
+
+```
+
+Create collection from your own object that implements `Iterable` contract:
+
+```ts file=./samples/create_from_iterable.ts
+
+```
+
+Create collection from your own object that implements `ArrayLike` contract:
+
+```ts file=./samples/create_from_array_like.ts
+
+```
+
+## Immutability
+
+The collection is imutable, meaning that all methods will return a new collection and not modify the original collection.
+
+```ts file=./samples/immutability.ts
+
+```
+
+## Acessing elements from a collection
+
+To access elements from a collection you can use the [`get`](#get) method.
+The [`get`](#get) method will return the item at the specified index.
+If the index is out of bounds, it will return null.
+
+```ts file=./samples/access_get.ts
+
+```
+
+If you want to get the item at the specified index but return a default value if the index is out of bounds,
+you can use the [`getOr`](#getor) method.
+
+```ts file=./samples/access_get_or.ts
+
+```
+
+If you want to get the item at the specified index and throw an error if the index is out of bounds,
+you can use the [`getOrFail`](#getorfail) method.
+
+```ts file=./samples/access_get_or_fail.ts
+
+```
+
+:::info
+All methods that ends with `Or` will return the item if it exists or a default value.
+
+All methods that ends with `OrFail` it will return the item if it exists or throw an error.
+:::
+
+## Iterating over a collection
+
+Since it is `Iterable` you can also use the `for of` loop to iterate over a collection.
+
+```ts file=./samples/iterate.ts
+
+```
+
+## Modifying and filtering a collection
+
+You can modify the collection by using for example the [`map`](#map) method:
+
+```ts file=./samples/modify_map.ts
+
+```
+
+You can filter the collection by using for example the [`filter`](#filter) method:
+
+```ts file=./samples/modify_filter.ts
+
+```
+
+:::info
+All methods that iterate, modify, or filter the collection expect a callback function with three arguments in the following order
+
+1.  `item`: The current element being processed.
+
+2.  `index`: The index of the current element.
+
+3.  `collection`: The original collection being traversed.
+
+```ts file=./samples/callback_arguments.ts
+
+```
+
+:::
+
+## Types of collections
+
+The library includes 3 types of collections:
+
+- `ListCollection` implements the `ICollection` contract and uses `Array` internally.
+
+- `IterableCollection` implements the `ICollection` contract and uses `Iterable` internally.
+  It only filters and transforms items when you loop through or access its items.
+
+- `AsyncIterableCollection` implements the `IAsyncCollection` contract and uses `AsyncIterable` internally.
+  It only filters and transforms items when you loop through or access its items.
+
+## Serialization and deserialization
+
+The `ListCollection` and `IterableCollection` classes supports serialization and deserialization, allowing you to easily convert instances to and from serialized formats. However, registration is required first:
+
+Serializing and deserializing `ListCollection`:
+
+```ts file=./samples/serialize_list_collection.ts
+
+```
+
+Serializing and deserializing `IterableCollection`:
+
+```ts file=./samples/serialize_iterable_collection.ts
+
+```
+
+## Available Methods
+
+For the remaining of the documentation, we'll discuss each method available on the `ICollection` contract.
+
+### Instance methods
+
+<div style={{display:"flex", flexDirection:"row", gap:"1rem"}}>
+    <div style={{width:"100%"}}>
+
+    <li style={{listStyleType:"none"}}>
+        <ol><a href="#after">after</a></ol>
+        <ol><a href="#afteror">afterOr</a></ol>
+        <ol><a href="#afterorfail">afterOrFail</a></ol>
+        <ol><a href="#append">append</a></ol>
+        <ol><a href="#average">average</a></ol>
+        <ol><a href="#before">before</a></ol>
+        <ol><a href="#beforeor">beforeOr</a></ol>
+        <ol><a href="#beforeorfail">beforeOrFail</a></ol>
+        <ol><a href="#change">change</a></ol>
+        <ol><a href="#chunk">chunk</a></ol>
+        <ol><a href="#chunkwhile">chunkWhile</a></ol>
+        <ol><a href="#collapse">collapse</a></ol>
+        <ol><a href="#count">count</a></ol>
+        <ol><a href="#countby">countBy</a></ol>
+        <ol><a href="#crossjoin">crossJoin</a></ol>
+        <ol><a href="#difference">difference</a></ol>
+        <ol><a href="#entries">entries</a></ol>
+        <ol><a href="#every">every</a></ol>
+        <ol><a href="#filter">filter</a></ol>
+        <ol><a href="#validate">filter</a></ol>
+        <ol><a href="#first">first</a></ol>
+        <ol><a href="#firstor">firstOr</a></ol>
+        <ol><a href="#firstorfail">firstOrFail</a></ol>
+        <ol><a href="#flatmap">flatMap</a></ol>
+        <ol><a href="#foreach">forEach</a></ol>
+        <ol><a href="#get">get</a></ol>
+        <ol><a href="#getor">getOr</a></ol>
+        <ol><a href="#getorfail">getOrFail</a></ol>
+        <ol><a href="#groupby">groupBy</a></ol>
+    </li>
+
+</div>
+
+<div style={{ width: "100%" }}>
+    <li style={{ listStyleType: "none" }}>
+        <ol>
+            <a href="#insertafter">insertAfter</a>
+        </ol>
+        <ol>
+            <a href="#insertbefore">insertBefore</a>
+        </ol>
+        <ol>
+            <a href="#isempty">isEmpty</a>
+        </ol>
+        <ol>
+            <a href="#isnotempty">isNotEmpty</a>
+        </ol>
+        <ol>
+            <a href="#join">join</a>
+        </ol>
+        <ol>
+            <a href="#keys">keys</a>
+        </ol>
+        <ol>
+            <a href="#last">last</a>
+        </ol>
+        <ol>
+            <a href="#lastor">lastOr</a>
+        </ol>
+        <ol>
+            <a href="#lastorfail">lastOrFail</a>
+        </ol>
+        <ol>
+            <a href="#map">map</a>
+        </ol>
+        <ol>
+            <a href="#max">max</a>
+        </ol>
+        <ol>
+            <a href="#median">median</a>
+        </ol>
+        <ol>
+            <a href="#min">min</a>
+        </ol>
+        <ol>
+            <a href="#nth">nth</a>
+        </ol>
+        <ol>
+            <a href="#padend">padEnd</a>
+        </ol>
+        <ol>
+            <a href="#padstart">padStart</a>
+        </ol>
+        <ol>
+            <a href="#page">page</a>
+        </ol>
+        <ol>
+            <a href="#partition">partition</a>
+        </ol>
+        <ol>
+            <a href="#percentage">percentage</a>
+        </ol>
+        <ol>
+            <a href="#pipe">pipe</a>
+        </ol>
+        <ol>
+            <a href="#prepend">prepend</a>
+        </ol>
+        <ol>
+            <a href="#reduce">reduce</a>
+        </ol>
+        <ol>
+            <a href="#reject">reject</a>
+        </ol>
+        <ol>
+            <a href="#repeat">repeat</a>
+        </ol>
+        <ol>
+            <a href="#reverse">reverse</a>
+        </ol>
+        <ol>
+            <a href="#searchfirst">searchFirst</a>
+        </ol>
+        <ol>
+            <a href="#searchlast">searchLast</a>
+        </ol>
+        <ol>
+            <a href="#serialize">serialize</a>
+        </ol>
+    </li>
+</div>
+
+<div style={{width:"100%"}}>
+    <li style={{listStyleType:"none"}}> 
+        <ol><a href="#set">set</a></ol> 
+        <ol><a href="#shuffle">shuffle</a></ol> 
+        <ol><a href="#size">size</a></ol> 
+        <ol><a href="#skip">skip</a></ol> 
+        <ol><a href="#skipuntil">skipUntil</a></ol> 
+        <ol><a href="#skipwhile">skipWhile</a></ol> 
+        <ol><a href="#slice">slice</a></ol> 
+        <ol><a href="#sliding">sliding</a></ol> 
+        <ol><a href="#sole">sole</a></ol> 
+        <ol><a href="#some">some</a></ol> 
+        <ol><a href="#sort">sort</a></ol> 
+        <ol><a href="#split">split</a></ol> 
+        <ol><a href="#sum">sum</a></ol> 
+        <ol><a href="#take">take</a></ol> 
+        <ol><a href="#takeuntil">takeUntil</a></ol> 
+        <ol><a href="#takewhile">takeWhile</a></ol> 
+        <ol><a href="#tap">tap</a></ol> 
+        <ol><a href="#toarray">toArray</a></ol> 
+        <ol><a href="#toiterator">toIterator</a></ol> 
+        <ol><a href="#tomap">toMap</a></ol> 
+        <ol><a href="#torecord">toRecord</a></ol> 
+        <ol><a href="#unique">unique</a></ol> 
+        <ol><a href="#values">values</a></ol> 
+        <ol><a href="#when">when</a></ol> 
+        <ol><a href="#whenempty">whenEmpty</a></ol> 
+        <ol><a href="#whennot">whenNot</a></ol> 
+        <ol><a href="#whennotempty">whenNotEmpty</a></ol> 
+        <ol><a href="#zip">zip</a></ol> 
+    </li> 
+</div>
+</div>
+
+### Static methods
+
+<div style={{display:"flex", flexDirection:"row", gap:"1rem"}}>
+    <div style={{width:"100%"}}>
+
+    <li style={{listStyleType:"none"}}>
+        <ol><a href="#concat">concat</a></ol>
+        <ol><a href="#difference">difference</a></ol>
+        <ol><a href="#class_zip">zip</a></ol>
+    </li>
+
+</div>
+</div>
+
+## Instance methods
+
+### after
+
+The `after` method returns the item that comes after the first item that matches `predicateFn`.
+If the collection is empty or the `predicateFn` does not match or matches the last item then `null` is returned.
+
+```ts file=./samples/after.ts
+
+```
+
+### afterOr
+
+The `afterOr` method returns the item that comes after the first item that matches `predicateFn`.
+If the collection is empty or the `predicateFn` does not match or matches the last item then `defaultValue` is returned.
+
+```ts file=./samples/after_or.ts
+
+```
+
+### afterOrFail
+
+The `afterOrFail` method returns the item that comes after the first item that matches `predicateFn`.
+If the collection is empty or the `predicateFn` does not match or matches the last item then an error is thrown.
+
+```ts file=./samples/after_or_fail.ts
+
+```
+
+### append
+
+The `append` method adds `Iterable` to the end of the collection.
+
+```ts file=./samples/append.ts
+
+```
+
+### average
+
+The `average` method returns the average of all items in the collection. If the collection includes other than number items an error will be thrown.
+If the collection is empty an error will also be thrown.
+
+```ts file=./samples/average.ts
+
+```
+
+### before
+
+The `before` method returns the item that comes before the first item that matches `predicateFn`.
+If the `predicateFn` does not match or matches the first item then null is returned.
+
+```ts file=./samples/before.ts
+
+```
+
+### beforeOr
+
+The `beforeOr` method returns the item that comes before the first item that matches `predicateFn`.
+If the collection is empty or the `predicateFn` does not match or matches the first item then `defaultValue` is returned.
+
+```ts file=./samples/before_or.ts
+
+```
+
+### beforeOrFail
+
+The `beforeOrFail` method returns the item that comes before the first item that matches `predicateFn`.
+If the collection is empty or the `predicateFn` does not match or matches the first item then an error is thrown.
+
+```ts file=./samples/before_or_fail.ts
+
+```
+
+### change
+
+The `change` method changes only the items that passes `predicateFn` using `mapFn`.
+
+```ts file=./samples/change.ts
+
+```
+
+### chunk
+
+The `chunk` method breaks the collection into multiple, smaller collections of size `chunkSize`.
+If `chunkSize` is not divisible with total number of items then the last chunk will contain the remaining items.
+
+```ts file=./samples/chunk.ts
+
+```
+
+### chunkWhile
+
+The `chunkWhile` method breaks the collection into multiple, smaller collections based on the evaluation of `predicateFn`.
+The chunk variable passed to the `predicateFn` may be used to inspect the previous item.
+
+```ts file=./samples/chunk_while.ts
+
+```
+
+### collapse
+
+The `collapse` method collapses a collection of iterables into a single, flat collection.
+
+```ts file=./samples/collapse.ts
+
+```
+
+### count
+
+The `count` method returns the total number of items in the collection that passes `predicateFn`.
+
+```ts file=./samples/count.ts
+
+```
+
+### countBy
+
+The `countBy` method counts the occurrences of values in the collection by `selectFn`.
+By default the equality check occurs on the item.
+
+```ts file=./samples/count_by.ts
+
+```
+
+### crossJoin
+
+The `crossJoin` method cross joins the collection's values among `iterables`, returning a Cartesian product with all possible permutations.
+
+```ts file=./samples/cross_join.ts
+
+```
+
+### entries
+
+The `entries` returns an ListCollection of key, value pairs for every entry in the collection.
+
+```ts file=./samples/entries.ts
+
+```
+
+### every
+
+The `every` method determines whether all items in the collection matches `predicateFn`.
+
+```ts file=./samples/every.ts
+
+```
+
+### filter
+
+The `filter` method filters the collection using `predicateFn`, keeping only those items that pass `predicateFn`.
+
+```ts file=./samples/filter.ts
+
+```
+
+### validate
+
+The `validate` method filters all items that matches the `schema` and transforms them afterwards.
+The `schema` can be any [standard schema](https://standardschema.dev/).
+
+```ts file=./samples/validate.ts
+
+```
+
+### first
+
+The `first` method returns the first item in the collection that passes `predicateFn`.
+By default it will get the first item. If the collection is empty or no items passes `predicateFn` than null i returned.
+
+```ts file=./samples/first.ts
+
+```
+
+### firstOr
+
+The `firstOr` method returns the first item in the collection that passes `predicateFn`
+By default it will get the first item. If the collection is empty or no items passes `predicateFn` than `defaultValue`.
+
+```ts file=./samples/first_or.ts
+
+```
+
+### firstOrFail
+
+The `firstOrFail` method returns the first item in the collection that passes `predicateFn`.
+By default it will get the first item. If the collection is empty or no items passes `predicateFn` than error is thrown.
+
+```ts file=./samples/first_or_fail.ts
+
+```
+
+### flatMap
+
+The `flatMap` method returns a new array formed by applying `mapFn` to each item of the array, and then collapses the result by one level.
+It is identical to a `map` method followed by a `collapse` method.
+
+```ts file=./samples/flat_map.ts
+
+```
+
+### forEach
+
+The `forEach` method iterates through all items in the collection.
+
+```ts file=./samples/for_each.ts
+
+```
+
+### get
+
+The `get` method returns the item by index. If the item is not found null will be returned.
+
+```ts file=./samples/get.ts
+
+```
+
+### getOr
+
+The `getOr` method returns the item by index. If the item is not found, a default value will be returned.
+
+```ts file=./samples/get_or.ts
+
+```
+
+### getOrFail
+
+The `getOrFail` method returns the item by index. If the item is not found an error will be thrown.
+
+```ts file=./samples/get_or_fail.ts
+
+```
+
+### groupBy
+
+The `groupBy` method groups the collection's items by `selectFn`.
+By default the equality check occurs on the item.
+
+```ts file=./samples/group_by.ts
+
+```
+
+### insertAfter
+
+The `insertAfter` method adds `Iterable` after the first item that matches `predicateFn`.
+
+```ts file=./samples/insert_after.ts
+
+```
+
+### insertBefore
+
+The `insertBefore` method adds `Iterable` before the first item that matches `predicateFn`.
+
+```ts file=./samples/insert_before.ts
+
+```
+
+### isEmpty
+
+The `isEmpty` returns true if the collection is empty.
+
+```ts file=./samples/is_empty.ts
+
+```
+
+### isNotEmpty
+
+The `isEmpty` returns true if the collection is empty.
+
+```ts file=./samples/is_not_empty.ts
+
+```
+
+### join
+
+The `join` method joins the collection's items with `separator`. An error will be thrown when if a non-string item is encountered.
+
+```ts file=./samples/join.ts
+
+```
+
+```ts file=./samples/join_with_separator.ts
+
+```
+
+### keys
+
+The `keys` method returns an ListCollection of keys in the collection.
+
+### last
+
+The `last` method returns the last item in the collection that passes `predicateFn`.
+By default it will get the last item. If the collection is empty or no items passes `predicateFn` than null i returned.
+
+```ts file=./samples/last.ts
+
+```
+
+### lastOr
+
+The `lastOr` method returns the last item in the collection that passes `predicateFn`.
+By default it will get the last item. If the collection is empty or no items passes `predicateFn` than `defaultValue`.
+
+```ts file=./samples/last_or.ts
+
+```
+
+### lastOrFail
+
+The `lastOrFail` method returns the last item in the collection that passes `predicateFn`.
+By default it will get the last item. If the collection is empty or no items passes `predicateFn` than error is thrown.
+
+```ts file=./samples/last_or_fail.ts
+
+```
+
+### map
+
+The `map` method iterates through the collection and passes each item to `mapFn`.
+The `mapFn` is free to modify the item and return it, thus forming a new collection of modified items.
+
+```ts file=./samples/map.ts
+
+```
+
+### max
+
+The `max` method returns the max of all items in the collection. If the collection includes other than number items an error will be thrown.
+If the collection is empty an error will also be thrown.
+
+```ts file=./samples/max.ts
+
+```
+
+### median
+
+The `median` method returns the median of all items in the collection. If the collection includes other than number items an error will be thrown.
+If the collection is empty an error will also be thrown.
+
+```ts file=./samples/median.ts
+
+```
+
+### min
+
+The `min` method returns the min of all items in the collection. If the collection includes other than number items an error will be thrown.
+If the collection is empty an error will also be thrown.
+
+```ts file=./samples/min.ts
+
+```
+
+### nth
+
+The `nth` method creates a new collection consisting of every n-th item.
+
+```ts file=./samples/nth.ts
+
+```
+
+### padEnd
+
+The `padEnd` method pads this collection with `fillItems` until the resulting collection size reaches `maxLength`.
+The padding is applied from the end of this collection.
+
+```ts file=./samples/pad_end.ts
+
+```
+
+### padStart
+
+The `padStart` method pads this collection with `fillItems` until the resulting collection size reaches `maxLength`.
+The padding is applied from the start of this collection.
+
+```ts file=./samples/pad_start.ts
+
+```
+
+### page
+
+The `page` method returns a new collection containing the items that would be present on `page` with custom `pageSize`.
+
+```ts file=./samples/page.ts
+
+```
+
+### partition
+
+The `partition` method is used to separate items that pass `predicateFn` from those that do not.
+
+```ts file=./samples/partition.ts
+
+```
+
+### percentage
+
+The `percentage` method may be used to quickly determine the percentage of items in the collection that pass `predicateFn`.
+If the collection is empty an error will also be thrown.
+
+```ts file=./samples/percentage.ts
+
+```
+
+### pipe
+
+The `pipe` method passes the orignal collection to `callback` and returns the result from `callback`.
+
+```ts file=./samples/pipe.ts
+
+```
+
+### prepend
+
+The `prepend` method adds `Iterable` to the beginning of the collection.
+
+```ts file=./samples/prepend.ts
+
+```
+
+### reduce
+
+The `reduce` method executes `reduceFn` function on each item of the array, passing in the return value from the calculation on the preceding item.
+The final result of running the reducer across all items of the array is a single value.
+
+```ts file=./samples/reduce.ts
+
+```
+
+### reject
+
+The `reject` method filters the collection using `predicateFn`, keeping only those items that not pass `predicateFn`.
+
+```ts file=./samples/reject.ts
+
+```
+
+### repeat
+
+The `repeat` method will repeat the original collection `amount` times.
+
+```ts file=./samples/repeat.ts
+
+```
+
+### reverse
+
+The `reverse` method will reverse the order of the collection.
+The reversing of the collection will be applied in chunks that are the size of `chunkSize`.
+
+```ts file=./samples/reverse.ts
+
+```
+
+### searchFirst
+
+The `searchFirst` return the index of the first item that matches `predicateFn`.
+
+```ts file=./samples/search_first.ts
+
+```
+
+### searchLast
+
+The `searchLast` return the index of the last item that matches `predicateFn`.
+
+```ts file=./samples/search_last.ts
+
+```
+
+### set
+
+The `set` method updates the specified index with new value.
+
+```ts file=./samples/set.ts
+
+```
+
+### shuffle
+
+The `shuffle` method randomly shuffles the items in the collection. You can provide a custom Math.random function by passing in `mathRandom`.
+
+```ts file=./samples/shuffle.ts
+
+```
+
+### size
+
+The `size` returns the size of the collection.
+
+```ts file=./samples/size.ts
+
+```
+
+### skip
+
+The `skip` method skips the first `offset` items.
+
+```ts file=./samples/skip.ts
+
+```
+
+### skipUntil
+
+The `skipUntil` method skips items until `predicateFn` returns true.
+
+```ts file=./samples/skip_until.ts
+
+```
+
+### skipWhile
+
+The `skipWhile` method skips items until `predicateFn` returns false.
+
+```ts file=./samples/skip_while.ts
+
+```
+
+### slice
+
+The `slice` method creates porition of the original collection selected from `start` and `end`
+where `start` and `end` (end not included) represent the index of items in the collection.
+
+```ts file=./samples/slice.ts
+
+```
+
+### sliding
+
+The `sliding` method returns a new collection of chunks representing a "sliding window" view of the items in the collection.
+
+```ts file=./samples/sliding.ts
+
+```
+
+### sole
+
+The `sole` method returns the first item in the collection that passes `predicateFn`, but only if `predicateFn` matches exactly one item.
+If no items matches or multiple items are found an error will be thrown.
+
+```ts file=./samples/sole.ts
+
+```
+
+### some
+
+The `some` method determines whether at least one item in the collection matches `predicateFn`.
+
+```ts file=./samples/some.ts
+
+```
+
+### sort
+
+The `sort` method sorts the collection. You can provide a `comparator` function.
+
+```ts file=./samples/sort.ts
+
+```
+
+### split
+
+The `split` method breaks a collection evenly into `chunkAmount` of chunks.
+
+```ts file=./samples/split.ts
+
+```
+
+### sum
+
+The `sum` method returns the sum of all items in the collection. If the collection includes other than number items an error will be thrown.
+If the collection is empty an error will also be thrown.
+
+```ts file=./samples/sum.ts
+
+```
+
+### take
+
+The `take` method takes the first `limit` items.
+
+```ts file=./samples/take.ts
+
+```
+
+```ts file=./samples/take_negative.ts
+
+```
+
+### takeUntil
+
+The `takeUntil` method takes items until `predicateFn` returns true.
+
+```ts file=./samples/take_until.ts
+
+```
+
+### takeWhile
+
+The `takeWhile` method takes items until `predicateFn` returns false.
+
+```ts file=./samples/take_while.ts
+
+```
+
+### tap
+
+The `tap` method passes a copy of the original collection to `callback`, allowing you to do something with the items while not affecting the original collection.
+
+```ts file=./samples/tap.ts
+
+```
+
+### toArray
+
+The `toArray` method converts the collection to a new `Array`.
+
+```ts file=./samples/to_array.ts
+
+```
+
+### toIterator
+
+The `toIterator` method converts the collection to a `Iterator`.
+
+```ts file=./samples/to_iterator.ts
+
+```
+
+### toMap
+
+The `toMap` method converts the collection to a new `Map`.
+An error will be thrown if item is not a tuple of size 2.
+
+```ts file=./samples/to_map.ts
+
+```
+
+### toRecord
+
+The `toRecord` method converts the collection to a new `Record`.
+An error will be thrown if item is not a tuple of size 2 where the first element is a string or a number.
+
+```ts file=./samples/to_record.ts
+
+```
+
+### unique
+
+The `unique` method removes all duplicate values from the collection by `selectFn`.
+By default the equality check occurs on the item.
+
+```ts file=./samples/unique.ts
+
+```
+
+Equality check on a field in the item.
+
+```ts file=./samples/unique_by_field.ts
+
+```
+
+### copy
+
+The `copy` method returns a copy of the collection.
+
+```ts file=./samples/copy.ts
+
+```
+
+### when
+
+The `when` method will execute `callback` when `condition` evaluates to true.
+
+```ts file=./samples/when.ts
+
+```
+
+### whenEmpty
+
+The `whenEmpty` method will execute `callback` when the collection is empty.
+
+```ts file=./samples/when_empty.ts
+
+```
+
+```ts file=./samples/when_empty_skip.ts
+
+```
+
+### whenNot
+
+The `whenNot` method will execute `callback` when `condition` evaluates to false.
+
+```ts file=./samples/when_not.ts
+
+```
+
+### whenNotEmpty
+
+The `whenNotEmpty` method will execute `callback` when the collection is not empty.
+
+```ts file=./samples/when_not_empty_skip.ts
+
+```
+
+```ts file=./samples/when_not_empty.ts
+
+```
+
+## Static methods
+
+### concat
+
+The `concat` method concatenates multiple `Iterable`'s and returns a new collection.
+
+```ts file=./samples/concat.ts
+
+```
+
+### difference
+
+The `difference` method will return the values in the original collection that are not present in `Iterable`.
+By default the equality check occurs on the item.
+
+```ts file=./samples/difference.ts
+
+```
+
+Equality check on a field in the item.
+
+```ts file=./samples/difference_by_field.ts
+
+```
+
+The `difference` method is also available as a static method.
+
+```ts file=./samples/difference_static.ts
+
+```
+
+### zip
+
+The `zip` method merges together the values of `Iterable` with the values of the collection at their corresponding index.
+The returned collection has size of the shortest collection. The `zip` method is also available as a static method.
+
+```ts file=./samples/zip.ts
+
+```
+
+## Further information
+
+For further information refer to [`eridu-tech/collection`](https://eridu-tech.github.io/eridu-tech-core/modules/Collection.html) API docs.
