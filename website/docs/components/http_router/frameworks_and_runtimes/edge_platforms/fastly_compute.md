@@ -22,7 +22,7 @@ npm install eridu-tech hono @fastly/hono-fastly-compute
 
 ### 2. Create the handler
 
-```ts file=./fastly_compute-samples/create_handler.ts
+```ts file=./fastly_compute-samples/create-handler.ts
 
 ```
 

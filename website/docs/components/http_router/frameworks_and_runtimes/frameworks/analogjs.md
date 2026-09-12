@@ -22,7 +22,7 @@ npm install eridu-tech hono
 
 ### 2. Create the handler
 
-```ts file=./analogjs-samples/create_handler.ts
+```ts file=./analogjs-samples/create-handler.ts
 
 ```
 

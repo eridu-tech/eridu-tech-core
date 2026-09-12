@@ -25,7 +25,7 @@ The router provides typed path parameters, a middleware chain with shared contex
 
 To begin using the `HttpRouter` class, you'll need to create and configure an instance:
 
-```ts file=./samples/http_router_initial_config.ts
+```ts file=./samples/http-router-initial-config.ts
 
 ```
 
@@ -33,7 +33,7 @@ The `router` setting accepts any Hono-compatible router instance. For most use c
 
 You can also use the bundled `defaultHttpRouterAdapter`:
 
-```ts file=./samples/default_adapter_http_router_initial_config.ts
+```ts file=./samples/default-adapter-http-router-initial-config.ts
 
 ```
 
@@ -49,7 +49,7 @@ Here is a complete list of settings for the [`HttpRouter`](https://eridu-tech.gi
 
 You can register an endpoint using the `endpoint` method with a URL pattern and handler:
 
-```ts file=./samples/basic_endpoint.ts
+```ts file=./samples/basic-endpoint.ts
 
 ```
 
@@ -57,7 +57,7 @@ You can register an endpoint using the `endpoint` method with a URL pattern and 
 
 You can specify one or more HTTP methods an endpoint responds to:
 
-```ts file=./samples/http_methods.ts
+```ts file=./samples/http-methods.ts
 
 ```
 
@@ -65,7 +65,7 @@ When no `method` is specified, the endpoint responds to **all** HTTP methods (GE
 
 You can also use custom HTTP methods like `PURGE`:
 
-```ts file=./samples/custom_http_method.ts
+```ts file=./samples/custom-http-method.ts
 
 ```
 
@@ -73,7 +73,7 @@ You can also use custom HTTP methods like `PURGE`:
 
 You can register the same handler for multiple methods at once:
 
-```ts file=./samples/multiple_methods.ts
+```ts file=./samples/multiple-methods.ts
 
 ```
 
@@ -81,13 +81,13 @@ You can register the same handler for multiple methods at once:
 
 Define dynamic path segments with `:paramName` syntax. The router automatically extracts path parameters and makes them available via `req.params()`:
 
-```ts file=./samples/path_parameters.ts
+```ts file=./samples/path-parameters.ts
 
 ```
 
 Multiple path parameters are also supported:
 
-```ts file=./samples/multiple_path_parameters.ts
+```ts file=./samples/multiple-path-parameters.ts
 
 ```
 
@@ -95,7 +95,7 @@ Multiple path parameters are also supported:
 
 Parameters can be made optional with the `?` suffix. The route matches both with and without the parameter:
 
-```ts file=./samples/optional_parameters.ts
+```ts file=./samples/optional-parameters.ts
 
 ```
 
@@ -103,13 +103,13 @@ Parameters can be made optional with the `?` suffix. The route matches both with
 
 Use `*` as a wildcard segment to match any value:
 
-```ts file=./samples/wildcard_pattern.ts
+```ts file=./samples/wildcard-pattern.ts
 
 ```
 
 Deep wildcards match across multiple path segments:
 
-```ts file=./samples/deep_wildcard.ts
+```ts file=./samples/deep-wildcard.ts
 
 ```
 
@@ -117,13 +117,13 @@ Deep wildcards match across multiple path segments:
 
 You can constrain path parameters with regular expressions:
 
-```ts file=./samples/regex_constrained_parameters.ts
+```ts file=./samples/regex-constrained-parameters.ts
 
 ```
 
 You can also use regexp patterns that include slashes:
 
-```ts file=./samples/regex_parameters_with_slashes.ts
+```ts file=./samples/regex-parameters-with-slashes.ts
 
 ```
 
@@ -131,7 +131,7 @@ You can also use regexp patterns that include slashes:
 
 If a request arrives for a path that exists but with a method that is not registered, the router returns a `404 Not Found` response:
 
-```ts file=./samples/method_matching_behaviour.ts
+```ts file=./samples/method-matching-behaviour.ts
 
 ```
 
@@ -139,7 +139,7 @@ If a request arrives for a path that exists but with a method that is not regist
 
 You can group routes under a common prefix using the `group` method:
 
-```ts file=./samples/route_grouping.ts
+```ts file=./samples/route-grouping.ts
 
 ```
 
@@ -147,7 +147,7 @@ Routes defined inside the group are automatically prefixed. For example, `/users
 
 Groups can also be nested without a prefix:
 
-```ts file=./samples/nested_group.ts
+```ts file=./samples/nested-group.ts
 
 ```
 
@@ -159,7 +159,7 @@ Route handlers receive an object with the following properties:
 
 The `req` object provides access to all request data:
 
-```ts file=./samples/handler_req_access.ts
+```ts file=./samples/handler-req-access.ts
 
 ```
 
@@ -167,7 +167,7 @@ The `req` object provides access to all request data:
 
 The `res` object allows building the response using a fluent API:
 
-```ts file=./samples/handler_res_builder.ts
+```ts file=./samples/handler-res-builder.ts
 
 ```
 
@@ -175,7 +175,7 @@ The `res` object allows building the response using a fluent API:
 
 The `context` object is a shared key-value store that lives for the duration of a single request. It persists across the middleware chain and the final handler, making it ideal for passing data between middleware and handlers:
 
-```ts file=./samples/handler_context.ts
+```ts file=./samples/handler-context.ts
 
 ```
 
@@ -185,43 +185,43 @@ Handler arguments include response helper methods for creating common responses.
 
 #### text
 
-```ts file=./samples/helper_text.ts
+```ts file=./samples/helper-text.ts
 
 ```
 
 #### html
 
-```ts file=./samples/helper_html.ts
+```ts file=./samples/helper-html.ts
 
 ```
 
 #### json
 
-```ts file=./samples/helper_json.ts
+```ts file=./samples/helper-json.ts
 
 ```
 
 The `json` helper also accepts an optional Standard Schema for runtime validation:
 
-```ts file=./samples/helper_json_with_schema.ts
+```ts file=./samples/helper-json-with-schema.ts
 
 ```
 
 #### notFound
 
-```ts file=./samples/helper_not_found.ts
+```ts file=./samples/helper-not-found.ts
 
 ```
 
 #### redirect
 
-```ts file=./samples/helper_redirect.ts
+```ts file=./samples/helper-redirect.ts
 
 ```
 
 #### permanentRedirect
 
-```ts file=./samples/helper_permanent_redirect.ts
+```ts file=./samples/helper-permanent-redirect.ts
 
 ```
 
@@ -231,7 +231,7 @@ The response builder provides full cookie management through the fluent API.
 
 #### Setting cookies
 
-```ts file=./samples/cookie_set.ts
+```ts file=./samples/cookie-set.ts
 
 ```
 
@@ -250,13 +250,13 @@ Cookie settings include:
 
 #### Removing cookies
 
-```ts file=./samples/cookie_remove.ts
+```ts file=./samples/cookie-remove.ts
 
 ```
 
 #### Checking if response has set a cookie
 
-```ts file=./samples/cookie_has.ts
+```ts file=./samples/cookie-has.ts
 
 ```
 
@@ -264,7 +264,7 @@ Cookie settings include:
 
 You can remove all cookies or a specific cookie from the response:
 
-```ts file=./samples/cookie_strip.ts
+```ts file=./samples/cookie-strip.ts
 
 ```
 
@@ -274,7 +274,7 @@ You can remove all cookies or a specific cookie from the response:
 
 Use the `use` method to register middleware that applies to **multiple routes** registered on the same router instance:
 
-```ts file=./samples/shared_middleware.ts
+```ts file=./samples/shared-middleware.ts
 
 ```
 
@@ -282,7 +282,7 @@ Use the `use` method to register middleware that applies to **multiple routes** 
 
 Use the `middlewares` property on an endpoint definition to register middleware that runs **only for that specific endpoint**. This keeps middleware scoped and prevents it from affecting other routes:
 
-```ts file=./samples/endpoint_middleware.ts
+```ts file=./samples/endpoint-middleware.ts
 
 ```
 
@@ -302,7 +302,7 @@ Each middleware receives a `next` function. Calling `await next()` passes contro
 
 Uploaded files are accessed through the `files()` method, which returns a record mapping each file field name to an `IHttpFileCollection`:
 
-```ts file=./samples/file_upload.ts
+```ts file=./samples/file-upload.ts
 
 ```
 
@@ -344,7 +344,7 @@ You can enforce runtime and compile-time type safety by passing [Standard Schema
 
 The `cookies()`, `params()`, and `headers()` methods return a record of string values and accept a schema synchronously:
 
-```ts file=./samples/validate_cookies_params_headers.ts
+```ts file=./samples/validate-cookies-params-headers.ts
 
 ```
 
@@ -352,7 +352,7 @@ The `cookies()`, `params()`, and `headers()` methods return a record of string v
 
 The `searchParams()` and `fields()` methods return a record where each value can be a single string or an array of strings, and accept a schema for validation:
 
-```ts file=./samples/validate_search_params_fields.ts
+```ts file=./samples/validate-search-params-fields.ts
 
 ```
 
@@ -360,7 +360,7 @@ The `searchParams()` and `fields()` methods return a record where each value can
 
 The `json()` method parses the request body and validates it asynchronously:
 
-```ts file=./samples/validate_json_body.ts
+```ts file=./samples/validate-json-body.ts
 
 ```
 
@@ -368,7 +368,7 @@ The `json()` method parses the request body and validates it asynchronously:
 
 You can define file validation rules by passing a record of file definitions directly to `req.files()`. Each file field accepts a `FileDef`, which is the union of a `StaticFileDef` (rules known ahead of time) and a `DynamicFileDef` (a function that inspects the uploaded files at runtime):
 
-```ts file=./samples/validate_uploaded_files.ts
+```ts file=./samples/validate-uploaded-files.ts
 
 ```
 
@@ -380,7 +380,7 @@ All validation throw an `HttpError` with status code `400` if constraints are no
 
 Errors thrown inside handlers or middleware propagate as a generic `500 Internal Server Error` response. To return structured HTTP errors with proper status codes and messages, use the `HttpError` class:
 
-```ts file=./samples/http_error_handling.ts
+```ts file=./samples/http-error-handling.ts
 
 ```
 
@@ -388,13 +388,13 @@ Errors thrown inside handlers or middleware propagate as a generic `500 Internal
 
 You can test the code by creating a standard web `Request` object and passing it to the `fetch` method of the `HttpRouter` class:
 
-```ts file=./samples/testing_basic.ts
+```ts file=./samples/testing-basic.ts
 
 ```
 
 You can also use `HttpReq.test()` to easily create a standard web `Request`:
 
-```ts file=./samples/testing_http_req_test.ts
+```ts file=./samples/testing-http-req-test.ts
 
 ```
 
@@ -402,7 +402,7 @@ You can also use `HttpReq.test()` to easily create a standard web `Request`:
 
 Simulates an `application/json` payload:
 
-```ts file=./samples/testing_json_body.ts
+```ts file=./samples/testing-json-body.ts
 
 ```
 
@@ -410,7 +410,7 @@ Simulates an `application/json` payload:
 
 Simulates an `application/x-www-form-urlencoded` form:
 
-```ts file=./samples/testing_url_encoded_body.ts
+```ts file=./samples/testing-url-encoded-body.ts
 
 ```
 
@@ -418,7 +418,7 @@ Simulates an `application/x-www-form-urlencoded` form:
 
 Simulates a `multipart/form-data` payload with optional text fields and file uploads:
 
-```ts file=./samples/testing_multipart_body.ts
+```ts file=./samples/testing-multipart-body.ts
 
 ```
 
@@ -426,7 +426,7 @@ Simulates a `multipart/form-data` payload with optional text fields and file upl
 
 Passes `data` through as-is for arbitrary payloads:
 
-```ts file=./samples/testing_custom_body.ts
+```ts file=./samples/testing-custom-body.ts
 
 ```
 
@@ -434,7 +434,7 @@ Passes `data` through as-is for arbitrary payloads:
 
 The shared `context` object is useful for passing data between middleware and handlers:
 
-```ts file=./samples/request_scoped_context.ts
+```ts file=./samples/request-scoped-context.ts
 
 ```
 
@@ -444,13 +444,13 @@ Both handlers and middleware can be invocable objects (classes with an `invoke` 
 
 **Handler example** using `IHttpHandlerObject`:
 
-```ts file=./samples/invocable_handler.ts
+```ts file=./samples/invocable-handler.ts
 
 ```
 
 **Middleware example** using `IHttpMiddlewareObject`:
 
-```ts file=./samples/invocable_middleware.ts
+```ts file=./samples/invocable-middleware.ts
 
 ```
 
@@ -462,7 +462,7 @@ For further information about invocable objects, refer to the [`Invocable`](/doc
 
 A Winter TC handler is a function with the signature `(request: Request) => Promise<Response> | Response`. Since `HttpRouter` endpoints expect the richer `HttpHandlerArgs` interface, you can use the `HttpRouter.fromWinterTcHandler()` static method to bridge the two seamlessly:
 
-```ts file=./samples/winter_tc_handler.ts
+```ts file=./samples/winter-tc-handler.ts
 
 ```
 

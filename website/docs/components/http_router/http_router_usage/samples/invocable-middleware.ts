@@ -3,7 +3,7 @@ import {
     type HttpMiddlewareArgs,
     type IHttpRes,
 } from "eridu-tech/http-router/contracts";
-import { router } from "./http_router_initial_config.js";
+import { router } from "./http-router-initial-config.js";
 
 class AuthMiddleware implements IHttpMiddlewareObject {
     constructor(private readonly apiKey: string) {}

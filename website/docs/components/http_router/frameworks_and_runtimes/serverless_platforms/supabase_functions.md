@@ -20,7 +20,7 @@ No installation needed — Supabase Functions use Deno with import maps.
 
 ### 2. Create the handler
 
-```ts file=./supabase_functions-samples/create_handler.ts
+```ts file=./supabase_functions-samples/create-handler.ts
 
 ```
 

@@ -22,7 +22,7 @@ npm install eridu-tech hono
 
 ### 2. Create the handler
 
-```ts file=./solidstart-samples/create_handler.ts
+```ts file=./solidstart-samples/create-handler.ts
 
 ```
 

@@ -61,7 +61,7 @@ brew install azure-functions-core-tools@4
 
 ```
 
-```ts file=./azure_functions-samples/http_trigger.ts
+```ts file=./azure_functions-samples/http-trigger.ts
 
 ```
 

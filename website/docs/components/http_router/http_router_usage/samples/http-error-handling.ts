@@ -1,5 +1,5 @@
 import { HttpError } from "eridu-tech/http-router/contracts";
-import { router } from "./http_router_initial_config.js";
+import { router } from "./http-router-initial-config.js";
 
 router.endpoint({
     url: "/secure",

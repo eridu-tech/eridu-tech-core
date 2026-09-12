@@ -22,7 +22,7 @@ npm install eridu-tech hono
 
 ### 2. Create the handler
 
-```ts file=./netlify-samples/create_handler.ts
+```ts file=./netlify-samples/create-handler.ts
 
 ```
 

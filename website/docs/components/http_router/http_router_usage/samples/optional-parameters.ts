@@ -1,4 +1,4 @@
-import { router } from "./http_router_initial_config.js";
+import { router } from "./http-router-initial-config.js";
 
 // Will match `/api/animal` and `/api/animal/:type`
 router.endpoint({

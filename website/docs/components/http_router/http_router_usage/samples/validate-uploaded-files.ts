@@ -1,6 +1,6 @@
 import { FileSize } from "eridu-tech/file-size";
 import { type FileInputs } from "eridu-tech/http-router/contracts";
-import { router } from "./http_router_initial_config.js";
+import { router } from "./http-router-initial-config.js";
 
 const fileInputs = {
     // Static validation rules known ahead of time.

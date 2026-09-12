@@ -22,17 +22,17 @@ keywords:
 
 `eridu-tech/http-router` exports [`defaultHttpRouterAdapter`](https://eridu-tech.github.io/eridu-tech-core/variables/HttpRouter.defaultHttpRouterAdapter.html) to reduce boilerplate. It is equivalent to:
 
-```ts file=./samples/smart_router_default_equivalent.ts
+```ts file=./samples/smart-router-default-equivalent.ts
 
 ```
 
-```ts file=./samples/smart_router_default.ts
+```ts file=./samples/smart-router-default.ts
 
 ```
 
 You can also configure `SmartRouter` explicitly:
 
-```ts file=./samples/smart_router_explicit.ts
+```ts file=./samples/smart-router-explicit.ts
 
 ```
 
@@ -44,7 +44,7 @@ You can also configure `SmartRouter` explicitly:
 
 `RegExpRouter` compiles all routes into a single regular expression for fast matching. It is best suited for applications with many static routes.
 
-```ts file=./samples/regexp_router.ts
+```ts file=./samples/regexp-router.ts
 
 ```
 
@@ -52,7 +52,7 @@ You can also configure `SmartRouter` explicitly:
 
 `TrieRouter` performs linear trie traversal for route matching. It is best suited for applications with many dynamic path parameters.
 
-```ts file=./samples/trie_router.ts
+```ts file=./samples/trie-router.ts
 
 ```
 
@@ -60,7 +60,7 @@ You can also configure `SmartRouter` explicitly:
 
 `LinearRouter` registers routes very quickly, making it suitable for environments that initialize applications on every request.
 
-```ts file=./samples/linear_router.ts
+```ts file=./samples/linear-router.ts
 
 ```
 
@@ -68,7 +68,7 @@ You can also configure `SmartRouter` explicitly:
 
 `PatternRouter` is the smallest router, simply adding and matching patterns. It is best suited for minimal footprint applications.
 
-```ts file=./samples/pattern_router.ts
+```ts file=./samples/pattern-router.ts
 
 ```
 

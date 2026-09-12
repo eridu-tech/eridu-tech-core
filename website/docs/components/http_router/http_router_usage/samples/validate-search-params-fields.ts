@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router } from "./http_router_initial_config.js";
+import { router } from "./http-router-initial-config.js";
 
 const searchParamsSchema = z.object({
     include: z.string().optional(),
