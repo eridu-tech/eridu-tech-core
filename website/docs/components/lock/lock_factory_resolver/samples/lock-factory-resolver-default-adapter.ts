@@ -1,7 +1,7 @@
-import { lockFactoryResolver } from "./lock_factory_resolver_initial_config.js";
+import { lockFactoryResolver } from "./lock-factory-resolver-initial-config.js";
 
 await lockFactoryResolver
-    .use("redis")
+    .use()
     .create("shared-resource")
     .runOrFail(async () => {
         // code to run

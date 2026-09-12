@@ -40,7 +40,7 @@ The plugin prefixes keys for the following methods:
 
 ### Usage
 
-```ts file=./samples/with_lock_prefix.ts
+```ts file=./samples/with-lock-prefix.ts
 
 ```
 
@@ -48,13 +48,13 @@ The plugin prefixes keys for the following methods:
 
 **Before** — Lock keys are used as-is:
 
-```ts file=./samples/unprefixed_acquire.ts
+```ts file=./samples/unprefixed-acquire.ts
 
 ```
 
 **After** — Lock keys are automatically prefixed:
 
-```ts file=./samples/prefixed_acquire.ts
+```ts file=./samples/prefixed-acquire.ts
 
 ```
 

@@ -1,4 +1,4 @@
-import { lockFactory } from "./lock_factory_initial_config.js";
+import { lockFactory } from "./lock-factory-initial-config.js";
 import { delay } from "eridu-tech/utilities";
 import { TimeSpan } from "eridu-tech/time-span";
 
