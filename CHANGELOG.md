@@ -1,5 +1,11 @@
 # @daiso-tech/core
 
+## 0.62.1
+
+### Patch Changes
+
+- 6ff46d2: Exported the `HttpRes` class and its `IHttpResSettings` type from `eridu-tech/http-router`.
+
 ## 0.62.0
 
 ### Minor Changes
