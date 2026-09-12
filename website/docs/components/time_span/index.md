@@ -1,5 +1,4 @@
 ---
-slug: /components/time_span
 tags:
     - Utilities
 keywords:
