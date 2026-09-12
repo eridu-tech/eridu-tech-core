@@ -1,0 +1,59 @@
+---
+sidebar_position: 2
+sidebar_label: Resolver classes
+pagination_label: Semaphore resolver classes
+tags:
+    - Semaphore
+    - Resolvers
+keywords:
+    - Semaphore
+    - Resolvers
+---
+
+# SemaphoreFactoryResolver
+
+The `SemaphoreFactoryResolver` class provides a flexible way to configure and switch between different semaphore adapters at runtime.
+
+## Initial configuration
+
+To begin using the `ISemaphoreFactoryResolver`, you will need to register all required adapters during initialization.
+
+```ts file=./samples/semaphore_factory_resolver_initial_config.ts
+
+```
+
+## Usage
+
+### 1. Using the default adapter
+
+```ts file=./samples/semaphore_factory_resolver_default_adapter.ts
+
+```
+
+:::danger
+Note that if you dont set a default adapter, an error will be thrown.
+:::
+
+### 2. Specifying an adapter explicitly
+
+```ts file=./samples/semaphore_factory_resolver_specific_adapter.ts
+
+```
+
+:::danger
+Note that if you specify a non-existent adapter, an error will be thrown.
+:::
+
+### 3. Overriding default settings
+
+```ts file=./samples/semaphore_factory_resolver_override_settings.ts
+
+```
+
+:::info
+Note that the `SemaphoreFactoryResolver` is immutable, meaning any configuration override returns a new instance rather than modifying the existing one.
+:::
+
+## Further information
+
+For further information refer to [`eridu-tech/semaphore`](https://eridu-tech.github.io/eridu-tech-core/modules/Semaphore.html) API docs.

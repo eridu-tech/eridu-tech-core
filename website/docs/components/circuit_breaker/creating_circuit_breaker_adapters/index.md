@@ -1,0 +1,44 @@
+---
+sidebar_position: 5
+sidebar_label: Creating adapters
+pagination_label: Creating CircuitBreaker adapters
+tags:
+    - CircuitBreaker
+    - Creating adapters
+    - Creating database adapters
+keywords:
+    - CircuitBreaker
+    - Creating adapters
+    - Creating database adapters
+---
+
+# Creating CircuitBreaker adapters
+
+## Implementing your custom ICircuitBreakerAdapter
+
+In order to create an adapter you need to implement the [`ICircuitBreakerAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerAdapter.html) contract.
+
+## Implementing your custom ICircuitBreakerStorageAdapter
+
+We provide an additional contract [`ICircuitBreakerStorageAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerStorageAdapter.html) for building custom circuit-breaker storage adapters tailored to [`DatabaseCircuitBreakerAdapter`](/docs/components/circuit_breaker/configuring_circuit_breaker_adapters/#databasecircuitbreakeradapter) and [`DatabaseCircuitBreakerProviderFactory`](/docs/components/circuit_breaker/circuit_breaker_factory_resolver/#databasecircuitbreakerfactoryresolver).
+
+## Testing your custom ICircuitBreakerStorageAdapter
+
+We provide a complete test suite to test your circuit-breaker storage adapter implementation. Simply use the [`circuitBreakerStorageTestSuite`](https://eridu-tech.github.io/eridu-tech-core/functions/CircuitBreaker.circuitBreakerStorageTestSuite.html) function:
+
+- Preconfigured Vitest test cases
+- Common edge case coverage
+
+Usage example:
+
+```ts file=./samples/circuit_breaker_storage_test_suite.ts
+
+```
+
+## Implementing your custom ICircuitBreakerProvider class
+
+In some cases, you may need to implement a custom [`CircuitBreakerProvider`](https://eridu-tech.github.io/eridu-tech-core/classes/CircuitBreaker.CircuitBreakerProvider.html) class to optimize performance for your specific technology stack. You can then directly implement the [`ICircuitBreakerProvider`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerProvider.html) contract.
+
+## Further information
+
+For further information refer to [`eridu-tech/circuit-breaker`](https://eridu-tech.github.io/eridu-tech-core/modules/CircuitBreaker.html) API docs.
