@@ -436,15 +436,15 @@ Here is an example where `InvalidGraphDiError` is thrown.
 
 Thrown when a service cannot be resolved. It has the following flags:
 
-| Flag                                                        | Description                                                                                                               |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `NOT_REGISTERED_TOKEN`                                      | Thrown when the token is not registered.                                                                                  |
+| Flag                                                        | Description                                                                                                     |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `NOT_REGISTERED_TOKEN`                                      | Thrown when the token is not registered.                                                                        |
 | `SCOPED_SERVICE_OUTSIDE_RUN`                                | Thrown when a scoped service is resolved outside a [`run()`](#scoped) scope.                                    |
 | `DYNAMIC_SERVICE_OUTSIDE_RUN`                               | Thrown when a dynamic service is resolved outside a [`run()`](#scoped) scope.                                   |
 | `TRANSIENT_SERVICE_DEPEND_ON_SCOPED_WHO_CALLED_OUTSIDE_RUN` | Thrown when a transient service depends on a scoped service and is resolved outside a [`run()`](#scoped) scope. |
-| `RESOLVED_VALUE_IS_NULL`                                    | Thrown when the resolved value is `null`.                                                                                 |
-| `NO_DYNAMIC_VALUE_SET_FOR_TOKENS`                           | Thrown when a dynamic token has no value set.                                                                             |
-| `DYNAMIC_SERVICE_PROVIDER_NOT_DYNAMIC_TOKEN`                | Thrown when the token provided to a dynamic service provider is not a dynamic token.                                      |
+| `RESOLVED_VALUE_IS_NULL`                                    | Thrown when the resolved value is `null`.                                                                       |
+| `NO_DYNAMIC_VALUE_SET_FOR_TOKENS`                           | Thrown when a dynamic token has no value set.                                                                   |
+| `DYNAMIC_SERVICE_PROVIDER_NOT_DYNAMIC_TOKEN`                | Thrown when the token provided to a dynamic service provider is not a dynamic token.                            |
 
 ```ts file=./samples/error_can_not_resolve_service.ts
 
@@ -470,12 +470,12 @@ Here is an example where `CanNotOverrideServiceDiError` is thrown.
 
 Thrown when a container method is called at an invalid time or context. It has the following flags:
 
-| Flag                          | Description                                                                                            |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `NOT_ACTIVE`                  | Thrown when a method is called while the container is not active (not initialized).                    |
-| `ALREADY_INITIALIZED`         | Thrown when a registration method is called after the container was initialized.                       |
+| Flag                          | Description                                                                                  |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| `NOT_ACTIVE`                  | Thrown when a method is called while the container is not active (not initialized).          |
+| `ALREADY_INITIALIZED`         | Thrown when a registration method is called after the container was initialized.             |
 | `INSIDE_RUN`                  | Thrown when a method is called inside a [`run()`](#scoped) scope where it is not allowed.    |
-| `INSIDE_DYNAMIC_REGISTRATION` | Thrown when a method is called inside the dynamic `registration` callback.                             |
+| `INSIDE_DYNAMIC_REGISTRATION` | Thrown when a method is called inside the dynamic `registration` callback.                   |
 | `OUTSIDE_RUN`                 | Thrown when a method is called outside a [`run()`](#scoped) scope where a scope is required. |
 
 Here is an example where `InvalidMethodCallDiError` is thrown.
