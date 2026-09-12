@@ -36,13 +36,13 @@ keywords:
 
 To use the `MemoryCacheAdapter` you only need to create instance of it:
 
-```ts file=./configuring_cache_adapters-samples/memory_cache_adapter.ts
+```ts file=./samples/memory_cache_adapter.ts
 
 ```
 
 You can also provide an `Map` that will be used for storing the data in memory:
 
-```ts file=./configuring_cache_adapters-samples/memory_cache_adapter_with_map.ts
+```ts file=./samples/memory_cache_adapter_with_map.ts
 
 ```
 
@@ -54,7 +54,7 @@ You can also provide an `Map` that will be used for storing the data in memory:
 
 To clean up expired cache keys, call `removeAllExpired` at a regular interval (for example, using a cron job):
 
-```ts file=./configuring_cache_adapters-samples/memory_cache_remove_all_expired.ts
+```ts file=./samples/memory_cache_remove_all_expired.ts
 
 ```
 
@@ -65,7 +65,7 @@ Note `removeAllExpired` must be called to remove expired data that is no longer 
 :::info
 To remove the cache map and all stored cache data, use `deInit` method:
 
-```ts file=./configuring_cache_adapters-samples/memory_cache_adapter_deinit.ts
+```ts file=./samples/memory_cache_adapter_deinit.ts
 
 ```
 
@@ -77,30 +77,30 @@ To use the `MongodbCacheAdapter`, you'll need to:
 
 1. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package:
 
-2. Provide a string serializer ([`ISerde`](../serde/serde.md)):
+2. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
 
 -We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./configuring_cache_adapters-samples/mongodb_cache_adapter_init.ts
+```ts file=./samples/mongodb_cache_adapter_init.ts
 
 ```
 
 You can change the collection name:
 
-```ts file=./configuring_cache_adapters-samples/mongodb_cache_collection_name.ts
+```ts file=./samples/mongodb_cache_collection_name.ts
 
 ```
 
 You can change the collection settings:
 
-```ts file=./configuring_cache_adapters-samples/mongodb_cache_collection_settings.ts
+```ts file=./samples/mongodb_cache_collection_settings.ts
 
 ```
 
 :::info
 To remove the cache collection and all stored cache data, use `deInit` method:
 
-```ts file=./configuring_cache_adapters-samples/mongodb_cache_adapter_deinit.ts
+```ts file=./samples/mongodb_cache_adapter_deinit.ts
 
 ```
 
@@ -111,11 +111,11 @@ To remove the cache collection and all stored cache data, use `deInit` method:
 To use the `RedisCacheAdapter`, you'll need to:
 
 1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package:
-2. Provide a string serializer ([`ISerde`](../serde/serde.md)):
+2. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./configuring_cache_adapters-samples/redis_cache_adapter.ts
+```ts file=./samples/redis_cache_adapter.ts
 
 ```
 
@@ -124,7 +124,7 @@ To use the `RedisCacheAdapter`, you'll need to:
 To use the `KyselyCacheAdapter`, you'll need to:
 
 1. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package:
-2. Provide a string serializer ([`ISerde`](../serde/serde.md)):
+2. Provide a string serializer ([`ISerde`](../../serde/serde.md)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
@@ -132,7 +132,7 @@ To use the `KyselyCacheAdapter`, you'll need to:
 
 You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3) package:
 
-```ts file=./configuring_cache_adapters-samples/kysely_cache_sqlite.ts
+```ts file=./samples/kysely_cache_sqlite.ts
 
 ```
 
@@ -140,7 +140,7 @@ You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better
 
 You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
-```ts file=./configuring_cache_adapters-samples/kysely_cache_postgres.ts
+```ts file=./samples/kysely_cache_postgres.ts
 
 ```
 
@@ -148,7 +148,7 @@ You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
 You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) package:
 
-```ts file=./configuring_cache_adapters-samples/kysely_cache_mysql.ts
+```ts file=./samples/kysely_cache_mysql.ts
 
 ```
 
@@ -156,7 +156,7 @@ You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) packag
 
 You will need to install [`@libsql/kysely-libsql`](https://www.npmjs.com/package/@libsql/kysely-libsql) package:
 
-```ts file=./configuring_cache_adapters-samples/kysely_cache_libsql.ts
+```ts file=./samples/kysely_cache_libsql.ts
 
 ```
 
@@ -173,14 +173,14 @@ you won't be able to use following methods `put` and `increment`, as they requir
 
 To clean up expired cache keys, call `removeAllExpired` at a regular interval (for example, using a cron job):
 
-```ts file=./configuring_cache_adapters-samples/kysely_cache_remove_all_expired.ts
+```ts file=./samples/kysely_cache_remove_all_expired.ts
 
 ```
 
 :::info
 To remove the cache table and all stored cache data, use `deInit` method:
 
-```ts file=./configuring_cache_adapters-samples/kysely_cache_adapter_deinit.ts
+```ts file=./samples/kysely_cache_adapter_deinit.ts
 
 ```
 
@@ -190,7 +190,7 @@ To remove the cache table and all stored cache data, use `deInit` method:
 
 The `NoOpCacheAdapter` is a no-operation implementation, it performs no actions when called:
 
-```ts file=./configuring_cache_adapters-samples/no_op_cache_adapter.ts
+```ts file=./samples/no_op_cache_adapter.ts
 
 ```
 

@@ -49,7 +49,7 @@ Methods that do not accept a key (`removeAll`) are unaffected.
 
 ### Usage
 
-```ts file=./cache_plugin-samples/with_cache_prefix.ts
+```ts file=./samples/with_cache_prefix.ts
 
 ```
 
@@ -57,13 +57,13 @@ Methods that do not accept a key (`removeAll`) are unaffected.
 
 **Before** — Keys are stored as-is:
 
-```ts file=./cache_plugin-samples/unprefixed_lookup.ts
+```ts file=./samples/unprefixed_lookup.ts
 
 ```
 
 **After** — Keys are automatically prefixed:
 
-```ts file=./cache_plugin-samples/prefixed_lookup.ts
+```ts file=./samples/prefixed_lookup.ts
 
 ```
 
@@ -79,7 +79,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 The `removeMany` method receives an array of keys. The plugin maps over the array, prefixing each entry:
 
-```ts file=./cache_plugin-samples/remove_many_prefix.ts
+```ts file=./samples/remove_many_prefix.ts
 
 ```
 
@@ -107,7 +107,7 @@ The jitter is calculated as a random percentage of the original TTL. For example
 
 ### Usage
 
-```ts file=./cache_plugin-samples/with_cache_jitter.ts
+```ts file=./samples/with_cache_jitter.ts
 
 ```
 
@@ -127,7 +127,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withCacheWriteLock plugin
 
-The Cache write lock plugin acquires a distributed lock before executing mutating cache operations. It wraps write operations (`add`, `put`, `update`, `increment`, `getAndRemove`, `removeMany`) with a lock acquired via an [`ILockFactory`](../lock/lock_usage.md), ensuring that concurrent writes to the same cache entry are serialised.
+The Cache write lock plugin acquires a distributed lock before executing mutating cache operations. It wraps write operations (`add`, `put`, `update`, `increment`, `getAndRemove`, `removeMany`) with a lock acquired via an [`ILockFactory`](../../lock/lock_usage/index.md), ensuring that concurrent writes to the same cache entry are serialised.
 
 ### Use cases
 
@@ -158,7 +158,7 @@ Read-only methods (`get`, `removeAll`, `removeByPrefix`) are unaffected.
 
 ### Usage
 
-```ts file=./cache_plugin-samples/with_cache_write_lock.ts
+```ts file=./samples/with_cache_write_lock.ts
 
 ```
 
@@ -175,5 +175,5 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/middleware#plugin) documentation.
-For more information about lock factories, see the [Lock](../lock/lock_usage.md) documentation.
+For more information about lock factories, see the [Lock](../../lock/lock_usage/index.md) documentation.
 :::
