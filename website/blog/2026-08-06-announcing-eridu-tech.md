@@ -10,6 +10,8 @@ date: 2026-08-06
 
 **eridu-tech is a framework-agnostic backend foundation for TypeScript: composable infrastructure components, middleware, configuration, and HTTP routing that can be embedded into the framework you already use.**
 
+<!-- truncate -->
+
 ## My story
 
 Four years ago, I tried running NestJS inside Next.js. It wasn't as simple as I expected. Embedding NestJS's server meant relying on Next.js configuration that wasn't typed, while using NestJS as a DI container depended on TypeScript's experimental decorators, which didn't work well with Next.js.
