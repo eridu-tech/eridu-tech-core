@@ -1,5 +1,4 @@
 ---
-slug: /components/backoff_policies
 tags:
     - Utilities
 keywords:
