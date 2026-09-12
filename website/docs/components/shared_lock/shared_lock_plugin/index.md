@@ -42,7 +42,7 @@ The plugin prefixes keys for the following methods:
 
 ### Usage
 
-```ts file=./samples/with_shared_lock_prefix.ts
+```ts file=./samples/with-shared-lock-prefix.ts
 
 ```
 
@@ -50,13 +50,13 @@ The plugin prefixes keys for the following methods:
 
 **Before** — Shared lock keys are used as-is:
 
-```ts file=./samples/unprefixed_acquire_writer.ts
+```ts file=./samples/unprefixed-acquire-writer.ts
 
 ```
 
 **After** — Shared lock keys are automatically prefixed:
 
-```ts file=./samples/prefixed_acquire_writer.ts
+```ts file=./samples/prefixed-acquire-writer.ts
 
 ```
 
