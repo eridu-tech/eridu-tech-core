@@ -7,7 +7,14 @@
  * we only call `app.convert()` — never `app.generateDocs()` — no HTML docs are
  * produced.
  */
-import { readFileSync, readdirSync, rmSync, mkdirSync, renameSync, createWriteStream } from "node:fs";
+import {
+    readFileSync,
+    readdirSync,
+    rmSync,
+    mkdirSync,
+    renameSync,
+    createWriteStream,
+} from "node:fs";
 import { resolve, dirname, join, relative, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Application, TSConfigReader } from "typedoc";
@@ -48,7 +55,8 @@ const walk = (dir) => {
 const entryPoints = [];
 for (const pattern of config.entryPoints ?? []) {
     const doubleStar = pattern.indexOf("**");
-    const base = doubleStar === -1 ? dirname(pattern) : pattern.slice(0, doubleStar);
+    const base =
+        doubleStar === -1 ? dirname(pattern) : pattern.slice(0, doubleStar);
     const baseDir = resolve(here, base);
     for (const file of walk(baseDir)) {
         const rel = relative(repoRoot, file).replace(/\\/g, "/");
@@ -96,7 +104,9 @@ rmSync(resolve(here, "static/skills"), { recursive: true, force: true }); // dro
 mkdirSync(zipOutDir, { recursive: true });
 
 // Rename the inner package folder (e.g. "eridu-tech") to the configured zip name
-const innerDir = readdirSync(tempDir, { withFileTypes: true }).find((e) => e.isDirectory());
+const innerDir = readdirSync(tempDir, { withFileTypes: true }).find((e) =>
+    e.isDirectory(),
+);
 if (innerDir && innerDir.name !== zipName) {
     renameSync(join(tempDir, innerDir.name), join(tempDir, zipName));
 }
