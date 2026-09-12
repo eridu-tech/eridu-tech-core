@@ -1,3 +1,3 @@
-import { fileStorage } from "./file_storage_initial_config.js";
+import { fileStorage } from "./file-storage-initial-config.js";
 
 await fileStorage.create("source.txt").copy("destination.txt");

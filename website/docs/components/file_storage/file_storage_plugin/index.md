@@ -65,7 +65,7 @@ For the `copy`, `copyAndReplace`, `move`, and `moveAndReplace` methods, booth th
 
 ### Usage
 
-```ts file=./samples/with_file_storage_prefix.ts
+```ts file=./samples/with-file-storage-prefix.ts
 
 ```
 
@@ -73,13 +73,13 @@ For the `copy`, `copyAndReplace`, `move`, and `moveAndReplace` methods, booth th
 
 **Before** — File keys are used as-is:
 
-```ts file=./samples/unprefixed_get_bytes.ts
+```ts file=./samples/unprefixed-get-bytes.ts
 
 ```
 
 **After** — File keys are automatically prefixed:
 
-```ts file=./samples/prefixed_get_bytes.ts
+```ts file=./samples/prefixed-get-bytes.ts
 
 ```
 
@@ -95,7 +95,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 The `removeMany` method receives an array of keys. The plugin maps over the array, prefixing each entry:
 
-```ts file=./samples/remove_many_prefix.ts
+```ts file=./samples/remove-many-prefix.ts
 
 ```
 
@@ -142,13 +142,13 @@ All methods are protected by default:
 
 ### Usage
 
-```ts file=./samples/with_file_storage_lock.ts
+```ts file=./samples/with-file-storage-lock.ts
 
 ```
 
 #### Restricting protected methods
 
-```ts file=./samples/file_storage_lock_only_methods.ts
+```ts file=./samples/file-storage-lock-only-methods.ts
 
 ```
 
@@ -211,13 +211,13 @@ The plugin validates keys for the following methods:
 
 ### Usage
 
-```ts file=./samples/with_file_storage_key_validator.ts
+```ts file=./samples/with-file-storage-key-validator.ts
 
 ```
 
 #### Custom validator
 
-```ts file=./samples/file_storage_key_validator_custom.ts
+```ts file=./samples/file-storage-key-validator-custom.ts
 
 ```
 
@@ -269,7 +269,7 @@ The plugin lowercases keys for the following methods:
 
 ### Usage
 
-```ts file=./samples/with_file_storage_lower_case.ts
+```ts file=./samples/with-file-storage-lower-case.ts
 
 ```
 
@@ -310,13 +310,13 @@ The plugin infers the content type for the following methods:
 
 ### Usage
 
-```ts file=./samples/with_file_storage_infer_content_type_on_write.ts
+```ts file=./samples/with-file-storage-infer-content-type-on-write.ts
 
 ```
 
 #### Disabling inference for signed URLs
 
-```ts file=./samples/file_storage_infer_content_type_disable_signed.ts
+```ts file=./samples/file-storage-infer-content-type-disable-signed.ts
 
 ```
 
@@ -352,7 +352,7 @@ The plugin only affects the `getMetaData` method.
 
 ### Usage
 
-```ts file=./samples/with_file_storage_infer_content_type_on_read.ts
+```ts file=./samples/with-file-storage-infer-content-type-on-read.ts
 
 ```
 
@@ -387,7 +387,7 @@ The plugin infers the content type for the following methods:
 
 ### Usage
 
-```ts file=./samples/with_file_storage_infer_file_type_on_write.ts
+```ts file=./samples/with-file-storage-infer-file-type-on-write.ts
 
 ```
 
@@ -418,7 +418,7 @@ The plugin only affects the `getMetaData` method.
 
 ### Usage
 
-```ts file=./samples/with_file_storage_infer_file_type_on_read.ts
+```ts file=./samples/with-file-storage-infer-file-type-on-read.ts
 
 ```
 

@@ -36,13 +36,13 @@ keywords:
 
 To use the `MemoryFileStorageAdapter` you only need to create instance of it:
 
-```ts file=./samples/memory_file_storage_adapter.ts
+```ts file=./samples/memory-file-storage-adapter.ts
 
 ```
 
 You can also provide an `Map` that will be used for storing the files in memory:
 
-```ts file=./samples/memory_file_storage_adapter_with_map.ts
+```ts file=./samples/memory-file-storage-adapter-with-map.ts
 
 ```
 
@@ -58,19 +58,19 @@ Note this adapter doesnt have support for creating signed upload, signed downloa
 
 To use the `FsFileStorageAdapter` you only need to create instance of it:
 
-```ts file=./samples/fs_file_storage_adapter.ts
+```ts file=./samples/fs-file-storage-adapter.ts
 
 ```
 
 You can configure the root folder:
 
-```ts file=./samples/fs_file_storage_adapter_custom_location.ts
+```ts file=./samples/fs-file-storage-adapter-custom-location.ts
 
 ```
 
 You can configure codec used for file names:
 
-```ts file=./samples/fs_file_storage_adapter_with_codec.ts
+```ts file=./samples/fs-file-storage-adapter-with-codec.ts
 
 ```
 
@@ -89,13 +89,13 @@ To use the `S3FileStorageAdapter`, you'll need to:
 
 1. Install the required dependency: [`@aws-sdk/client-s3`](https://www.npmjs.com/package/@aws-sdk/client-s3) package:
 
-```ts file=./samples/s3_file_storage_adapter.ts
+```ts file=./samples/s3-file-storage-adapter.ts
 
 ```
 
 Other settings:
 
-```ts file=./samples/s3_file_storage_adapter_settings.ts
+```ts file=./samples/s3-file-storage-adapter-settings.ts
 
 ```
 
@@ -124,13 +124,13 @@ To use the `SignedFileStorageAdapter` you need to provide:
 
 Basic usage:
 
-```ts file=./samples/signed_file_storage_adapter.ts
+```ts file=./samples/signed-file-storage-adapter.ts
 
 ```
 
 You can provide the URL methods that your storage backend supports:
 
-```ts file=./samples/signed_file_storage_adapter_url_methods.ts
+```ts file=./samples/signed-file-storage-adapter-url-methods.ts
 
 ```
 
@@ -146,7 +146,7 @@ Any omitted URL method falls back to a no-op implementation:
 
 The `NoOpFileStorageAdapter` is a no-operation implementation, it performs no actions when called:
 
-```ts file=./samples/no_op_file_storage_adapter.ts
+```ts file=./samples/no-op-file-storage-adapter.ts
 
 ```
 

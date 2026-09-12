@@ -1,4 +1,4 @@
-import { fileStorage } from "./file_storage_initial_config.js";
+import { fileStorage } from "./file-storage-initial-config.js";
 import { createReadStream } from "node:fs";
 
 const fileStream = createReadStream("./file.txt");

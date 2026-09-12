@@ -1,5 +1,5 @@
 import { TimeSpan } from "eridu-tech/time-span";
-import { fileStorage } from "./file_storage_initial_config.js";
+import { fileStorage } from "./file-storage-initial-config.js";
 
 const uploadUrl = await fileStorage.create("source.txt").getSignedUploadUrl({
     // All settings are optional

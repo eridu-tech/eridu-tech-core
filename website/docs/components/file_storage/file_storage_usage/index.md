@@ -18,7 +18,7 @@ The `eridu-tech/file-storage` component provides a way for managing files indepe
 
 To begin using the `FileStorage` class, you'll need to create and configure an instance:
 
-```ts file=./samples/file_storage_initial_config.ts
+```ts file=./samples/file-storage-initial-config.ts
 
 ```
 
@@ -30,7 +30,7 @@ Here is a complete list of settings for the [`FileStorage`](https://eridu-tech.g
 
 ### Creating a file object
 
-```ts file=./samples/file_storage_create_file.ts
+```ts file=./samples/file-storage-create-file.ts
 
 ```
 
@@ -42,19 +42,19 @@ Note the file object represents a reference to a file and doesnt create the real
 
 You can add a file and true is returned if the file does not exists:
 
-```ts file=./samples/file_storage_add.ts
+```ts file=./samples/file-storage-add.ts
 
 ```
 
 You can update a file and true will be returned if the file exists and was updated:
 
-```ts file=./samples/file_storage_update.ts
+```ts file=./samples/file-storage-update.ts
 
 ```
 
 You can upsert a file and true will be returned if the file was updated otherwise false is returned:
 
-```ts file=./samples/file_storage_put.ts
+```ts file=./samples/file-storage-put.ts
 
 ```
 
@@ -82,7 +82,7 @@ But usually you would use `Uint8Array` because it represents data as bytes.
 
 You can pass additional optional metadata information to `add`, `update` and `put`:
 
-```ts file=./samples/file_storage_add_with_metadata.ts
+```ts file=./samples/file-storage-add-with-metadata.ts
 
 ```
 
@@ -90,19 +90,19 @@ You can pass additional optional metadata information to `add`, `update` and `pu
 
 You can add a file stream and true is returned if the file does not exists:
 
-```ts file=./samples/file_storage_add_stream.ts
+```ts file=./samples/file-storage-add-stream.ts
 
 ```
 
 You can update a file stream and true will be returned if the file exists and was updated:
 
-```ts file=./samples/file_storage_update_stream.ts
+```ts file=./samples/file-storage-update-stream.ts
 
 ```
 
 You can upsert a file stream and true will be returned if the file was updated otherwise false is returned:
 
-```ts file=./samples/file_storage_put_stream.ts
+```ts file=./samples/file-storage-put-stream.ts
 
 ```
 
@@ -130,13 +130,13 @@ But usually you would use `AsyncIterable<Uint8Array>` because it represents stre
 
 You can pass additional optional metadata information to `addStrem`, `updateStream` and `putStream`:
 
-```ts file=./samples/file_storage_add_stream_with_metadata.ts
+```ts file=./samples/file-storage-add-stream-with-metadata.ts
 
 ```
 
 You can also pass the file-size of the stream which used for optimizations by some adapters:
 
-```ts file=./samples/file_storage_add_stream_with_file_size.ts
+```ts file=./samples/file-storage-add-stream-with-file-size.ts
 
 ```
 
@@ -148,25 +148,25 @@ It is best practice to pass file-size whenever possible because of the optimizat
 
 The file can be read as utf8 text:
 
-```ts file=./samples/file_storage_get_text.ts
+```ts file=./samples/file-storage-get-text.ts
 
 ```
 
 The file can be read as `Uint8Array`:
 
-```ts file=./samples/file_storage_get_bytes.ts
+```ts file=./samples/file-storage-get-bytes.ts
 
 ```
 
 The file can be read as web `ArrayBuffer`:
 
-```ts file=./samples/file_storage_get_array_buffer.ts
+```ts file=./samples/file-storage-get-array-buffer.ts
 
 ```
 
 The file can be read as web stream:
 
-```ts file=./samples/file_storage_get_readable_stream.ts
+```ts file=./samples/file-storage-get-readable-stream.ts
 
 ```
 
@@ -178,13 +178,13 @@ Note all this methods return null if the file doesnt exists.
 
 You can check if the file exists:
 
-```ts file=./samples/file_storage_exists.ts
+```ts file=./samples/file-storage-exists.ts
 
 ```
 
 You can check if the file doesnt exists:
 
-```ts file=./samples/file_storage_missing.ts
+```ts file=./samples/file-storage-missing.ts
 
 ```
 
@@ -192,13 +192,13 @@ You can check if the file doesnt exists:
 
 You can remove a file and true will be returned if the file exists and was removed:
 
-```ts file=./samples/file_storage_remove.ts
+```ts file=./samples/file-storage-remove.ts
 
 ```
 
 You can remove multiple files and true will be returned when at least one file exists and was removed:
 
-```ts file=./samples/file_storage_remove_many.ts
+```ts file=./samples/file-storage-remove-many.ts
 
 ```
 
@@ -206,7 +206,7 @@ You can remove multiple files and true will be returned when at least one file e
 
 You can retrieve the file metadata. Null is returned if the file doesnt exists:
 
-```ts file=./samples/file_storage_get_metadata.ts
+```ts file=./samples/file-storage-get-metadata.ts
 
 ```
 
@@ -233,7 +233,7 @@ These variants are equivalent to the standard methods but throw an error if the 
 
 You can copy a file. True is returned if the source exists and destination doesnt exists:
 
-```ts file=./samples/file_storage_copy.ts
+```ts file=./samples/file-storage-copy.ts
 
 ```
 
@@ -241,7 +241,7 @@ Use `copyOrFail` method to perform the same operations as the `copy` method but 
 
 You can copy a file and repalce the destination. True is returned if the source exists:
 
-```ts file=./samples/file_storage_copy_and_replace.ts
+```ts file=./samples/file-storage-copy-and-replace.ts
 
 ```
 
@@ -251,7 +251,7 @@ Use `copyAndReplaceOrFail` method to perform the same operations as the `copyAnd
 
 You can move a file. True is returned if the source exists and destination doesnt exists:
 
-```ts file=./samples/file_storage_move.ts
+```ts file=./samples/file-storage-move.ts
 
 ```
 
@@ -259,7 +259,7 @@ Use `moveOrFail` method to perform the same operations as the `move` method but 
 
 You can move a file and repalce the destination. True is returned if the source exists:
 
-```ts file=./samples/file_storage_move_and_replace.ts
+```ts file=./samples/file-storage-move-and-replace.ts
 
 ```
 
@@ -273,7 +273,7 @@ Upload url methods:
 
 - getSignedUploadUrl: Returns the signed upload url string.
 
-```ts file=./samples/file_storage_get_signed_upload_url.ts
+```ts file=./samples/file-storage-get-signed-upload-url.ts
 
 ```
 
@@ -284,7 +284,7 @@ Download url methods:
 - getSignedDownloadUrl: Returns the signed download url string, or null if the file does not exist.
 - getSignedDownloadUrlOrFail: Returns the signed download url string, but throws an error if the file is missing.
 
-```ts file=./samples/file_storage_get_signed_download_url.ts
+```ts file=./samples/file-storage-get-signed-download-url.ts
 
 ```
 
@@ -293,7 +293,7 @@ Use these methods to retrieve a permanent link to a file that is publicly access
 - `getPublicUrl`: Returns the public url as a string, or null if the file does not exist.
 - `getPublicUrlOrFail`: Returns the public url, but throws an error if the file is missing.
 
-```ts file=./samples/file_storage_get_public_url.ts
+```ts file=./samples/file-storage-get-public-url.ts
 
 ```
 
@@ -301,7 +301,7 @@ Use these methods to retrieve a permanent link to a file that is publicly access
 
 The `File` class exposes the key instance variable which is the filename:
 
-```ts file=./samples/file_storage_instance_variables.ts
+```ts file=./samples/file-storage-instance-variables.ts
 
 ```
 
@@ -318,7 +318,7 @@ In order to serialize or deserialize a file object you need pass an object that 
 
 Manually serializing and deserializing the file object:
 
-```ts file=./samples/file_storage_manual_serialization.ts
+```ts file=./samples/file-storage-manual-serialization.ts
 
 ```
 
@@ -332,7 +332,7 @@ Note you only need manuall serialization and deserialization when integrating wi
 
 As long you pass the same `Serde` instances with all other components you dont need to serialize and deserialize the file object manually.
 
-```ts file=./samples/file_storage_event_bus_serialization.ts
+```ts file=./samples/file-storage-event-bus-serialization.ts
 
 ```
 
