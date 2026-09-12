@@ -7,7 +7,11 @@ export type ComponentSection = {
     items: readonly ComponentItemProps[];
 };
 
-export function ComponentIndex({ sections }: { sections: readonly ComponentSection[] }) {
+export function ComponentIndex({
+    sections,
+}: {
+    sections: readonly ComponentSection[];
+}) {
     return (
         <>
             {sections.map((section) => {

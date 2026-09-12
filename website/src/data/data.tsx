@@ -927,7 +927,9 @@ export const MIDDLEWARE_EXISTING_ITEMS: ComponentItemProps[] = [
         title: <>retry</>,
         link: "/docs/components/resilience",
         description: (
-            <>Retries the wrapped function up to a maximum number of attempts.</>
+            <>
+                Retries the wrapped function up to a maximum number of attempts.
+            </>
         ),
     },
     {
