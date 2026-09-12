@@ -1,5 +1,4 @@
 ---
-slug: /components/file_size
 tags:
     - Utilities
 keywords:
