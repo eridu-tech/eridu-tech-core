@@ -2,16 +2,22 @@ import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
+import { contextToken } from "@/execution-context/contracts/_module.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
 import { KyselyRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-storage-adapter/_module.js";
 import { rateLimiterStorageAdapterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
 import { Serde } from "@/serde/implementations/derivables/serde.js";
 import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
 
 import type { Database } from "better-sqlite3";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 
 import type { KyselyRateLimiterStorageTables } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-storage-adapter/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 
 describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
     let database: Database;
@@ -28,10 +34,28 @@ describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
     afterEach(() => {
         database.close();
     });
+    function createTrxCtx(
+        database_: Database,
+    ): ITransactionContext<Kysely<KyselyRateLimiterStorageTables>> {
+        return new TransactionContext({
+            token: contextToken("kysely"),
+            executionContext: new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            ),
+            adapter: new KyselyTransactionAdapter({
+                database: new Kysely({
+                    dialect: new SqliteDialect({
+                        database: database_,
+                    }),
+                }),
+            }),
+        });
+    }
+
     rateLimiterStorageAdapterTestSuite({
         createAdapter: async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -45,7 +69,7 @@ describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
     describe("method: removeAllExpired", () => {
         test("Should remove all expired keys", async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -78,7 +102,7 @@ describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
     describe("method: init", () => {
         test("Should create rateLimiter table", async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -114,7 +138,7 @@ describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -127,7 +151,7 @@ describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
     describe("method: deInit", () => {
         test("Should remove rateLimiter table", async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -143,7 +167,7 @@ describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -155,7 +179,7 @@ describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
         });
         test("Should not throw error when called before init", async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
 

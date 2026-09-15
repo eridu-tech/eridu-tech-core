@@ -3,15 +3,21 @@ import { Kysely, MysqlDialect } from "kysely";
 import { createPool } from "mysql2";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
+import { contextToken } from "@/execution-context/contracts/_module.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
 import { KyselySharedLockAdapter } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module.js";
 import { sharedLockAdapterTestSuite } from "@/shared-lock/implementations/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
 
 import type { StartedMySqlContainer } from "@testcontainers/mysql";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 import type { Pool } from "mysql2";
 
 import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("mysql class: KyselySharedLockAdapter", () => {
@@ -47,10 +53,28 @@ describe("mysql class: KyselySharedLockAdapter", () => {
         });
         await container.stop();
     }, timeout.toMilliseconds());
+    function createTrxCtx(
+        database_: Pool,
+    ): ITransactionContext<Kysely<KyselySharedLockTables>> {
+        return new TransactionContext({
+            token: contextToken("kysely"),
+            executionContext: new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            ),
+            adapter: new KyselyTransactionAdapter({
+                database: new Kysely({
+                    dialect: new MysqlDialect({
+                        pool: database_,
+                    }),
+                }),
+            }),
+        });
+    }
+
     sharedLockAdapterTestSuite({
         createAdapter: async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             return adapter;
@@ -63,7 +87,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
     describe("method: removeAllExpired", () => {
         test("Should remove all expired writer locks", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -118,7 +142,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
         });
         test("Should remove all expired reader semaphores", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -199,7 +223,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
     describe("method: init", () => {
         test("Should create writerLock table", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -234,7 +258,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
         });
         test("Should create readerSemaphore table", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -263,7 +287,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
         });
         test("Should create readerSemaphoreSlot table", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -298,7 +322,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -310,7 +334,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
     describe("method: deInit", () => {
         test("Should remove writer lock table", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -325,7 +349,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
         });
         test("Should remove readerSemaphore table", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -340,7 +364,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
         });
         test("Should remove readerSemaphoreSlot table", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -355,7 +379,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -365,7 +389,7 @@ describe("mysql class: KyselySharedLockAdapter", () => {
         });
         test("Should not throw error when called before init", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             const promise = adapter.deInit();
             await adapter.init();

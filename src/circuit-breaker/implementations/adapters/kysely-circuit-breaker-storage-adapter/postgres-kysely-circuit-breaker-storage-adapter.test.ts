@@ -5,14 +5,20 @@ import { describe, test, expect, beforeEach, afterEach } from "vitest";
 
 import { KyselyCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-storage-adapter/kysely-circuit-breaker-storage-adapter.js";
 import { circuitBreakerStorageAdapterTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module.js";
+import { contextToken } from "@/execution-context/contracts/_module.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module.js";
 import { Serde } from "@/serde/implementations/derivables/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
 
 import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql/build/postgresql-container.js";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 
 import type { KyselyCircuitBreakerStorageTables } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-storage-adapter/kysely-circuit-breaker-storage-adapter.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("postgres class: KyselyCircuitBreakerStorageAdapter", () => {
@@ -40,11 +46,28 @@ describe("postgres class: KyselyCircuitBreakerStorageAdapter", () => {
         await database.end();
         await container.stop();
     }, timeout.toMilliseconds());
+    function createTrxCtx(
+        database_: Pool,
+    ): ITransactionContext<Kysely<KyselyCircuitBreakerStorageTables>> {
+        return new TransactionContext({
+            token: contextToken("kysely"),
+            executionContext: new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            ),
+            adapter: new KyselyTransactionAdapter({
+                database: new Kysely({
+                    dialect: new PostgresDialect({
+                        pool: database_,
+                    }),
+                }),
+            }),
+        });
+    }
 
     circuitBreakerStorageAdapterTestSuite({
         createAdapter: async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -58,7 +81,7 @@ describe("postgres class: KyselyCircuitBreakerStorageAdapter", () => {
     describe("method: init", () => {
         test("Should create lock table", async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -88,7 +111,7 @@ describe("postgres class: KyselyCircuitBreakerStorageAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -101,7 +124,7 @@ describe("postgres class: KyselyCircuitBreakerStorageAdapter", () => {
     describe("method: deInit", () => {
         test("Should remove circuit breaker table", async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -117,7 +140,7 @@ describe("postgres class: KyselyCircuitBreakerStorageAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
@@ -129,7 +152,7 @@ describe("postgres class: KyselyCircuitBreakerStorageAdapter", () => {
         });
         test("Should not throw error when called before init", async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
 

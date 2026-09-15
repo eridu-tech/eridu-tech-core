@@ -3,14 +3,20 @@ import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
+import { contextToken } from "@/execution-context/contracts/_module.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
 import { KyselySemaphoreAdapter } from "@/semaphore/implementations/adapters/kysely-semaphore-adapter/_module.js";
 import { semaphoreAdapterTestSuite } from "@/semaphore/implementations/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
 
 import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 
 import type { KyselySemaphoreTables } from "@/semaphore/implementations/adapters/kysely-semaphore-adapter/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("postgres class: KyselySemaphoreAdapter", () => {
@@ -37,10 +43,28 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
         await database.end();
         await container.stop();
     }, timeout.toMilliseconds());
+    function createTrxCtx(
+        database_: Pool,
+    ): ITransactionContext<Kysely<KyselySemaphoreTables>> {
+        return new TransactionContext({
+            token: contextToken("kysely"),
+            executionContext: new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            ),
+            adapter: new KyselyTransactionAdapter({
+                database: new Kysely({
+                    dialect: new PostgresDialect({
+                        pool: database_,
+                    }),
+                }),
+            }),
+        });
+    }
+
     semaphoreAdapterTestSuite({
         createAdapter: async () => {
             const adapter = new KyselySemaphoreAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             return adapter;
@@ -53,7 +77,7 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
     describe("method: removeAllExpired", () => {
         test("Should remove all expired keys", async () => {
             const adapter = new KyselySemaphoreAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -109,7 +133,7 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
     describe("method: init", () => {
         test("Should create semaphore table", async () => {
             const adapter = new KyselySemaphoreAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -138,7 +162,7 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
         });
         test("Should create semaphoreSlot table", async () => {
             const adapter = new KyselySemaphoreAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -173,7 +197,7 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselySemaphoreAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -185,7 +209,7 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
     describe("method: deInit", () => {
         test("Should remove semaphore table", async () => {
             const adapter = new KyselySemaphoreAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -200,7 +224,7 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
         });
         test("Should remove semaphoreSlot table", async () => {
             const adapter = new KyselySemaphoreAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -215,7 +239,7 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselySemaphoreAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -225,7 +249,7 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
         });
         test("Should not throw error when called before init", async () => {
             const adapter = new KyselySemaphoreAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             const promise = adapter.deInit();
             await adapter.init();

@@ -2,14 +2,20 @@ import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
+import { contextToken } from "@/execution-context/contracts/_module.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
 import { KyselyLockAdapter } from "@/lock/implementations/adapters/kysely-lock-adapter/_module.js";
 import { lockAdapterTestSuite } from "@/lock/implementations/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
 
 import type { Database } from "better-sqlite3";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 
 import type { KyselyLockTables } from "@/lock/implementations/adapters/kysely-lock-adapter/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 
 describe("sqlite class: KyselyLockAdapter", () => {
     let database: Database;
@@ -26,10 +32,28 @@ describe("sqlite class: KyselyLockAdapter", () => {
     afterEach(() => {
         database.close();
     });
+    function createTrxCtx(
+        database_: Database,
+    ): ITransactionContext<Kysely<KyselyLockTables>> {
+        return new TransactionContext({
+            token: contextToken("kysely"),
+            executionContext: new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            ),
+            adapter: new KyselyTransactionAdapter({
+                database: new Kysely({
+                    dialect: new SqliteDialect({
+                        database: database_,
+                    }),
+                }),
+            }),
+        });
+    }
+
     lockAdapterTestSuite({
         createAdapter: async () => {
             const adapter = new KyselyLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             return adapter;
@@ -42,7 +66,7 @@ describe("sqlite class: KyselyLockAdapter", () => {
     describe("method: removeAllExpired", () => {
         test("Should remove all expired keys", async () => {
             const adapter = new KyselyLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -72,7 +96,7 @@ describe("sqlite class: KyselyLockAdapter", () => {
     describe("method: init", () => {
         test("Should create lock table", async () => {
             const adapter = new KyselyLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -107,7 +131,7 @@ describe("sqlite class: KyselyLockAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -119,7 +143,7 @@ describe("sqlite class: KyselyLockAdapter", () => {
     describe("method: deInit", () => {
         test("Should remove lock table", async () => {
             const adapter = new KyselyLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -134,7 +158,7 @@ describe("sqlite class: KyselyLockAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -145,7 +169,7 @@ describe("sqlite class: KyselyLockAdapter", () => {
         });
         test("Should not throw error when called before init", async () => {
             const adapter = new KyselyLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
 
             const promise = adapter.deInit();
