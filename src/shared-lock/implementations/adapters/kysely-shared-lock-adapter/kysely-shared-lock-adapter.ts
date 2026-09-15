@@ -13,10 +13,10 @@ import type {
     IWriterLockAdapterState,
     SharedLockAcquireSettings,
 } from "@/shared-lock/contracts/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 import type {
     IDeinitizable,
     IInitizable,
-    InvocableFn,
     IPrunable,
 } from "@/utilities/_module.js";
 
@@ -73,9 +73,11 @@ export type KyselySharedLockTables = {
  */
 export type KyselySharedLockAdapterSettings = {
     /**
-     * The Kysely database instance with the required shared-lock schema tables applied.
+     * The `TransactionContext` used to store shared-lock state.
+     *
+     * The adapter is transaction aware: its operations run inside the context's active transaction. Adapters given the same instance share the same transaction.
      */
-    kysely: Kysely<KyselySharedLockTables>;
+    transactionContext: ITransactionContext<Kysely<KyselySharedLockTables>>;
 };
 
 /**
@@ -90,52 +92,53 @@ export type KyselySharedLockAdapterSettings = {
 export class KyselySharedLockAdapter
     implements ISharedLockAdapter, IDeinitizable, IInitizable, IPrunable
 {
-    private readonly kysely: Kysely<KyselySharedLockTables>;
+    private readonly transactionContext: ITransactionContext<
+        Kysely<KyselySharedLockTables>
+    >;
     private readonly isMysql: boolean;
 
     /**
      * @example
      * ```ts
      * import { KyselySharedLockAdapter } from "eridu-tech/shared-lock/kysely-shared-lock-adapter";
+     * import { contextToken } from "eridu-tech/execution-context/contracts";
+     * import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+     * import { ExecutionContext } from "eridu-tech/execution-context";
+     * import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
+     * import { TransactionContext } from "eridu-tech/transaction-context";
      * import Sqlite from "better-sqlite3";
      * import { Kysely, SqliteDialect } from "kysely";
      *
-     * const sharedLockAdapter = new KyselySharedLockAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
+     * const transactionContext = new TransactionContext({
+     *   token: contextToken("kysely"),
+     *   executionContext: new ExecutionContext(new AlsExecutionContextAdapter()),
+     *   adapter: new KyselyTransactionAdapter({
+     *     database: new Kysely({
+     *       dialect: new SqliteDialect({
+     *         database: new Sqlite("local.db"),
+     *       }),
      *     }),
      *   }),
+     * });
+     * const sharedLockAdapter = new KyselySharedLockAdapter({
+     *   transactionContext,
      * });
      * // You need initialize the adapter once before using it.
      * await sharedLockAdapter.init();
      * ```
      */
     constructor(settings: KyselySharedLockAdapterSettings) {
-        const { kysely } = settings;
-        this.kysely = kysely;
+        const { transactionContext } = settings;
+        this.transactionContext = transactionContext;
         this.isMysql =
-            this.kysely.getExecutor().adapter instanceof MysqlAdapter;
-    }
-
-    private transaction<TValue>(
-        trxFn: InvocableFn<
-            [trx: Kysely<KyselySharedLockTables>],
-            Promise<TValue>
-        >,
-    ): Promise<TValue> {
-        return this.kysely
-            .transaction()
-            .setIsolationLevel("serializable")
-            .execute(async (trx) => {
-                return await trxFn(trx);
-            });
+            this.transactionContext.client.getExecutor().adapter instanceof
+            MysqlAdapter;
     }
 
     async init(): Promise<void> {
         // Should throw if the table already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createTable("readerSemaphore")
                 .addColumn("key", "varchar(255)", (col) =>
                     col.notNull().primaryKey(),
@@ -148,7 +151,7 @@ export class KyselySharedLockAdapter
 
         // Should throw if the table already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createTable("readerSemaphoreSlot")
                 .addColumn("id", "varchar(255)", (col) =>
                     col.notNull().primaryKey(),
@@ -169,7 +172,7 @@ export class KyselySharedLockAdapter
 
         // Should throw if the index already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createIndex("readerSemaphoreSlot_expiration_index")
                 .on("readerSemaphoreSlot")
                 .columns(["key", "expiration"])
@@ -180,7 +183,7 @@ export class KyselySharedLockAdapter
 
         // Should throw if the table already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createTable("writerLock")
                 .addColumn("key", "varchar(255)", (col) =>
                     col.primaryKey().notNull(),
@@ -194,7 +197,7 @@ export class KyselySharedLockAdapter
 
         // Should throw if the index already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createIndex("writerLock_expiration")
                 .on("writerLock")
                 .column("expiration")
@@ -211,7 +214,7 @@ export class KyselySharedLockAdapter
     async deInit(): Promise<void> {
         // Should throw if the index does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .dropIndex("readerSemaphoreSlot_expiration_index")
                 .on("readerSemaphoreSlot")
                 .execute();
@@ -221,21 +224,25 @@ export class KyselySharedLockAdapter
 
         // Should throw if the table does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema.dropTable("readerSemaphoreSlot").execute();
+            await this.transactionContext.client.schema
+                .dropTable("readerSemaphoreSlot")
+                .execute();
         } catch {
             /* EMPTY */
         }
 
         // Should throw if the table does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema.dropTable("readerSemaphore").execute();
+            await this.transactionContext.client.schema
+                .dropTable("readerSemaphore")
+                .execute();
         } catch {
             /* EMPTY */
         }
 
         // Should throw if the index does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .dropIndex("writerLock_expiration")
                 .on("writerLock")
                 .execute();
@@ -245,7 +252,9 @@ export class KyselySharedLockAdapter
 
         // Should throw if the table does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema.dropTable("writerLock").execute();
+            await this.transactionContext.client.schema
+                .dropTable("writerLock")
+                .execute();
         } catch {
             /* EMPTY */
         }
@@ -294,9 +303,13 @@ export class KyselySharedLockAdapter
     }
 
     async removeAllExpired(): Promise<void> {
-        await this.transaction(async (trx) => {
-            await KyselySharedLockAdapter.removeAllExpiredWriters(trx);
-            await KyselySharedLockAdapter.removeAllExpiredReaders(trx);
+        await this.transactionContext.run(async () => {
+            await KyselySharedLockAdapter.removeAllExpiredWriters(
+                this.transactionContext.current,
+            );
+            await KyselySharedLockAdapter.removeAllExpiredReaders(
+                this.transactionContext.current,
+            );
         });
     }
 
@@ -305,9 +318,9 @@ export class KyselySharedLockAdapter
         lockId: string,
         ttl: Date | null,
     ): Promise<boolean> {
-        return await this.transaction(async (trx) => {
+        return await this.transactionContext.run(async () => {
             // Check if a non-expired writer lock exists held by a different owner
-            const existing = await trx
+            const existing = await this.transactionContext.current
                 .selectFrom("writerLock")
                 .where("writerLock.key", "=", key)
                 .select(["writerLock.owner", "writerLock.expiration"])
@@ -324,7 +337,7 @@ export class KyselySharedLockAdapter
             }
 
             // Check if any non-expired reader slots exist
-            const readerCount = await trx
+            const readerCount = await this.transactionContext.current
                 .selectFrom("readerSemaphoreSlot")
                 .where("readerSemaphoreSlot.key", "=", key)
                 .where((eb) =>
@@ -342,7 +355,7 @@ export class KyselySharedLockAdapter
             }
 
             const expiration = ttl?.getTime() ?? null;
-            await trx
+            await this.transactionContext.current
                 .insertInto("writerLock")
                 .values({ key, owner: lockId, expiration })
                 .$if(!this.isMysql, (eb) =>
@@ -369,8 +382,8 @@ export class KyselySharedLockAdapter
 
     async releaseWriter(key: string, lockId: string): Promise<boolean> {
         if (this.isMysql) {
-            return await this.transaction(async (trx) => {
-                const existing = await trx
+            return await this.transactionContext.run(async () => {
+                const existing = await this.transactionContext.current
                     .selectFrom("writerLock")
                     .where("writerLock.key", "=", key)
                     .where("writerLock.owner", "=", lockId)
@@ -387,7 +400,7 @@ export class KyselySharedLockAdapter
                     return false;
                 }
 
-                await trx
+                await this.transactionContext.current
                     .deleteFrom("writerLock")
                     .where("writerLock.key", "=", key)
                     .where("writerLock.owner", "=", lockId)
@@ -397,7 +410,7 @@ export class KyselySharedLockAdapter
             });
         }
 
-        const result = await this.kysely
+        const result = await this.transactionContext.current
             .deleteFrom("writerLock")
             .where("writerLock.key", "=", key)
             .where("writerLock.owner", "=", lockId)
@@ -419,7 +432,7 @@ export class KyselySharedLockAdapter
         ttl: Date,
     ): Promise<boolean> {
         const expiration = ttl.getTime();
-        const result = await this.kysely
+        const result = await this.transactionContext.current
             .updateTable("writerLock")
             .where("writerLock.key", "=", key)
             .where("writerLock.owner", "=", lockId)
@@ -528,17 +541,29 @@ export class KyselySharedLockAdapter
     async acquireReader(settings: SharedLockAcquireSettings): Promise<boolean> {
         const { key, lockId, limit, ttl } = settings;
 
-        return await this.transaction(async (trx) => {
-            if (await this.checkWriterInTransaction(trx, key)) {
+        return await this.transactionContext.run(async () => {
+            if (
+                await this.checkWriterInTransaction(
+                    this.transactionContext.current,
+                    key,
+                )
+            ) {
                 return false;
             }
 
-            const semaphore = await this.ensureReaderSemaphore(trx, key, limit);
+            const semaphore = await this.ensureReaderSemaphore(
+                this.transactionContext.current,
+                key,
+                limit,
+            );
             if (!semaphore) {
                 return false;
             }
 
-            const currentCount = await this.countActiveReaderSlots(trx, key);
+            const currentCount = await this.countActiveReaderSlots(
+                this.transactionContext.current,
+                key,
+            );
 
             const effectiveLimit =
                 currentCount === 0 ? limit : semaphore.storedLimit;
@@ -548,22 +573,27 @@ export class KyselySharedLockAdapter
             }
 
             if (currentCount === 0 && limit !== semaphore.storedLimit) {
-                await trx
+                await this.transactionContext.current
                     .updateTable("readerSemaphore")
                     .where("readerSemaphore.key", "=", key)
                     .set({ limit })
                     .execute();
             }
 
-            await this.upsertReaderSlot(trx, key, lockId, ttl);
+            await this.upsertReaderSlot(
+                this.transactionContext.current,
+                key,
+                lockId,
+                ttl,
+            );
             return true;
         });
     }
 
     async releaseReader(key: string, slotId: string): Promise<boolean> {
         if (this.isMysql) {
-            return await this.transaction(async (trx) => {
-                const existing = await trx
+            return await this.transactionContext.run(async () => {
+                const existing = await this.transactionContext.current
                     .selectFrom("readerSemaphoreSlot")
                     .where("readerSemaphoreSlot.key", "=", key)
                     .where("readerSemaphoreSlot.id", "=", slotId)
@@ -584,7 +614,7 @@ export class KyselySharedLockAdapter
                     return false;
                 }
 
-                await trx
+                await this.transactionContext.current
                     .deleteFrom("readerSemaphoreSlot")
                     .where("readerSemaphoreSlot.key", "=", key)
                     .where("readerSemaphoreSlot.id", "=", slotId)
@@ -594,7 +624,7 @@ export class KyselySharedLockAdapter
             });
         }
 
-        const result = await this.kysely
+        const result = await this.transactionContext.current
             .deleteFrom("readerSemaphoreSlot")
             .where("readerSemaphoreSlot.key", "=", key)
             .where("readerSemaphoreSlot.id", "=", slotId)
@@ -616,7 +646,7 @@ export class KyselySharedLockAdapter
         ttl: Date,
     ): Promise<boolean> {
         const expiration = ttl.getTime();
-        const result = await this.kysely
+        const result = await this.transactionContext.current
             .updateTable("readerSemaphoreSlot")
             .where("readerSemaphoreSlot.key", "=", key)
             .where("readerSemaphoreSlot.id", "=", slotId)
@@ -634,8 +664,8 @@ export class KyselySharedLockAdapter
 
     private async deleteNonExpiredWriter(key: string): Promise<boolean> {
         if (this.isMysql) {
-            return await this.transaction(async (trx) => {
-                const existing = await trx
+            return await this.transactionContext.run(async () => {
+                const existing = await this.transactionContext.current
                     .selectFrom("writerLock")
                     .where("writerLock.key", "=", key)
                     .where((eb) =>
@@ -651,7 +681,7 @@ export class KyselySharedLockAdapter
                     return false;
                 }
 
-                await trx
+                await this.transactionContext.current
                     .deleteFrom("writerLock")
                     .where("writerLock.key", "=", key)
                     .execute();
@@ -660,7 +690,7 @@ export class KyselySharedLockAdapter
             });
         }
 
-        const result = await this.kysely
+        const result = await this.transactionContext.current
             .deleteFrom("writerLock")
             .where("writerLock.key", "=", key)
             .where((eb) =>
@@ -677,8 +707,8 @@ export class KyselySharedLockAdapter
 
     private async deleteNonExpiredReaderSlots(key: string): Promise<boolean> {
         if (this.isMysql) {
-            return await this.transaction(async (trx) => {
-                const existing = await trx
+            return await this.transactionContext.run(async () => {
+                const existing = await this.transactionContext.current
                     .selectFrom("readerSemaphoreSlot")
                     .where("readerSemaphoreSlot.key", "=", key)
                     .where((eb) =>
@@ -698,7 +728,7 @@ export class KyselySharedLockAdapter
                     return false;
                 }
 
-                await trx
+                await this.transactionContext.current
                     .deleteFrom("readerSemaphoreSlot")
                     .where("readerSemaphoreSlot.key", "=", key)
                     .execute();
@@ -707,7 +737,7 @@ export class KyselySharedLockAdapter
             });
         }
 
-        const result = await this.kysely
+        const result = await this.transactionContext.current
             .deleteFrom("readerSemaphoreSlot")
             .where("readerSemaphoreSlot.key", "=", key)
             .where((eb) =>
@@ -809,13 +839,13 @@ export class KyselySharedLockAdapter
     }
 
     async getState(key: string): Promise<ISharedLockAdapterState | null> {
-        return await this.transaction(async (trx) => {
+        return await this.transactionContext.run(async () => {
             const writer = await KyselySharedLockAdapter.getWriterState(
-                trx,
+                this.transactionContext.current,
                 key,
             );
             const reader = await KyselySharedLockAdapter.getReaderState(
-                trx,
+                this.transactionContext.current,
                 key,
             );
 
