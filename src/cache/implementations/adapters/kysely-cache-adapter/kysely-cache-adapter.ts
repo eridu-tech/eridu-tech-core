@@ -8,6 +8,7 @@ import type { Kysely } from "kysely";
 
 import type { ICacheAdapter } from "@/cache/contracts/_module.js";
 import type { ISerde } from "@/serde/contracts/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 import type {
     IDeinitizable,
     IInitizable,
@@ -44,9 +45,11 @@ export type KyselyCacheTables = {
  */
 export type KyselyCacheAdapterSettings = {
     /**
-     * The Kysely database instance with the required cache schema tables applied.
+     * The `TransactionContext` used to store cache entries.
+     *
+     * The adapter is transaction aware: its operations run inside the context's active transaction. Adapters given the same instance share the same transaction.
      */
-    kysely: Kysely<KyselyCacheTables>;
+    transactionContext: ITransactionContext<Kysely<KyselyCacheTables>>;
 
     /**
      * Serde instance for serializing and deserializing cache values to and from strings.
@@ -66,24 +69,38 @@ export class KyselyCacheAdapter<TType = unknown>
 {
     private readonly isMysql: boolean;
     private readonly serde: ISerde<string>;
-    private readonly kysely: Kysely<KyselyCacheTables>;
+    private readonly transactionContext: ITransactionContext<
+        Kysely<KyselyCacheTables>
+    >;
 
     /**
      * @example
      * ```ts
      * import { KyselyCacheAdapter } from "eridu-tech/cache/kysely-cache-adapter";
+     * import { contextToken } from "eridu-tech/execution-context/contracts";
+     * import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+     * import { ExecutionContext } from "eridu-tech/execution-context";
      * import { Serde } from "eridu-tech/serde";
      * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import SQLite from 'better-sqlite3'
-     * import { Kysely, SqliteDialect } from 'kysely'
+     * import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
+     * import { TransactionContext } from "eridu-tech/transaction-context";
+     * import Sqlite from "better-sqlite3";
+     * import { Kysely, SqliteDialect } from "kysely";
      *
      * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const cacheAdapter = new KyselyCacheAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
+     * const transactionContext = new TransactionContext({
+     *   token: contextToken("kysely"),
+     *   executionContext: new ExecutionContext(new AlsExecutionContextAdapter()),
+     *   adapter: new KyselyTransactionAdapter({
+     *     database: new Kysely({
+     *       dialect: new SqliteDialect({
+     *         database: new Sqlite("local.db"),
+     *       }),
      *     }),
      *   }),
+     * });
+     * const cacheAdapter = new KyselyCacheAdapter({
+     *   transactionContext,
      *   serde,
      * });
      * // You need initialize the adapter once before using it.
@@ -91,15 +108,16 @@ export class KyselyCacheAdapter<TType = unknown>
      * ```
      */
     constructor(settings: KyselyCacheAdapterSettings) {
-        const { kysely, serde } = settings;
-        this.kysely = kysely;
+        const { transactionContext, serde } = settings;
+        this.transactionContext = transactionContext;
         this.serde = serde;
         this.isMysql =
-            this.kysely.getExecutor().adapter instanceof MysqlAdapter;
+            this.transactionContext.client.getExecutor().adapter instanceof
+            MysqlAdapter;
     }
 
     async removeAllExpired(): Promise<void> {
-        await this.kysely
+        await this.transactionContext.client
             .deleteFrom("cache")
             .where("cache.expiration", "<=", Date.now())
             .execute();
@@ -108,7 +126,7 @@ export class KyselyCacheAdapter<TType = unknown>
     async init(): Promise<void> {
         // Should throw if the table already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createTable("cache")
                 .addColumn("key", "varchar(255)", (col) => col.primaryKey())
                 .addColumn("value", "varchar(255)", (col) => col.notNull())
@@ -120,7 +138,7 @@ export class KyselyCacheAdapter<TType = unknown>
 
         // Should throw if the index already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createIndex("cache_expiration")
                 .on("cache")
                 .columns(["expiration"])
@@ -137,7 +155,7 @@ export class KyselyCacheAdapter<TType = unknown>
     async deInit(): Promise<void> {
         // Should throw if the index does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .dropIndex("cache_expiration")
                 .on("cache")
                 .execute();
@@ -147,22 +165,16 @@ export class KyselyCacheAdapter<TType = unknown>
 
         // Should throw if the table does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema.dropTable("cache").execute();
+            await this.transactionContext.client.schema
+                .dropTable("cache")
+                .execute();
         } catch {
             /* EMPTY */
         }
     }
 
-    private transaction<TValue>(
-        trxFn: InvocableFn<[trx: Kysely<KyselyCacheTables>], Promise<TValue>>,
-    ): Promise<TValue> {
-        return this.kysely.transaction().execute(async (trx) => {
-            return await trxFn(trx);
-        });
-    }
-
     async get(key: string): Promise<TType | null> {
-        const row = await this.kysely
+        const row = await this.transactionContext.current
             .selectFrom("cache")
             .where("cache.key", "=", key)
             .select(["cache.value", "cache.expiration"])
@@ -181,8 +193,8 @@ export class KyselyCacheAdapter<TType = unknown>
 
     async getAndRemove(key: string): Promise<TType | null> {
         if (this.isMysql) {
-            return await this.transaction(async (trx) => {
-                const row = await trx
+            return await this.transactionContext.run(async () => {
+                const row = await this.transactionContext.current
                     .selectFrom("cache")
                     .where("cache.key", "=", key)
                     .select(["cache.value", "cache.expiration"])
@@ -192,7 +204,7 @@ export class KyselyCacheAdapter<TType = unknown>
                     return null;
                 }
 
-                await trx
+                await this.transactionContext.current
                     .deleteFrom("cache")
                     .where("cache.key", "=", key)
                     .execute();
@@ -208,7 +220,7 @@ export class KyselyCacheAdapter<TType = unknown>
             });
         }
 
-        const row = await this.kysely
+        const row = await this.transactionContext.current
             .deleteFrom("cache")
             .where("cache.key", "=", key)
             .returning(["cache.value", "cache.expiration"])
@@ -226,8 +238,8 @@ export class KyselyCacheAdapter<TType = unknown>
     }
 
     async add(key: string, value: TType, ttl: Date | null): Promise<boolean> {
-        return await this.transaction(async (trx) => {
-            const existing = await trx
+        return await this.transactionContext.run(async () => {
+            const existing = await this.transactionContext.current
                 .selectFrom("cache")
                 .where("cache.key", "=", key)
                 .select("cache.expiration")
@@ -245,7 +257,7 @@ export class KyselyCacheAdapter<TType = unknown>
             const serializedValue = this.serde.serialize(value);
             const expiration = ttl?.getTime() ?? null;
 
-            await trx
+            await this.transactionContext.current
                 .insertInto("cache")
                 .values({ key, value: serializedValue, expiration })
                 .$if(!this.isMysql, (eb) =>
@@ -275,8 +287,8 @@ export class KyselyCacheAdapter<TType = unknown>
         valueToAdd: InvocableFn<[], Promisable<TType>>,
         ttl: Date | null,
     ): Promise<TType> {
-        return await this.transaction(async (trx) => {
-            const existing = await trx
+        return await this.transactionContext.run(async () => {
+            const existing = await this.transactionContext.current
                 .selectFrom("cache")
                 .where("cache.key", "=", key)
                 .select(["cache.value", "cache.expiration"])
@@ -294,7 +306,7 @@ export class KyselyCacheAdapter<TType = unknown>
             const serializedValue = this.serde.serialize(valueToAdd());
             const expiration = ttl?.getTime() ?? null;
 
-            await trx
+            await this.transactionContext.current
                 .insertInto("cache")
                 .values({ key, value: serializedValue, expiration })
                 .$if(!this.isMysql, (eb) =>
@@ -320,8 +332,8 @@ export class KyselyCacheAdapter<TType = unknown>
     }
 
     async put(key: string, value: TType, ttl: Date | null): Promise<boolean> {
-        return await this.transaction(async (trx) => {
-            const existing = await trx
+        return await this.transactionContext.run(async () => {
+            const existing = await this.transactionContext.current
                 .selectFrom("cache")
                 .where("cache.key", "=", key)
                 .select("cache.expiration")
@@ -338,7 +350,7 @@ export class KyselyCacheAdapter<TType = unknown>
             const serializedValue = this.serde.serialize(value);
             const expiration = ttl?.getTime() ?? null;
 
-            await trx
+            await this.transactionContext.current
                 .insertInto("cache")
                 .values({ key, value: serializedValue, expiration })
                 .$if(!this.isMysql, (eb) =>
@@ -365,7 +377,7 @@ export class KyselyCacheAdapter<TType = unknown>
 
     async update(key: string, value: TType): Promise<boolean> {
         const serializedValue = this.serde.serialize(value);
-        const result = await this.kysely
+        const result = await this.transactionContext.current
             .updateTable("cache")
             .where("cache.key", "=", key)
             .where((eb) =>
@@ -381,8 +393,8 @@ export class KyselyCacheAdapter<TType = unknown>
     }
 
     async increment(key: string, value: number): Promise<boolean> {
-        return await this.transaction(async (trx) => {
-            const existing = await trx
+        return await this.transactionContext.run(async () => {
+            const existing = await this.transactionContext.current
                 .selectFrom("cache")
                 .where("cache.key", "=", key)
                 .where((eb) =>
@@ -408,7 +420,7 @@ export class KyselyCacheAdapter<TType = unknown>
 
             const newValue = currentValue + value;
 
-            await trx
+            await this.transactionContext.current
                 .updateTable("cache")
                 .where("cache.key", "=", key)
                 .set({ value: this.serde.serialize(newValue) })
@@ -423,7 +435,7 @@ export class KyselyCacheAdapter<TType = unknown>
             return false;
         }
 
-        const result = await this.kysely
+        const result = await this.transactionContext.current
             .deleteFrom("cache")
             .where("cache.key", "in", keys)
             .execute();
@@ -432,7 +444,7 @@ export class KyselyCacheAdapter<TType = unknown>
     }
 
     private async removeAll(): Promise<void> {
-        await this.kysely.deleteFrom("cache").execute();
+        await this.transactionContext.current.deleteFrom("cache").execute();
     }
 
     async removeByPrefix(prefix: string): Promise<void> {
@@ -440,7 +452,7 @@ export class KyselyCacheAdapter<TType = unknown>
             await this.removeAll();
             return;
         }
-        await this.kysely
+        await this.transactionContext.current
             .deleteFrom("cache")
             .where("cache.key", "like", `${prefix}%`)
             .execute();
