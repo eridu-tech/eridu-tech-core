@@ -11,6 +11,7 @@ import type {
     ICircuitBreakerStorageAdapterTransaction,
 } from "@/circuit-breaker/contracts/_module.js";
 import type { ISerde } from "@/serde/contracts/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 import type {
     IDeinitizable,
     IInitizable,
@@ -44,9 +45,13 @@ export type KyselyCircuitBreakerStorageTables = {
  */
 export type KyselyCircuitBreakerStorageAdapterSettings = {
     /**
-     * The Kysely database instance typed with the required circuit-breaker storage tables.
+     * The `TransactionContext` used to store circuit-breaker state.
+     *
+     * The adapter is transaction aware: its operations run inside the context's active transaction. Adapters given the same instance share the same transaction.
      */
-    kysely: Kysely<KyselyCircuitBreakerStorageTables>;
+    transactionContext: ITransactionContext<
+        Kysely<KyselyCircuitBreakerStorageTables>
+    >;
     /**
      * Serde instance for serializing and deserializing circuit-breaker state to and from strings.
      */
@@ -57,8 +62,9 @@ export type KyselyCircuitBreakerStorageAdapterSettings = {
  * @internal
  */
 async function find<TType>(
+    kysely: Kysely<KyselyCircuitBreakerStorageTables>,
+    serde: ISerde<string>,
     key: string,
-    { serde, kysely }: KyselyCircuitBreakerStorageAdapterSettings,
 ): Promise<TType | null> {
     const row = await kysely
         .selectFrom("circuitBreaker")
@@ -77,15 +83,12 @@ async function find<TType>(
 class KyselyCircuitBreakerStorageAdapterTransaction<
     TType = unknown,
 > implements ICircuitBreakerStorageAdapterTransaction<TType> {
-    private readonly kysely: Kysely<KyselyCircuitBreakerStorageTables>;
-    private readonly serde: ISerde<string>;
     private readonly isMysql: boolean;
 
-    constructor(settings: KyselyCircuitBreakerStorageAdapterSettings) {
-        const { kysely, serde } = settings;
-
-        this.kysely = kysely;
-        this.serde = serde;
+    constructor(
+        private readonly kysely: Kysely<KyselyCircuitBreakerStorageTables>,
+        private readonly serde: ISerde<string>,
+    ) {
         this.isMysql =
             this.kysely.getExecutor().adapter instanceof MysqlAdapter;
     }
@@ -114,10 +117,7 @@ class KyselyCircuitBreakerStorageAdapterTransaction<
     }
 
     async find(key: string): Promise<TType | null> {
-        return find(key, {
-            serde: this.serde,
-            kysely: this.kysely,
-        });
+        return find(this.kysely, this.serde, key);
     }
 }
 
@@ -137,25 +137,39 @@ class KyselyCircuitBreakerStorageAdapterTransaction<
 export class KyselyCircuitBreakerStorageAdapter<TType>
     implements ICircuitBreakerStorageAdapter, IInitizable, IDeinitizable
 {
-    private readonly kysely: Kysely<KyselyCircuitBreakerStorageTables>;
+    private readonly transactionContext: ITransactionContext<
+        Kysely<KyselyCircuitBreakerStorageTables>
+    >;
     private readonly serde: ISerde<string>;
 
     /**
      * @example
      * ```ts
      * import { KyselyCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/kysely-circuit-breaker-storage-adapter";
+     * import { contextToken } from "eridu-tech/execution-context/contracts";
+     * import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+     * import { ExecutionContext } from "eridu-tech/execution-context";
      * import { Serde } from "eridu-tech/serde";
      * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
+     * import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
+     * import { TransactionContext } from "eridu-tech/transaction-context";
      * import Sqlite from "better-sqlite3";
      * import { Kysely, SqliteDialect } from "kysely";
      *
      * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const circuitBreakerStorageAdapter = new KyselyCircuitBreakerStorageAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
+     * const transactionContext = new TransactionContext({
+     *   token: contextToken("kysely"),
+     *   executionContext: new ExecutionContext(new AlsExecutionContextAdapter()),
+     *   adapter: new KyselyTransactionAdapter({
+     *     database: new Kysely({
+     *       dialect: new SqliteDialect({
+     *         database: new Sqlite("local.db"),
+     *       }),
      *     }),
      *   }),
+     * });
+     * const circuitBreakerStorageAdapter = new KyselyCircuitBreakerStorageAdapter({
+     *   transactionContext,
      *   serde
      * });
      * // You need initialize the adapter once before using it.
@@ -163,20 +177,10 @@ export class KyselyCircuitBreakerStorageAdapter<TType>
      * ```
      */
     constructor(settings: KyselyCircuitBreakerStorageAdapterSettings) {
-        const { kysely, serde } = settings;
+        const { transactionContext, serde } = settings;
 
-        this.kysely = kysely;
+        this.transactionContext = transactionContext;
         this.serde = serde;
-    }
-    private internalTransaction<TValue>(
-        trxFn: InvocableFn<
-            [trx: Kysely<KyselyCircuitBreakerStorageTables>],
-            Promise<TValue>
-        >,
-    ): Promise<TValue> {
-        return this.kysely.transaction().execute(async (trx) => {
-            return await trxFn(trx);
-        });
     }
 
     /**
@@ -186,7 +190,9 @@ export class KyselyCircuitBreakerStorageAdapter<TType>
     async deInit(): Promise<void> {
         // Should throw if the table does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema.dropTable("circuitBreaker").execute();
+            await this.transactionContext.client.schema
+                .dropTable("circuitBreaker")
+                .execute();
         } catch {
             /* EMPTY */
         }
@@ -199,7 +205,7 @@ export class KyselyCircuitBreakerStorageAdapter<TType>
     async init(): Promise<void> {
         // Should throw if the table already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createTable("circuitBreaker")
                 .addColumn("key", "varchar(255)", (col) =>
                     col.primaryKey().notNull(),
@@ -217,25 +223,22 @@ export class KyselyCircuitBreakerStorageAdapter<TType>
             Promise<TValue>
         >,
     ): Promise<TValue> {
-        return await this.internalTransaction(async (trx) => {
+        return await this.transactionContext.run(async () => {
             return await fn(
-                new KyselyCircuitBreakerStorageAdapterTransaction({
-                    kysely: trx,
-                    serde: this.serde,
-                }),
+                new KyselyCircuitBreakerStorageAdapterTransaction(
+                    this.transactionContext.current,
+                    this.serde,
+                ),
             );
         });
     }
 
     async find(key: string): Promise<TType | null> {
-        return find(key, {
-            serde: this.serde,
-            kysely: this.kysely,
-        });
+        return find(this.transactionContext.current, this.serde, key);
     }
 
     async remove(key: string): Promise<void> {
-        await this.kysely
+        await this.transactionContext.current
             .deleteFrom("circuitBreaker")
             .where("circuitBreaker.key", "=", key)
             .execute();
