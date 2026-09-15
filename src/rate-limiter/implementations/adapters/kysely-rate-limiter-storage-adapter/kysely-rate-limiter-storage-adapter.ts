@@ -12,6 +12,7 @@ import type {
     IRateLimiterStorageAdapterTransaction,
 } from "@/rate-limiter/contracts/_module.js";
 import type { ISerde } from "@/serde/contracts/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 import type {
     IDeinitizable,
     IInitizable,
@@ -121,9 +122,13 @@ class KyselyRateLimiterStorageAdapterTransaction<
  */
 export type KyselyRateLimiterStorageAdapterSettings = {
     /**
-     * The Kysely database instance with the required rate-limiter schema tables applied.
+     * The `TransactionContext` used to store rate-limiter state.
+     *
+     * The adapter is transaction aware: its operations run inside the context's active transaction. Adapters given the same instance share the same transaction.
      */
-    kysely: Kysely<KyselyRateLimiterStorageTables>;
+    transactionContext: ITransactionContext<
+        Kysely<KyselyRateLimiterStorageTables>
+    >;
     /**
      * Serde instance for serializing and deserializing rate-limiter state to and from strings.
      */
@@ -150,25 +155,39 @@ export class KyselyRateLimiterStorageAdapter<TType>
         IDeinitizable,
         IPrunable
 {
-    private readonly kysely: Kysely<KyselyRateLimiterStorageTables>;
+    private readonly transactionContext: ITransactionContext<
+        Kysely<KyselyRateLimiterStorageTables>
+    >;
     private readonly serde: ISerde<string>;
 
     /**
      * @example
      * ```ts
      * import { KyselyRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter";
+     * import { contextToken } from "eridu-tech/execution-context/contracts";
+     * import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+     * import { ExecutionContext } from "eridu-tech/execution-context";
      * import { Serde } from "eridu-tech/serde";
      * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
+     * import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
+     * import { TransactionContext } from "eridu-tech/transaction-context";
      * import Sqlite from "better-sqlite3";
      * import { Kysely, SqliteDialect } from "kysely";
      *
      * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const rateLimiterStorageAdapter = new KyselyRateLimiterStorageAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
+     * const transactionContext = new TransactionContext({
+     *   token: contextToken("kysely"),
+     *   executionContext: new ExecutionContext(new AlsExecutionContextAdapter()),
+     *   adapter: new KyselyTransactionAdapter({
+     *     database: new Kysely({
+     *       dialect: new SqliteDialect({
+     *         database: new Sqlite("local.db"),
+     *       }),
      *     }),
      *   }),
+     * });
+     * const rateLimiterStorageAdapter = new KyselyRateLimiterStorageAdapter({
+     *   transactionContext,
      *   serde
      * });
      * // You need initialize the adapter once before using it.
@@ -176,20 +195,10 @@ export class KyselyRateLimiterStorageAdapter<TType>
      * ```
      */
     constructor(settings: KyselyRateLimiterStorageAdapterSettings) {
-        const { kysely, serde } = settings;
+        const { transactionContext, serde } = settings;
 
-        this.kysely = kysely;
+        this.transactionContext = transactionContext;
         this.serde = serde;
-    }
-    private internalTransaction<TValue>(
-        trxFn: InvocableFn<
-            [trx: Kysely<KyselyRateLimiterStorageTables>],
-            Promise<TValue>
-        >,
-    ): Promise<TValue> {
-        return this.kysely.transaction().execute(async (trx) => {
-            return await trxFn(trx);
-        });
     }
 
     /**
@@ -199,7 +208,7 @@ export class KyselyRateLimiterStorageAdapter<TType>
     async deInit(): Promise<void> {
         // Should throw if the index does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .dropIndex("rateLimiter_expiration")
                 .on("rateLimiter")
                 .execute();
@@ -209,7 +218,9 @@ export class KyselyRateLimiterStorageAdapter<TType>
 
         // Should throw if the table does not exists thats why the try catch is used.
         try {
-            await this.kysely.schema.dropTable("rateLimiter").execute();
+            await this.transactionContext.client.schema
+                .dropTable("rateLimiter")
+                .execute();
         } catch {
             /* EMPTY */
         }
@@ -222,7 +233,7 @@ export class KyselyRateLimiterStorageAdapter<TType>
     async init(): Promise<void> {
         // Should throw if the table already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createTable("rateLimiter")
                 .addColumn("key", "varchar(255)", (col) =>
                     col.primaryKey().notNull(),
@@ -236,7 +247,7 @@ export class KyselyRateLimiterStorageAdapter<TType>
 
         // Should throw if the index already exists thats why the try catch is used.
         try {
-            await this.kysely.schema
+            await this.transactionContext.client.schema
                 .createIndex("rateLimiter_expiration")
                 .on("rateLimiter")
                 .column("expiration")
@@ -247,7 +258,7 @@ export class KyselyRateLimiterStorageAdapter<TType>
     }
 
     async removeAllExpired(): Promise<void> {
-        await this.kysely
+        await this.transactionContext.client
             .deleteFrom("rateLimiter")
             .where("rateLimiter.expiration", "<=", Date.now())
             .execute();
@@ -259,19 +270,22 @@ export class KyselyRateLimiterStorageAdapter<TType>
             Promise<TValue>
         >,
     ): Promise<TValue> {
-        return await this.internalTransaction(async (trx) => {
+        return await this.transactionContext.run(async () => {
             return await fn(
-                new KyselyRateLimiterStorageAdapterTransaction(trx, this.serde),
+                new KyselyRateLimiterStorageAdapterTransaction(
+                    this.transactionContext.current,
+                    this.serde,
+                ),
             );
         });
     }
 
     async find(key: string): Promise<IRateLimiterData<TType> | null> {
-        return await find(this.kysely, this.serde, key);
+        return await find(this.transactionContext.current, this.serde, key);
     }
 
     async remove(key: string): Promise<void> {
-        await this.kysely
+        await this.transactionContext.current
             .deleteFrom("rateLimiter")
             .where("rateLimiter.key", "=", key)
             .executeTakeFirst();
