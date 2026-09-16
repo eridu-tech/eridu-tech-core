@@ -42,7 +42,9 @@ import type {
  */
 export type MongodbCacheAdapterSettings = {
     /**
-     * The MongoDB `Db` instance to store cache entries in.
+     * The MongoDB `Db` or `TransactionContext` used to store cache entries.
+     *
+     * Pass a `TransactionContext` instance to make the adapter transaction aware. Adapters given the same instance share the same transaction.
      */
     database: TransactionAware<Db, ClientSession>;
     /**

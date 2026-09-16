@@ -8,6 +8,7 @@ import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     SuperJsonSerdeAdapter,
 } from "@/serde/implementations/adapters/_module.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
 
 import type { Redis } from "ioredis";
 
@@ -17,6 +18,7 @@ import type {
     IEventBusAdapter,
 } from "@/event-bus/contracts/_module.js";
 import type { ISerde } from "@/serde/contracts/_module.js";
+import type { ITransactionHooks } from "@/transaction-context/contracts/_module.js";
 
 /**
  * Configuration for `RedisPubSubEventBusAdapter`.
@@ -30,10 +32,19 @@ export type RedisPubSubEventBusAdapterSettings = {
      * The Redis client instance used for pub/sub messaging.
      */
     client: Redis;
+
     /**
      * Serde instance for serializing and deserializing event payloads to and from strings.
      */
     serde: ISerde<string>;
+
+    /**
+     * The {@link ITransactionHooks | `ITransactionHooks`} that dispatches events after the
+     * active transaction commits. Without it, events are dispatched immediately.
+     *
+     * @default TransactionContext.noOp(null)
+     */
+    transactionHooks?: ITransactionHooks;
 };
 
 /**
@@ -47,6 +58,7 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
     private readonly dispatcherClient: Redis;
     private readonly listenerClient: Redis;
     private readonly eventEmitter = new EventEmitter();
+    private readonly transactionHooks: ITransactionHooks;
 
     /**
      *  @example
@@ -65,7 +77,13 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
      * ```
      */
     constructor(settings: RedisPubSubEventBusAdapterSettings) {
-        const { client, serde } = settings;
+        const {
+            client,
+            serde,
+            transactionHooks = TransactionContext.noOp(null),
+        } = settings;
+
+        this.transactionHooks = transactionHooks;
         this.dispatcherClient = client;
         this.listenerClient = client.duplicate();
         this.serde = serde;
@@ -98,10 +116,12 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
         await this.listenerClient.unsubscribe(eventName);
     }
 
-    async dispatch(eventName: string, eventData: BaseEvent): Promise<void> {
-        await this.dispatcherClient.publish(
-            eventName,
-            this.serde.serialize(eventData),
-        );
+    dispatch(eventName: string, eventData: BaseEvent): Promise<void> {
+        return this.transactionHooks.afterCommit(async () => {
+            await this.dispatcherClient.publish(
+                eventName,
+                this.serde.serialize(eventData),
+            );
+        });
     }
 }

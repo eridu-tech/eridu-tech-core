@@ -54,7 +54,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
     rateLimiterStorageAdapterTestSuite({
         createAdapter: async () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
-                database: createTrxCtx(client, client.db("database")),
+                transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -69,7 +69,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
     describe("method: init", () => {
         test("Should not throw error when called multiple times", async () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
-                database: createTrxCtx(client, client.db("database")),
+                transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -83,7 +83,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
     describe("method: deInit", () => {
         test("Should remove collection", async () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
-                database: createTrxCtx(client, client.db("database")),
+                transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -103,7 +103,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
-                database: createTrxCtx(client, client.db("database")),
+                transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -116,7 +116,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
         });
         test("Should not throw error when called before init", async () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
-                database: createTrxCtx(client, client.db("database")),
+                transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -133,7 +133,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const collection =
                 database.collection<MongodbRateLimiterDocument>(collectionName);
             const adapter = new MongodbRateLimiterStorageAdapter({
-                database: createTrxCtx(client, client.db("database")),
+                transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -163,7 +163,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const collection =
                 database.collection<MongodbRateLimiterDocument>(collectionName);
             const adapter = new MongodbRateLimiterStorageAdapter({
-                database: createTrxCtx(client, client.db("database")),
+                transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -188,7 +188,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
         const trxCtx = createTrxCtx(client, client.db("database"));
         const collectionName = "circuit-breaker";
         const adapter = new MongodbRateLimiterStorageAdapter({
-            database: trxCtx,
+            transactionContext: trxCtx,
             collectionName,
             serde: new Serde(new SuperJsonSerdeAdapter()),
         });

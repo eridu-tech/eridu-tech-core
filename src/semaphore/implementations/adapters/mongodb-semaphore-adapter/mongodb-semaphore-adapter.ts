@@ -55,7 +55,9 @@ export type MongodbSemaphoreEntryDocument = {
  */
 export type MongodbSemaphoreAdapterSettings = {
     /**
-     * The MongoDB `Db` instance to store semaphore state in.
+     * The MongoDB `Db` or `TransactionContext` used to store semaphore state.
+     *
+     * Pass a `TransactionContext` instance to make the adapter transaction aware. Adapters given the same instance share the same transaction.
      */
     database: TransactionAware<Db, ClientSession>;
     /**

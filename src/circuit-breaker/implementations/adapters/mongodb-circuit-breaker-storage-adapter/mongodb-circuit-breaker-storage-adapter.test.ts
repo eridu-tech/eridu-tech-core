@@ -53,7 +53,7 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
     circuitBreakerStorageAdapterTestSuite({
         createAdapter: async () => {
             const adapter = new MongodbCircuitBreakerStorageAdapter({
-                database: createTrxCtx(client, client.db("database")),
+                transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "circuitBreakers",
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -70,7 +70,10 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             const databaseName = "database";
             const collectionName = "circuitBreakers";
             const adapter = new MongodbCircuitBreakerStorageAdapter({
-                database: createTrxCtx(client, client.db(databaseName)),
+                transactionContext: createTrxCtx(
+                    client,
+                    client.db(databaseName),
+                ),
                 collectionName,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -86,7 +89,10 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             const databaseName = "database";
             const collectionName = "circuitBreakers";
             const adapter = new MongodbCircuitBreakerStorageAdapter({
-                database: createTrxCtx(client, client.db(databaseName)),
+                transactionContext: createTrxCtx(
+                    client,
+                    client.db(databaseName),
+                ),
                 collectionName,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -108,7 +114,10 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             const databaseName = "database";
             const collectionName = "circuitBreakers";
             const adapter = new MongodbCircuitBreakerStorageAdapter({
-                database: createTrxCtx(client, client.db(databaseName)),
+                transactionContext: createTrxCtx(
+                    client,
+                    client.db(databaseName),
+                ),
                 collectionName,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -123,7 +132,10 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             const databaseName = "database";
             const collectionName = "circuitBreakers";
             const adapter = new MongodbCircuitBreakerStorageAdapter({
-                database: createTrxCtx(client, client.db(databaseName)),
+                transactionContext: createTrxCtx(
+                    client,
+                    client.db(databaseName),
+                ),
                 collectionName,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
@@ -137,7 +149,7 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
         const trxCtx = createTrxCtx(client, client.db("database"));
         const collectionName = "circuit-breaker";
         const adapter = new MongodbCircuitBreakerStorageAdapter({
-            database: trxCtx,
+            transactionContext: trxCtx,
             collectionName,
             serde: new Serde(new SuperJsonSerdeAdapter()),
         });

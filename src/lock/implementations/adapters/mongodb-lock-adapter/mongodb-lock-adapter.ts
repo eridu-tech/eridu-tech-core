@@ -31,7 +31,9 @@ import type { IDeinitizable, IInitizable } from "@/utilities/_module.js";
  */
 export type MongodbLockAdapterSettings = {
     /**
-     * The MongoDB `Db` instance to store lock state in.
+     * The MongoDB `Db` or `TransactionContext` used to store lock state.
+     *
+     * Pass a `TransactionContext` instance to make the adapter transaction aware. Adapters given the same instance share the same transaction.
      */
     database: TransactionAware<Db, ClientSession>;
     /**

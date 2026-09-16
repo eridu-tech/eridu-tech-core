@@ -25,16 +25,18 @@ import type {
 
 /**
  * Configuration for `MongodbRateLimiterStorageAdapter`.
- * Requires a MongoDB `Db` instance.
+ * Requires a `TransactionContext`, because its operations must run inside a transaction.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/mongodb-rate-limiter-storage-adapter"`
  * @group Adapters
  */
 export type MongodbRateLimiterStorageAdapterSettings = {
     /**
-     * The MongoDB `Db` instance to store rate-limiter state in.
+     * The `TransactionContext` used to store rate-limiter state.
+     *
+     * The adapter is transaction aware: its operations run inside the context's active transaction. Adapters given the same instance share the same transaction.
      */
-    database: ITransactionContext<Db, ClientSession>;
+    transactionContext: ITransactionContext<Db, ClientSession>;
     /**
      * Name of the MongoDB collection used to store rate-limiter state records.
      * @default "rateLimiter"
@@ -68,7 +70,7 @@ export type MongodbRateLimiterDocument = {
 export class MongodbRateLimiterStorageAdapter<TType>
     implements IRateLimiterStorageAdapter<TType>, IInitizable, IDeinitizable
 {
-    private readonly trxCtx: ITransactionContext<Db, ClientSession>;
+    private readonly transactionContext: ITransactionContext<Db, ClientSession>;
     private readonly collection: Collection<MongodbRateLimiterDocument>;
     private readonly serde: ISerde<string>;
 
@@ -96,11 +98,11 @@ export class MongodbRateLimiterStorageAdapter<TType>
         const {
             collectionName = "rateLimiter",
             collectionSettings,
-            database,
+            transactionContext,
             serde,
         } = settings;
-        this.trxCtx = database;
-        this.collection = this.trxCtx.client.collection(
+        this.transactionContext = transactionContext;
+        this.collection = this.transactionContext.client.collection(
             collectionName,
             collectionSettings,
         );
@@ -172,7 +174,7 @@ export class MongodbRateLimiterStorageAdapter<TType>
                 },
             },
             {
-                session: this.trxCtx.transaction ?? undefined,
+                session: this.transactionContext.transaction ?? undefined,
                 upsert: true,
             },
         );
@@ -184,7 +186,7 @@ export class MongodbRateLimiterStorageAdapter<TType>
             Promise<TValue>
         >,
     ): Promise<TValue> {
-        return await this.trxCtx.run(async () => {
+        return await this.transactionContext.run(async () => {
             return await fn({
                 upsert: (key, state, expiration) =>
                     this.upsert(key, state, expiration),
@@ -199,7 +201,7 @@ export class MongodbRateLimiterStorageAdapter<TType>
                 key,
             },
             {
-                session: this.trxCtx.transaction ?? undefined,
+                session: this.transactionContext.transaction ?? undefined,
             },
         );
         if (doc === null) {
@@ -217,7 +219,7 @@ export class MongodbRateLimiterStorageAdapter<TType>
                 key,
             },
             {
-                session: this.trxCtx.transaction ?? undefined,
+                session: this.transactionContext.transaction ?? undefined,
             },
         );
     }

@@ -44,7 +44,9 @@ import type {
  */
 export type MongodbSharedLockAdapterSettings = {
     /**
-     * The MongoDB `Db` instance to store shared-lock state in.
+     * The MongoDB `Db` or `TransactionContext` used to store shared-lock state.
+     *
+     * Pass a `TransactionContext` instance to make the adapter transaction aware. Adapters given the same instance share the same transaction.
      */
     database: TransactionAware<Db, ClientSession>;
     /**
