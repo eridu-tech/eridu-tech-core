@@ -83,35 +83,61 @@ describe("mysql class: KyselyRateLimiterStorageAdapter", () => {
     });
     describe("method: removeAllExpired", () => {
         test("Should remove all expired keys", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
 
-            await adapter.transaction(async (trx) => {
-                await trx.upsert(
-                    "a",
-                    "owner",
-                    TimeSpan.fromMilliseconds(50).toStartDate(),
-                );
-                await trx.upsert(
-                    "b",
-                    "owner",
-                    TimeSpan.fromMilliseconds(50).toStartDate(),
-                );
-                await trx.upsert(
-                    "c",
-                    "owner",
-                    TimeSpan.fromMilliseconds(50).toEndDate(),
-                );
-            });
+            await trxCtx.client
+                .insertInto("rateLimiter")
+                .values({
+                    key: "a",
+                    state: "state",
+                    expiration: Date.now() - 1000,
+                })
+                .execute();
+            await trxCtx.client
+                .insertInto("rateLimiter")
+                .values({
+                    key: "b",
+                    state: "state",
+                    expiration: Date.now() - 1000,
+                })
+                .execute();
+            await trxCtx.client
+                .insertInto("rateLimiter")
+                .values({
+                    key: "c",
+                    state: "state",
+                    expiration: Date.now() + 50000,
+                })
+                .execute();
 
             await adapter.removeAllExpired();
 
-            expect(await adapter.find("a")).toBeNull();
-            expect(await adapter.find("b")).toBeNull();
-            expect(await adapter.find("c")).not.toBeNull();
+            expect(
+                await trxCtx.client
+                    .selectFrom("rateLimiter")
+                    .where("rateLimiter.key", "=", "a")
+                    .selectAll()
+                    .executeTakeFirst(),
+            ).toBeUndefined();
+            expect(
+                await trxCtx.client
+                    .selectFrom("rateLimiter")
+                    .where("rateLimiter.key", "=", "b")
+                    .selectAll()
+                    .executeTakeFirst(),
+            ).toBeUndefined();
+            expect(
+                await trxCtx.client
+                    .selectFrom("rateLimiter")
+                    .where("rateLimiter.key", "=", "c")
+                    .selectAll()
+                    .executeTakeFirst(),
+            ).toBeDefined();
         });
     });
     describe("method: init", () => {

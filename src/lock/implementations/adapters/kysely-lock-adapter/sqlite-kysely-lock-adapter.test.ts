@@ -7,7 +7,6 @@ import { AlsExecutionContextAdapter } from "@/execution-context/implementations/
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
 import { KyselyLockAdapter } from "@/lock/implementations/adapters/kysely-lock-adapter/_module.js";
 import { lockAdapterTestSuite } from "@/lock/implementations/test-utilities/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
 
@@ -59,32 +58,60 @@ describe("sqlite class: KyselyLockAdapter", () => {
     });
     describe("method: removeAllExpired", () => {
         test("Should remove all expired keys", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyLockAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
-            await adapter.acquire(
-                "a",
-                "owner",
-                TimeSpan.fromMilliseconds(-1).toEndDate(),
-            );
-            await adapter.acquire(
-                "b",
-                "owner",
-                TimeSpan.fromMilliseconds(-1).toEndDate(),
-            );
-            await adapter.acquire(
-                "c",
-                "owner",
-                TimeSpan.fromMinutes(5).toEndDate(),
-            );
+            await trxCtx.client
+                .insertInto("lock")
+                .values({
+                    key: "a",
+                    owner: "owner",
+                    expiration: Date.now() - 1000,
+                })
+                .execute();
+            await trxCtx.client
+                .insertInto("lock")
+                .values({
+                    key: "b",
+                    owner: "owner",
+                    expiration: Date.now() - 1000,
+                })
+                .execute();
+            await trxCtx.client
+                .insertInto("lock")
+                .values({
+                    key: "c",
+                    owner: "owner",
+                    expiration: Date.now() + 50000,
+                })
+                .execute();
 
             await adapter.removeAllExpired();
 
-            expect(await adapter.getState("a")).toBeNull();
-            expect(await adapter.getState("b")).toBeNull();
-            expect(await adapter.getState("c")).not.toBeNull();
+            expect(
+                await trxCtx.client
+                    .selectFrom("lock")
+                    .where("lock.key", "=", "a")
+                    .selectAll()
+                    .executeTakeFirst(),
+            ).toBeUndefined();
+            expect(
+                await trxCtx.client
+                    .selectFrom("lock")
+                    .where("lock.key", "=", "b")
+                    .selectAll()
+                    .executeTakeFirst(),
+            ).toBeUndefined();
+            expect(
+                await trxCtx.client
+                    .selectFrom("lock")
+                    .where("lock.key", "=", "c")
+                    .selectAll()
+                    .executeTakeFirst(),
+            ).toBeDefined();
         });
     });
     describe("method: init", () => {

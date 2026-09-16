@@ -82,58 +82,59 @@ describe("mysql class: KyselySemaphoreAdapter", () => {
     });
     describe("method: removeAllExpired", () => {
         test("Should remove all expired keys", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySemaphoreAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
             const limit = 3;
-            const expiredTtl = TimeSpan.fromMilliseconds(-1);
             const key1 = "1";
             const key2 = "2";
 
-            await adapter.acquire({
-                key: key1,
-                slotId: "1",
-                limit,
-                ttl: expiredTtl.toEndDate(),
-            });
-            await adapter.acquire({
-                key: key1,
-                slotId: "2",
-                limit,
-                ttl: expiredTtl.toEndDate(),
-            });
-            await adapter.acquire({
-                key: key1,
-                slotId: "3",
-                limit,
-                ttl: expiredTtl.toEndDate(),
-            });
+            await trxCtx.client
+                .insertInto("semaphore")
+                .values({ key: key1, limit })
+                .execute();
+            await trxCtx.client
+                .insertInto("semaphore")
+                .values({ key: key2, limit })
+                .execute();
 
-            await adapter.acquire({
-                key: key2,
-                slotId: "1",
-                limit,
-                ttl: expiredTtl.toEndDate(),
-            });
-            await adapter.acquire({
-                key: key2,
-                slotId: "2",
-                limit,
-                ttl: expiredTtl.toEndDate(),
-            });
-            await adapter.acquire({
-                key: key2,
-                slotId: "3",
-                limit,
-                ttl: expiredTtl.toEndDate(),
-            });
+            await trxCtx.client
+                .insertInto("semaphoreSlot")
+                .values({ key: key1, id: "1", expiration: Date.now() - 1000 })
+                .execute();
+            await trxCtx.client
+                .insertInto("semaphoreSlot")
+                .values({ key: key1, id: "2", expiration: Date.now() - 1000 })
+                .execute();
+            await trxCtx.client
+                .insertInto("semaphoreSlot")
+                .values({ key: key1, id: "3", expiration: Date.now() - 1000 })
+                .execute();
+
+            await trxCtx.client
+                .insertInto("semaphoreSlot")
+                .values({ key: key2, id: "4", expiration: Date.now() - 1000 })
+                .execute();
+            await trxCtx.client
+                .insertInto("semaphoreSlot")
+                .values({ key: key2, id: "5", expiration: Date.now() - 1000 })
+                .execute();
+            await trxCtx.client
+                .insertInto("semaphoreSlot")
+                .values({ key: key2, id: "6", expiration: Date.now() - 1000 })
+                .execute();
 
             await adapter.removeAllExpired();
 
-            expect(await adapter.getState(key1)).toBeNull();
-            expect(await adapter.getState(key2)).toBeNull();
+            expect(
+                await trxCtx.client
+                    .selectFrom("semaphore")
+                    .select("semaphore.key")
+                    .execute(),
+            ).toEqual([]);
         });
     });
     describe("method: init", () => {
