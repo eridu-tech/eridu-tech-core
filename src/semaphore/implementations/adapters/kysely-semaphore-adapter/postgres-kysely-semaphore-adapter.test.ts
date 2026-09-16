@@ -297,5 +297,39 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
             expect(semaphoreRows.length).toBe(0);
             expect(slotRows.length).toBe(0);
         });
+        test("Should persist changes when the transaction succeeds", async () => {
+            const trxCtx = createTrxCtx(database);
+            const adapter = new KyselySemaphoreAdapter({
+                transactionContext: trxCtx,
+            });
+            await adapter.init();
+
+            await trxCtx.run(async () => {
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "1",
+                    limit: 4,
+                    ttl: null,
+                });
+                await adapter.acquire({
+                    key: "b",
+                    slotId: "2",
+                    limit: 4,
+                    ttl: null,
+                });
+            });
+
+            const semaphoreRows = await trxCtx.client
+                .selectFrom("semaphore")
+                .select("semaphore.key")
+                .execute();
+            const slotRows = await trxCtx.client
+                .selectFrom("semaphoreSlot")
+                .select("semaphoreSlot.key")
+                .execute();
+
+            expect(semaphoreRows.length).toBe(2);
+            expect(slotRows.length).toBe(2);
+        });
     });
 });

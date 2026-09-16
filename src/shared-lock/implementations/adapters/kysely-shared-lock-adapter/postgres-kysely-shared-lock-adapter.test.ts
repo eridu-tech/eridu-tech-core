@@ -430,5 +430,39 @@ describe("postgres class: KyselySharedLockAdapter", () => {
             expect(semaphoreRows.length).toBe(0);
             expect(slotRows.length).toBe(0);
         });
+        test("Should persist changes when the transaction succeeds", async () => {
+            const trxCtx = createTrxCtx(database);
+            const adapter = new KyselySharedLockAdapter({
+                transactionContext: trxCtx,
+            });
+            await adapter.init();
+
+            await trxCtx.run(async () => {
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "1",
+                    limit: 4,
+                    ttl: null,
+                });
+                await adapter.acquireReader({
+                    key: "b",
+                    lockId: "2",
+                    limit: 4,
+                    ttl: null,
+                });
+            });
+
+            const semaphoreRows = await trxCtx.client
+                .selectFrom("readerSemaphore")
+                .select("readerSemaphore.key")
+                .execute();
+            const slotRows = await trxCtx.client
+                .selectFrom("readerSemaphoreSlot")
+                .select("readerSemaphoreSlot.key")
+                .execute();
+
+            expect(semaphoreRows.length).toBe(2);
+            expect(slotRows.length).toBe(2);
+        });
     });
 });

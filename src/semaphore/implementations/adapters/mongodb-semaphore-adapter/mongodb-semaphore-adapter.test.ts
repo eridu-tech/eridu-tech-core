@@ -403,5 +403,45 @@ describe("class: MongodbSemaphoreAdapter", () => {
             const docs = await collection.find().toArray();
             expect(docs.length).toBe(0);
         });
+        test("Should persist changes when the transaction succeeds", async () => {
+            const database = client.db("database");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const trxCtx = new TransactionContext({
+                token: contextToken<ITransactionData<ClientSession>>("mongodb"),
+                adapter: new MongodbTransactionAdapter({
+                    database,
+                    client,
+                }),
+                executionContext,
+            });
+            const collectionName = "circuit-breaker";
+            const adapter = new MongodbSemaphoreAdapter({
+                database: trxCtx,
+                collectionName,
+            });
+            await adapter.init();
+
+            await trxCtx.run(async () => {
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "1",
+                    limit: 4,
+                    ttl: null,
+                });
+                await adapter.acquire({
+                    key: "b",
+                    slotId: "1",
+                    limit: 4,
+                    ttl: null,
+                });
+            });
+
+            const collection = trxCtx.client.collection(collectionName);
+
+            const docs = await collection.find().toArray();
+            expect(docs.length).toBe(2);
+        });
     });
 });

@@ -225,5 +225,24 @@ describe("sqlite class: KyselyLockAdapter", () => {
 
             expect(rows.length).toBe(0);
         });
+        test("Should persist changes when the transaction succeeds", async () => {
+            const trxCtx = createTrxCtx(database);
+            const adapter = new KyselyLockAdapter({
+                transactionContext: trxCtx,
+            });
+            await adapter.init();
+
+            await trxCtx.run(async () => {
+                await adapter.acquire("a", "1", null);
+                await adapter.acquire("b", "1", null);
+            });
+
+            const rows = await trxCtx.client
+                .selectFrom("lock")
+                .select("lock.key")
+                .execute();
+
+            expect(rows.length).toBe(2);
+        });
     });
 });

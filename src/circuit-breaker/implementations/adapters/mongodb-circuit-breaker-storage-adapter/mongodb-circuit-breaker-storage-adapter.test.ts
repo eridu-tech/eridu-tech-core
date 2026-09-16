@@ -173,5 +173,27 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             const docs = await collection.find().toArray();
             expect(docs.length).toBe(0);
         });
+        test("Should persist changes when the transaction succeeds", async () => {
+            const trxCtx = createTrxCtx(client, client.db("database"));
+            const collectionName = "circuit-breaker";
+            const adapter = new MongodbCircuitBreakerStorageAdapter({
+                transactionContext: trxCtx,
+                collectionName,
+                serde: new Serde(new SuperJsonSerdeAdapter()),
+            });
+            await adapter.init();
+
+            await trxCtx.run(async () => {
+                await adapter.transaction(async (trx) => {
+                    await trx.upsert("a", 1);
+                    await trx.upsert("b", 1);
+                });
+            });
+
+            const collection = trxCtx.client.collection(collectionName);
+
+            const docs = await collection.find().toArray();
+            expect(docs.length).toBe(2);
+        });
     });
 });

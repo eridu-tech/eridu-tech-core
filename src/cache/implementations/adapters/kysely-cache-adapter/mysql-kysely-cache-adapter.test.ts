@@ -256,5 +256,25 @@ describe("mysql class: KyselyCacheAdapter", () => {
 
             expect(rows.length).toBe(0);
         });
+        test("Should persist changes when the transaction succeeds", async () => {
+            const trxCtx = createTrxCtx(database);
+            const adapter = new KyselyCacheAdapter({
+                transactionContext: trxCtx,
+                serde: new Serde(new SuperJsonSerdeAdapter()),
+            });
+            await adapter.init();
+
+            await trxCtx.run(async () => {
+                await adapter.add("a", 1, null);
+                await adapter.add("b", 1, null);
+            });
+
+            const rows = await trxCtx.client
+                .selectFrom("cache")
+                .select("cache.key")
+                .execute();
+
+            expect(rows.length).toBe(2);
+        });
     });
 });

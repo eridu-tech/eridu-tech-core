@@ -250,5 +250,27 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
 
             expect(rows.length).toBe(0);
         });
+        test("Should persist changes when the transaction succeeds", async () => {
+            const trxCtx = createTrxCtx(database);
+            const adapter = new KyselyRateLimiterStorageAdapter({
+                transactionContext: trxCtx,
+                serde: new Serde(new SuperJsonSerdeAdapter()),
+            });
+            await adapter.init();
+
+            await trxCtx.run(async () => {
+                await adapter.transaction(async (trx) => {
+                    await trx.upsert("a", 1, new Date());
+                    await trx.upsert("b", 1, new Date());
+                });
+            });
+
+            const rows = await trxCtx.client
+                .selectFrom("rateLimiter")
+                .select("rateLimiter.key")
+                .execute();
+
+            expect(rows.length).toBe(2);
+        });
     });
 });
