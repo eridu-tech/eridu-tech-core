@@ -20,15 +20,9 @@ import type { ITransactionContext } from "@/transaction-context/contracts/_modul
 
 describe("sqlite class: KyselyCircuitBreakerStorageAdapter", () => {
     let database: Database;
-    let kysely: Kysely<KyselyCircuitBreakerStorageTables>;
 
     beforeEach(() => {
         database = new Sqlite(":memory:");
-        kysely = new Kysely({
-            dialect: new SqliteDialect({
-                database,
-            }),
-        });
     });
     afterEach(() => {
         database.close();
@@ -66,14 +60,15 @@ describe("sqlite class: KyselyCircuitBreakerStorageAdapter", () => {
         expect,
     });
     describe("method: init", () => {
-        test("Should create lock table", async () => {
+        test("Should create circuit breaker table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -110,14 +105,15 @@ describe("sqlite class: KyselyCircuitBreakerStorageAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove circuit breaker table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
             await adapter.deInit();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({

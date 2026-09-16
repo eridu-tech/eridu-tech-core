@@ -21,15 +21,9 @@ import type { ITransactionContext } from "@/transaction-context/contracts/_modul
 
 describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
     let database: Database;
-    let kysely: Kysely<KyselyRateLimiterStorageTables>;
 
     beforeEach(() => {
         database = new Sqlite(":memory:");
-        kysely = new Kysely({
-            dialect: new SqliteDialect({
-                database,
-            }),
-        });
     });
     afterEach(() => {
         database.close();
@@ -101,13 +95,14 @@ describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
     });
     describe("method: init", () => {
         test("Should create rateLimiter table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -150,14 +145,15 @@ describe("sqlite class: KyselyRateLimiterStorageAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove rateLimiter table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
             await adapter.deInit();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({

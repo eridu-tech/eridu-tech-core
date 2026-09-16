@@ -25,7 +25,6 @@ const timeout = TimeSpan.fromMinutes(2);
 describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
     let database: Pool;
     let container: StartedMariaDbContainer;
-    let kysely: Kysely<KyselyCircuitBreakerStorageTables>;
 
     beforeEach(async () => {
         container = await new MariaDbContainer("mariadb:10.11").start();
@@ -36,11 +35,6 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
             user: container.getUsername(),
             password: container.getUserPassword(),
             connectionLimit: 10,
-        });
-        kysely = new Kysely({
-            dialect: new MysqlDialect({
-                pool: database,
-            }),
         });
     }, timeout.toMilliseconds());
     afterEach(async () => {
@@ -89,13 +83,14 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
     });
     describe("method: init", () => {
         test("Should create circuit breaker table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -132,14 +127,15 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove circuit breaker table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyCircuitBreakerStorageAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
                 serde: new Serde(new SuperJsonSerdeAdapter()),
             });
             await adapter.init();
             await adapter.deInit();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({

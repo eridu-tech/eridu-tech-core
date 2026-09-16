@@ -22,7 +22,6 @@ const timeout = TimeSpan.fromMinutes(2);
 describe("postgres class: KyselyLockAdapter", () => {
     let database: Pool;
     let container: StartedPostgreSqlContainer;
-    let kysely: Kysely<KyselyLockTables>;
 
     beforeEach(async () => {
         container = await new PostgreSqlContainer("postgres:17.5").start();
@@ -33,11 +32,6 @@ describe("postgres class: KyselyLockAdapter", () => {
             port: container.getPort(),
             password: container.getPassword(),
             max: 10,
-        });
-        kysely = new Kysely({
-            dialect: new PostgresDialect({
-                pool: database,
-            }),
         });
     }, timeout.toMilliseconds());
     afterEach(async () => {
@@ -107,12 +101,13 @@ describe("postgres class: KyselyLockAdapter", () => {
     });
     describe("method: init", () => {
         test("Should create lock table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyLockAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -154,13 +149,14 @@ describe("postgres class: KyselyLockAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove lock table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselyLockAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
             });
             await adapter.init();
             await adapter.deInit();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({

@@ -19,14 +19,9 @@ import type { ITransactionContext } from "@/transaction-context/contracts/_modul
 
 describe("sqlite class: KyselySemaphoreAdapter", () => {
     let database: Database;
-    let kysely: Kysely<KyselySemaphoreTables>;
+
     beforeEach(() => {
         database = new Sqlite(":memory:");
-        kysely = new Kysely({
-            dialect: new SqliteDialect({
-                database,
-            }),
-        });
     });
     afterEach(() => {
         database.close();
@@ -120,12 +115,13 @@ describe("sqlite class: KyselySemaphoreAdapter", () => {
     });
     describe("method: init", () => {
         test("Should create semaphore table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySemaphoreAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -149,12 +145,13 @@ describe("sqlite class: KyselySemaphoreAdapter", () => {
             );
         });
         test("Should create semaphoreSlot table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySemaphoreAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -196,13 +193,14 @@ describe("sqlite class: KyselySemaphoreAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove semaphore table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySemaphoreAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
             });
             await adapter.init();
             await adapter.deInit();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -211,13 +209,14 @@ describe("sqlite class: KyselySemaphoreAdapter", () => {
             );
         });
         test("Should remove semaphoreSlot table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySemaphoreAdapter({
-                transactionContext: createTrxCtx(database),
+                transactionContext: trxCtx,
             });
             await adapter.init();
             await adapter.deInit();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
