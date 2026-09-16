@@ -144,31 +144,33 @@ describe("sqlite class: KyselyCircuitBreakerStorageAdapter", () => {
             await expect(promise).resolves.toBeUndefined();
         });
     });
-    test("Transaction test", async () => {
-        const trxCtx = createTrxCtx(database);
-        const adapter = new KyselyCircuitBreakerStorageAdapter({
-            transactionContext: trxCtx,
-            serde: new Serde(new SuperJsonSerdeAdapter()),
-        });
-        await adapter.init();
-
-        try {
-            await trxCtx.run(async () => {
-                await adapter.transaction(async (trx) => {
-                    await trx.upsert("a", 1);
-                    await trx.upsert("b", 1);
-                });
-                throw new Error("Transaction failure");
+    describe("Transaction tests:", () => {
+        test("Should not persist changes when the transaction fails", async () => {
+            const trxCtx = createTrxCtx(database);
+            const adapter = new KyselyCircuitBreakerStorageAdapter({
+                transactionContext: trxCtx,
+                serde: new Serde(new SuperJsonSerdeAdapter()),
             });
-        } catch {
-            /* EMPTY */
-        }
+            await adapter.init();
 
-        const rows = await trxCtx.client
-            .selectFrom("circuitBreaker")
-            .select("circuitBreaker.key")
-            .execute();
+            try {
+                await trxCtx.run(async () => {
+                    await adapter.transaction(async (trx) => {
+                        await trx.upsert("a", 1);
+                        await trx.upsert("b", 1);
+                    });
+                    throw new Error("Transaction failure");
+                });
+            } catch {
+                /* EMPTY */
+            }
 
-        expect(rows.length).toBe(0);
+            const rows = await trxCtx.client
+                .selectFrom("circuitBreaker")
+                .select("circuitBreaker.key")
+                .execute();
+
+            expect(rows.length).toBe(0);
+        });
     });
 });

@@ -154,39 +154,41 @@ describe("class: MongodbLockAdapter", () => {
             expect(doc?.expiration).toEqual(expiration);
         });
     });
-    test("Transaction test", async () => {
-        const database = client.db("database");
-        const executionContext = new ExecutionContext(
-            new AlsExecutionContextAdapter(),
-        );
-        const trxCtx = new TransactionContext({
-            token: contextToken<ITransactionData<ClientSession>>("mongodb"),
-            adapter: new MongodbTransactionAdapter({
-                database,
-                client,
-            }),
-            executionContext,
-        });
-        const collectionName = "circuit-breaker";
-        const adapter = new MongodbLockAdapter({
-            database: trxCtx,
-            collectionName,
-        });
-        await adapter.init();
-
-        try {
-            await trxCtx.run(async () => {
-                await adapter.acquire("a", "1", null);
-                await adapter.acquire("b", "1", null);
-                throw new Error("Transaction failure");
+    describe("Transaction tests:", () => {
+        test("Should not persist changes when the transaction fails", async () => {
+            const database = client.db("database");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const trxCtx = new TransactionContext({
+                token: contextToken<ITransactionData<ClientSession>>("mongodb"),
+                adapter: new MongodbTransactionAdapter({
+                    database,
+                    client,
+                }),
+                executionContext,
             });
-        } catch {
-            /* EMPTY */
-        }
+            const collectionName = "circuit-breaker";
+            const adapter = new MongodbLockAdapter({
+                database: trxCtx,
+                collectionName,
+            });
+            await adapter.init();
 
-        const collection = trxCtx.client.collection(collectionName);
+            try {
+                await trxCtx.run(async () => {
+                    await adapter.acquire("a", "1", null);
+                    await adapter.acquire("b", "1", null);
+                    throw new Error("Transaction failure");
+                });
+            } catch {
+                /* EMPTY */
+            }
 
-        const docs = await collection.find().toArray();
-        expect(docs.length).toBe(0);
+            const collection = trxCtx.client.collection(collectionName);
+
+            const docs = await collection.find().toArray();
+            expect(docs.length).toBe(0);
+        });
     });
 });

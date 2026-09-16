@@ -145,31 +145,33 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             await expect(promise).resolves.toBeUndefined();
         });
     });
-    test("Transaction test", async () => {
-        const trxCtx = createTrxCtx(client, client.db("database"));
-        const collectionName = "circuit-breaker";
-        const adapter = new MongodbCircuitBreakerStorageAdapter({
-            transactionContext: trxCtx,
-            collectionName,
-            serde: new Serde(new SuperJsonSerdeAdapter()),
-        });
-        await adapter.init();
-
-        try {
-            await trxCtx.run(async () => {
-                await adapter.transaction(async (trx) => {
-                    await trx.upsert("a", 1);
-                    await trx.upsert("b", 1);
-                });
-                throw new Error("Transaction failure");
+    describe("Transaction tests:", () => {
+        test("Should not persist changes when the transaction fails", async () => {
+            const trxCtx = createTrxCtx(client, client.db("database"));
+            const collectionName = "circuit-breaker";
+            const adapter = new MongodbCircuitBreakerStorageAdapter({
+                transactionContext: trxCtx,
+                collectionName,
+                serde: new Serde(new SuperJsonSerdeAdapter()),
             });
-        } catch {
-            /* EMPTY */
-        }
+            await adapter.init();
 
-        const collection = trxCtx.client.collection(collectionName);
+            try {
+                await trxCtx.run(async () => {
+                    await adapter.transaction(async (trx) => {
+                        await trx.upsert("a", 1);
+                        await trx.upsert("b", 1);
+                    });
+                    throw new Error("Transaction failure");
+                });
+            } catch {
+                /* EMPTY */
+            }
 
-        const docs = await collection.find().toArray();
-        expect(docs.length).toBe(0);
+            const collection = trxCtx.client.collection(collectionName);
+
+            const docs = await collection.find().toArray();
+            expect(docs.length).toBe(0);
+        });
     });
 });
