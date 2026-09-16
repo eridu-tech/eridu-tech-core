@@ -199,4 +199,28 @@ describe("mysql class: KyselyLockAdapter", () => {
             await expect(promise).resolves.toBeUndefined();
         });
     });
+    test("Transaction test", async () => {
+        const trxCtx = createTrxCtx(database);
+        const adapter = new KyselyLockAdapter({
+            transactionContext: trxCtx,
+        });
+        await adapter.init();
+
+        try {
+            await trxCtx.run(async () => {
+                await adapter.acquire("a", "1", null);
+                await adapter.acquire("b", "1", null);
+                throw new Error("Transaction failure");
+            });
+        } catch {
+            /* EMPTY */
+        }
+
+        const rows = await trxCtx.client
+            .selectFrom("lock")
+            .select("lock.key")
+            .execute();
+
+        expect(rows.length).toBe(0);
+    });
 });

@@ -257,4 +257,43 @@ describe("postgres class: KyselySemaphoreAdapter", () => {
             await expect(promise).resolves.toBeUndefined();
         });
     });
+    test("Transaction test", async () => {
+        const trxCtx = createTrxCtx(database);
+        const adapter = new KyselySemaphoreAdapter({
+            transactionContext: trxCtx,
+        });
+        await adapter.init();
+
+        try {
+            await trxCtx.run(async () => {
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "1",
+                    limit: 4,
+                    ttl: null,
+                });
+                await adapter.acquire({
+                    key: "b",
+                    slotId: "1",
+                    limit: 4,
+                    ttl: null,
+                });
+                throw new Error("Transaction failure");
+            });
+        } catch {
+            /* EMPTY */
+        }
+
+        const semaphoreRows = await trxCtx.client
+            .selectFrom("semaphore")
+            .select("semaphore.key")
+            .execute();
+        const slotRows = await trxCtx.client
+            .selectFrom("semaphoreSlot")
+            .select("semaphoreSlot.key")
+            .execute();
+
+        expect(semaphoreRows.length).toBe(0);
+        expect(slotRows.length).toBe(0);
+    });
 });

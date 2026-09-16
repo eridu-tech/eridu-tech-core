@@ -57,4 +57,29 @@ describe("sqlite class: KyselyCacheAdapter", () => {
         expect,
         describe,
     });
+    test("Transaction test", async () => {
+        const trxCtx = createTrxCtx(database);
+        const adapter = new KyselyCacheAdapter({
+            transactionContext: trxCtx,
+            serde: new Serde(new SuperJsonSerdeAdapter()),
+        });
+        await adapter.init();
+
+        try {
+            await trxCtx.run(async () => {
+                await adapter.add("a", 1, null);
+                await adapter.add("b", 1, null);
+                throw new Error("Transaction failure");
+            });
+        } catch {
+            /* EMPTY */
+        }
+
+        const rows = await trxCtx.client
+            .selectFrom("cache")
+            .select("cache.key")
+            .execute();
+
+        expect(rows.length).toBe(0);
+    });
 });
