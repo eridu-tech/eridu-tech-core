@@ -14,6 +14,7 @@ describe("class: MemoryRateLimiterStorageAdapter", () => {
         beforeEach,
         expect,
         describe,
+        transactionAware: false,
     });
     describe("method: removeAllExpired", () => {
         test("Should remove expired rate limiters", async () => {
