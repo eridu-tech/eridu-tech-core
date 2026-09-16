@@ -17,6 +17,10 @@ export type CircuitBreakerStorageAdapterTestSuiteSettings = {
     describe: SuiteAPI;
     beforeEach: typeof beforeEach;
     createAdapter: () => Promisable<ICircuitBreakerStorageAdapter>;
+    /**
+     * @default true
+     */
+    transactionAware?: boolean;
 };
 
 /**
@@ -54,6 +58,7 @@ export function circuitBreakerStorageAdapterTestSuite(
         createAdapter,
         describe,
         beforeEach: beforeEach_,
+        transactionAware = true,
     } = settings;
     let adapter: ICircuitBreakerStorageAdapter<string>;
 
@@ -108,6 +113,37 @@ export function circuitBreakerStorageAdapterTestSuite(
                     await trx.upsert(key, input);
                     return await trx.find(key);
                 });
+
+                expect(value).toBe(input);
+            });
+        });
+        describe.skipIf(!transactionAware)("method: transaction", () => {
+            test("Should not persist changes when the transaction fails", async () => {
+                const key = "a";
+                const input = "b";
+
+                try {
+                    await adapter.transaction(async (trx) => {
+                        await trx.upsert(key, input);
+                        throw new Error("Transaction failure");
+                    });
+                } catch {
+                    /* EMPTY */
+                }
+
+                const value = await adapter.find(key);
+
+                expect(value).toBeNull();
+            });
+            test("Should persist changes when the transaction succeeds", async () => {
+                const key = "a";
+                const input = "b";
+
+                await adapter.transaction(async (trx) => {
+                    await trx.upsert(key, input);
+                });
+
+                const value = await adapter.find(key);
 
                 expect(value).toBe(input);
             });
