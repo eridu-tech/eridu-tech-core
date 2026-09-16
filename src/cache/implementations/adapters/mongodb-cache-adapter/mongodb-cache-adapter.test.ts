@@ -161,40 +161,73 @@ describe("class: MongodbCacheAdapter", () => {
             expect(doc?.expiration).toEqual(expiration);
         });
     });
-    test("Transaction test", async () => {
-        const database = client.db("database");
-        const executionContext = new ExecutionContext(
-            new AlsExecutionContextAdapter(),
-        );
-        const trxCtx = new TransactionContext({
-            token: contextToken<ITransactionData<ClientSession>>("mongodb"),
-            adapter: new MongodbTransactionAdapter({
-                database,
-                client,
-            }),
-            executionContext,
-        });
-        const collectionName = "cache";
-        const adapter = new MongodbCacheAdapter({
-            database: trxCtx,
-            collectionName,
-            serde: new Serde(new SuperJsonSerdeAdapter()),
-        });
-        await adapter.init();
+    describe("Transaction tests:", () => {
+        test("Should not persist changes when the transaction fails", async () => {
+            const database = client.db("database");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const trxCtx = new TransactionContext({
+                token: contextToken<ITransactionData<ClientSession>>("mongodb"),
+                adapter: new MongodbTransactionAdapter({
+                    database,
+                    client,
+                }),
+                executionContext,
+            });
+            const collectionName = "cache";
+            const adapter = new MongodbCacheAdapter({
+                database: trxCtx,
+                collectionName,
+                serde: new Serde(new SuperJsonSerdeAdapter()),
+            });
+            await adapter.init();
 
-        try {
+            try {
+                await trxCtx.run(async () => {
+                    await adapter.add("a", 1, null);
+                    await adapter.add("b", 1, null);
+                    throw new Error("Transaction failure");
+                });
+            } catch {
+                /* EMPTY */
+            }
+
+            const collection = trxCtx.client.collection(collectionName);
+
+            const docs = await collection.find().toArray();
+            expect(docs.length).toBe(0);
+        });
+        test("Should persist changes when the transaction succeeds", async () => {
+            const database = client.db("database");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const trxCtx = new TransactionContext({
+                token: contextToken<ITransactionData<ClientSession>>("mongodb"),
+                adapter: new MongodbTransactionAdapter({
+                    database,
+                    client,
+                }),
+                executionContext,
+            });
+            const collectionName = "cache";
+            const adapter = new MongodbCacheAdapter({
+                database: trxCtx,
+                collectionName,
+                serde: new Serde(new SuperJsonSerdeAdapter()),
+            });
+            await adapter.init();
+
             await trxCtx.run(async () => {
                 await adapter.add("a", 1, null);
                 await adapter.add("b", 1, null);
-                throw new Error("Transaction failure");
             });
-        } catch {
-            /* EMPTY */
-        }
 
-        const collection = trxCtx.client.collection(collectionName);
+            const collection = trxCtx.client.collection(collectionName);
 
-        const docs = await collection.find().toArray();
-        expect(docs.length).toBe(0);
+            const docs = await collection.find().toArray();
+            expect(docs.length).toBe(2);
+        });
     });
 });

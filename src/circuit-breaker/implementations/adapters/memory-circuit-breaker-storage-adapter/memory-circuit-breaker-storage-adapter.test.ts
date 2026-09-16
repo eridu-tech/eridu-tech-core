@@ -25,5 +25,6 @@ describe("class: MemoryCircuitBreakerStorageAdapter", () => {
         describe,
         test,
         expect,
+        transactionAware: false,
     });
 });

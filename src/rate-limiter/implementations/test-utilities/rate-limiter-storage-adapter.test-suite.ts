@@ -22,6 +22,10 @@ export type RateLimiterStorageAdapterTestSuiteSettings = {
     describe: SuiteAPI;
     beforeEach: typeof beforeEach;
     createAdapter: () => Promisable<IRateLimiterStorageAdapter>;
+    /**
+     * @default true
+     */
+    transactionAware?: boolean;
 };
 
 /**
@@ -59,6 +63,7 @@ export function rateLimiterStorageAdapterTestSuite(
         createAdapter,
         describe,
         beforeEach: beforeEach_,
+        transactionAware = true,
     } = settings;
     let adapter: IRateLimiterStorageAdapter<string>;
 
@@ -120,6 +125,46 @@ export function rateLimiterStorageAdapterTestSuite(
                 });
 
                 expect(data).toBeNull();
+            });
+        });
+        describe.skipIf(!transactionAware)("method: transaction", () => {
+            test("Should not persist changes when the transaction fails", async () => {
+                const key = "a";
+                const value = "b";
+                const expiration = TimeSpan.fromMinutes(5).toEndDate(
+                    new Date("2026-01-01"),
+                );
+
+                try {
+                    await adapter.transaction(async (trx) => {
+                        await trx.upsert(key, value, expiration);
+                        throw new Error("Transaction failure");
+                    });
+                } catch {
+                    /* EMPTY */
+                }
+
+                const data = await adapter.find(key);
+
+                expect(data).toBeNull();
+            });
+            test("Should persist changes when the transaction succeeds", async () => {
+                const key = "a";
+                const value = "b";
+                const expiration = TimeSpan.fromMinutes(5).toEndDate(
+                    new Date("2026-01-01"),
+                );
+
+                await adapter.transaction(async (trx) => {
+                    await trx.upsert(key, value, expiration);
+                });
+
+                const data = await adapter.find(key);
+
+                expect(data).toEqual({
+                    state: value,
+                    expiration,
+                } satisfies IRateLimiterData<string>);
             });
         });
         describe("method: find", () => {

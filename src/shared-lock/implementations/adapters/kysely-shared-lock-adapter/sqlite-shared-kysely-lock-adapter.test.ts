@@ -2,33 +2,51 @@ import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
+import { contextToken } from "@/execution-context/contracts/_module.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
 import { KyselySharedLockAdapter } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module.js";
 import { sharedLockAdapterTestSuite } from "@/shared-lock/implementations/test-utilities/_module.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
 
 import type { Database } from "better-sqlite3";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 
 import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 
 describe("sqlite class: KyselySharedLockAdapter", () => {
     let database: Database;
-    let kysely: Kysely<KyselySharedLockTables>;
 
     beforeEach(() => {
         database = new Sqlite(":memory:");
-        kysely = new Kysely({
-            dialect: new SqliteDialect({
-                database,
-            }),
-        });
     });
     afterEach(() => {
         database.close();
     });
+    function createTrxCtx(
+        database_: Database,
+    ): ITransactionContext<Kysely<KyselySharedLockTables>> {
+        return new TransactionContext({
+            token: contextToken("kysely"),
+            executionContext: new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            ),
+            adapter: new KyselyTransactionAdapter({
+                database: new Kysely({
+                    dialect: new SqliteDialect({
+                        database: database_,
+                    }),
+                }),
+            }),
+        });
+    }
+
     sharedLockAdapterTestSuite({
         createAdapter: async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             return adapter;
@@ -40,12 +58,13 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
     });
     describe("method: removeAllExpired", () => {
         test("Should remove all expired writer locks", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
-            await kysely
+            await trxCtx.client
                 .insertInto("writerLock")
                 .values({
                     key: "a",
@@ -53,7 +72,7 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
                     expiration: Date.now() - 1000,
                 })
                 .execute();
-            await kysely
+            await trxCtx.client
                 .insertInto("writerLock")
                 .values({
                     key: "b",
@@ -61,7 +80,7 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
                     expiration: Date.now() - 1000,
                 })
                 .execute();
-            await kysely
+            await trxCtx.client
                 .insertInto("writerLock")
                 .values({
                     key: "c",
@@ -73,21 +92,21 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             await adapter.removeAllExpired();
 
             expect(
-                await kysely
+                await trxCtx.client
                     .selectFrom("writerLock")
                     .where("writerLock.key", "=", "a")
                     .selectAll()
                     .executeTakeFirst(),
             ).toBeUndefined();
             expect(
-                await kysely
+                await trxCtx.client
                     .selectFrom("writerLock")
                     .where("writerLock.key", "=", "b")
                     .selectAll()
                     .executeTakeFirst(),
             ).toBeUndefined();
             expect(
-                await kysely
+                await trxCtx.client
                     .selectFrom("writerLock")
                     .where("writerLock.key", "=", "c")
                     .selectAll()
@@ -95,8 +114,9 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             ).toBeDefined();
         });
         test("Should remove all expired reader semaphores", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
@@ -104,37 +124,37 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             const key1 = "1";
             const key2 = "2";
 
-            await kysely
+            await trxCtx.client
                 .insertInto("readerSemaphore")
                 .values({ key: key1, limit })
                 .execute();
-            await kysely
+            await trxCtx.client
                 .insertInto("readerSemaphore")
                 .values({ key: key2, limit })
                 .execute();
 
-            await kysely
+            await trxCtx.client
                 .insertInto("readerSemaphoreSlot")
                 .values({ key: key1, id: "1", expiration: Date.now() - 1000 })
                 .execute();
-            await kysely
+            await trxCtx.client
                 .insertInto("readerSemaphoreSlot")
                 .values({ key: key1, id: "2", expiration: Date.now() - 1000 })
                 .execute();
-            await kysely
+            await trxCtx.client
                 .insertInto("readerSemaphoreSlot")
                 .values({ key: key1, id: "3", expiration: Date.now() - 1000 })
                 .execute();
 
-            await kysely
+            await trxCtx.client
                 .insertInto("readerSemaphoreSlot")
                 .values({ key: key2, id: "4", expiration: Date.now() - 1000 })
                 .execute();
-            await kysely
+            await trxCtx.client
                 .insertInto("readerSemaphoreSlot")
                 .values({ key: key2, id: "5", expiration: Date.now() - 1000 })
                 .execute();
-            await kysely
+            await trxCtx.client
                 .insertInto("readerSemaphoreSlot")
                 .values({ key: key2, id: "6", expiration: Date.now() - 1000 })
                 .execute();
@@ -142,7 +162,7 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             await adapter.removeAllExpired();
 
             expect(
-                await kysely
+                await trxCtx.client
                     .selectFrom("readerSemaphore")
                     .where("readerSemaphore.key", "=", key1)
                     .selectAll()
@@ -150,7 +170,7 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             ).toBeUndefined();
 
             expect(
-                await kysely
+                await trxCtx.client
                     .selectFrom("readerSemaphoreSlot")
                     .where("readerSemaphoreSlot.key", "=", key1)
                     .selectAll()
@@ -158,7 +178,7 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             ).toEqual([]);
 
             expect(
-                await kysely
+                await trxCtx.client
                     .selectFrom("readerSemaphoreSlot")
                     .where("readerSemaphoreSlot.key", "=", key2)
                     .selectAll()
@@ -166,7 +186,7 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             ).toEqual([]);
 
             expect(
-                await kysely
+                await trxCtx.client
                     .selectFrom("readerSemaphore")
                     .where("readerSemaphore.key", "=", key2)
                     .selectAll()
@@ -176,12 +196,13 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
     });
     describe("method: init", () => {
         test("Should create writerLock table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -211,12 +232,13 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             );
         });
         test("Should create readerSemaphore table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -240,12 +262,13 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             );
         });
         test("Should create readerSemaphoreSlot table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: trxCtx,
             });
             await adapter.init();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -276,7 +299,7 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
 
@@ -287,13 +310,14 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove writer lock table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: trxCtx,
             });
             await adapter.init();
             await adapter.deInit();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -302,13 +326,14 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             );
         });
         test("Should remove readerSemaphore table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: trxCtx,
             });
             await adapter.init();
             await adapter.deInit();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -317,13 +342,14 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
             );
         });
         test("Should remove readerSemaphoreSlot table", async () => {
+            const trxCtx = createTrxCtx(database);
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: trxCtx,
             });
             await adapter.init();
             await adapter.deInit();
 
-            const tables = await kysely.introspection.getTables();
+            const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
@@ -333,7 +359,7 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
         });
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             await adapter.init();
             await adapter.deInit();
@@ -343,12 +369,87 @@ describe("sqlite class: KyselySharedLockAdapter", () => {
         });
         test("Should not throw error when called before init", async () => {
             const adapter = new KyselySharedLockAdapter({
-                kysely,
+                transactionContext: createTrxCtx(database),
             });
             const promise = adapter.deInit();
             await adapter.init();
 
             await expect(promise).resolves.toBeUndefined();
+        });
+    });
+    describe("Transaction tests:", () => {
+        test("Should not persist changes when the transaction fails", async () => {
+            const trxCtx = createTrxCtx(database);
+            const adapter = new KyselySharedLockAdapter({
+                transactionContext: trxCtx,
+            });
+            await adapter.init();
+
+            try {
+                await trxCtx.run(async () => {
+                    await adapter.acquireReader({
+                        key: "a",
+                        lockId: "1",
+                        limit: 4,
+                        ttl: null,
+                    });
+                    await adapter.acquireReader({
+                        key: "b",
+                        lockId: "1",
+                        limit: 4,
+                        ttl: null,
+                    });
+                    throw new Error("Transaction failure");
+                });
+            } catch {
+                /* EMPTY */
+            }
+
+            const semaphoreRows = await trxCtx.client
+                .selectFrom("readerSemaphore")
+                .select("readerSemaphore.key")
+                .execute();
+            const slotRows = await trxCtx.client
+                .selectFrom("readerSemaphoreSlot")
+                .select("readerSemaphoreSlot.key")
+                .execute();
+
+            expect(semaphoreRows.length).toBe(0);
+            expect(slotRows.length).toBe(0);
+        });
+        test("Should persist changes when the transaction succeeds", async () => {
+            const trxCtx = createTrxCtx(database);
+            const adapter = new KyselySharedLockAdapter({
+                transactionContext: trxCtx,
+            });
+            await adapter.init();
+
+            await trxCtx.run(async () => {
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "1",
+                    limit: 4,
+                    ttl: null,
+                });
+                await adapter.acquireReader({
+                    key: "b",
+                    lockId: "2",
+                    limit: 4,
+                    ttl: null,
+                });
+            });
+
+            const semaphoreRows = await trxCtx.client
+                .selectFrom("readerSemaphore")
+                .select("readerSemaphore.key")
+                .execute();
+            const slotRows = await trxCtx.client
+                .selectFrom("readerSemaphoreSlot")
+                .select("readerSemaphoreSlot.key")
+                .execute();
+
+            expect(semaphoreRows.length).toBe(2);
+            expect(slotRows.length).toBe(2);
         });
     });
 });
