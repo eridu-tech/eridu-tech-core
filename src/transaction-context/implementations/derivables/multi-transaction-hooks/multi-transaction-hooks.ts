@@ -21,7 +21,7 @@ import type { AsyncLazy } from "@/utilities/_module.js";
  * currently has an active transaction, and therefore runs once per transaction that
  * commits. When none of the wrapped contexts is in a transaction, the hook runs
  * immediately unless
- * {@link AfterCommitSettings.runWithoutTransaction | `runWithoutTransaction`} is `false`,
+ * {@link AfterCommitSettings.runIfNoTransaction | `runIfNoTransaction`} is `false`,
  * in which case it is discarded.
  *
  * IMPORT_PATH: `"eridu-tech/transaction-context"`
@@ -41,7 +41,7 @@ export class MultiTransactionHooks implements ITransactionHooks {
     private async _afterCommit(asyncInvocable: AsyncLazy<void>): Promise<void> {
         for (const transactionContext of this.transactionContexts) {
             await transactionContext.afterCommit(asyncInvocable, {
-                runWithoutTransaction: false,
+                runIfNoTransaction: false,
             });
         }
     }
@@ -50,8 +50,8 @@ export class MultiTransactionHooks implements ITransactionHooks {
         asyncInvocable: AsyncLazy<void>,
         settings: AfterCommitSettings = {},
     ): Promise<void> {
-        const { runWithoutTransaction = true } = settings;
-        if (!this.isInTransaction && runWithoutTransaction) {
+        const { runIfNoTransaction = true } = settings;
+        if (!this.isInTransaction && runIfNoTransaction) {
             await callInvocable(asyncInvocable);
             return;
         }

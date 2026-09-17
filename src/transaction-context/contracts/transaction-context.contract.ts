@@ -74,12 +74,12 @@ export type ITransactionContextBase<
  */
 export type AfterCommitSettings = {
     /**
-     * Whether to invoke the hook immediately when no transaction is active, instead of
-     * discarding it.
+     * Whether to invoke the hook immediately when the context is not in a transaction,
+     * instead of discarding it.
      *
      * @default true
      */
-    runWithoutTransaction?: boolean;
+    runIfNoTransaction?: boolean;
 };
 
 /**
@@ -99,7 +99,7 @@ export type ITransactionHooks = {
      * The invocable is attached to the current transaction scope and awaited once that
      * transaction commits and `run()` resolves. When no transaction is active, the invocable
      * runs immediately unless
-     * {@link AfterCommitSettings.runWithoutTransaction | `runWithoutTransaction`} is `false`,
+     * {@link AfterCommitSettings.runIfNoTransaction | `runIfNoTransaction`} is `false`,
      * in which case it is discarded.
      *
      * @param asyncInvocable - The invocable to run after the commit.

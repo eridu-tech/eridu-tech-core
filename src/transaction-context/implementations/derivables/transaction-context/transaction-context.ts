@@ -106,7 +106,7 @@ export class TransactionContext<
      *   is always the base client.
      * - `getTransactionOrFail()` always throws
      *   {@link MandatoryPropagationError | `MandatoryPropagationError`}.
-     * - `afterCommit()` invocables run immediately; when `runWithoutTransaction` is `false`
+     * - `afterCommit()` invocables run immediately; when `runIfNoTransaction` is `false`
      *   they never run, because there is no transaction that can commit.
      *
      * Useful when transactions are not needed or not supported.
@@ -234,9 +234,9 @@ export class TransactionContext<
         asyncInvocable: AsyncLazy<void>,
         settings: AfterCommitSettings = {},
     ): Promise<void> {
-        const { runWithoutTransaction = true } = settings;
+        const { runIfNoTransaction = true } = settings;
         const transactionData = this.executionContext.get(this.token);
-        if (transactionData === null && runWithoutTransaction) {
+        if (transactionData === null && runIfNoTransaction) {
             await callInvocable(asyncInvocable);
         }
         if (transactionData === null) {

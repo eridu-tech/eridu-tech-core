@@ -43,7 +43,7 @@ describe("function: withAfterCommitFactory", () => {
 
         const withAfterCommit = withAfterCommitFactory(transactionContext);
         const settings = {
-            runWithoutTransaction: false,
+            runIfNoTransaction: false,
         } satisfies AfterCommitSettings;
 
         function fn(): Promise<void> {

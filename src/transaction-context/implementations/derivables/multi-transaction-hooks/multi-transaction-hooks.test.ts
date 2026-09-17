@@ -66,7 +66,7 @@ describe("class: MultiTransactionHooks", () => {
             expect(afterCommit2).toHaveBeenCalledOnce();
             expect(hook).not.toHaveBeenCalled();
         });
-        test("Should always set runWithoutTransaction to false when in active transaction", async () => {
+        test("Should always set runIfNoTransaction to false when in active transaction", async () => {
             const hook = vi.fn((): Promise<void> => Promise.resolve());
             vi.spyOn(
                 transactionContext1,
@@ -77,14 +77,14 @@ describe("class: MultiTransactionHooks", () => {
             const afterCommit2 = vi.spyOn(transactionContext2, "afterCommit");
 
             await multiTransactionHooks.afterCommit(hook, {
-                runWithoutTransaction: true,
+                runIfNoTransaction: true,
             });
 
             expect(afterCommit1).toHaveBeenCalledExactlyOnceWith(hook, {
-                runWithoutTransaction: false,
+                runIfNoTransaction: false,
             });
             expect(afterCommit2).toHaveBeenCalledExactlyOnceWith(hook, {
-                runWithoutTransaction: false,
+                runIfNoTransaction: false,
             });
             expect(hook).not.toHaveBeenCalled();
         });
