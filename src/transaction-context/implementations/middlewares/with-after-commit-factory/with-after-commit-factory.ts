@@ -15,7 +15,7 @@ import type {
  * The returned middleware delegates to `transactionContext.afterCommit()`, so `next` is
  * registered as an after-commit invocable instead of running immediately. When no
  * transaction is active, `next` runs immediately, unless
- * {@link AfterCommitSettings.runWithoutTransaction | `runWithoutTransaction`} is `false`,
+ * {@link AfterCommitSettings.runIfNoTransaction | `runIfNoTransaction`} is `false`,
  * in which case it is discarded.
  *
  * @param transactionContext - The transaction hooks whose `afterCommit()` method runs the

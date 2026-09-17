@@ -578,27 +578,27 @@ describe("class: TransactionContext", () => {
             expect(hook).toHaveBeenCalledOnce();
             expect(start).not.toHaveBeenCalled();
         });
-        test("Should run the invocable immediately when runWithoutTransaction is true and no transaction is active", async () => {
+        test("Should run the invocable immediately when runIfNoTransaction is true and no transaction is active", async () => {
             const { transactionContext } = createTransactionContext();
             const hook = vi.fn(() => Promise.resolve());
 
             await transactionContext.afterCommit(hook, {
-                runWithoutTransaction: true,
+                runIfNoTransaction: true,
             });
 
             expect(hook).toHaveBeenCalledOnce();
         });
-        test("Should skip the invocable when runWithoutTransaction is false and no transaction is active", async () => {
+        test("Should skip the invocable when runIfNoTransaction is false and no transaction is active", async () => {
             const { transactionContext } = createTransactionContext();
             const hook = vi.fn(() => Promise.resolve());
 
             await transactionContext.afterCommit(hook, {
-                runWithoutTransaction: false,
+                runIfNoTransaction: false,
             });
 
             expect(hook).not.toHaveBeenCalled();
         });
-        test("Should still run the invocable after commit when runWithoutTransaction is false and a transaction is active", async () => {
+        test("Should still run the invocable after commit when runIfNoTransaction is false and a transaction is active", async () => {
             const { transactionContext } = createTransactionContext();
             const hook = vi.fn(() => Promise.resolve());
 
@@ -606,7 +606,7 @@ describe("class: TransactionContext", () => {
                 TRANSACTION_PROPAGATION.REQUIRED,
                 async () => {
                     await transactionContext.afterCommit(hook, {
-                        runWithoutTransaction: false,
+                        runIfNoTransaction: false,
                     });
                     expect(hook).not.toHaveBeenCalled();
                 },
@@ -766,12 +766,12 @@ describe("class: TransactionContext", () => {
 
             expect(hook).toHaveBeenCalledOnce();
         });
-        test("Should never run afterCommit invocables when runWithoutTransaction is false", async () => {
+        test("Should never run afterCommit invocables when runIfNoTransaction is false", async () => {
             const transactionContext = TransactionContext.noOp(baseClient);
             const hook = vi.fn(() => Promise.resolve());
 
             await transactionContext.afterCommit(hook, {
-                runWithoutTransaction: false,
+                runIfNoTransaction: false,
             });
 
             expect(hook).not.toHaveBeenCalled();
