@@ -1,5 +1,138 @@
 # @daiso-tech/core
 
+## 0.64.0
+
+### Minor Changes
+
+- a4e4bde: Added the `MultiTransactionHooks` derivable, which fans `afterCommit()` hooks out to several transaction contexts.
+
+    - `new MultiTransactionHooks(transactionContexts)` implements `ITransactionHooks` over multiple `ITransactionContext` instances, so one consumer can stay transaction-aware across databases a project uses in separate, non-nested parts of its code, for example PostgreSQL in one part and MongoDB in another.
+
+    - When at least one wrapped context is inside a transaction, the hook is forwarded to all of them with `runIfNoTransaction: false`: it runs once per committing transaction and is discarded by the contexts that have no active transaction.
+
+    - When none of them is inside a transaction, the hook runs immediately unless `runIfNoTransaction: false` is passed, in which case it is discarded. The caller's setting only affects this decision, since the fan-out always forwards `runIfNoTransaction: false`.
+
+    - `MultiTransactionHooks` is exported from `eridu-tech/transaction-context`, next to `TransactionContext`, with tests covering all three behaviors above.
+
+    - Renamed `AfterCommitSettings.runWithoutTransaction` to `AfterCommitSettings.runIfNoTransaction`. The old name described the hook as running without a transaction, while the setting only decides what happens when there is no transaction. The behavior and its default (`true`) are unchanged. This affects `ITransactionHooks.afterCommit()` and the settings of `withAfterCommitFactory`.
+
+        ### Breaking changes
+        - The `runWithoutTransaction` option of `afterCommit()` and of the `withAfterCommitFactory` middleware was renamed to `runIfNoTransaction`.
+
+        ### Migration
+
+        **Before:**
+
+        ```ts
+        await transactionContext.afterCommit(hook, {
+            runWithoutTransaction: false,
+        });
+        ```
+
+        **After:**
+
+        ```ts
+        await transactionContext.afterCommit(hook, {
+            runIfNoTransaction: false,
+        });
+        ```
+
+- a5c2aad: Added the `withAfterCommitFactory` middleware, which defers the wrapped function until the active transaction commits.
+
+    - `withAfterCommitFactory(transactionContext)` takes an `ITransactionHooks` implementation, such as a `TransactionContext`, and returns a middleware factory. The optional `settings` argument of type `AfterCommitSettings` is forwarded to `ITransactionHooks.afterCommit()`, so `runIfNoTransaction` decides what happens when no transaction is active: the wrapped function runs immediately (the default) or is discarded.
+        - The middleware resolves to `Promise<void>`, so the wrapped function's return value is not propagated to the caller.
+
+    - The middleware is exported from `eridu-tech/transaction-context/middlewares`, next to `withTransactionFactory`. Added tests covering the `afterCommit` call and the forwarded settings.
+
+- 0dda15e: The `MemoryEventBusAdapter` and `RedisPubSubEventBusAdapter` can now defer event dispatching until the active transaction commits.
+
+    - Added an optional `transactionHooks` setting of type `ITransactionHooks` to `MemoryEventBusAdapterSettings` and `RedisPubSubEventBusAdapterSettings`. `dispatch()` is now wrapped in `transactionHooks.afterCommit()`, so events are only emitted or published once the active transaction commits. When no transaction is active, events are still dispatched immediately. The setting defaults to `TransactionContext.noOp(null)`, so events keep being dispatched immediately and unconditionally, exactly as they were before this change.
+
+    - `MemoryEventBusAdapter` now accepts a settings object instead of a positional `EventEmitter`, so an `EventEmitter` is provided through the new optional `eventEmitter` setting (defaults to `new EventEmitter()`).
+
+        ### Breaking changes
+        - `new MemoryEventBusAdapter(eventEmitter?)` was replaced with `new MemoryEventBusAdapter({ eventEmitter?, transactionHooks? })`.
+
+        ### Migration
+
+        **Before:**
+
+        ```ts
+        const eventBusAdapter = new MemoryEventBusAdapter(eventEmitter);
+        ```
+
+        **After:**
+
+        ```ts
+        const eventBusAdapter = new MemoryEventBusAdapter({ eventEmitter });
+        ```
+
+    - The `RedisPubSubEventBusAdapter` constructor signature is unchanged, since its settings were already passed as an object. Its `dispatch()` now publishes through `transactionHooks.afterCommit()`.
+
+    - Added after-commit integration tests to both adapters.
+
+- ca31d9c: Integrated the `transaction-context` component with every Kysely-backed adapter, so their operations join the active transaction instead of always starting their own.
+
+    - The `kysely` setting of every Kysely-backed adapter is replaced by a `transactionContext` setting typed `ITransactionContext<Kysely<...Tables>>`:
+        - `KyselyCacheAdapter` (`KyselyCacheAdapterSettings`)
+        - `KyselyCircuitBreakerStorageAdapter` (`KyselyCircuitBreakerStorageAdapterSettings`)
+        - `KyselyLockAdapter` (`KyselyLockAdapterSettings`)
+        - `KyselyRateLimiterStorageAdapter` (`KyselyRateLimiterStorageAdapterSettings`)
+        - `KyselySemaphoreAdapter` (`KyselySemaphoreAdapterSettings`)
+        - `KyselySharedLockAdapter` (`KyselySharedLockAdapterSettings`)
+
+        Adapters given the same instance share the same transaction, reads and writes run on `transactionContext.current`, and multi-statement operations are wrapped in `transactionContext.run(...)`, which uses `REQUIRED` propagation, so an adapter called inside an ambient transaction joins it instead of opening a nested one. The private per-adapter transaction helpers that used to call `kysely.transaction()` were removed.
+        - Lock, semaphore and shared-lock adapters no longer set the isolation level themselves. It now comes from the `isolationLevel` setting of `KyselyTransactionAdapter`, which defaults to `"serializable"` and therefore preserves the previous behavior unless it is overridden.
+        - `init()` and `deInit()` keep using `transactionContext.client`, the base connection, because the table and index statements they run are not allowed inside a transaction. `removeAllExpired()` behaves the same way in `KyselyCacheAdapter`, `KyselyLockAdapter`, `KyselyRateLimiterStorageAdapter` and `KyselySemaphoreAdapter`, while `KyselySharedLockAdapter.removeAllExpired()` runs inside the transaction context like its other operations.
+
+        ### Breaking changes
+        - The `kysely` setting was renamed to `transactionContext` and a plain `Kysely` instance is no longer accepted, so every construction site has to be updated.
+
+        ### Migration
+
+        **Before:**
+
+        ```ts
+        const cacheAdapter = new KyselyCacheAdapter({
+            kysely,
+            serde,
+        });
+        ```
+
+        **After:**
+
+        ```ts
+        const transactionContext = new TransactionContext({
+            token: contextToken("kysely"),
+            executionContext: new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            ),
+            adapter: new KyselyTransactionAdapter({
+                database: kysely,
+            }),
+        });
+
+        const cacheAdapter = new KyselyCacheAdapter({
+            transactionContext,
+            serde,
+        });
+        ```
+
+    The `circuitBreakerStorageAdapterTestSuite` and `rateLimiterStorageAdapterTestSuite` functions accept a new optional `transactionAware` setting, which defaults to `true`. It controls the `method: transaction` describe block of the suite, asserting that changes are not persisted when the transaction fails and that they are persisted when the transaction succeeds. Adapters that are not transaction aware pass `false`, which `MemoryCircuitBreakerStorageAdapter` and `MemoryRateLimiterStorageAdapter` do, because they apply changes immediately and never roll them back.
+
+- 73d4898: Integrated the `transaction-context` component with all MongoDB-backed adapters, so their operations join the active transaction instead of always running against the base client.
+
+    - The `database` setting of `MongodbCacheAdapter`, `MongodbLockAdapter`, `MongodbSemaphoreAdapter` and `MongodbSharedLockAdapter` is now typed `TransactionAware<Db, ClientSession>` instead of `Db`, and is resolved with `resolveTransactionAware`. Passing a plain `Db` keeps the previous behavior because it is wrapped in a no-op transaction context, while passing a `TransactionContext` makes the adapter participate in the ambient transaction.
+
+    - Every read and write now passes `session: this.trxCtx.transaction ?? undefined` to the underlying collection call, so the operation runs inside the transaction when one is active. The collection is still created from `trxCtx.client`.
+        - `init()` and `deInit()` are intentionally kept outside of the transaction, because `createIndex`, `dropIndexes` and `drop` are not allowed inside a MongoDB transaction.
+
+    - `MongodbCircuitBreakerStorageAdapter` and `MongodbRateLimiterStorageAdapter` now require `transactionContext: ITransactionContext<Db, ClientSession>`, replacing the previous `database: Db` and `client: MongoClient` settings, because their operations rely on transactions to stay correct. A plain `Db` is no longer accepted, so unlike the adapters above there is no silent no-op fallback and no `database` setting to resolve. Their `transaction(fn)` method runs the callback through the provided transaction context with `REQUIRED` propagation.
+
+    - Removed the optional `session?: ClientSession` parameter from `MongodbCircuitBreakerStorageAdapter.find`/`remove` and `MongodbRateLimiterStorageAdapter.upsert`/`find`/`remove`, since the session is now always derived from the active transaction.
+
+    - Added transaction integration tests to all MongoDB adapters and updated their expiration tests.
+
 ## 0.63.0
 
 ### Minor Changes
