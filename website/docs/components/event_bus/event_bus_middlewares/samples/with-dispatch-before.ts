@@ -1,11 +1,7 @@
 import { withDispatchBeforeFactory } from "eridu-tech/event-bus/middlewares";
-import { EventBus } from "eridu-tech/event-bus";
 import { use } from "eridu-tech/middleware";
-import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-adapter";
+import { eventBus } from "./event-bus.js";
 
-const eventBus = new EventBus({
-    adapter: new MemoryEventBusAdapter(),
-});
 const withDispatchBefore = withDispatchBeforeFactory(eventBus);
 
 const createUser = async (userId: string): Promise<string> => {

@@ -16,6 +16,14 @@ keywords:
 
 EventBus middlewares let you dispatch events around a wrapped function without coupling the function itself to the event bus. Each factory takes an `IEventDispatcher` (such as an `EventBus`) and returns a middleware configured with an event `type` and a `payload` invocable. The payload is resolved from the wrapped function's arguments (and, where applicable, its return value or caught error) and dispatched on the provided dispatcher, while the wrapped function's result (or thrown error) passes through unchanged. If the payload resolves to `null` (i.e. it doesn't return a value), no event is dispatched.
 
+## Initial configuration
+
+To begin using the EventBus middlewares, you'll need to create and configure an `EventBus` instance:
+
+```ts file=./samples/event-bus.ts
+
+```
+
 ## withDispatchBeforeFactory middleware
 
 The before-dispatch middleware emits an event **before** the wrapped function is invoked. When the wrapped function is called, the middleware resolves the event payload from the function's arguments, dispatches the configured event, and then invokes the wrapped function and returns its result. If the payload resolves to `null`, no event is dispatched and the wrapped function is invoked directly.
