@@ -200,6 +200,40 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 This pattern is ideal for building reusable feature packs (logging, monitoring) that can be composed and applied to any class instance or object literal.
 :::
 
+## Hooks
+
+The `withBeforeHook`, `withAfterHook` and `withOnError` middlewares run a callback at the three points of interest of a function call — before it runs, after it resolves and when it throws — so that common logic does not have to be written as a full middleware. Each one accepts a callback (a function or an invocable object) and an optional `detach` flag that fires the callback without awaiting it.
+
+### withBeforeHook
+
+Runs a `BeforeHook` before the wrapped function and lets it replace the arguments by returning a new argument tuple, while returning nothing keeps the original arguments. The hook may be async and is awaited, unless `detach` is set to `true`, in which case its return value is ignored.
+
+The synchronous counterpart is `withBeforeHookSync`, which takes a hook that must be synchronous, has no `detach` option and always applies the tuple it returns.
+
+```ts file=./samples/with-before-hook.ts
+
+```
+
+### withAfterHook
+
+Runs an `AfterHook` after the wrapped function resolves successfully, receiving the arguments and the result, and can replace the result by returning a value, while returning nothing keeps the original result. The hook may be async and is awaited, unless `detach` is set to `true`, in which case it is fired without being awaited and cannot change the result.
+
+The synchronous counterpart is `withAfterHookSync`, which takes a hook that must be synchronous, has no `detach` option and can still replace the result.
+
+```ts file=./samples/with-after-hook.ts
+
+```
+
+### withOnError
+
+Runs an `OnErrorHook` when the wrapped function throws, receiving the arguments and the error for side effects only, because the error is always re-thrown unchanged. The hook may be async and is awaited before the error propagates, unless `detach` is set to `true`.
+
+The synchronous counterpart is `withOnErrorSync`, which takes a hook that must be synchronous, has no `detach` option and is always invoked before the error is re-thrown.
+
+```ts file=./samples/with-on-error-hook.ts
+
+```
+
 ## Further information
 
 For further information refer to [`eridu-tech/middleware`](https://eridu-tech.github.io/eridu-tech-core/modules/Middleware.html) API docs.
