@@ -1,11 +1,7 @@
 import { withSemaphoreFactory } from "eridu-tech/semaphore/middlewares";
-import { SemaphoreFactory } from "eridu-tech/semaphore";
-import { MemorySemaphoreAdapter } from "eridu-tech/semaphore/memory-semaphore-adapter";
 import { use } from "eridu-tech/middleware";
+import { semaphoreFactory } from "./semaphore.js";
 
-const semaphoreFactory = new SemaphoreFactory({
-    adapter: new MemorySemaphoreAdapter(),
-});
 const withSemaphore = withSemaphoreFactory(semaphoreFactory);
 
 const processFile = async (filePath: string): Promise<void> => {
