@@ -14,6 +14,14 @@ keywords:
 
 # SharedLock middlewares
 
+## Initial configuration
+
+To begin using the shared-lock middlewares, you'll need to create and configure a `SharedLockFactory` instance:
+
+```ts file=./samples/shared-lock.ts
+
+```
+
 ## withSharedLockFactory middleware
 
 The SharedLock middleware wraps function calls with a distributed shared lock (reader-writer lock), providing concurrency control with two access modes: **Reader mode** (`"READER"`) allows multiple callers to execute the wrapped function concurrently as long as no writer holds the lock, while **Writer mode** (`"WRITER"`) grants exclusive access. Before executing the wrapped function, the appropriate lock is acquired on a key derived from the function's arguments.
