@@ -1,11 +1,7 @@
 import { withLockFactory } from "eridu-tech/lock/middlewares";
-import { LockFactory } from "eridu-tech/lock";
-import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
 import { use } from "eridu-tech/middleware";
+import { lockFactory } from "./lock.js";
 
-const lockFactory = new LockFactory({
-    adapter: new MemoryLockAdapter(),
-});
 const withLock = withLockFactory(lockFactory);
 
 const processJob = async (jobId: string): Promise<void> => {

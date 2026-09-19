@@ -14,6 +14,14 @@ keywords:
 
 # Lock middlewares
 
+## Initial configuration
+
+To begin using the lock middlewares, you'll need to create and configure a `LockFactory` instance:
+
+```ts file=./samples/lock.ts
+
+```
+
 ## withLockFactory middleware
 
 The Lock middleware wraps function calls with a distributed lock, ensuring mutual exclusion across processes. Before executing the wrapped function, a lock is acquired on a key derived from the function's arguments. If another process already holds the lock, the call waits (or fails immediately for non-blocking locks) until the lock is released.
