@@ -1,12 +1,8 @@
 import { withCacheFactory } from "eridu-tech/cache/middlewares";
-import { Cache } from "eridu-tech/cache";
 import { use } from "eridu-tech/middleware";
-import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
 import { TimeSpan } from "eridu-tech/time-span";
+import { cache } from "./cache.js";
 
-const cache = new Cache({
-    adapter: new MemoryCacheAdapter(),
-});
 const withCache = withCacheFactory(cache);
 
 const fetchUser = async (userId: string): Promise<{ name: string }> => {

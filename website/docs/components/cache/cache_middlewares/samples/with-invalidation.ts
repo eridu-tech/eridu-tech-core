@@ -1,11 +1,7 @@
 import { withInvalidationFactory } from "eridu-tech/cache/middlewares";
-import { Cache } from "eridu-tech/cache";
 import { use } from "eridu-tech/middleware";
-import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
+import { cache } from "./cache.js";
 
-const cache = new Cache({
-    adapter: new MemoryCacheAdapter(),
-});
 const withInvalidation = withInvalidationFactory(cache);
 
 const updateUser = async (userId: string, name: string): Promise<void> => {

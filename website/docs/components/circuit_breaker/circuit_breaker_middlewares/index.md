@@ -14,6 +14,14 @@ keywords:
 
 # CircuitBreaker middlewares
 
+## Initial configuration
+
+To begin using the circuit-breaker middlewares, you'll need to create and configure a `CircuitBreakerFactory` instance:
+
+```ts file=./samples/circuit-breaker.ts
+
+```
+
 ## withCircuitBreakerFactory middleware
 
 The CircuitBreaker middleware wraps function calls with a circuit-breaker, providing fault tolerance for distributed systems. Each unique key (derived from the function's arguments) gets its own circuit instance. When the circuit is **open**, the wrapped function is not called and an error is thrown instead, preventing cascading failures.

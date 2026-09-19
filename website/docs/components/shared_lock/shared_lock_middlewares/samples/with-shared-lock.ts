@@ -2,13 +2,9 @@ import {
     withSharedLockFactory,
     SHARED_LOCK_WHEN,
 } from "eridu-tech/shared-lock/middlewares";
-import { SharedLockFactory } from "eridu-tech/shared-lock";
-import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
 import { use } from "eridu-tech/middleware";
+import { sharedLockFactory } from "./shared-lock.js";
 
-const sharedLockFactory = new SharedLockFactory({
-    adapter: new MemorySharedLockAdapter(),
-});
 const withSharedLock = withSharedLockFactory(sharedLockFactory);
 
 const readData = async (key: string): Promise<unknown> => {
