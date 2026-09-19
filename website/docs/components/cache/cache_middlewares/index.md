@@ -14,6 +14,14 @@ keywords:
 
 # Cache middlewares
 
+## Initial configuration
+
+To begin using the cache middlewares, you'll need to create and configure a `Cache` instance:
+
+```ts file=./samples/cache.ts
+
+```
+
 ## withCacheFactory middleware
 
 The Cache middleware intercepts function calls and caches their return values using a configurable cache store. When the wrapped function is invoked, the middleware derives a cache key from the function's arguments. If the key exists in the cache, the cached value is returned immediately without executing the function. Otherwise, the function runs, its result is stored in the cache, and the result is returned.
