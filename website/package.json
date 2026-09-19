@@ -43,7 +43,7 @@
         "@types/node": "^22.20.2",
         "@vercel/og": "^1.0.1",
         "archiver": "^8.0.0",
-        "eridu-tech": "^0.62.1",
+        "eridu-tech": "^0.64.1",
         "eslint": "^9.39.5",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.6",
