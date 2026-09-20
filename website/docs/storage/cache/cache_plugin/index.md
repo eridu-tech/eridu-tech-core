@@ -72,7 +72,7 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::
 
 ### Multiple keys — `removeMany`
@@ -122,12 +122,12 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::
 
 ## withCacheWriteLock plugin
 
-The Cache write lock plugin acquires a distributed lock before executing mutating cache operations. It wraps write operations (`add`, `put`, `update`, `increment`, `getAndRemove`, `removeMany`) with a lock acquired via an [`ILockFactory`](/docs/concurrency/lock/lock_usage/), ensuring that concurrent writes to the same cache entry are serialised.
+The Cache write lock plugin acquires a distributed lock before executing mutating cache operations. It wraps write operations (`add`, `put`, `update`, `increment`, `getAndRemove`, `removeMany`) with a lock acquired via an [`ILockFactory`](/docs/concurrency/lock/lock_usage), ensuring that concurrent writes to the same cache entry are serialised.
 
 ### Use cases
 
@@ -174,6 +174,6 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
-For more information about lock factories, see the [Lock](/docs/concurrency/lock/lock_usage/) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
+For more information about lock factories, see the [Lock](/docs/concurrency/lock/lock_usage) documentation.
 :::

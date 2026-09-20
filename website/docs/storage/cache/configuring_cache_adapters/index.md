@@ -152,7 +152,7 @@ To use the `KyselyCacheAdapter`, you'll need to:
 
 ### Setup
 
-Create the string serializer ([`ISerde`](/docs/foundation/serde)) and a function that creates the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters):
+Create the string serializer ([`ISerde`](/docs/foundation/serde)) and a function that creates the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters/#kysely_transaction_adapter):
 
 ```ts file=./samples/kysely-cache-adapter-setup.ts
 

@@ -22,7 +22,7 @@ To begin using the cache middlewares, you'll need to create and configure a `Cac
 
 ```
 
-## withCacheFactory middleware
+## withCacheFactory middleware {#with_cache_factory_middleware}
 
 The Cache middleware intercepts function calls and caches their return values using a configurable cache store. When the wrapped function is invoked, the middleware derives a cache key from the function's arguments. If the key exists in the cache, the cached value is returned immediately without executing the function. Otherwise, the function runs, its result is stored in the cache, and the result is returned.
 
@@ -36,7 +36,7 @@ The Cache middleware intercepts function calls and caches their return values us
 Here is a complete list of settings for the [`withCache`](https://eridu-tech.github.io/eridu-tech-core/types/Cache.WithCacheSettings.html) function.
 :::
 
-## withInvalidationFactory middleware
+## withInvalidationFactory middleware {#with_invalidation_factory_middleware}
 
 The Cache invalidation middleware intercepts function calls and invalidates a cache entry after the wrapped function has been invoked. The cache key is derived from the function's arguments via the `key` setting. After the wrapped function runs, the `shouldInvalidate` setting decides whether to invalidate based on the function's arguments and return value; when it returns `true` (the default), the cache entry is removed from the provided `ICache`.
 

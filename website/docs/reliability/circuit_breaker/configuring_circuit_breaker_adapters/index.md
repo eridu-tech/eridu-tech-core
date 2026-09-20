@@ -72,9 +72,9 @@ The `type` field is the only required field. All other fields are optional.
 
 ```
 
-The settings are the same as [circuit-breaker policies](/docs/reliability/circuit_breaker/configuring_circuit_breaker_policies/) settings.
+The settings are the same as [circuit-breaker policies](/docs/reliability/circuit_breaker/configuring_circuit_breaker_policies) settings.
 
-## DatabaseCircuitBreakerAdapter
+## DatabaseCircuitBreakerAdapter {#database_circuit_breaker_adapter}
 
 To use the `DatabaseCircuitBreakerAdapter`, you'll need to use `ICircuitBreakerStorageAdapter`:
 
@@ -100,7 +100,7 @@ You can use any of defined [backoff policies](/docs/utilities/backoff_policies).
 
 ### Configuring CircuitBreaker policy
 
-You can use any of defined [circuit-breaker policies](/docs/reliability/circuit_breaker/configuring_circuit_breaker_policies/) or [create your own](/docs/reliability/circuit_breaker/creating_circuit_breaker_policies/).
+You can use any of defined [circuit-breaker policies](/docs/reliability/circuit_breaker/configuring_circuit_breaker_policies) or [create your own](/docs/reliability/circuit_breaker/creating_circuit_breaker_policies).
 
 ```ts file=./samples/database-circuit-breaker-policy.ts
 
@@ -128,7 +128,7 @@ To use the `KyselyCircuitBreakerStorageAdapter`, you'll need to:
 
 ### Setup
 
-Create the string serializer ([`ISerde`](/docs/foundation/serde)) and a function that creates the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters):
+Create the string serializer ([`ISerde`](/docs/foundation/serde)) and a function that creates the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters/#kysely_transaction_adapter):
 
 ```ts file=./samples/kysely-circuit-breaker-storage-adapter-setup.ts
 
@@ -202,7 +202,7 @@ To use the `MongodbCircuitBreakerStorageAdapter`, you'll need to:
 
 ### Setup
 
-Connect to MongoDB, create the string serializer ([`ISerde`](/docs/foundation/serde)) and the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage), which wraps the `Db` instance in a [`MongodbTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters):
+Connect to MongoDB, create the string serializer ([`ISerde`](/docs/foundation/serde)) and the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage), which wraps the `Db` instance in a [`MongodbTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters/#mongodb_transaction_adapter):
 
 ```ts file=./samples/mongodb-circuit-breaker-storage-adapter-setup.ts
 

@@ -8,7 +8,7 @@ pagination_label: Creating RateLimiter policies
 
 ## Implementing your custom IRateLimiterPolicy
 
-In order to create custom rate-limiter you need to implement the [`IRateLimiterPolicy`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.IRateLimiterPolicy.html) contract. Custom rate-limiter policies can be used with [`DatabaseRateLimiterAdapter`](/docs/reliability/rate-limiter/configuring_rate_limiter_adapters/#databaseratelimiteradapter) and [`DatabaseRateLimiterProviderFactory`](/docs/reliability/rate-limiter/rate_limiter_factory_resolver/#databaseratelimiterfactoryresolver).
+In order to create custom rate-limiter you need to implement the [`IRateLimiterPolicy`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.IRateLimiterPolicy.html) contract. Custom rate-limiter policies can be used with [`DatabaseRateLimiterAdapter`](/docs/reliability/rate-limiter/configuring_rate_limiter_adapters/#database_rate_limiter_adapter) and [`DatabaseRateLimiterProviderFactory`](/docs/reliability/rate-limiter/rate_limiter_factory_resolver/#database_rate_limiter_factory_resolver).
 
 To understand how to implement a custom [`IRateLimiterPolicy`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.IRateLimiterPolicy.html), refer to the [`FixedWindowLimiter`](https://github.com/yousif-khalil-abdulkarim/eridu-tech/blob/main/src/rate-limiter/implementations/policies/fixed-window-limiter/fixed-window-limiter.ts) implementation.
 

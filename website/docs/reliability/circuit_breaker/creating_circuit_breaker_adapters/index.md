@@ -20,7 +20,7 @@ In order to create an adapter you need to implement the [`ICircuitBreakerAdapter
 
 ## Implementing your custom ICircuitBreakerStorageAdapter
 
-We provide an additional contract [`ICircuitBreakerStorageAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerStorageAdapter.html) for building custom circuit-breaker storage adapters tailored to [`DatabaseCircuitBreakerAdapter`](/docs/reliability/circuit_breaker/configuring_circuit_breaker_adapters/#databasecircuitbreakeradapter) and [`DatabaseCircuitBreakerProviderFactory`](/docs/reliability/circuit_breaker/circuit_breaker_factory_resolver/#databasecircuitbreakerfactoryresolver).
+We provide an additional contract [`ICircuitBreakerStorageAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerStorageAdapter.html) for building custom circuit-breaker storage adapters tailored to [`DatabaseCircuitBreakerAdapter`](/docs/reliability/circuit_breaker/configuring_circuit_breaker_adapters/#database_circuit_breaker_adapter) and [`DatabaseCircuitBreakerProviderFactory`](/docs/reliability/circuit_breaker/circuit_breaker_factory_resolver/#database_circuit_breaker_factory_resolver).
 
 ## Testing your custom ICircuitBreakerStorageAdapter
 

@@ -24,7 +24,7 @@ To begin using the EventBus middlewares, you'll need to create and configure an 
 
 ```
 
-## withDispatchBeforeFactory middleware
+## withDispatchBeforeFactory middleware {#with_dispatch_before_factory_middleware}
 
 The before-dispatch middleware emits an event **before** the wrapped function is invoked. When the wrapped function is called, the middleware resolves the event payload from the function's arguments, dispatches the configured event, and then invokes the wrapped function and returns its result. If the payload resolves to `null`, no event is dispatched and the wrapped function is invoked directly.
 
@@ -47,7 +47,7 @@ Here is a complete list of settings for the [`withDispatchBefore`](https://eridu
 | `type`    | `TEventName`                                                                                           | The event name to dispatch when the wrapped function is invoked                                                         |
 | `payload` | `Invocable<[settings: WithDispatchBeforePayloadSettings<TParameters>], TEventMap[TEventName] \| void>` | An invocable that produces the event payload from the wrapped function's arguments. Returning `null` skips the dispatch |
 
-## withDispatchAfterFactory middleware
+## withDispatchAfterFactory middleware {#with_dispatch_after_factory_middleware}
 
 The after-dispatch middleware emits an event **after** the wrapped function resolves. When the wrapped function completes, the middleware resolves the event payload from the function's arguments and its return value, dispatches the configured event, and then returns the wrapped function's result unchanged. If the payload resolves to `null`, no event is dispatched and the wrapped function's result is returned unchanged.
 
@@ -70,7 +70,7 @@ Here is a complete list of settings for the [`withDispatchAfter`](https://eridu-
 | `type`    | `TEventName`                                                                                                   | The event name to dispatch after the wrapped function resolves                                                                               |
 | `payload` | `Invocable<[settings: WithDispatchAfterPayloadSettings<TParameters, TReturn>], TEventMap[TEventName] \| void>` | An invocable that produces the event payload from the wrapped function's arguments and its return value. Returning `null` skips the dispatch |
 
-## withDispatchOnErrorFactory middleware
+## withDispatchOnErrorFactory middleware {#with_dispatch_on_error_factory_middleware}
 
 The on-error middleware emits an event when the wrapped function **throws**. When the wrapped function fails, the middleware resolves the event payload from the function's arguments and the caught error, dispatches the configured event, and then re-throws the original error so the failure still propagates to the caller. If the payload resolves to `null`, no event is dispatched and the original error is re-thrown as-is.
 

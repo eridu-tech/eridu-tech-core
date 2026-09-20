@@ -10,11 +10,11 @@ to consume the Eridu-tech documentation programmatically.
 ## Table of Contents
 
 - [Overview](#overview)
-- [Machine-Readable Documentation](#machine-readable-documentation)
-    - [llms.txt](#llmstxt)
-    - [llms-full.txt](#llms-fulltxt)
-- [Agent Skill Package](#agent-skill-package)
-- [How to Use These Files](#how-to-use-these-files)
+- [Machine-Readable Documentation](#machine_readable_documentation)
+    - [llms.txt](#llms_txt)
+    - [llms-full.txt](#llms_full_txt)
+- [Agent Skill Package](#agent_skill_package)
+- [How to Use These Files](#how_to_use_these_files)
 
 ## Overview
 
@@ -23,23 +23,23 @@ optimized for large language models and AI-assisted tooling. These plain-text
 files let an LLM quickly discover the library's components and usage patterns —
 no need to crawl the entire site.
 
-## Machine-Readable Documentation
+## Machine-Readable Documentation {#machine_readable_documentation}
 
 Two plain-text files are published, each tuned for a different context budget:
 
-### llms.txt
+### llms.txt {#llms_txt}
 
 **[llms.txt](https://www.eridu-tech.dev/llms.txt)** is a concise, structured
 index of the documentation. It gives AI assistants a compact map of the
 ecosystem — ideal for quick context retrieval and navigation.
 
-### llms-full.txt
+### llms-full.txt {#llms_full_txt}
 
 **[llms-full.txt](https://www.eridu-tech.dev/llms-full.txt)** contains the
 complete documentation in a single plain-text file. Use it when you need the
 full context for deep understanding and comprehensive answers.
 
-## Agent Skill Package
+## Agent Skill Package {#agent_skill_package}
 
 **[Download the skill package](/eridu-tech-skills.zip)** — a zip archive that
 bundles the entire API surface of `eridu-tech` as an AI agent skill.
@@ -59,7 +59,7 @@ examples. It's designed to be loaded by AI agents and assistants: import it
 into your agent of choice to give it accurate, up-to-date knowledge of the
 `eridu-tech` API without crawling the site.
 
-## How to Use These Files
+## How to Use These Files {#how_to_use_these_files}
 
 - **Quick lookups** — start with `llms.txt` to locate the right component or
   section before diving deeper.

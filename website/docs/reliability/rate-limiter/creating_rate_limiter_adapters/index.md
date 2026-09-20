@@ -20,7 +20,7 @@ In order to create an adapter you need to implement the [`IRateLimiterAdapter`](
 
 ## Implementing your custom IRateLimiterStorageAdapter
 
-We provide an additional contract [`IRateLimiterStorageAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.IRateLimiterStorageAdapter.html) for building custom rate-limiter storage adapters tailored to [`DatabaseRateLimiterAdapter`](/docs/reliability/rate-limiter/configuring_rate_limiter_adapters/#databaseratelimiteradapter) and [`DatabaseRateLimiterProviderFactory`](/docs/reliability/rate-limiter/rate_limiter_factory_resolver/#databaseratelimiterfactoryresolver).
+We provide an additional contract [`IRateLimiterStorageAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.IRateLimiterStorageAdapter.html) for building custom rate-limiter storage adapters tailored to [`DatabaseRateLimiterAdapter`](/docs/reliability/rate-limiter/configuring_rate_limiter_adapters/#database_rate_limiter_adapter) and [`DatabaseRateLimiterProviderFactory`](/docs/reliability/rate-limiter/rate_limiter_factory_resolver/#database_rate_limiter_factory_resolver).
 
 ## Testing your custom IRateLimiterStorageAdapter
 

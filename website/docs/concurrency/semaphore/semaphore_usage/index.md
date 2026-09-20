@@ -118,7 +118,7 @@ Note the method throws an error when the semaphore cannot be acquired.
 :::
 
 :::info
-You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable/) as values for the `runOrFail` method.
+You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable) as values for the `runOrFail` method.
 :::
 
 ### Semaphore instance variables
@@ -147,7 +147,7 @@ In most cases, setting a slot id is unnecessary.
 
 ### Retrying acquiring semaphore by attempts
 
-To retry acquiring semaphore you can use the [`retry`](/docs/reliability/resilience) middleware.
+To retry acquiring semaphore you can use the [`retry`](/docs/reliability/resilience/#retry) middleware.
 
 Retrying acquiring semaphore with `acquireOrFail` method:
 
@@ -169,7 +169,7 @@ Retrying acquiring semaphore with `runOrFail` method:
 
 ### Retrying acquiring semaphore by interval
 
-To retry acquiring semaphore at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience) middleware:
+To retry acquiring semaphore at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience/#retry_by_interval) middleware:
 
 Retrying acquiring semaphore with `acquireOrFail` method:
 

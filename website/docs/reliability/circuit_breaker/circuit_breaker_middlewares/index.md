@@ -22,7 +22,7 @@ To begin using the circuit-breaker middlewares, you'll need to create and config
 
 ```
 
-## withCircuitBreakerFactory middleware
+## withCircuitBreakerFactory middleware {#with_circuit_breaker_factory_middleware}
 
 The CircuitBreaker middleware wraps function calls with a circuit-breaker, providing fault tolerance for distributed systems. Each unique key (derived from the function's arguments) gets its own circuit instance. When the circuit is **open**, the wrapped function is not called and an error is thrown instead, preventing cascading failures.
 
