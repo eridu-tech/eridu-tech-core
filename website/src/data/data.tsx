@@ -882,7 +882,7 @@ export const EXISTING_ITEMS: ComponentItemProps[] = [
 
 // ─── Existing Middlewares ───────────────────────────────────────
 
-export const MIDDLEWARE_EXISTING_ITEMS: ComponentItemProps[] = [
+export const STORAGE_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withCacheFactory",
         title: <>withCacheFactory</>,
@@ -897,6 +897,9 @@ export const MIDDLEWARE_EXISTING_ITEMS: ComponentItemProps[] = [
             <>Invalidates a cache entry after the wrapped function runs.</>
         ),
     },
+];
+
+export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withCircuitBreakerFactory",
         title: <>withCircuitBreakerFactory</>,
@@ -904,50 +907,10 @@ export const MIDDLEWARE_EXISTING_ITEMS: ComponentItemProps[] = [
         description: <>Wraps function calls with a circuit breaker.</>,
     },
     {
-        name: "withDispatchBeforeFactory",
-        title: <>withDispatchBeforeFactory</>,
-        link: "/docs/messaging/event_bus/event_bus_middlewares",
-        description: <>Dispatches an event before the wrapped function runs.</>,
-    },
-    {
-        name: "withDispatchAfterFactory",
-        title: <>withDispatchAfterFactory</>,
-        link: "/docs/messaging/event_bus/event_bus_middlewares",
-        description: (
-            <>Dispatches an event after the wrapped function resolves.</>
-        ),
-    },
-    {
-        name: "withDispatchOnErrorFactory",
-        title: <>withDispatchOnErrorFactory</>,
-        link: "/docs/messaging/event_bus/event_bus_middlewares",
-        description: <>Dispatches an event when the wrapped function throws.</>,
-    },
-    {
-        name: "withLockFactory",
-        title: <>withLockFactory</>,
-        link: "/docs/concurrency/lock/lock_middlewares",
-        description: <>Wraps function calls with a distributed lock.</>,
-    },
-    {
         name: "withRateLimiterFactory",
         title: <>withRateLimiterFactory</>,
         link: "/docs/reliability/rate-limiter/rate_limiter_middlewares",
         description: <>Wraps function calls with a rate limiter.</>,
-    },
-    {
-        name: "withSemaphoreFactory",
-        title: <>withSemaphoreFactory</>,
-        link: "/docs/concurrency/semaphore/semaphore_middlewares",
-        description: <>Wraps function calls with a distributed semaphore.</>,
-    },
-    {
-        name: "withSharedLockFactory",
-        title: <>withSharedLockFactory</>,
-        link: "/docs/concurrency/shared_lock/shared_lock_middlewares",
-        description: (
-            <>Wraps function calls with a shared (reader-writer) lock.</>
-        ),
     },
     {
         name: "fallback",
@@ -988,6 +951,52 @@ export const MIDDLEWARE_EXISTING_ITEMS: ComponentItemProps[] = [
                 duration.
             </>
         ),
+    },
+];
+
+export const CONCURRENCY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
+    {
+        name: "withLockFactory",
+        title: <>withLockFactory</>,
+        link: "/docs/concurrency/lock/lock_middlewares",
+        description: <>Wraps function calls with a distributed lock.</>,
+    },
+    {
+        name: "withSemaphoreFactory",
+        title: <>withSemaphoreFactory</>,
+        link: "/docs/concurrency/semaphore/semaphore_middlewares",
+        description: <>Wraps function calls with a distributed semaphore.</>,
+    },
+    {
+        name: "withSharedLockFactory",
+        title: <>withSharedLockFactory</>,
+        link: "/docs/concurrency/shared_lock/shared_lock_middlewares",
+        description: (
+            <>Wraps function calls with a shared (reader-writer) lock.</>
+        ),
+    },
+];
+
+export const MESSAGING_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
+    {
+        name: "withDispatchBeforeFactory",
+        title: <>withDispatchBeforeFactory</>,
+        link: "/docs/messaging/event_bus/event_bus_middlewares",
+        description: <>Dispatches an event before the wrapped function runs.</>,
+    },
+    {
+        name: "withDispatchAfterFactory",
+        title: <>withDispatchAfterFactory</>,
+        link: "/docs/messaging/event_bus/event_bus_middlewares",
+        description: (
+            <>Dispatches an event after the wrapped function resolves.</>
+        ),
+    },
+    {
+        name: "withDispatchOnErrorFactory",
+        title: <>withDispatchOnErrorFactory</>,
+        link: "/docs/messaging/event_bus/event_bus_middlewares",
+        description: <>Dispatches an event when the wrapped function throws.</>,
     },
 ];
 
