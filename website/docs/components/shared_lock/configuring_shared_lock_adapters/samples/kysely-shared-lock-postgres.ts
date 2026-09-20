@@ -1,6 +1,7 @@
 import { KyselySharedLockAdapter } from "eridu-tech/shared-lock/kysely-shared-lock-adapter";
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
+import { createTransactionContext } from "./kysely-shared-lock-adapter-setup.js";
 
 const database = new Pool({
     database: "DATABASE_NAME",
@@ -16,8 +17,9 @@ const kysely = new Kysely<any>({
         pool: database,
     }),
 });
+const transactionContext = createTransactionContext(kysely);
 const kyselySharedLockAdapter = new KyselySharedLockAdapter({
-    kysely,
+    transactionContext,
 });
 
 // You need initialize the adapter once before using it.

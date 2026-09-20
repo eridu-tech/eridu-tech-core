@@ -1,6 +1,7 @@
 import { KyselySharedLockAdapter } from "eridu-tech/shared-lock/kysely-shared-lock-adapter";
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
+import { createTransactionContext } from "./kysely-shared-lock-adapter-setup.js";
 
 const database = new Sqlite("DATABASE_NAME.db");
 const kysely = new Kysely<any>({
@@ -8,8 +9,9 @@ const kysely = new Kysely<any>({
         database,
     }),
 });
+const transactionContext = createTransactionContext(kysely);
 export const kyselySharedLockAdapter = new KyselySharedLockAdapter({
-    kysely,
+    transactionContext,
 });
 
 // You need initialize the adapter once before using it.
