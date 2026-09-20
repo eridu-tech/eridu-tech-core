@@ -933,7 +933,7 @@ export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "retryInterval",
         title: <>retryInterval</>,
-        link: "/docs/reliability/resilience/#retry-by-interval",
+        link: "/docs/reliability/resilience/#retry_by_interval",
         description: (
             <>
                 Retries the wrapped function at a fixed interval until it

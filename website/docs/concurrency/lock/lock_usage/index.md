@@ -171,7 +171,7 @@ Retrying acquiring lock with `runOrFail` method:
 
 ### Retrying acquiring lock by interval
 
-To retry acquiring lock at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience/#retry-by-interval) middleware:
+To retry acquiring lock at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience/#retry_by_interval) middleware:
 
 Retrying acquiring lock with `acquireOrFail` method:
 

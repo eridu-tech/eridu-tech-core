@@ -169,7 +169,7 @@ Retrying acquiring semaphore with `runOrFail` method:
 
 ### Retrying acquiring semaphore by interval
 
-To retry acquiring semaphore at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience/#retry-by-interval) middleware:
+To retry acquiring semaphore at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience/#retry_by_interval) middleware:
 
 Retrying acquiring semaphore with `acquireOrFail` method:
 

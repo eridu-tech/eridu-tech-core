@@ -104,7 +104,7 @@ For more details about `onExecutionAttempt` callback data, see the `OnRetryAttem
 For more details about `onRetryDelay` callback data, see the `OnRetryDelayData` type.
 :::
 
-## Retry by interval
+## Retry by interval {#retry_by_interval}
 
 The `retryInterval` middleware retries a function repeatedly within a given time window, waiting a fixed interval between each attempt. A `RetryIntervalResilienceError` is thrown when the time window expires and all attempts have failed.
 
