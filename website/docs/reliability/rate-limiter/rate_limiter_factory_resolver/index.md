@@ -56,7 +56,7 @@ Note that if you specify a non-existent adapter, an error will be thrown.
 Note that the `RateLimiterFactoryResolver` is immutable, meaning any configuration override returns a new instance rather than modifying the existing one.
 :::
 
-## DatabaseRateLimiterFactoryResolver
+## DatabaseRateLimiterFactoryResolver {#database_rate_limiter_factory_resolver}
 
 The `DatabaseRateLimiterFactoryResolver` class provides a flexible way to configure and switch between different rate-limiter-storage adapters at runtime.
 

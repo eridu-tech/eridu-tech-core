@@ -26,7 +26,7 @@ keywords:
 
 # Configuring TransactionContext adapters
 
-## KyselyTransactionAdapter
+## KyselyTransactionAdapter {#kysely_transaction_adapter}
 
 To use the `KyselyTransactionAdapter`, you'll need to install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package.
 
@@ -90,7 +90,7 @@ Pass the adapter to the `TransactionContext` class, then read `current` to get t
 
 ```
 
-## MongodbTransactionAdapter
+## MongodbTransactionAdapter {#mongodb_transaction_adapter}
 
 To use the `MongodbTransactionAdapter`, you'll need to install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package.
 

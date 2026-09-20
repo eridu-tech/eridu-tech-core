@@ -22,7 +22,7 @@ To begin using the rate-limiter middlewares, you'll need to create and configure
 
 ```
 
-## withRateLimiterFactory middleware
+## withRateLimiterFactory middleware {#with_rate_limiter_factory_middleware}
 
 The RateLimiter middleware wraps function calls with a rate limiter, controlling how many times a function can be invoked within a configured policy window. Each unique key (derived from the function's arguments) gets its own rate limit counter. Once the limit is reached, further invocations are blocked until the policy permits attempts again.
 

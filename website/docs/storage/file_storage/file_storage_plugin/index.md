@@ -332,12 +332,12 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::
 
-## withFileStorageInferContentTypeOnRead plugin
+## withFileStorageInferContentTypeOnRead plugin {#with_file_storage_infer_content_type_on_read_plugin}
 
-The FileStorage read content-type plugin infers the content type from the file key extension when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](/docs/storage/file_storage/configuring_file_storage_adapters/). It enhances the `getMetaData` method so the returned metadata reports a content type that matches the file key extension.
+The FileStorage read content-type plugin infers the content type from the file key extension when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](/docs/storage/file_storage/configuring_file_storage_adapters). It enhances the `getMetaData` method so the returned metadata reports a content type that matches the file key extension.
 
 ### Use cases
 

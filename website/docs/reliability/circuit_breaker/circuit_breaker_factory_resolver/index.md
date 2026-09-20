@@ -56,7 +56,7 @@ Note that if you specify a non-existent adapter, an error will be thrown.
 Note that the `CircuitBreakerFactoryResolver` is immutable, meaning any configuration override returns a new instance rather than modifying the existing one.
 :::
 
-## DatabaseCircuitBreakerFactoryResolver
+## DatabaseCircuitBreakerFactoryResolver {#database_circuit_breaker_factory_resolver}
 
 The `DatabaseCircuitBreakerFactoryResolver` class provides a flexible way to configure and switch between different circuit-breaker-storage adapters at runtime.
 

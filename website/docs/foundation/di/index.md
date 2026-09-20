@@ -115,7 +115,7 @@ The container provides four registration methods:
 - **`registerDynamic`** — Registers a token whose value is not known at registration time and is provided later at runtime, per [`run()`](#scoped) scope.
 - **`registerProvider`** — Registers a service provider that batches a group of related registrations into one reusable code block.
 
-#### `registerFactory`
+#### `registerFactory` {#register_factory}
 
 Use `registerFactory()` to register a **Singleton**, **Scoped**, or **Transient** service using a service factory function. It takes the following arguments:
 
@@ -163,7 +163,7 @@ Here is an example of a service factory defined as an object with an `invoke` me
 
 ```
 
-#### `registerValue`
+#### `registerValue` {#register_value}
 
 The `CONFIG` token:
 
@@ -177,7 +177,7 @@ Use `registerValue()` to register values as singletons.
 
 ```
 
-#### `registerProvider`
+#### `registerProvider` {#register_provider}
 
 Use `registerProvider()` to encapsulate a group of related registrations into a reusable, isolated code block. A service provider can be either:
 
@@ -218,7 +218,7 @@ Returns the service if found, `null` otherwise:
 
 ```
 
-#### `resolveOr`
+#### `resolveOr` {#resolve_or}
 
 Returns the service if found, otherwise returns the provided default value:
 
@@ -226,7 +226,7 @@ Returns the service if found, otherwise returns the provided default value:
 
 ```
 
-#### `resolveOrFail`
+#### `resolveOrFail` {#resolve_or_fail}
 
 Returns the service if found, otherwise throws `CanNotResolveServiceDiError`:
 
@@ -391,15 +391,15 @@ Forking is forbidden after the container is initialized. Calling `fork()` after 
 
 Most errors expose an error flag via the `flag` class field, along with detailed context via the `info` class field.
 
-| Error                                                           | Description                                                             |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [`CanNotResolveServiceDiError`](#cannotresolveservicedierror)   | Thrown when a service cannot be resolved.                               |
-| [`InvalidGraphDiError`](#invalidgraphdierror)                   | Thrown when the service graph is invalid.                               |
-| [`CanNotRegisterServiceDiError`](#cannotregisterservicedierror) | Thrown when a service cannot be registered.                             |
-| [`CanNotOverrideServiceDiError`](#cannotoverrideservicedierror) | Thrown when a registration cannot be overridden.                        |
-| [`InvalidMethodCallDiError`](#invalidmethodcalldierror)         | Thrown when a container method is called at an invalid time or context. |
+| Error                                                                | Description                                                             |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [`CanNotResolveServiceDiError`](#can_not_resolve_service_di_error)   | Thrown when a service cannot be resolved.                               |
+| [`InvalidGraphDiError`](#invalid_graph_di_error)                     | Thrown when the service graph is invalid.                               |
+| [`CanNotRegisterServiceDiError`](#can_not_register_service_di_error) | Thrown when a service cannot be registered.                             |
+| [`CanNotOverrideServiceDiError`](#can_not_override_service_di_error) | Thrown when a registration cannot be overridden.                        |
+| [`InvalidMethodCallDiError`](#invalid_method_call_di_error)          | Thrown when a container method is called at an invalid time or context. |
 
-#### `CanNotRegisterServiceDiError`
+#### `CanNotRegisterServiceDiError` {#can_not_register_service_di_error}
 
 Thrown when a service cannot be registered. It has the following flags:
 
@@ -415,7 +415,7 @@ Here is an example where `CanNotRegisterServiceDiError` is thrown.
 
 ```
 
-#### `InvalidGraphDiError`
+#### `InvalidGraphDiError` {#invalid_graph_di_error}
 
 Thrown when the service graph is invalid. It has the following flags:
 
@@ -431,7 +431,7 @@ Here is an example where `InvalidGraphDiError` is thrown.
 
 ```
 
-#### `CanNotResolveServiceDiError`
+#### `CanNotResolveServiceDiError` {#can_not_resolve_service_di_error}
 
 Thrown when a service cannot be resolved. It has the following flags:
 
@@ -449,7 +449,7 @@ Thrown when a service cannot be resolved. It has the following flags:
 
 ```
 
-#### `CanNotOverrideServiceDiError`
+#### `CanNotOverrideServiceDiError` {#can_not_override_service_di_error}
 
 Thrown when a registration cannot be overridden. It has the following flags:
 
@@ -465,7 +465,7 @@ Here is an example where `CanNotOverrideServiceDiError` is thrown.
 
 ```
 
-#### `InvalidMethodCallDiError`
+#### `InvalidMethodCallDiError` {#invalid_method_call_di_error}
 
 Thrown when a container method is called at an invalid time or context. It has the following flags:
 

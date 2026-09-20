@@ -22,7 +22,7 @@ To begin using the semaphore middlewares, you'll need to create and configure a 
 
 ```
 
-## withSemaphoreFactory middleware
+## withSemaphoreFactory middleware {#with_semaphore_factory_middleware}
 
 The Semaphore middleware wraps function calls with a distributed semaphore, limiting the number of concurrent executions across processes. Before executing the wrapped function, a slot is acquired on a key derived from the function's arguments. If the maximum number of concurrent slots (`limit`) has already been reached, the call waits (or fails immediately for non-blocking semaphores) until a slot becomes available.
 

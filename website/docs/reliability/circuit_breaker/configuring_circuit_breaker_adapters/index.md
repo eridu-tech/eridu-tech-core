@@ -72,9 +72,9 @@ The `type` field is the only required field. All other fields are optional.
 
 ```
 
-The settings are the same as [circuit-breaker policies](/docs/reliability/circuit_breaker/configuring_circuit_breaker_policies/) settings.
+The settings are the same as [circuit-breaker policies](/docs/reliability/circuit_breaker/configuring_circuit_breaker_policies) settings.
 
-## DatabaseCircuitBreakerAdapter
+## DatabaseCircuitBreakerAdapter {#database_circuit_breaker_adapter}
 
 To use the `DatabaseCircuitBreakerAdapter`, you'll need to use `ICircuitBreakerStorageAdapter`:
 

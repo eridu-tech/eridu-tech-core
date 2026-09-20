@@ -345,7 +345,7 @@ If the collection is empty or the `predicateFn` does not match or matches the la
 
 ```
 
-### afterOr
+### afterOr {#after_or}
 
 The `afterOr` method returns the item that comes after the first item that matches `predicateFn`.
 If the collection is empty or the `predicateFn` does not match or matches the last item then `defaultValue` is returned.
@@ -354,7 +354,7 @@ If the collection is empty or the `predicateFn` does not match or matches the la
 
 ```
 
-### afterOrFail
+### afterOrFail {#after_or_fail}
 
 The `afterOrFail` method returns the item that comes after the first item that matches `predicateFn`.
 If the collection is empty or the `predicateFn` does not match or matches the last item then an error is thrown.
@@ -389,7 +389,7 @@ If the `predicateFn` does not match or matches the first item then null is retur
 
 ```
 
-### beforeOr
+### beforeOr {#before_or}
 
 The `beforeOr` method returns the item that comes before the first item that matches `predicateFn`.
 If the collection is empty or the `predicateFn` does not match or matches the first item then `defaultValue` is returned.
@@ -398,7 +398,7 @@ If the collection is empty or the `predicateFn` does not match or matches the fi
 
 ```
 
-### beforeOrFail
+### beforeOrFail {#before_or_fail}
 
 The `beforeOrFail` method returns the item that comes before the first item that matches `predicateFn`.
 If the collection is empty or the `predicateFn` does not match or matches the first item then an error is thrown.
@@ -424,7 +424,7 @@ If `chunkSize` is not divisible with total number of items then the last chunk w
 
 ```
 
-### chunkWhile
+### chunkWhile {#chunk_while}
 
 The `chunkWhile` method breaks the collection into multiple, smaller collections based on the evaluation of `predicateFn`.
 The chunk variable passed to the `predicateFn` may be used to inspect the previous item.
@@ -449,7 +449,7 @@ The `count` method returns the total number of items in the collection that pass
 
 ```
 
-### countBy
+### countBy {#count_by}
 
 The `countBy` method counts the occurrences of values in the collection by `selectFn`.
 By default the equality check occurs on the item.
@@ -458,7 +458,7 @@ By default the equality check occurs on the item.
 
 ```
 
-### crossJoin
+### crossJoin {#cross_join}
 
 The `crossJoin` method cross joins the collection's values among `iterables`, returning a Cartesian product with all possible permutations.
 
@@ -508,7 +508,7 @@ By default it will get the first item. If the collection is empty or no items pa
 
 ```
 
-### firstOr
+### firstOr {#first_or}
 
 The `firstOr` method returns the first item in the collection that passes `predicateFn`
 By default it will get the first item. If the collection is empty or no items passes `predicateFn` than `defaultValue`.
@@ -517,7 +517,7 @@ By default it will get the first item. If the collection is empty or no items pa
 
 ```
 
-### firstOrFail
+### firstOrFail {#first_or_fail}
 
 The `firstOrFail` method returns the first item in the collection that passes `predicateFn`.
 By default it will get the first item. If the collection is empty or no items passes `predicateFn` than error is thrown.
@@ -526,7 +526,7 @@ By default it will get the first item. If the collection is empty or no items pa
 
 ```
 
-### flatMap
+### flatMap {#flat_map}
 
 The `flatMap` method returns a new array formed by applying `mapFn` to each item of the array, and then collapses the result by one level.
 It is identical to a `map` method followed by a `collapse` method.
@@ -535,7 +535,7 @@ It is identical to a `map` method followed by a `collapse` method.
 
 ```
 
-### forEach
+### forEach {#for_each}
 
 The `forEach` method iterates through all items in the collection.
 
@@ -551,7 +551,7 @@ The `get` method returns the item by index. If the item is not found null will b
 
 ```
 
-### getOr
+### getOr {#get_or}
 
 The `getOr` method returns the item by index. If the item is not found, a default value will be returned.
 
@@ -559,7 +559,7 @@ The `getOr` method returns the item by index. If the item is not found, a defaul
 
 ```
 
-### getOrFail
+### getOrFail {#get_or_fail}
 
 The `getOrFail` method returns the item by index. If the item is not found an error will be thrown.
 
@@ -567,7 +567,7 @@ The `getOrFail` method returns the item by index. If the item is not found an er
 
 ```
 
-### groupBy
+### groupBy {#group_by}
 
 The `groupBy` method groups the collection's items by `selectFn`.
 By default the equality check occurs on the item.
@@ -576,7 +576,7 @@ By default the equality check occurs on the item.
 
 ```
 
-### insertAfter
+### insertAfter {#insert_after}
 
 The `insertAfter` method adds `Iterable` after the first item that matches `predicateFn`.
 
@@ -584,7 +584,7 @@ The `insertAfter` method adds `Iterable` after the first item that matches `pred
 
 ```
 
-### insertBefore
+### insertBefore {#insert_before}
 
 The `insertBefore` method adds `Iterable` before the first item that matches `predicateFn`.
 
@@ -592,7 +592,7 @@ The `insertBefore` method adds `Iterable` before the first item that matches `pr
 
 ```
 
-### isEmpty
+### isEmpty {#is_empty}
 
 The `isEmpty` returns true if the collection is empty.
 
@@ -600,7 +600,7 @@ The `isEmpty` returns true if the collection is empty.
 
 ```
 
-### isNotEmpty
+### isNotEmpty {#is_not_empty}
 
 The `isEmpty` returns true if the collection is empty.
 
@@ -633,7 +633,7 @@ By default it will get the last item. If the collection is empty or no items pas
 
 ```
 
-### lastOr
+### lastOr {#last_or}
 
 The `lastOr` method returns the last item in the collection that passes `predicateFn`.
 By default it will get the last item. If the collection is empty or no items passes `predicateFn` than `defaultValue`.
@@ -642,7 +642,7 @@ By default it will get the last item. If the collection is empty or no items pas
 
 ```
 
-### lastOrFail
+### lastOrFail {#last_or_fail}
 
 The `lastOrFail` method returns the last item in the collection that passes `predicateFn`.
 By default it will get the last item. If the collection is empty or no items passes `predicateFn` than error is thrown.
@@ -695,7 +695,7 @@ The `nth` method creates a new collection consisting of every n-th item.
 
 ```
 
-### padEnd
+### padEnd {#pad_end}
 
 The `padEnd` method pads this collection with `fillItems` until the resulting collection size reaches `maxLength`.
 The padding is applied from the end of this collection.
@@ -704,7 +704,7 @@ The padding is applied from the end of this collection.
 
 ```
 
-### padStart
+### padStart {#pad_start}
 
 The `padStart` method pads this collection with `fillItems` until the resulting collection size reaches `maxLength`.
 The padding is applied from the start of this collection.
@@ -788,7 +788,7 @@ The reversing of the collection will be applied in chunks that are the size of `
 
 ```
 
-### searchFirst
+### searchFirst {#search_first}
 
 The `searchFirst` return the index of the first item that matches `predicateFn`.
 
@@ -796,7 +796,7 @@ The `searchFirst` return the index of the first item that matches `predicateFn`.
 
 ```
 
-### searchLast
+### searchLast {#search_last}
 
 The `searchLast` return the index of the last item that matches `predicateFn`.
 
@@ -836,7 +836,7 @@ The `skip` method skips the first `offset` items.
 
 ```
 
-### skipUntil
+### skipUntil {#skip_until}
 
 The `skipUntil` method skips items until `predicateFn` returns true.
 
@@ -844,7 +844,7 @@ The `skipUntil` method skips items until `predicateFn` returns true.
 
 ```
 
-### skipWhile
+### skipWhile {#skip_while}
 
 The `skipWhile` method skips items until `predicateFn` returns false.
 
@@ -923,7 +923,7 @@ The `take` method takes the first `limit` items.
 
 ```
 
-### takeUntil
+### takeUntil {#take_until}
 
 The `takeUntil` method takes items until `predicateFn` returns true.
 
@@ -931,7 +931,7 @@ The `takeUntil` method takes items until `predicateFn` returns true.
 
 ```
 
-### takeWhile
+### takeWhile {#take_while}
 
 The `takeWhile` method takes items until `predicateFn` returns false.
 
@@ -947,7 +947,7 @@ The `tap` method passes a copy of the original collection to `callback`, allowin
 
 ```
 
-### toArray
+### toArray {#to_array}
 
 The `toArray` method converts the collection to a new `Array`.
 
@@ -955,7 +955,7 @@ The `toArray` method converts the collection to a new `Array`.
 
 ```
 
-### toIterator
+### toIterator {#to_iterator}
 
 The `toIterator` method converts the collection to a `Iterator`.
 
@@ -963,7 +963,7 @@ The `toIterator` method converts the collection to a `Iterator`.
 
 ```
 
-### toMap
+### toMap {#to_map}
 
 The `toMap` method converts the collection to a new `Map`.
 An error will be thrown if item is not a tuple of size 2.
@@ -972,7 +972,7 @@ An error will be thrown if item is not a tuple of size 2.
 
 ```
 
-### toRecord
+### toRecord {#to_record}
 
 The `toRecord` method converts the collection to a new `Record`.
 An error will be thrown if item is not a tuple of size 2 where the first element is a string or a number.
@@ -1012,7 +1012,7 @@ The `when` method will execute `callback` when `condition` evaluates to true.
 
 ```
 
-### whenEmpty
+### whenEmpty {#when_empty}
 
 The `whenEmpty` method will execute `callback` when the collection is empty.
 
@@ -1024,7 +1024,7 @@ The `whenEmpty` method will execute `callback` when the collection is empty.
 
 ```
 
-### whenNot
+### whenNot {#when_not}
 
 The `whenNot` method will execute `callback` when `condition` evaluates to false.
 
@@ -1032,7 +1032,7 @@ The `whenNot` method will execute `callback` when `condition` evaluates to false
 
 ```
 
-### whenNotEmpty
+### whenNotEmpty {#when_not_empty}
 
 The `whenNotEmpty` method will execute `callback` when the collection is not empty.
 

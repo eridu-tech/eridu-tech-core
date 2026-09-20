@@ -72,9 +72,9 @@ The `type` field is the only required field. All other fields are optional.
 
 ```
 
-The settings are the same as [rate-limiter policies](/docs/reliability/rate-limiter/configuring_rate_limiter_policies/) settings.
+The settings are the same as [rate-limiter policies](/docs/reliability/rate-limiter/configuring_rate_limiter_policies) settings.
 
-## DatabaseRateLimiterAdapter
+## DatabaseRateLimiterAdapter {#database_rate_limiter_adapter}
 
 To use the `DatabaseRateLimiterAdapter`, you'll need to use `IRateLimiterStorageAdapter`:
 
