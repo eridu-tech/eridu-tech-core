@@ -4,7 +4,10 @@ sidebar_label: Overview
 pagination_label: Storage
 ---
 
-import { STORAGE_EXISTING_ITEMS } from "../../src/data/data";
+import {
+    STORAGE_EXISTING_ITEMS,
+    STORAGE_MIDDLEWARE_ITEMS,
+} from "../../src/data/data";
 import { ComponentIndex } from "../../src/components/ComponentIndex";
 
 # Storage
@@ -15,6 +18,18 @@ import { ComponentIndex } from "../../src/components/ComponentIndex";
             label: "Storage",
             intro: "Persist and retrieve data behind a single, portable API.",
             items: STORAGE_EXISTING_ITEMS,
+        },
+    ]}
+/>
+
+## Existing middlewares
+
+<ComponentIndex
+    sections={[
+        {
+            label: "Existing middlewares",
+            intro: "Beyond the components themselves, every component provides middleware factories for composing component behavior around your own functions. Wrap a function with use() or method with enhance() and apply any of the following middlewares.",
+            items: STORAGE_MIDDLEWARE_ITEMS,
         },
     ]}
 />
