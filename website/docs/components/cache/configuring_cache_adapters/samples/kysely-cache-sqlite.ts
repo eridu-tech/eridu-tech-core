@@ -1,8 +1,10 @@
 import { KyselyCacheAdapter } from "eridu-tech/cache/kysely-cache-adapter";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
+import {
+    createTransactionContext,
+    serde,
+} from "./kysely-cache-adapter-setup.js";
 
 const database = new Sqlite("DATABASE_NAME.db");
 const kysely = new Kysely<any>({
@@ -10,9 +12,9 @@ const kysely = new Kysely<any>({
         database,
     }),
 });
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const transactionContext = createTransactionContext(kysely);
 export const kyselyCacheAdapter = new KyselyCacheAdapter({
-    kysely,
+    transactionContext,
     serde,
 });
 

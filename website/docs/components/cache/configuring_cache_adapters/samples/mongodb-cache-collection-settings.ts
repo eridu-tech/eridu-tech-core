@@ -1,11 +1,6 @@
 import { MongodbCacheAdapter } from "eridu-tech/cache/mongodb-cache-adapter";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-import { MongoClient } from "mongodb";
+import { database, serde } from "./mongodb-cache-adapter-setup.js";
 
-const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
-const database = client.db("database");
-const serde = new Serde(new SuperJsonSerdeAdapter());
 const mongodbCacheAdapter = new MongodbCacheAdapter({
     database,
     serde,

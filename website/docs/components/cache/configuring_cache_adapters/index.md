@@ -75,11 +75,24 @@ To remove the cache map and all stored cache data, use `deInit` method:
 
 To use the `MongodbCacheAdapter`, you'll need to:
 
-1. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package:
+1. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package.
+2. Provide a string serializer ([`ISerde`](/docs/components/serde)). We recommend using `SuperJsonSerdeAdapter` for this purpose.
 
-2. Provide a string serializer ([`ISerde`](/docs/components/serde)):
+### Setup
 
--We recommend using `SuperJsonSerdeAdapter` for this purpose
+Connect to MongoDB and create the string serializer:
+
+```ts file=./samples/mongodb-cache-adapter-setup.ts
+
+```
+
+:::info
+The `database` setting also accepts a [`TransactionContext`](/docs/components/transaction_context/transaction_context_usage), which makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
+:::
+
+### Usage
+
+Create the adapter:
 
 ```ts file=./samples/mongodb-cache-adapter-init.ts
 
@@ -110,10 +123,20 @@ To remove the cache collection and all stored cache data, use `deInit` method:
 
 To use the `RedisCacheAdapter`, you'll need to:
 
-1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package:
-2. Provide a string serializer ([`ISerde`](/docs/components/serde)):
+1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package.
+2. Provide a string serializer ([`ISerde`](/docs/components/serde)). We recommend using `SuperJsonSerdeAdapter` for this purpose.
 
-- We recommend using `SuperJsonSerdeAdapter` for this purpose
+### Setup
+
+Connect to Redis and create the string serializer:
+
+```ts file=./samples/redis-cache-adapter-setup.ts
+
+```
+
+### Usage
+
+Create the adapter:
 
 ```ts file=./samples/redis-cache-adapter.ts
 
@@ -123,10 +146,21 @@ To use the `RedisCacheAdapter`, you'll need to:
 
 To use the `KyselyCacheAdapter`, you'll need to:
 
-1. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package:
-2. Provide a string serializer ([`ISerde`](/docs/components/serde)):
+1. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package.
+2. Provide a string serializer ([`ISerde`](/docs/components/serde)). We recommend using `SuperJsonSerdeAdapter` for this purpose.
+3. Provide a [`TransactionContext`](/docs/components/transaction_context/transaction_context_usage) that wraps the `Kysely` instance. The adapter is transaction aware: every cache operation runs through the context's `current` client, so cache reads and writes join the transaction of the current scope.
 
-- We recommend using `SuperJsonSerdeAdapter` for this purpose
+### Setup
+
+Create the string serializer ([`ISerde`](/docs/components/serde)) and a function that creates the [`TransactionContext`](/docs/components/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/components/transaction_context/configuring_transaction_context_adapters):
+
+```ts file=./samples/kysely-cache-adapter-setup.ts
+
+```
+
+:::info
+The `transactionContext` setting makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
+:::
 
 ### Usage with Sqlite
 
@@ -165,8 +199,9 @@ You will need to install [`@libsql/kysely-libsql`](https://www.npmjs.com/package
 Note [`kysely`](https://www.npmjs.com/package/kysely) has support for multiple [databases](https://github.com/kysely-org/awesome-kysely?tab=readme-ov-file#dialects).
 
 :::danger
-Before choose a database, ensure it supports transactions. Without transaction support,
-you won't be able to use following methods `put` and `increment`, as they require transactional functionality.
+Before choosing a database, ensure it supports transactions, because `KyselyCacheAdapter` runs
+all of its operations through the `TransactionContext`. Without transaction support, starting a
+transaction fails and you won't be able to use the `put` and `increment` methods.
 :::
 
 ### Settings

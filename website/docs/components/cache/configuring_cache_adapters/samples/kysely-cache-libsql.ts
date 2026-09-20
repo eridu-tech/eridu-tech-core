@@ -1,17 +1,19 @@
 import { KyselyCacheAdapter } from "eridu-tech/cache/kysely-cache-adapter";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
 import { LibsqlDialect } from "@libsql/kysely-libsql";
 import { Kysely } from "kysely";
+import {
+    createTransactionContext,
+    serde,
+} from "./kysely-cache-adapter-setup.js";
 
 const kysely = new Kysely<any>({
     dialect: new LibsqlDialect({
         url: "DATABASE_URL",
     }),
 });
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const transactionContext = createTransactionContext(kysely);
 const kyselyCacheAdapter = new KyselyCacheAdapter({
-    kysely,
+    transactionContext,
     serde,
 });
 
