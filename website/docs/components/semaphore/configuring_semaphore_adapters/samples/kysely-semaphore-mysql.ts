@@ -1,6 +1,7 @@
 import { KyselySemaphoreAdapter } from "eridu-tech/semaphore/kysely-semaphore-adapter";
 import { createPool } from "mysql2";
 import { Kysely, MysqlDialect } from "kysely";
+import { createTransactionContext } from "./kysely-semaphore-adapter-setup.js";
 
 const database = createPool({
     host: "DATABASE_HOST",
@@ -16,8 +17,9 @@ const kysely = new Kysely<any>({
         pool: database,
     }),
 });
+const transactionContext = createTransactionContext(kysely);
 const kyselySemaphoreAdapter = new KyselySemaphoreAdapter({
-    kysely,
+    transactionContext,
 });
 
 // You need initialize the adapter once before using it.

@@ -75,7 +75,23 @@ To remove the semaphore map and all stored semaphore data, use `deInit` method:
 
 To use the `MongodbSemaphoreAdapter`, you'll need to:
 
-1. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package:
+1. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package.
+
+### Setup
+
+Connect to MongoDB:
+
+```ts file=./samples/mongodb-semaphore-adapter-setup.ts
+
+```
+
+:::info
+The `database` setting also accepts a [`TransactionContext`](/docs/components/transaction_context/transaction_context_usage), which makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
+:::
+
+### Usage
+
+Create the adapter:
 
 ```ts file=./samples/mongodb-semaphore-adapter.ts
 
@@ -110,7 +126,19 @@ Note in order to use `MongodbSemaphoreAdapter` correctly, ensure you use a singl
 
 To use the `RedisSemaphoreAdapter`, you'll need to:
 
-1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package:
+1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package.
+
+### Setup
+
+Connect to Redis:
+
+```ts file=./samples/redis-semaphore-adapter-setup.ts
+
+```
+
+### Usage
+
+Create the adapter:
 
 ```ts file=./samples/redis-semaphore-adapter.ts
 
@@ -125,8 +153,19 @@ Note in order to use `RedisSemaphoreAdapter` correctly, ensure you use a single,
 To use the `KyselySemaphoreAdapter`, you'll need to:
 
 1. Use database provider that has support for transactions.
+2. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package.
 
-2. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package:
+### Setup
+
+Create a function that creates the [`TransactionContext`](/docs/components/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/components/transaction_context/configuring_transaction_context_adapters):
+
+```ts file=./samples/kysely-semaphore-adapter-setup.ts
+
+```
+
+:::info
+The `transactionContext` setting makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
+:::
 
 ### With Sqlite
 
@@ -166,7 +205,7 @@ Note in order to use `KyselySemaphoreAdapter` with `mysql` correctly, ensure you
 
 ### With Libsql
 
-You will need to install `@libsql/kysely-libsql` package:
+You will need to install [`@libsql/kysely-libsql`](https://www.npmjs.com/package/@libsql/kysely-libsql) package:
 
 ```ts file=./samples/kysely-semaphore-libsql.ts
 
