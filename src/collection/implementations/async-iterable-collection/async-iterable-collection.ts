@@ -456,6 +456,17 @@ export class AsyncIterableCollection<
         return this.first((_item, indexToMatch) => indexToMatch === index);
     }
 
+    async getOr<TExtended = TInput>(
+        index: number,
+        defaultValue: AsyncLazyable<TExtended>,
+    ): Promise<TInput | TExtended> {
+        const item = await this.get(index);
+        if (item === null) {
+            return resolveAsyncLazyable(defaultValue);
+        }
+        return item;
+    }
+
     getOrFail(index: number): Promise<TInput> {
         return this.firstOrFail(
             (_item, indexToMatch) => indexToMatch === index,

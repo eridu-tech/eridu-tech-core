@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import {
     ItemNotFoundCollectionError,
@@ -299,6 +299,30 @@ describe("class: IterableCollection", () => {
         test("Should return item when index is in range", () => {
             const collection = new IterableCollection([1, 2, 3]);
             expect(collection.get(2)).toBe(3);
+        });
+    });
+    describe("method: getOr", () => {
+        test("Should return default value when index less than 0", () => {
+            const collection = new IterableCollection([1, 2, 3]);
+            expect(collection.getOr(-1, 4)).toBe(4);
+        });
+        test("Should return default value when index greater than or equal to size of the collection", () => {
+            const collection = new IterableCollection([1, 2, 3]);
+            expect(collection.getOr(3, 4)).toBe(4);
+        });
+        test("Should return item when index is in range", () => {
+            const collection = new IterableCollection([1, 2, 3]);
+            expect(collection.getOr(2, 4)).toBe(3);
+        });
+        test("Should resolve default value when it is a function and index is out of range", () => {
+            const collection = new IterableCollection([1, 2, 3]);
+            expect(collection.getOr(3, () => 4)).toBe(4);
+        });
+        test("Should not resolve default value when index is in range", () => {
+            const collection = new IterableCollection([1, 2, 3]);
+            const defaultValueFn = vi.fn(() => 4);
+            expect(collection.getOr(2, defaultValueFn)).toBe(3);
+            expect(defaultValueFn).not.toHaveBeenCalled();
         });
     });
     describe("method: getOrFail", () => {

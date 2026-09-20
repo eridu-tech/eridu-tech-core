@@ -432,6 +432,17 @@ export class IterableCollection<
         return this.first((_item, indexToMatch) => indexToMatch === index);
     }
 
+    getOr<TExtended = TInput>(
+        index: number,
+        defaultValue: Lazyable<TExtended>,
+    ): TInput | TExtended {
+        const item = this.get(index);
+        if (item === null) {
+            return resolveLazyable(defaultValue);
+        }
+        return item;
+    }
+
     getOrFail(index: number): TInput {
         return this.firstOrFail(
             (_item, indexToMatch) => indexToMatch === index,

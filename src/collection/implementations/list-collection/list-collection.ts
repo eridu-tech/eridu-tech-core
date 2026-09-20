@@ -428,6 +428,17 @@ export class ListCollection<TInput = unknown> implements ICollection<TInput> {
         return this.array[index] ?? null;
     }
 
+    getOr<TExtended = TInput>(
+        index: number,
+        defaultValue: Lazyable<TExtended>,
+    ): TInput | TExtended {
+        const item = this.get(index);
+        if (item === null) {
+            return resolveLazyable(defaultValue);
+        }
+        return item;
+    }
+
     getOrFail(index: number): TInput {
         const item = this.get(index);
         if (item === null) {

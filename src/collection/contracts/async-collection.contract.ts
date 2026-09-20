@@ -343,6 +343,29 @@ export interface IAsyncCollection<
     get(index: number): Promise<TInput | null>;
 
     /**
+     * The `getOr` method returns the item by index. If the item is not found null will returned.
+     * @example
+     * ```ts
+     * import type { ICollection } from "eridu-tech/collection/contracts";
+     *
+     * // Assume the inputed collection is empty.
+     * function main(collection: IAsyncCollection<number>): void {
+     *   collection = collection.append([1, 4, 2, 8, -2]);
+     *
+     *   // Will be 2
+     *   await collection.getOr(2, -1);
+     *
+     *   // Will be -1
+     *   await collection.getOr(5, -1);
+     * }
+     * ```
+     */
+    getOr<TExtended = TInput>(
+        index: number,
+        defaultValue: AsyncLazyable<TExtended>,
+    ): Promise<TInput | TExtended>;
+
+    /**
      * The `getOrFail` method returns the item by index. If the item is not found an error will be thrown.
      * @throws {ItemNotFoundCollectionError}
      * @example
