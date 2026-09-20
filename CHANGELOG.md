@@ -1,5 +1,16 @@
 # @daiso-tech/core
 
+## 0.64.2
+
+### Patch Changes
+
+- 03f8bd8: Added the collection methods that were documented but missing
+
+    - Added the `getOr` method to the `ICollection` and `IAsyncCollection` contracts
+    - Implemented `getOr` in the `IterableCollection`, `ListCollection` and `AsyncIterableCollection` collections
+
+- 7b467dc: Updated README file
+
 ## 0.64.1
 
 ### Patch Changes
