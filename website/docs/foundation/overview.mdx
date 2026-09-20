@@ -1,0 +1,40 @@
+---
+sidebar_position: 0
+sidebar_label: Overview
+pagination_label: Foundation
+---
+
+import {
+    FOUNDATION_EXISTING_ITEMS,
+    MIDDLEWARE_EXISTING_ITEMS,
+} from "../../src/data/data";
+import { ComponentIndex } from "../../src/components/ComponentIndex";
+
+# Foundation
+
+`eridu-tech` is a modular, adapter-first TypeScript library for building
+production-ready backend applications. Every component ships with in-memory
+adapters for fast, deterministic testing — and pluggable adapters to swap in
+real infrastructure without touching your business logic.
+
+<ComponentIndex
+    sections={[
+        {
+            label: "Foundation",
+            intro: "The building blocks that power the rest of the ecosystem.",
+            items: FOUNDATION_EXISTING_ITEMS,
+        },
+    ]}
+/>
+
+## Existing middlewares
+
+<ComponentIndex
+    sections={[
+        {
+            label: "Existing middlewares",
+            intro: "Beyond the components themselves, every component provides middleware factories for composing component behavior around your own functions. Wrap a function with use() or method with enhance() and apply any of the following middlewares.",
+            items: MIDDLEWARE_EXISTING_ITEMS,
+        },
+    ]}
+/>

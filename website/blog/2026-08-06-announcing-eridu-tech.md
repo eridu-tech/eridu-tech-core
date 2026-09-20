@@ -103,7 +103,7 @@ Here's the workflow I'm building toward with eridu-tech: **start with validated 
 
 **The current focus is the composable foundation and the components that are already usable.** The roadmap features above are being developed incrementally rather than being presented as completed capabilities.
 
-The [component overview](/docs/components/overview) walks through the available eridu-tech components — including the foundation, storage, and infrastructure building blocks — with in-memory adapters for fast testing and pluggable adapters for real infrastructure.
+The [component overview](/docs/getting_started) walks through the available eridu-tech components — including the foundation, storage, and infrastructure building blocks — with in-memory adapters for fast testing and pluggable adapters for real infrastructure.
 
 ## 🔗 What's next
 
