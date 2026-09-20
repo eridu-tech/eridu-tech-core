@@ -9,6 +9,7 @@ import type {
 import {
     Box,
     ShieldCheck,
+    ShieldAlert,
     Server,
     Clock,
     Layers,
@@ -39,6 +40,7 @@ import {
     Leaf,
     Image,
     Activity,
+    SquareFunction,
 } from "lucide-react";
 
 export const INSTALL_CMD = "npm install eridu-tech";
@@ -370,6 +372,34 @@ const EXISTING_UTILITIES_RECORD = {
             <>
                 Predefined retry backoff policies, constant and exponential,
                 with configurable delay and jitter.
+            </>
+        ),
+    } satisfies ComponentItemProps,
+    ERROR_POLICY_TYPE: {
+        name: "ErrorPolicy Type",
+        icon: <ShieldAlert size="1.5rem" strokeWidth={1.5} />,
+        title: <>ErrorPolicy Type</>,
+        link: "/docs/utilities/error_policy_type",
+        maturity: 90,
+        description: (
+            <>
+                Decide which errors are handled by resilience middlewares like
+                retry and fallback, using a predicate function or one or more
+                error classes.
+            </>
+        ),
+    } satisfies ComponentItemProps,
+    INVOCABLE: {
+        name: "Invocable",
+        icon: <SquareFunction size="1.5rem" strokeWidth={1.5} />,
+        title: <>Invocable</>,
+        link: "/docs/utilities/invocable",
+        maturity: 90,
+        description: (
+            <>
+                A callable entity, either a plain function or an object exposing
+                an invoke method, so functions and class-based services flow
+                through one shared contract.
             </>
         ),
     } satisfies ComponentItemProps,
@@ -836,6 +866,8 @@ export const UTILITIES_EXISTING_ITEMS: ComponentItemProps[] = [
     COMPONENT_RECORD.TIME_SPAN,
     COMPONENT_RECORD.FILE_SIZE,
     COMPONENT_RECORD.BACKOFF_POLICIES,
+    COMPONENT_RECORD.ERROR_POLICY_TYPE,
+    COMPONENT_RECORD.INVOCABLE,
 ];
 
 export const EXISTING_ITEMS: ComponentItemProps[] = [

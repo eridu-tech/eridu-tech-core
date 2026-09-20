@@ -1,3 +1,11 @@
+---
+sidebar_position: 5
+tags:
+    - Utilities
+keywords:
+    - Utilities
+---
+
 # ErrorPolicy type
 
 The `ErrorPolicy` type determines which errors should be handled for example in resilience middlewares like [`retry`](/docs/reliability/resilience) or [`fallback`](/docs/reliability/resilience).

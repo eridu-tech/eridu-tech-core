@@ -1,3 +1,11 @@
+---
+sidebar_position: 6
+tags:
+    - Utilities
+keywords:
+    - Utilities
+---
+
 # Invocable
 
 An [`Invocable`](https://eridu-tech.github.io/eridu-tech-core/types/Utilities.Invocable.html) represents a callable entity, which can be either:
