@@ -1,7 +1,10 @@
 import { KyselyRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter";
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import { serde } from "./serde-instance.js";
+import {
+    createTransactionContext,
+    serde,
+} from "./kysely-rate-limiter-adapter-setup.js";
 
 const database = new Sqlite("DATABASE_NAME.db");
 const kysely = new Kysely<any>({
@@ -9,9 +12,10 @@ const kysely = new Kysely<any>({
         database,
     }),
 });
+const transactionContext = createTransactionContext(kysely);
 export const kyselyRateLimiterStorageAdapter =
     new KyselyRateLimiterStorageAdapter({
-        kysely,
+        transactionContext,
         serde,
     });
 

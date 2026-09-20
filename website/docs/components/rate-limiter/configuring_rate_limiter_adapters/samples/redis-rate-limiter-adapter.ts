@@ -1,7 +1,6 @@
 import { RedisRateLimiterAdapter } from "eridu-tech/rate-limiter/redis-rate-limiter-adapter";
-import { Redis } from "ioredis";
+import { database } from "./redis-rate-limiter-adapter-setup.js";
 
-const database = new Redis("YOUR_REDIS_CONNECTION_STRING");
 const redisRateLimiterAdapter = new RedisRateLimiterAdapter({
     database,
 });

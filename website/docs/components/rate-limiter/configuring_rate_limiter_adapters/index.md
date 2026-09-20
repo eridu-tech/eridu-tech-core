@@ -36,7 +36,19 @@ keywords:
 
 To use the `RedisRateLimiterAdapter`, you'll need to:
 
-1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package:
+1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package.
+
+### Setup
+
+Connect to Redis:
+
+```ts file=./samples/redis-rate-limiter-adapter-setup.ts
+
+```
+
+### Usage
+
+Create the adapter:
 
 ```ts file=./samples/redis-rate-limiter-adapter.ts
 
@@ -111,16 +123,20 @@ The `NoOpRateLimiterAdapter` is useful when you want to mock out or disable your
 To use the `KyselyRateLimiterStorageAdapter`, you'll need to:
 
 1. Use database provider that has support for transactions.
+2. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package.
+3. Provide a string serializer ([`ISerde`](/docs/components/serde)). We recommend using `SuperJsonSerdeAdapter` for this purpose.
 
-2. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package:
+### Setup
 
-3. Provide a string serializer ([`ISerde`](/docs/components/serde)):
+Create the string serializer ([`ISerde`](/docs/components/serde)) and a function that creates the [`TransactionContext`](/docs/components/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/components/transaction_context/configuring_transaction_context_adapters):
 
-- We recommend using `SuperJsonSerdeAdapter` for this purpose
-
-```ts file=./samples/serde-instance.ts
+```ts file=./samples/kysely-rate-limiter-adapter-setup.ts
 
 ```
+
+:::info
+The `transactionContext` setting makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
+:::
 
 ### With Sqlite
 
@@ -152,7 +168,7 @@ Works with both MySQL and MariaDB.
 
 ### With Libsql
 
-You will need to install `@libsql/kysely-libsql` package:
+You will need to install [`@libsql/kysely-libsql`](https://www.npmjs.com/package/@libsql/kysely-libsql) package:
 
 ```ts file=./samples/kysely-storage-libsql.ts
 
@@ -197,12 +213,24 @@ To clean up expired rate-limiter records, call `removeAllExpired` at a regular i
 To use the `MongodbRateLimiterStorageAdapter`, you'll need to:
 
 1. Use database provider that has support for transactions.
+2. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package.
+3. Provide a string serializer ([`ISerde`](/docs/components/serde)). We recommend using `SuperJsonSerdeAdapter` for this purpose.
 
-2. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package:
+### Setup
 
-3. Provide a string serializer ([`ISerde`](/docs/components/serde)):
+Connect to MongoDB, create the string serializer ([`ISerde`](/docs/components/serde)) and the [`TransactionContext`](/docs/components/transaction_context/transaction_context_usage), which wraps the `Db` instance in a [`MongodbTransactionAdapter`](/docs/components/transaction_context/configuring_transaction_context_adapters):
 
-- We recommend using `SuperJsonSerdeAdapter` for this purpose
+```ts file=./samples/mongodb-rate-limiter-adapter-setup.ts
+
+```
+
+:::info
+The `transactionContext` setting makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
+:::
+
+### Usage
+
+Create the adapter:
 
 ```ts file=./samples/mongodb-rate-limiter-storage-adapter.ts
 
