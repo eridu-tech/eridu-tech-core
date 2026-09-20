@@ -1,7 +1,10 @@
 import { KyselyCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/kysely-circuit-breaker-storage-adapter";
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import { serde } from "./serde-instance.js";
+import {
+    createTransactionContext,
+    serde,
+} from "./kysely-circuit-breaker-storage-adapter-setup.js";
 
 const database = new Sqlite("DATABASE_NAME.db");
 const kysely = new Kysely<any>({
@@ -9,9 +12,10 @@ const kysely = new Kysely<any>({
         database,
     }),
 });
+const transactionContext = createTransactionContext(kysely);
 export const kyselyCircuitBreakerStorageAdapter =
     new KyselyCircuitBreakerStorageAdapter({
-        kysely,
+        transactionContext,
         serde,
     });
 
