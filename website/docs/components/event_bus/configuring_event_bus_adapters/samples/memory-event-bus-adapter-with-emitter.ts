@@ -2,4 +2,6 @@ import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-ada
 import { EventEmitter } from "node:events";
 
 const eventEmitter = new EventEmitter<any>();
-const eventBusAdapter = new MemoryEventBusAdapter(eventEmitter);
+const eventBusAdapter = new MemoryEventBusAdapter({
+    eventEmitter,
+});
