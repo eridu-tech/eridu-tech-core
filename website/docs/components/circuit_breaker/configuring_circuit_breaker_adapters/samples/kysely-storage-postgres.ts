@@ -1,7 +1,10 @@
 import { KyselyCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/kysely-circuit-breaker-storage-adapter";
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
-import { serde } from "./serde-instance.js";
+import {
+    createTransactionContext,
+    serde,
+} from "./kysely-circuit-breaker-storage-adapter-setup.js";
 
 const database = new Pool({
     database: "DATABASE_NAME",
@@ -17,9 +20,10 @@ const kysely = new Kysely<any>({
         pool: database,
     }),
 });
+const transactionContext = createTransactionContext(kysely);
 const kyselyCircuitBreakerStorageAdapter =
     new KyselyCircuitBreakerStorageAdapter({
-        kysely,
+        transactionContext,
         serde,
     });
 

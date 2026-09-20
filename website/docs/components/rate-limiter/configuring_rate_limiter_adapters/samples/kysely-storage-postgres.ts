@@ -1,7 +1,10 @@
 import { KyselyRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter";
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
-import { serde } from "./serde-instance.js";
+import {
+    createTransactionContext,
+    serde,
+} from "./kysely-rate-limiter-adapter-setup.js";
 
 const database = new Pool({
     database: "DATABASE_NAME",
@@ -17,8 +20,9 @@ const kysely = new Kysely<any>({
         pool: database,
     }),
 });
+const transactionContext = createTransactionContext(kysely);
 const kyselyRateLimiterStorageAdapter = new KyselyRateLimiterStorageAdapter({
-    kysely,
+    transactionContext,
     serde,
 });
 

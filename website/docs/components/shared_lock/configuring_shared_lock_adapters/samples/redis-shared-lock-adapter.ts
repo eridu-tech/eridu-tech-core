@@ -1,5 +1,4 @@
 import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
-import { Redis } from "ioredis";
+import { database } from "./redis-shared-lock-adapter-setup.js";
 
-const database = new Redis("YOUR_REDIS_CONNECTION_STRING");
 const redisSharedLockAdapter = new RedisSharedLockAdapter(database);

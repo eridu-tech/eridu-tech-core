@@ -1,8 +1,10 @@
 import { KyselyCacheAdapter } from "eridu-tech/cache/kysely-cache-adapter";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
+import {
+    createTransactionContext,
+    serde,
+} from "./kysely-cache-adapter-setup.js";
 
 const database = new Pool({
     database: "DATABASE_NAME",
@@ -18,9 +20,9 @@ const kysely = new Kysely<any>({
         pool: database,
     }),
 });
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const transactionContext = createTransactionContext(kysely);
 const kyselyCacheAdapter = new KyselyCacheAdapter({
-    kysely,
+    transactionContext,
     serde,
 });
 

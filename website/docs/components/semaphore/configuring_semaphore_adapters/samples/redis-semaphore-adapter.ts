@@ -1,5 +1,4 @@
 import { RedisSemaphoreAdapter } from "eridu-tech/semaphore/redis-semaphore-adapter";
-import { Redis } from "ioredis";
+import { database } from "./redis-semaphore-adapter-setup.js";
 
-const database = new Redis("YOUR_REDIS_CONNECTION_STRING");
 const redisSemaphoreAdapter = new RedisSemaphoreAdapter(database);

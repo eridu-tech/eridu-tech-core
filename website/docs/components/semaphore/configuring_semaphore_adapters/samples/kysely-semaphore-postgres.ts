@@ -1,6 +1,7 @@
 import { KyselySemaphoreAdapter } from "eridu-tech/semaphore/kysely-semaphore-adapter";
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
+import { createTransactionContext } from "./kysely-semaphore-adapter-setup.js";
 
 const database = new Pool({
     database: "DATABASE_NAME",
@@ -16,8 +17,9 @@ const kysely = new Kysely<any>({
         pool: database,
     }),
 });
+const transactionContext = createTransactionContext(kysely);
 const kyselySemaphoreAdapter = new KyselySemaphoreAdapter({
-    kysely,
+    transactionContext,
 });
 
 // You need initialize the adapter once before using it.

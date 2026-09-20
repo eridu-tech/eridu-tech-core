@@ -1,6 +1,7 @@
 import { KyselyLockAdapter } from "eridu-tech/lock/kysely-lock-adapter";
 import { createPool } from "mysql2";
 import { Kysely, MysqlDialect } from "kysely";
+import { createTransactionContext } from "./kysely-lock-adapter-setup.js";
 
 const database = createPool({
     host: "DATABASE_HOST",
@@ -16,8 +17,9 @@ const kysely = new Kysely<any>({
         pool: database,
     }),
 });
+const transactionContext = createTransactionContext(kysely);
 const kyselyLockAdapter = new KyselyLockAdapter({
-    kysely,
+    transactionContext,
 });
 
 // You need initialize the adapter once before using it.

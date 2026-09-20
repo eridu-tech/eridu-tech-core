@@ -1,7 +1,6 @@
 import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-circuit-breaker-adapter";
-import { Redis } from "ioredis";
+import { database } from "./redis-circuit-breaker-adapter-setup.js";
 
-const database = new Redis("YOUR_REDIS_CONNECTION_STRING");
 const redisCircuitBreakerAdapter = new RedisCircuitBreakerAdapter({
     database,
 });

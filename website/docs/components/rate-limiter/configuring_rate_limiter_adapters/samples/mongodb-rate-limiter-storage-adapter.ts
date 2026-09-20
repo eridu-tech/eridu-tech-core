@@ -1,12 +1,11 @@
 import { MongodbRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/mongodb-rate-limiter-storage-adapter";
-import { MongoClient } from "mongodb";
-import { serde } from "./serde-instance.js";
+import {
+    serde,
+    transactionContext,
+} from "./mongodb-rate-limiter-adapter-setup.js";
 
-const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
-const database = client.db("database");
 const mongodbRateLimiterStorageAdapter = new MongodbRateLimiterStorageAdapter({
-    client,
-    database,
+    transactionContext,
     serde,
 });
 
