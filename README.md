@@ -10,7 +10,7 @@
 
 **Write business logic once. Replace infrastructure anytime.**
 
-The adapter-first backend toolkit for TypeScript — 20 officially maintained components with 4,640+ integration and behavior tests.
+The adapter-first backend toolkit for TypeScript — 22 officially maintained components with 4,640+ integration and behavior tests.
 
 [**Explore the Docs**](https://www.eridu-tech.io/docs/installation) · [**API docs**](https://eridu-tech.github.io/eridu-tech-core/modules.html) · [**GitHub**](https://github.com/eridu-tech/eridu-tech-core) · [**NPM**](https://www.npmjs.com/package/eridu-tech)
 
@@ -146,10 +146,11 @@ A growing collection of officially maintained components. Every component ships 
 ### Foundation
 
 - [**DI Container**](https://www.eridu-tech.io/docs/components/di) — `Near-stable` — A lightweight, type-safe dependency injection container for wiring application components without tight coupling.
+- [**Execution Context**](https://www.eridu-tech.io/docs/components/execution_context) — `Near-stable` — Type-safe, composable context propagation for request IDs, user info, and tracing metadata across async boundaries — without thread-local hacks.
+- [**Transaction Context**](https://www.eridu-tech.io/docs/components/transaction_context/transaction_context_usage) — `Near-stable` — Coordinate database transactions across components — with support for the after-commit pattern, joining existing transactions, and pluggable adapters (Kysely, MongoDB).
 - [**Middleware and AOP**](https://www.eridu-tech.io/docs/components/middleware) — `Near-stable` — Composable middleware pipeline with before/after hooks, error handling — the foundation for every component's plugin system.
 - [**Serde**](https://www.eridu-tech.io/docs/components/serde) — `Experimental` — Serialize and deserialize data with a built-in SuperJSON adapter (Date, Map, Set, BigInt) and custom serializers — the backbone for all data interchange across the ecosystem.
 - [**Codec**](https://www.eridu-tech.io/docs/components/codec) — `Experimental` — Encode and decode data with a unified, type-safe interface — includes a built-in Base64 codec and lets you build custom codecs for any protocol.
-- [**Execution Context**](https://www.eridu-tech.io/docs/components/execution_context) — `Near-stable` — Type-safe, composable context propagation for request IDs, user info, and tracing metadata across async boundaries — without thread-local hacks.
 - [**Typed Config Access**](https://www.eridu-tech.io/docs/components/config_accessor) — `Near-stable` — Standardized type-safe access to domain configuration variables — with optional schema validation and full TypeScript inference.
 - [**Typed Env Access**](https://www.eridu-tech.io/docs/components/env_accessor) — `Near-stable` — Type-safe environment variable access from multiple sync/async sources with parsing, defaults, and validation — never read `process.env` raw again.
 
@@ -186,7 +187,6 @@ A growing collection of officially maintained components. Every component ships 
 
 Components currently in design or development — not yet available in any release.
 
-- **Transaction Context** — Coordinate database transactions across components with the after-commit pattern. Foundation for reliable messaging — powers the Outbox, Inbox, Scheduler, and Notifications.
 - **CLI Command** — A unified API for defining and executing CLI commands with a transport adapter architecture. Run commands locally via child processes, remotely over SSH or HTTP, inside Docker containers, or through custom transports — all from the same command definition.
 - **Structured concurrency** — Run async tasks in structured scopes where child tasks are tied to their parent's lifetime — with automatic cancellation, error propagation, and resource cleanup.
 - **Promise Queue** — A configurable promise queue to control the number of concurrently executing promises and prevent resource exhaustion.
@@ -194,7 +194,7 @@ Components currently in design or development — not yet available in any relea
 - **Introspection** — Inspect the actual runtime state of any component through pre-built CLI commands — view registered handlers, active jobs, queue depth, lock holders, and more without digging into logs or metrics.
 - **Job Scheduler** — Schedule work with full flexibility — immediate dispatch, delayed execution, and recurring jobs. Uses Transaction Context for reliable execution.
 
-[**View full roadmap →**](https://www.eridu-tech.io/docs/roadmap)
+[**View full roadmap →**](https://www.eridu-tech.io/roadmap)
 
 ---
 
@@ -214,7 +214,7 @@ Components currently in design or development — not yet available in any relea
 | Geared toward microservices and monoliths.                                            | Built for modular monoliths — swap infrastructure without rewriting logic. |
 | No execution context flowing through all components.                                  | Execution context flowing through all components.                          |
 | No shared serialization engine across components.                                     | Shared serialization engine (Serde) across components.                     |
-| No built-in transaction context.                                                      | Will have a transaction context.                                           |
+| No built-in transaction context.                                                      | Transaction context shared across all components.                          |
 
 ### AdonisJS — A batteries-included full-stack framework vs composable primitives.
 
@@ -227,7 +227,7 @@ Components currently in design or development — not yet available in any relea
 | Not adapted for edge runtimes.                               | Edge-adaptable via the adapter pattern.                               |
 | No execution context flowing through all components.         | Execution context flowing through all components.                     |
 | No shared serialization engine across components.            | Shared serialization engine (Serde) across components.                |
-| No built-in transaction context.                             | Will have a transaction context.                                      |
+| No built-in transaction context.                             | Transaction context shared across all components.                     |
 
 ### TRPC / ORPC — End-to-end typed APIs vs the server-side infrastructure behind them.
 
