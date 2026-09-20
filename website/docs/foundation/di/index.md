@@ -34,10 +34,10 @@ The container follows a strict lifecycle.
 
 #### Register Services and Container Hooks
 
-Register your services by defining their lifespans, dependencies, and service factories. Register hooks that will run after container initialization or de-initialization. All registrations must occur before initialization. The following methods are used to register services: [`registerFactory`](#registerfactory), [`registerValue`](#registervalue), [`registerDynamic`](#dynamic), [`registerProvider`](#registerprovider). The following are used to register container hooks: [`onContainerInit`](#container-hooks) and [`onContainerDeInit`](#container-hooks).
+Register your services by defining their lifespans, dependencies, and service factories. Register hooks that will run after container initialization or de-initialization. All registrations must occur before initialization. The following methods are used to register services: [`registerFactory`](#register_factory), [`registerValue`](#register_value), [`registerDynamic`](#dynamic), [`registerProvider`](#register_provider). The following are used to register container hooks: [`onContainerInit`](#container-hooks) and [`onContainerDeInit`](#container-hooks).
 
 :::info
-Services and hooks can only be registered before the container is initialized. Once the container is initialized, registering new services or hooks will throw [`InvalidMethodCallDiError`](#invalidmethodcalldierror).
+Services and hooks can only be registered before the container is initialized. Once the container is initialized, registering new services or hooks will throw [`InvalidMethodCallDiError`](#invalid_method_call_di_error).
 :::
 
 #### Initialize and Activate the Container
@@ -50,10 +50,10 @@ The current implementation of `IContainer` is _**eager**_. The container will in
 
 #### Use the Container
 
-Resolve service instances and run scoped executions. The following methods are used to resolve services: [`resolve`](#resolve), [`resolveOr`](#resolveor), [`resolveOrFail`](#resolveorfail). The following method is used to check if a service is resolvable: [`has`](#has). The following method is used to run scoped executions: [`run`](#scoped).
+Resolve service instances and run scoped executions. The following methods are used to resolve services: [`resolve`](#resolve), [`resolveOr`](#resolve_or), [`resolveOrFail`](#resolve_or_fail). The following method is used to check if a service is resolvable: [`has`](#has). The following method is used to run scoped executions: [`run`](#scoped).
 
 :::info
-Services can only be resolved while the container is in an active state (after initialization and before de-initialization). Resolving services before initialization or after de-initialization will throw [`InvalidMethodCallDiError`](#invalidmethodcalldierror).
+Services can only be resolved while the container is in an active state (after initialization and before de-initialization). Resolving services before initialization or after de-initialization will throw [`InvalidMethodCallDiError`](#invalid_method_call_di_error).
 :::
 
 #### De-Initialize the Container
@@ -123,7 +123,7 @@ Use `registerFactory()` to register a **Singleton**, **Scoped**, or **Transient*
 
 - **`deps`** — The dependencies required by the service, defined as a record where each value is a **token** identifying a dependency. Pass an empty object literal `{}` if the service has no dependencies.
 
-- **`factory`** — [`invocable`](/docs/utilities/invocable/) (function or object with `invoke` method) that creates and returns the service instance. It receives a record of resolved dependencies as its first argument and the [`execution context`](/docs/foundation/execution_context) as its second argument. The factory can also be `async` and return a `Promise`.
+- **`factory`** — [`invocable`](/docs/utilities/invocable) (function or object with `invoke` method) that creates and returns the service instance. It receives a record of resolved dependencies as its first argument and the [`execution context`](/docs/foundation/execution_context) as its second argument. The factory can also be `async` and return a `Promise`.
 
 - **`lifetime`** — The lifetime of the service. Must be either `LIFETIME.SINGLETON`, `LIFETIME.TRANSIENT` or `LIFETIME.SCOPED`.
 
@@ -348,7 +348,7 @@ You can register multiple initialization hooks by calling `onContainerInit()` mu
 Both callbacks for `onContainerInit()` and `onContainerDeInit()` receive an object that can be used to resolve services with `resolve`, `resolveOr`, `resolveOrFail` and check resolvability with `has`.
 
 :::info
-Hooks must be registered before `container.init()` is called. Calling `onContainerInit()` or `onContainerDeInit()` after `container.init()` throws [`InvalidMethodCallDiError`](#invalidmethodcalldierror).
+Hooks must be registered before `container.init()` is called. Calling `onContainerInit()` or `onContainerDeInit()` after `container.init()` throws [`InvalidMethodCallDiError`](#invalid_method_call_di_error).
 :::
 
 ```ts file=./samples/container-hooks.ts
@@ -357,14 +357,14 @@ Hooks must be registered before `container.init()` is called. Calling `onContain
 
 ### Overriding Registrations
 
-To override a registered service factory, use `overrideFactory()`; to override a registered singleton value, use `overrideValue()`. A service can only be overridden once. If the token is not registered, is registered as dynamic, or has already been overridden, a [`CanNotOverrideServiceDiError`](#cannotoverrideservicedierror) is thrown.
+To override a registered service factory, use `overrideFactory()`; to override a registered singleton value, use `overrideValue()`. A service can only be overridden once. If the token is not registered, is registered as dynamic, or has already been overridden, a [`CanNotOverrideServiceDiError`](#can_not_override_service_di_error) is thrown.
 
 :::tip
 We recommend using overrides only during testing, not in production code. Overriding is useful for mocking services or swapping implementations. For example, replacing a real database with an in-memory adapter.
 :::
 
 :::info
-Overriding a registration is **forbidden after the container is initialized**. Calling `overrideFactory()` or `overrideValue()` after `container.init()` throws [`InvalidMethodCallDiError`](#invalidmethodcalldierror).
+Overriding a registration is **forbidden after the container is initialized**. Calling `overrideFactory()` or `overrideValue()` after `container.init()` throws [`InvalidMethodCallDiError`](#invalid_method_call_di_error).
 :::
 
 ```ts file=./samples/override-registrations.ts
@@ -380,7 +380,7 @@ We recommend using forking only during testing. It is useful for testing differe
 :::
 
 :::info
-Forking is forbidden after the container is initialized. Calling `fork()` after `container.init()` throws [`InvalidMethodCallDiError`](#invalidmethodcalldierror).
+Forking is forbidden after the container is initialized. Calling `fork()` after `container.init()` throws [`InvalidMethodCallDiError`](#invalid_method_call_di_error).
 :::
 
 ```ts file=./samples/fork-container.ts
@@ -489,8 +489,8 @@ Here is an example where `InvalidMethodCallDiError` is thrown.
 
 The container exposes several contracts that separate concerns for different use cases:
 
-- `IServiceRegister` — for **registering** services ([`registerFactory`](#registerfactory), [`registerValue`](#registervalue), [`registerDynamic`](#dynamic), [`registerProvider`](#registerprovider)) and registering container lifecycle hooks.
-- `IServiceResolver` — for **resolving** services ([`resolve`](#resolve), [`resolveOr`](#resolveor), [`resolveOrFail`](#resolveorfail), [`has`](#has)).
+- `IServiceRegister` — for **registering** services ([`registerFactory`](#register_factory), [`registerValue`](#register_value), [`registerDynamic`](#dynamic), [`registerProvider`](#register_provider)) and registering container lifecycle hooks.
+- `IServiceResolver` — for **resolving** services ([`resolve`](#resolve), [`resolveOr`](#resolve_or), [`resolveOrFail`](#resolve_or_fail), [`has`](#has)).
 - `IServiceOverrider` — for **overriding** existing registrations ([`overrideFactory`](#overriding-registrations), [`overrideValue`](#overriding-registrations)), useful for testing.
 - `IContainerScope` — for running scoped container executions ([`run`](#scoped)).
 - `IContainerFork` — for **forking** a child container ([`fork`](#forking-a-container)), useful for testing.
@@ -498,18 +498,18 @@ The container exposes several contracts that separate concerns for different use
 
 #### `IServiceRegister`
 
-- [`registerFactory(settings)`](#registerfactory)
-- [`registerValue(settings)`](#registervalue)
+- [`registerFactory(settings)`](#register_factory)
+- [`registerValue(settings)`](#register_value)
 - [`registerDynamic(token)`](#dynamic)
-- [`registerProvider(provider)`](#registerprovider)
+- [`registerProvider(provider)`](#register_provider)
 - [`onContainerInit(handler)`](#container-hooks)
 - [`onContainerDeInit(handler)`](#container-hooks)
 
 #### `IServiceResolver`
 
 - [`resolve(token)`](#resolve)
-- [`resolveOr(token, defaultValue)`](#resolveor)
-- [`resolveOrFail(token)`](#resolveorfail)
+- [`resolveOr(token, defaultValue)`](#resolve_or)
+- [`resolveOrFail(token)`](#resolve_or_fail)
 - [`has(token)`](#has)
 
 #### `IServiceOverrider`

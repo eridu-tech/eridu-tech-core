@@ -100,7 +100,7 @@ You can use any of defined [backoff policies](/docs/utilities/backoff_policies).
 
 ### Configuring RateLimiter policy
 
-You can use any of defined [rate-limiter policies](/docs/reliability/rate-limiter/configuring_rate_limiter_policies/) or [create your own](/docs/reliability/rate-limiter/creating_rate_limiter_policies/).
+You can use any of defined [rate-limiter policies](/docs/reliability/rate-limiter/configuring_rate_limiter_policies) or [create your own](/docs/reliability/rate-limiter/creating_rate_limiter_policies).
 
 ```ts file=./samples/database-rate-limiter-policy.ts
 
@@ -128,7 +128,7 @@ To use the `KyselyRateLimiterStorageAdapter`, you'll need to:
 
 ### Setup
 
-Create the string serializer ([`ISerde`](/docs/foundation/serde)) and a function that creates the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters):
+Create the string serializer ([`ISerde`](/docs/foundation/serde)) and a function that creates the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters/#kysely_transaction_adapter):
 
 ```ts file=./samples/kysely-rate-limiter-adapter-setup.ts
 
@@ -218,7 +218,7 @@ To use the `MongodbRateLimiterStorageAdapter`, you'll need to:
 
 ### Setup
 
-Connect to MongoDB, create the string serializer ([`ISerde`](/docs/foundation/serde)) and the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage), which wraps the `Db` instance in a [`MongodbTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters):
+Connect to MongoDB, create the string serializer ([`ISerde`](/docs/foundation/serde)) and the [`TransactionContext`](/docs/foundation/transaction_context/transaction_context_usage), which wraps the `Db` instance in a [`MongodbTransactionAdapter`](/docs/foundation/transaction_context/configuring_transaction_context_adapters/#mongodb_transaction_adapter):
 
 ```ts file=./samples/mongodb-rate-limiter-adapter-setup.ts
 

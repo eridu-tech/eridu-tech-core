@@ -45,7 +45,7 @@ Note the method throws an error when the circuit-breaker is in open state or iso
 :::
 
 :::info
-You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable/) as values for the `runOrFail` method.
+You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable) as values for the `runOrFail` method.
 :::
 
 ### Applying circuit-breaker on certiain errors

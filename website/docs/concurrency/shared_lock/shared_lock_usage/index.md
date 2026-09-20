@@ -202,7 +202,7 @@ In most cases, setting a shared-lock id is unnecessary.
 
 ### Retrying acquiring shared-lock as writer by attempts
 
-To retry acquiring shared-lock as writer you can use the [`retry`](/docs/reliability/resilience) middleware.
+To retry acquiring shared-lock as writer you can use the [`retry`](/docs/reliability/resilience/#retry) middleware.
 
 Retrying acquiring shared-lock as writer with `acquireWriterOrFail` method:
 
@@ -224,7 +224,7 @@ Retrying acquiring shared-lock as writer with `runWriterOrFail` method:
 
 ### Retrying acquiring shared-lock as reader by attempts
 
-To retry acquiring shared-lock as reader you can use the [`retry`](/docs/reliability/resilience) middleware.
+To retry acquiring shared-lock as reader you can use the [`retry`](/docs/reliability/resilience/#retry) middleware.
 
 Retrying acquiring shared-lock as reader with `acquireReaderOrFail` method:
 
@@ -246,7 +246,7 @@ Retrying acquiring shared-lock as reader with `runReaderOrFail` method:
 
 ### Retrying acquiring shared-lock as writer by interval
 
-To retry acquiring shared-lockas as writer at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience) middleware.
+To retry acquiring shared-lockas as writer at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience/#retry-by-interval) middleware.
 
 Retrying acquiring shared-lock with `acquireWriterOrFail` method:
 
@@ -272,7 +272,7 @@ Note using `retryInterval` middleware with shared-lock acquiring in a HTTP reque
 
 ### Retrying acquiring shared-lock as reader by interval
 
-To retry acquiring shared-lockas as reader at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience) middleware.
+To retry acquiring shared-lockas as reader at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience/#retry-by-interval) middleware.
 
 Retrying acquiring shared-lock with `acquireReaderOrFail` method:
 

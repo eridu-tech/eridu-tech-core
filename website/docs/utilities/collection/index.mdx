@@ -70,14 +70,14 @@ If the index is out of bounds, it will return null.
 ```
 
 If you want to get the item at the specified index but return a default value if the index is out of bounds,
-you can use the [`getOr`](#getor) method.
+you can use the [`getOr`](#get_or) method.
 
 ```ts file=./samples/access-get-or.ts
 
 ```
 
 If you want to get the item at the specified index and throw an error if the index is out of bounds,
-you can use the [`getOrFail`](#getorfail) method.
+you can use the [`getOrFail`](#get_or_fail) method.
 
 ```ts file=./samples/access-get-or-fail.ts
 
@@ -165,34 +165,34 @@ For the remaining of the documentation, we'll discuss each method available on t
 
     <li style={{listStyleType:"none"}}>
         <ol><a href="#after">after</a></ol>
-        <ol><a href="#afteror">afterOr</a></ol>
-        <ol><a href="#afterorfail">afterOrFail</a></ol>
+        <ol><a href="#after_or">afterOr</a></ol>
+        <ol><a href="#after_or_fail">afterOrFail</a></ol>
         <ol><a href="#append">append</a></ol>
         <ol><a href="#average">average</a></ol>
         <ol><a href="#before">before</a></ol>
-        <ol><a href="#beforeor">beforeOr</a></ol>
-        <ol><a href="#beforeorfail">beforeOrFail</a></ol>
+        <ol><a href="#before_or">beforeOr</a></ol>
+        <ol><a href="#before_or_fail">beforeOrFail</a></ol>
         <ol><a href="#change">change</a></ol>
         <ol><a href="#chunk">chunk</a></ol>
-        <ol><a href="#chunkwhile">chunkWhile</a></ol>
+        <ol><a href="#chunk_while">chunkWhile</a></ol>
         <ol><a href="#collapse">collapse</a></ol>
         <ol><a href="#count">count</a></ol>
-        <ol><a href="#countby">countBy</a></ol>
-        <ol><a href="#crossjoin">crossJoin</a></ol>
+        <ol><a href="#count_by">countBy</a></ol>
+        <ol><a href="#cross_join">crossJoin</a></ol>
         <ol><a href="#difference">difference</a></ol>
         <ol><a href="#entries">entries</a></ol>
         <ol><a href="#every">every</a></ol>
         <ol><a href="#filter">filter</a></ol>
         <ol><a href="#validate">filter</a></ol>
         <ol><a href="#first">first</a></ol>
-        <ol><a href="#firstor">firstOr</a></ol>
-        <ol><a href="#firstorfail">firstOrFail</a></ol>
-        <ol><a href="#flatmap">flatMap</a></ol>
-        <ol><a href="#foreach">forEach</a></ol>
+        <ol><a href="#first_or">firstOr</a></ol>
+        <ol><a href="#first_or_fail">firstOrFail</a></ol>
+        <ol><a href="#flat_map">flatMap</a></ol>
+        <ol><a href="#for_each">forEach</a></ol>
         <ol><a href="#get">get</a></ol>
-        <ol><a href="#getor">getOr</a></ol>
-        <ol><a href="#getorfail">getOrFail</a></ol>
-        <ol><a href="#groupby">groupBy</a></ol>
+        <ol><a href="#get_or">getOr</a></ol>
+        <ol><a href="#get_or_fail">getOrFail</a></ol>
+        <ol><a href="#group_by">groupBy</a></ol>
     </li>
 
 </div>
@@ -200,16 +200,16 @@ For the remaining of the documentation, we'll discuss each method available on t
 <div style={{ width: "100%" }}>
     <li style={{ listStyleType: "none" }}>
         <ol>
-            <a href="#insertafter">insertAfter</a>
+            <a href="#insert_after">insertAfter</a>
         </ol>
         <ol>
-            <a href="#insertbefore">insertBefore</a>
+            <a href="#insert_before">insertBefore</a>
         </ol>
         <ol>
-            <a href="#isempty">isEmpty</a>
+            <a href="#is_empty">isEmpty</a>
         </ol>
         <ol>
-            <a href="#isnotempty">isNotEmpty</a>
+            <a href="#is_not_empty">isNotEmpty</a>
         </ol>
         <ol>
             <a href="#join">join</a>
@@ -221,10 +221,10 @@ For the remaining of the documentation, we'll discuss each method available on t
             <a href="#last">last</a>
         </ol>
         <ol>
-            <a href="#lastor">lastOr</a>
+            <a href="#last_or">lastOr</a>
         </ol>
         <ol>
-            <a href="#lastorfail">lastOrFail</a>
+            <a href="#last_or_fail">lastOrFail</a>
         </ol>
         <ol>
             <a href="#map">map</a>
@@ -242,10 +242,10 @@ For the remaining of the documentation, we'll discuss each method available on t
             <a href="#nth">nth</a>
         </ol>
         <ol>
-            <a href="#padend">padEnd</a>
+            <a href="#pad_end">padEnd</a>
         </ol>
         <ol>
-            <a href="#padstart">padStart</a>
+            <a href="#pad_start">padStart</a>
         </ol>
         <ol>
             <a href="#page">page</a>
@@ -275,10 +275,10 @@ For the remaining of the documentation, we'll discuss each method available on t
             <a href="#reverse">reverse</a>
         </ol>
         <ol>
-            <a href="#searchfirst">searchFirst</a>
+            <a href="#search_first">searchFirst</a>
         </ol>
         <ol>
-            <a href="#searchlast">searchLast</a>
+            <a href="#search_last">searchLast</a>
         </ol>
         <ol>
             <a href="#serialize">serialize</a>
@@ -292,8 +292,8 @@ For the remaining of the documentation, we'll discuss each method available on t
         <ol><a href="#shuffle">shuffle</a></ol> 
         <ol><a href="#size">size</a></ol> 
         <ol><a href="#skip">skip</a></ol> 
-        <ol><a href="#skipuntil">skipUntil</a></ol> 
-        <ol><a href="#skipwhile">skipWhile</a></ol> 
+        <ol><a href="#skip_until">skipUntil</a></ol> 
+        <ol><a href="#skip_while">skipWhile</a></ol> 
         <ol><a href="#slice">slice</a></ol> 
         <ol><a href="#sliding">sliding</a></ol> 
         <ol><a href="#sole">sole</a></ol> 
@@ -302,19 +302,19 @@ For the remaining of the documentation, we'll discuss each method available on t
         <ol><a href="#split">split</a></ol> 
         <ol><a href="#sum">sum</a></ol> 
         <ol><a href="#take">take</a></ol> 
-        <ol><a href="#takeuntil">takeUntil</a></ol> 
-        <ol><a href="#takewhile">takeWhile</a></ol> 
+        <ol><a href="#take_until">takeUntil</a></ol> 
+        <ol><a href="#take_while">takeWhile</a></ol> 
         <ol><a href="#tap">tap</a></ol> 
-        <ol><a href="#toarray">toArray</a></ol> 
-        <ol><a href="#toiterator">toIterator</a></ol> 
-        <ol><a href="#tomap">toMap</a></ol> 
-        <ol><a href="#torecord">toRecord</a></ol> 
+        <ol><a href="#to_array">toArray</a></ol> 
+        <ol><a href="#to_iterator">toIterator</a></ol> 
+        <ol><a href="#to_map">toMap</a></ol> 
+        <ol><a href="#to_record">toRecord</a></ol> 
         <ol><a href="#unique">unique</a></ol> 
         <ol><a href="#values">values</a></ol> 
         <ol><a href="#when">when</a></ol> 
-        <ol><a href="#whenempty">whenEmpty</a></ol> 
-        <ol><a href="#whennot">whenNot</a></ol> 
-        <ol><a href="#whennotempty">whenNotEmpty</a></ol> 
+        <ol><a href="#when_empty">whenEmpty</a></ol> 
+        <ol><a href="#when_not">whenNot</a></ol> 
+        <ol><a href="#when_not_empty">whenNotEmpty</a></ol> 
         <ol><a href="#zip">zip</a></ol> 
     </li> 
 </div>

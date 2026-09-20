@@ -61,5 +61,5 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::

@@ -118,7 +118,7 @@ Note the method throws an error when the lock cannot be acquired.
 :::
 
 :::info
-You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable/) as values for the `runOrFail` method.
+You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable) as values for the `runOrFail` method.
 :::
 
 ### Lock instance variables
@@ -149,7 +149,7 @@ In most cases, setting a custom lock id is unnecessary. Misusing this feature co
 
 ### Retrying acquiring lock by attempts
 
-To retry acquiring lock you can use the [`retry`](/docs/reliability/resilience) middleware.
+To retry acquiring lock you can use the [`retry`](/docs/reliability/resilience/#retry) middleware.
 
 Retrying acquiring lock with `acquireOrFail` method:
 
@@ -171,7 +171,7 @@ Retrying acquiring lock with `runOrFail` method:
 
 ### Retrying acquiring lock by interval
 
-To retry acquiring lock at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience) middleware:
+To retry acquiring lock at regular intervals you can use the [`retryInterval`](/docs/reliability/resilience/#retry-by-interval) middleware:
 
 Retrying acquiring lock with `acquireOrFail` method:
 

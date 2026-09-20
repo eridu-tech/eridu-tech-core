@@ -886,13 +886,13 @@ export const STORAGE_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withCacheFactory",
         title: <>withCacheFactory</>,
-        link: "/docs/storage/cache/cache_middlewares",
+        link: "/docs/storage/cache/cache_middlewares/#with_cache_factory_middleware",
         description: <>Caches the wrapped function&apos;s return value.</>,
     },
     {
         name: "withInvalidationFactory",
         title: <>withInvalidationFactory</>,
-        link: "/docs/storage/cache/cache_middlewares",
+        link: "/docs/storage/cache/cache_middlewares/#with_invalidation_factory_middleware",
         description: (
             <>Invalidates a cache entry after the wrapped function runs.</>
         ),
@@ -903,19 +903,19 @@ export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withCircuitBreakerFactory",
         title: <>withCircuitBreakerFactory</>,
-        link: "/docs/reliability/circuit_breaker/circuit_breaker_middlewares",
+        link: "/docs/reliability/circuit_breaker/circuit_breaker_middlewares/#with_circuit_breaker_factory_middleware",
         description: <>Wraps function calls with a circuit breaker.</>,
     },
     {
         name: "withRateLimiterFactory",
         title: <>withRateLimiterFactory</>,
-        link: "/docs/reliability/rate-limiter/rate_limiter_middlewares",
+        link: "/docs/reliability/rate-limiter/rate_limiter_middlewares/#with_rate_limiter_factory_middleware",
         description: <>Wraps function calls with a rate limiter.</>,
     },
     {
         name: "fallback",
         title: <>fallback</>,
-        link: "/docs/reliability/resilience",
+        link: "/docs/reliability/resilience/#fallback",
         description: (
             <>Returns a fallback value when the wrapped function fails.</>
         ),
@@ -923,7 +923,7 @@ export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "retry",
         title: <>retry</>,
-        link: "/docs/reliability/resilience",
+        link: "/docs/reliability/resilience/#retry",
         description: (
             <>
                 Retries the wrapped function up to a maximum number of attempts.
@@ -933,7 +933,7 @@ export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "retryInterval",
         title: <>retryInterval</>,
-        link: "/docs/reliability/resilience",
+        link: "/docs/reliability/resilience/#retry-by-interval",
         description: (
             <>
                 Retries the wrapped function at a fixed interval until it
@@ -944,7 +944,7 @@ export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "timeout",
         title: <>timeout</>,
-        link: "/docs/reliability/resilience",
+        link: "/docs/reliability/resilience/#timeout",
         description: (
             <>
                 Rejects the wrapped function if it does not complete within a
@@ -958,19 +958,19 @@ export const CONCURRENCY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withLockFactory",
         title: <>withLockFactory</>,
-        link: "/docs/concurrency/lock/lock_middlewares",
+        link: "/docs/concurrency/lock/lock_middlewares/#with_lock_factory_middleware",
         description: <>Wraps function calls with a distributed lock.</>,
     },
     {
         name: "withSemaphoreFactory",
         title: <>withSemaphoreFactory</>,
-        link: "/docs/concurrency/semaphore/semaphore_middlewares",
+        link: "/docs/concurrency/semaphore/semaphore_middlewares/#with_semaphore_factory_middleware",
         description: <>Wraps function calls with a distributed semaphore.</>,
     },
     {
         name: "withSharedLockFactory",
         title: <>withSharedLockFactory</>,
-        link: "/docs/concurrency/shared_lock/shared_lock_middlewares",
+        link: "/docs/concurrency/shared_lock/shared_lock_middlewares/#with_shared_lock_factory_middleware",
         description: (
             <>Wraps function calls with a shared (reader-writer) lock.</>
         ),
@@ -981,13 +981,13 @@ export const MESSAGING_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withDispatchBeforeFactory",
         title: <>withDispatchBeforeFactory</>,
-        link: "/docs/messaging/event_bus/event_bus_middlewares",
+        link: "/docs/messaging/event_bus/event_bus_middlewares/#with_dispatch_before_factory_middleware",
         description: <>Dispatches an event before the wrapped function runs.</>,
     },
     {
         name: "withDispatchAfterFactory",
         title: <>withDispatchAfterFactory</>,
-        link: "/docs/messaging/event_bus/event_bus_middlewares",
+        link: "/docs/messaging/event_bus/event_bus_middlewares/#with_dispatch_after_factory_middleware",
         description: (
             <>Dispatches an event after the wrapped function resolves.</>
         ),
@@ -995,7 +995,7 @@ export const MESSAGING_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withDispatchOnErrorFactory",
         title: <>withDispatchOnErrorFactory</>,
-        link: "/docs/messaging/event_bus/event_bus_middlewares",
+        link: "/docs/messaging/event_bus/event_bus_middlewares/#with_dispatch_on_error_factory_middleware",
         description: <>Dispatches an event when the wrapped function throws.</>,
     },
 ];

@@ -45,7 +45,7 @@ Note the method throws an error when the rate-limiter is blocked.
 :::
 
 :::info
-You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable/) as values for the `runOrFail` method.
+You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/utilities/invocable) as values for the `runOrFail` method.
 :::
 
 ### Applying rate-limiter on only erros

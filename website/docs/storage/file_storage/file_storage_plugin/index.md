@@ -88,7 +88,7 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::
 
 ### Multiple keys — `removeMany`
@@ -101,7 +101,7 @@ The `removeMany` method receives an array of keys. The plugin maps over the arra
 
 ## withFileStorageLock plugin
 
-The FileStorage lock plugin acquires a distributed lock before executing operations on a file-storage adapter. It wraps all methods (both reads and writes) with a lock acquired via an [`ILockFactory`](/docs/concurrency/lock/lock_usage/), ensuring that concurrent access to the same file key is serialised.
+The FileStorage lock plugin acquires a distributed lock before executing operations on a file-storage adapter. It wraps all methods (both reads and writes) with a lock acquired via an [`ILockFactory`](/docs/concurrency/lock/lock_usage), ensuring that concurrent access to the same file key is serialised.
 
 ### Use cases
 
@@ -164,8 +164,8 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
-For more information about lock factories, see the [Lock](/docs/concurrency/lock/lock_usage/) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
+For more information about lock factories, see the [Lock](/docs/concurrency/lock/lock_usage) documentation.
 :::
 
 ## withFileStorageKeyValidator plugin
@@ -226,7 +226,7 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::
 
 ## withFileStorageLowerCase plugin
@@ -278,7 +278,7 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::
 
 ## withFileStorageInferContentTypeOnWrite plugin
@@ -357,7 +357,7 @@ The plugin only affects the `getMetaData` method.
 ```
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::
 
 ## withFileStorageInferFileTypeOnWrite plugin
@@ -396,12 +396,12 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 :::
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::
 
 ## withFileStorageInferFileTypeOnRead plugin
 
-The FileStorage read file-type plugin infers the content type from the actual file content when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](/docs/storage/file_storage/configuring_file_storage_adapters/). It enhances the `getMetaData` method so the returned metadata reports a content type detected from the file bytes via the `file-type` library.
+The FileStorage read file-type plugin infers the content type from the actual file content when reading file metadata. It is meant for adapters that cannot save the content type of a file and instead need it inferred, such as the [`FsFileStorageAdapter`](/docs/storage/file_storage/configuring_file_storage_adapters). It enhances the `getMetaData` method so the returned metadata reports a content type detected from the file bytes via the `file-type` library.
 
 ### Use cases
 
@@ -412,7 +412,7 @@ The FileStorage read file-type plugin infers the content type from the actual fi
 
 The `withFileStorageInferFileTypeOnRead` function returns a [`PluginFn`](/docs/foundation/middleware) that enhances the `getMetaData` method. When invoked, the plugin calls the underlying adapter to obtain the metadata. When the metadata's `contentType` is `null`, the plugin reads the file stream and detects its type via `file-type`. When a type is detected, the metadata content type is overridden; otherwise the content type falls back to `application/octet-stream`, the most generic MIME type. When the metadata already carries a content type, the plugin returns it as-is without any extra read. If the file does not exist, `null` is passed through.
 
-Because the type is detected from the actual content, `getMetaData` additionally opens and reads a leading sample of the object (via `getStream`) whenever inference is required. This extra read is additional I/O on every `getMetaData` call that needs inference. If you only need the content type for files whose keys carry a well-known extension, prefer the extension-based [`withFileStorageInferContentTypeOnRead`](#withfilestorageinfercontenttypeonread-plugin) plugin, which inspects only the file key and performs no extra read.
+Because the type is detected from the actual content, `getMetaData` additionally opens and reads a leading sample of the object (via `getStream`) whenever inference is required. This extra read is additional I/O on every `getMetaData` call that needs inference. If you only need the content type for files whose keys carry a well-known extension, prefer the extension-based [`withFileStorageInferContentTypeOnRead`](#with_file_storage_infer_content_type_on_read_plugin) plugin, which inspects only the file key and performs no extra read.
 
 The plugin only affects the `getMetaData` method.
 
@@ -423,5 +423,5 @@ The plugin only affects the `getMetaData` method.
 ```
 
 :::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware#plugin) documentation.
+For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
 :::
