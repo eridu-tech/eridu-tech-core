@@ -148,6 +148,20 @@ const EXISTING_FOUNDATION_RECORD = {
             </>
         ),
     } satisfies ComponentItemProps,
+    TRANSACTION_CONTEXT: {
+        name: "Transaction Context",
+        icon: <ShieldCheck size="1.5rem" strokeWidth={1.5} />,
+        title: <>Transaction Context</>,
+        link: "/docs/components/transaction_context/transaction_context_usage",
+        maturity: 90,
+        description: (
+            <>
+                Coordinate database transactions across components with support
+                for the after-commit pattern, joining existing transactions, and
+                pluggable adapters (Kysely, MongoDB).
+            </>
+        ),
+    } satisfies ComponentItemProps,
 };
 
 const EXISTING_STORAGE_RECORD = {
@@ -363,19 +377,6 @@ const EXISTING_UTILITIES_RECORD = {
 
 const UPCOMING_FOUNDATION_RUNTIME_RECORD = {
     // ─── Upcoming: Foundation & Runtime ──────────────────────
-    TRANSACTION_CONTEXT: {
-        name: "Transaction Context",
-        icon: <ShieldCheck size="1.5rem" strokeWidth={1.5} />,
-        title: <>Transaction Context</>,
-        description: (
-            <>
-                Coordinate database transactions across components with the
-                after-commit pattern and joining existing transactions.
-                Foundation for reliable messaging, will power the Outbox, Inbox,
-                Scheduler, and Notifications.
-            </>
-        ),
-    } satisfies ComponentItemProps,
     CLI_COMMAND: {
         name: "CLI Command",
         icon: <Terminal size="1.5rem" strokeWidth={1.5} />,
@@ -796,10 +797,11 @@ export const COMPONENT_RECORD = {
 
 export const FOUNDATION_EXISTING_ITEMS: ComponentItemProps[] = [
     COMPONENT_RECORD.DI_CONTAINER,
+    COMPONENT_RECORD.EXECUTION_CONTEXT,
+    COMPONENT_RECORD.TRANSACTION_CONTEXT,
     COMPONENT_RECORD.MIDDLEWARE_AND_AOP,
     COMPONENT_RECORD.SERDE,
     COMPONENT_RECORD.CODEC,
-    COMPONENT_RECORD.EXECUTION_CONTEXT,
     COMPONENT_RECORD.TYPED_CONFIG_ACCESS,
     COMPONENT_RECORD.TYPED_ENV_ACCESS,
 ];
@@ -960,7 +962,6 @@ export const MIDDLEWARE_EXISTING_ITEMS: ComponentItemProps[] = [
 // ─── Foundation & Runtime ────────────────────────────────────────
 
 export const FOUNDATION_RUNTIME_ITEMS: ComponentItemProps[] = [
-    COMPONENT_RECORD.TRANSACTION_CONTEXT,
     COMPONENT_RECORD.CLI_COMMAND,
     COMPONENT_RECORD.STRUCTURED_CONCURRENCY,
     COMPONENT_RECORD.PROMISE_QUEUE,
@@ -1017,7 +1018,6 @@ export const DEV_TOOLING_ITEMS: ComponentItemProps[] = [
 // ─── Homepage preview subset ─────────────────────────────────────
 
 export const UPCOMING_ITEMS: ComponentItemProps[] = [
-    COMPONENT_RECORD.TRANSACTION_CONTEXT,
     COMPONENT_RECORD.CLI_COMMAND,
     COMPONENT_RECORD.STRUCTURED_CONCURRENCY,
     COMPONENT_RECORD.PROMISE_QUEUE,
@@ -1749,7 +1749,7 @@ export const COMPARISONS = {
             "Built for modular monoliths, swap infrastructure without rewriting logic.",
             "Execution context flowing through all components.",
             "Shared serialization engine (Serde) across components.",
-            "Will have a transaction context.",
+            "Transaction context shared across all components.",
         ],
     } satisfies ComparisonItem,
     ADONISJS: {
@@ -1774,7 +1774,7 @@ export const COMPARISONS = {
             "Edge-adaptable via the adapter pattern.",
             "Execution context flowing through all components.",
             "Shared serialization engine (Serde) across components.",
-            "Will have a transaction context.",
+            "Transaction context shared across all components.",
         ],
     } satisfies ComparisonItem,
     TRPC_ORPC: {
