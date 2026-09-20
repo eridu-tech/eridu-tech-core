@@ -41,5 +41,17 @@ async function publishUserCreatedEvent(userId: string): Promise<void> {
     // ...
 }
 
-// The hook is registered on every context that currently has an active transaction
+// No wrapped context is in a transaction, so the hook runs immediately
 await transactionHooks.afterCommit(() => publishUserCreatedEvent("1"));
+
+// Only the postgres context is in a transaction, so the hook is registered on
+// it and runs once that transaction commits
+await postgresTransactionContext.run(async () => {
+    await transactionHooks.afterCommit(() => publishUserCreatedEvent("1"));
+});
+
+// Only the sqlite context is in a transaction, so the hook is registered on it
+// and runs once that transaction commits
+await sqliteTransactionContext.run(async () => {
+    await transactionHooks.afterCommit(() => publishUserCreatedEvent("1"));
+});
