@@ -11,6 +11,7 @@ import { HttpReq } from "@/http-router/implementations/http-req.js";
 import { httpResHelpers } from "@/http-router/implementations/http-res-helpers.js";
 import { HttpRes } from "@/http-router/implementations/http-res.js";
 import { HttpRouterBase } from "@/http-router/implementations/http-router-base.js";
+import { withPrefix } from "@/http-router/implementations/with-prefix.js";
 import { use } from "@/http-router/middlewares/_module.js";
 import {
     callInvocable,
@@ -292,7 +293,10 @@ export class HttpRouter implements IHttpRouter {
         request: Request,
     ): ResolveRouteReturn | null {
         const url = new URL(request.url);
-        const result = router.match(request.method.toLowerCase(), url.pathname);
+        // Joining the path name with an empty sub-path canonicalizes it, so a
+        // request to "/users/" resolves to the same route as "/users".
+        const routePath = withPrefix(url.pathname, "");
+        const result = router.match(request.method.toLowerCase(), routePath);
         const [matches, paramsStash] = result;
 
         const index = matches.findIndex(
