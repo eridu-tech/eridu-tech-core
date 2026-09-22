@@ -13,9 +13,10 @@ import { z } from "zod";
 import { contextToken } from "@/execution-context/contracts/execution-context.contract.js";
 import { FileSize } from "@/file-size/implementations/_module.js";
 import { HttpError } from "@/http-router/contracts/http.errors.js";
-import { HttpRouter } from "@/http-router/implementations/http-router.js";
-
-import type { Router } from "hono/router";
+import {
+    HttpRouter,
+    defaultHttpRouterAdapter,
+} from "@/http-router/implementations/http-router.js";
 
 import type {
     HttpHandlerFn,
@@ -23,17 +24,11 @@ import type {
 } from "@/http-router/contracts/_module.js";
 import type { RouterEntry } from "@/http-router/implementations/types.js";
 
-function createHonoRouter(): Router<RouterEntry> {
-    return new SmartRouter<RouterEntry>({
-        routers: [new RegExpRouter(), new TrieRouter()],
-    });
-}
-
 describe("class: HttpRouter", () => {
     describe("constructor", () => {
         test("Should create an HttpRouter with a fetch handler", () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             expect(router.fetch).toBeDefined();
             expect(typeof router.fetch).toBe("function");
@@ -47,7 +42,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should accept middlewares in settings", () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
                 middlewares: async (_req, next) => {
                     return await next(_req);
                 },
@@ -68,7 +63,7 @@ describe("class: HttpRouter", () => {
     describe("method: endpoint", () => {
         test("Should delegate to the base router and register the endpoint", () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             const result = router.endpoint({
                 url: "/test",
@@ -81,7 +76,7 @@ describe("class: HttpRouter", () => {
     describe("method: use", () => {
         test("Should register middleware on the base router", () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             const mw = vi.fn<HttpMiddlewareFn>();
             const result = router.use(mw);
@@ -91,7 +86,7 @@ describe("class: HttpRouter", () => {
     describe("method: group", () => {
         test("Should return the router instance for chaining", () => {
             const httpRouterBase = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             const result = httpRouterBase.group(() => {});
@@ -99,7 +94,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should throw TypeError for invalid arguments", () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             expect(() =>
                 (router as { group: (arg: unknown) => unknown }).group(
@@ -111,7 +106,7 @@ describe("class: HttpRouter", () => {
     describe("fetch: basic routing", () => {
         test("Should return 404 for unmatched routes", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             const request = new Request("https://test.local/unknown");
             const response = await router.fetch(request);
@@ -119,7 +114,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should route a GET request to the correct endpoint", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             const handlerSpy = vi.fn(async ({ text }) => text("Hello World"));
             router.endpoint({
@@ -136,7 +131,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should route a POST request to the correct endpoint", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             const handlerSpy = vi.fn(async ({ text }) => text("Created"));
             router.endpoint({
@@ -154,7 +149,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should return JSON responses correctly", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/api/data",
@@ -177,7 +172,7 @@ describe("class: HttpRouter", () => {
     describe("fetch: routing patterns", () => {
         test("Should handle PUT method on the same path", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/resource",
@@ -192,7 +187,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should handle DELETE method on the same path", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/resource",
@@ -209,7 +204,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should handle all method endpoint via GET", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/all-methods",
@@ -226,7 +221,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should handle custom HTTP methods like PURGE", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/cache",
@@ -241,7 +236,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should handle wildcard path segments", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/wild/*/card",
@@ -256,7 +251,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should handle optional path parameters (present)", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/api/animal/:type?",
@@ -271,7 +266,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should handle optional path parameters (absent)", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/api/animal/:type?",
@@ -305,7 +300,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should handle path parameters with slashes using regexp", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/posts/:filename{.+\\.png}",
@@ -322,7 +317,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should handle deep wildcard with trailing path", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/static/*",
@@ -337,7 +332,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should return 404 when POST to a GET-only route", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/get-only",
@@ -353,7 +348,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should return 404 when GET to a POST-only route", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/post-only",
@@ -370,7 +365,7 @@ describe("class: HttpRouter", () => {
         test("Should execute router-level middleware before the handler", async () => {
             const executionOrder: Array<string> = [];
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
                 middlewares: async (req, next) => {
                     executionOrder.push("middleware-before");
                     const res = await next(req);
@@ -400,7 +395,7 @@ describe("class: HttpRouter", () => {
         test("Should execute endpoint-level middleware in order", async () => {
             const executionOrder: Array<string> = [];
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
 
             router.endpoint({
@@ -430,7 +425,7 @@ describe("class: HttpRouter", () => {
         test("Should allow middleware to short-circuit and skip the handler", async () => {
             const handlerSpy = vi.fn();
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
                 middlewares: async (_req, _next) => {
                     return new Response("blocked", { status: 403 });
                 },
@@ -451,7 +446,7 @@ describe("class: HttpRouter", () => {
         test("Should execute shared middleware for all endpoints in the group", async () => {
             const executionOrder: Array<string> = [];
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.use(async ({ next }) => {
                 executionOrder.push("shared-mw");
@@ -487,7 +482,7 @@ describe("class: HttpRouter", () => {
     describe("fetch: context", () => {
         test("Should provide a shared context accessible to middleware and handler", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
                 middlewares: async (req, next) => {
                     const res = await next(req);
                     res.headers.set("X-MW-Ran", "true");
@@ -513,7 +508,7 @@ describe("class: HttpRouter", () => {
     describe("fetch: error handling", () => {
         test("Should return 500 for non-HttpError thrown from handler", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/error",
@@ -530,7 +525,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should return structured JSON for HttpError thrown from handler", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/secure",
@@ -559,7 +554,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should return 500 for non-HttpError thrown from endpoint middleware", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/mw-error",
@@ -580,7 +575,7 @@ describe("class: HttpRouter", () => {
     describe("fetch: response helpers", () => {
         test("Should support redirect helper", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/old",
@@ -597,7 +592,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should support permanentRedirect helper", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/old-permanent",
@@ -614,7 +609,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should support html helper", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/page",
@@ -632,7 +627,7 @@ describe("class: HttpRouter", () => {
         });
         test("Should support notFound helper", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
             });
             router.endpoint({
                 url: "/maybe",
@@ -650,7 +645,7 @@ describe("class: HttpRouter", () => {
     describe("integration: full request lifecycle", () => {
         test("Should handle a complete request with middleware, params, query, and JSON response", async () => {
             const router = new HttpRouter({
-                router: createHonoRouter(),
+                router: defaultHttpRouterAdapter(),
                 middlewares: async (req, next) => {
                     const start = Date.now();
                     const res = await next(req);
@@ -721,7 +716,9 @@ describe("class: HttpRouter", () => {
 
         describe("property: method", () => {
             test("Should expose the request method", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/info",
                     method: ["DELETE"],
@@ -740,7 +737,9 @@ describe("class: HttpRouter", () => {
         });
         describe("property: url", () => {
             test("Should expose the full request URL", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/info",
                     method: ["GET"],
@@ -758,7 +757,9 @@ describe("class: HttpRouter", () => {
         });
         describe("property: signal", () => {
             test("Should expose the request signal", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/info",
                     method: ["GET"],
@@ -778,7 +779,9 @@ describe("class: HttpRouter", () => {
         });
         describe("property: webReq", () => {
             test("Should expose the underlying Request object", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/info",
                     method: ["GET"],
@@ -795,7 +798,9 @@ describe("class: HttpRouter", () => {
         });
         describe("property: readableStream", () => {
             test("Should expose null for a GET request with no body", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/info",
                     method: ["GET"],
@@ -810,7 +815,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ isNull: true });
             });
             test("Should expose a ReadableStream for a request with a body", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/info",
                     method: ["POST"],
@@ -833,7 +840,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: cookies", () => {
             test("Should parse cookies from the request", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/cookies",
                     method: ["GET"],
@@ -849,7 +858,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ session: "abc123" });
             });
             test("Should validate cookies against a schema", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/cookies",
                     method: ["GET"],
@@ -866,7 +877,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ session: "abc123" });
             });
             test("Should return a 400 status when cookie validation fails", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/cookies",
                     method: ["GET"],
@@ -888,7 +901,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: json", () => {
             test("Should parse the request body as JSON", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/json",
                     method: ["POST"],
@@ -906,7 +921,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ key: "value" });
             });
             test("Should validate the JSON body against a schema", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/api",
                     method: ["POST"],
@@ -931,7 +948,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: params", () => {
             test("Should extract path parameters", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/users/:id",
                     method: ["GET"],
@@ -948,7 +967,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toHaveProperty("id", "42");
             });
             test("Should handle multiple path parameters", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/orgs/:orgId/repos/:repoId",
                     method: ["GET"],
@@ -968,7 +989,9 @@ describe("class: HttpRouter", () => {
                 });
             });
             test("Should validate path parameters against a schema", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/users/:id",
                     method: ["GET"],
@@ -983,7 +1006,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ id: "42" });
             });
             test("Should return a 400 status when schema validation fails", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/users/:id",
                     method: ["GET"],
@@ -1003,7 +1028,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: searchParams", () => {
             test("Should pass query parameters to the handler", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/search",
                     method: ["GET"],
@@ -1020,7 +1047,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ q: "hello", page: "2" });
             });
             test("Should validate query parameters against a schema", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/search",
                     method: ["GET"],
@@ -1041,7 +1070,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: headers", () => {
             test("Should return all request headers", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/headers",
                     method: ["GET"],
@@ -1058,7 +1089,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ "x-custom": "myvalue" });
             });
             test("Should validate headers against a schema", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/headers",
                     method: ["GET"],
@@ -1075,7 +1108,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ "x-custom": "myvalue" });
             });
             test("Should return a 400 status when header validation fails", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/headers",
                     method: ["GET"],
@@ -1099,7 +1134,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: formData", () => {
             test("Should return form data fields", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/form",
                     method: ["POST"],
@@ -1125,7 +1162,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: fields", () => {
             test("Should validate form fields against a schema", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/fields",
                     method: ["POST"],
@@ -1147,7 +1186,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ name: "John" });
             });
             test("Should return a 400 status when field validation fails", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/fields",
                     method: ["POST"],
@@ -1176,7 +1217,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: files", () => {
             test("Should pass when the file content type matches", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1195,7 +1238,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ size: 1 });
             });
             test("Should return a 400 status when the file content type does not match", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1215,7 +1260,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toMatchObject({ status: "400" });
             });
             test("Should pass when the file size is within the limit", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1234,7 +1281,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ size: 1 });
             });
             test("Should return a 400 status when the file size exceeds the limit", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1254,7 +1303,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toMatchObject({ status: "400" });
             });
             test("Should pass when the file name matches the pattern", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1273,7 +1324,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ size: 1 });
             });
             test("Should return a 400 status when the file name does not match the pattern", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1291,7 +1344,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toMatchObject({ status: "400" });
             });
             test("Should pass when the minimum number of files is met", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1310,7 +1365,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ size: 2 });
             });
             test("Should return a 400 status when fewer files than the minimum are uploaded", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1328,7 +1385,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toMatchObject({ status: "400" });
             });
             test("Should pass when the maximum number of files is not exceeded", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1345,7 +1404,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ size: 1 });
             });
             test("Should return a 400 status when more files than the maximum are uploaded", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1365,7 +1426,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toMatchObject({ status: "400" });
             });
             test("Should allow an optional file field to be absent", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1389,7 +1452,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ count: 0 });
             });
             test("Should pass when a required file is present", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1408,7 +1473,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ size: 1 });
             });
             test("Should pass when a dynamic definition returns null", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1425,7 +1492,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ size: 1 });
             });
             test("Should return a 400 status when a dynamic definition returns a message", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1443,7 +1512,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toMatchObject({ status: "400" });
             });
             test("Should validate multiple fields with static and dynamic definitions", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1472,7 +1543,9 @@ describe("class: HttpRouter", () => {
                 expect(body).toEqual({ avatar: 1, docs: 1 });
             });
             test("Should pass through a field with an undefined definition", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/upload",
                     method: ["POST"],
@@ -1491,7 +1564,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: text", () => {
             test("Should read the request body as text", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/text",
                     method: ["POST"],
@@ -1509,7 +1584,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: bytes", () => {
             test("Should read the request body as bytes", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/bytes",
                     method: ["POST"],
@@ -1534,7 +1611,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: arrayBuffer", () => {
             test("Should read the request body as an ArrayBuffer", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/array-buffer",
                     method: ["POST"],
@@ -1558,7 +1637,9 @@ describe("class: HttpRouter", () => {
         });
         describe("method: blob", () => {
             test("Should read the request body as a Blob", async () => {
-                const router = new HttpRouter({ router: createHonoRouter() });
+                const router = new HttpRouter({
+                    router: defaultHttpRouterAdapter(),
+                });
                 router.endpoint({
                     url: "/blob",
                     method: ["POST"],

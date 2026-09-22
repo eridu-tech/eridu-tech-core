@@ -91,9 +91,11 @@ export type HttpRouterSettings = {
  * IMPORT_PATH: `"eridu-tech/http-router"`
  * @group Implementations
  */
-export const defaultHttpRouterAdapter = new SmartRouter<RouterEntry>({
-    routers: [new RegExpRouter(), new TrieRouter()],
-});
+export function defaultHttpRouterAdapter(): Router<RouterEntry> {
+    return new SmartRouter<RouterEntry>({
+        routers: [new RegExpRouter(), new TrieRouter()],
+    });
+}
 
 /**
  * The default implementation of {@link IHttpRouter} and {@link IWinterTcFetch}.
