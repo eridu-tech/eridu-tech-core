@@ -207,47 +207,37 @@ export class HttpRouter implements IHttpRouter {
         this.router = router;
         this.middlewares = middlewares;
         this.httpRouterBase = new HttpRouterBase(baseUrl, [], this.router);
-        this.fetch = use(async (req) => {
-            try {
-                const routeResult = HttpRouter.resolveRoute(this.router, req);
-                if (routeResult === null) {
-                    return httpResHelpers.notFound().buildWebRes();
-                }
-
-                const { endpointMatch, middlewareMatches, paramsStash } =
-                    routeResult;
-
-                const rawParams = HttpRouter.resolveParams(
-                    endpointMatch[1],
-                    paramsStash,
-                );
-
-                const httpRes = await HttpRouter.buildHandlerChain(
-                    req,
-                    rawParams,
-                    endpointMatch,
-                    middlewareMatches,
-                );
-
-                return httpRes.buildWebRes();
-            } catch (error: unknown) {
-                if (!(error instanceof HttpError)) {
-                    return httpResHelpers
-                        .text("Unexpected error occurred")
-                        .setStatus(500)
-                        .buildWebRes();
-                }
-
-                return httpResHelpers
-                    .json({
-                        name: error.name,
-                        status: error.status,
-                        message: error.message,
-                        payload: error.payload,
-                    })
-                    .buildWebRes();
+        const handleRequest = use(async (req) => {
+            const routeResult = HttpRouter.resolveRoute(this.router, req);
+            if (routeResult === null) {
+                return httpResHelpers.notFound().buildWebRes();
             }
+
+            const { endpointMatch, middlewareMatches, paramsStash } =
+                routeResult;
+
+            const rawParams = HttpRouter.resolveParams(
+                endpointMatch[1],
+                paramsStash,
+            );
+
+            const httpRes = await HttpRouter.buildHandlerChain(
+                req,
+                rawParams,
+                endpointMatch,
+                middlewareMatches,
+            );
+
+            return httpRes.buildWebRes();
         }, this.middlewares);
+
+        this.fetch = async (request) => {
+            try {
+                return await handleRequest(request);
+            } catch (error: unknown) {
+                return HttpRouter.errorToWebRes(error);
+            }
+        };
     }
 
     /**
@@ -289,6 +279,25 @@ export class HttpRouter implements IHttpRouter {
             const response = await winterTcHandler(args.req.webReq);
             return args.fromWebRes(response);
         };
+    }
+
+    private static errorToWebRes(error: unknown): Response {
+        if (!(error instanceof HttpError)) {
+            return httpResHelpers
+                .text("Unexpected error occurred")
+                .setStatus(500)
+                .buildWebRes();
+        }
+
+        return httpResHelpers
+            .json({
+                name: error.name,
+                status: error.status,
+                message: error.message,
+                payload: error.payload,
+            })
+            .setStatus(error.status)
+            .buildWebRes();
     }
 
     private static resolveRoute(
