@@ -2,6 +2,7 @@
  * @module HttpRouter
  */
 import { MiddlewareBuilder } from "@/http-router/implementations/middleware-builder.js";
+import { withPrefix } from "@/http-router/implementations/with-prefix.js";
 import { callInvocable, isInvocable } from "@/utilities/_module.js";
 
 import type { Router } from "hono/router";
@@ -29,14 +30,6 @@ export class HttpRouterBase implements IHttpRouterBase {
         return this;
     }
 
-    private withPrefix(subPath: string): string {
-        const segments = [this.prefix, subPath]
-            .map((segment) => segment.replace(/^\/+|\/+$/g, ""))
-            .filter((segment) => segment !== "");
-
-        return `/${segments.join("/")}`;
-    }
-
     endpoint(endpoint: IHttpEndpoint): IHttpRouterBase {
         const endpoint_ = endpoint;
         const {
@@ -58,7 +51,7 @@ export class HttpRouterBase implements IHttpRouterBase {
         const endpointMiddlewares: Array<HttpMiddleware> = [];
         callInvocable(middlewares, new MiddlewareBuilder(endpointMiddlewares));
 
-        const prefixedUrl = this.withPrefix(url);
+        const prefixedUrl = withPrefix(this.prefix, url);
 
         for (const method of methods) {
             const methodLowerCase = method.toLowerCase();
@@ -96,7 +89,7 @@ export class HttpRouterBase implements IHttpRouterBase {
             callInvocable(
                 prefixOrGroup,
                 new HttpRouterBase(
-                    this.withPrefix("/"),
+                    withPrefix(this.prefix, "/"),
                     this.middlewares,
                     this.router,
                 ),
@@ -108,7 +101,7 @@ export class HttpRouterBase implements IHttpRouterBase {
             callInvocable(
                 group,
                 new HttpRouterBase(
-                    this.withPrefix(prefixOrGroup),
+                    withPrefix(this.prefix, prefixOrGroup),
                     this.middlewares,
                     this.router,
                 ),
