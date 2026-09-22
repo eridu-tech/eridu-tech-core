@@ -12,7 +12,11 @@ import { httpResHelpers } from "@/http-router/implementations/http-res-helpers.j
 import { HttpRes } from "@/http-router/implementations/http-res.js";
 import { HttpRouterBase } from "@/http-router/implementations/http-router-base.js";
 import { use } from "@/http-router/middlewares/_module.js";
-import { callInvocable, isInvocable } from "@/utilities/_module.js";
+import {
+    callInvocable,
+    isInvocable,
+    UnexpectedError,
+} from "@/utilities/_module.js";
 
 import type { ParamIndexMap, Params, ParamStash, Router } from "hono/router";
 
@@ -299,7 +303,7 @@ export class HttpRouter implements IHttpRouter {
             return null;
         }
         if (endpointMatch[0].type === "middleware") {
-            throw new Error(
+            throw new UnexpectedError(
                 "Internal router error: unexpected middleware entry at endpoint position.",
             );
         }
