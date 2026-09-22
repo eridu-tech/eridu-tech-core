@@ -30,7 +30,11 @@ export class HttpRouterBase implements IHttpRouterBase {
     }
 
     private withPrefix(subPath: string): string {
-        return [this.prefix, subPath].join("/").replaceAll("//", "/");
+        const segments = [this.prefix, subPath]
+            .map((segment) => segment.replace(/^\/+|\/+$/g, ""))
+            .filter((segment) => segment !== "");
+
+        return `/${segments.join("/")}`;
     }
 
     endpoint(endpoint: IHttpEndpoint): IHttpRouterBase {
@@ -54,24 +58,26 @@ export class HttpRouterBase implements IHttpRouterBase {
         const endpointMiddlewares: Array<HttpMiddleware> = [];
         callInvocable(middlewares, new MiddlewareBuilder(endpointMiddlewares));
 
+        const prefixedUrl = this.withPrefix(url);
+
         for (const method of methods) {
             const methodLowerCase = method.toLowerCase();
 
             for (const middleware of this.middlewares) {
-                this.router.add(methodLowerCase, url, {
+                this.router.add(methodLowerCase, prefixedUrl, {
                     type: "middleware",
                     middleware,
                 });
             }
 
             for (const middleware of endpointMiddlewares) {
-                this.router.add(methodLowerCase, url, {
+                this.router.add(methodLowerCase, prefixedUrl, {
                     type: "middleware",
                     middleware,
                 });
             }
 
-            this.router.add(methodLowerCase, url, {
+            this.router.add(methodLowerCase, prefixedUrl, {
                 type: "endpoint",
                 endpoint: endpoint_,
             });

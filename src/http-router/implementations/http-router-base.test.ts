@@ -63,6 +63,30 @@ describe("class: HttpRouterBase", () => {
             expect(methods).toContain("patch");
         });
 
+        test("Should prepend the router prefix to the endpoint URL", () => {
+            const addSpy = vi.fn();
+            const mockRouter: Router<RouterEntry> = {
+                name: "mock",
+                add: addSpy,
+                match: vi.fn((): Result<RouterEntry> => [
+                    [],
+                    [] as Array<string>,
+                ]),
+            };
+            const base = new HttpRouterBase("/api", [], mockRouter);
+
+            base.endpoint({
+                url: "/users",
+                method: ["GET"],
+                handler: vi.fn<HttpHandlerFn>(),
+            });
+
+            const endpointCalls = addSpy.mock.calls.filter(
+                (call) => call[2].type === "endpoint",
+            );
+            expect(endpointCalls[0]?.[1]).toBe("/api/users");
+        });
+
         test("Should register only the specified HTTP method", () => {
             const addSpy = vi.fn();
             const mockRouter: Router<RouterEntry> = {
