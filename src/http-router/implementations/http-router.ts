@@ -8,7 +8,10 @@ import { TrieRouter } from "hono/router/trie-router";
 import { Context } from "@/execution-context/implementations/derivables/execution-context/context.js";
 import { HttpError } from "@/http-router/contracts/_module.js";
 import { HttpReq } from "@/http-router/implementations/http-req.js";
-import { httpResHelpers } from "@/http-router/implementations/http-res-helpers.js";
+import {
+    createHttpResHelpers,
+    httpResHelpers,
+} from "@/http-router/implementations/http-res-helpers.js";
 import { HttpRes } from "@/http-router/implementations/http-res.js";
 import { HttpRouterBase } from "@/http-router/implementations/http-router-base.js";
 import { withPrefix } from "@/http-router/implementations/with-prefix.js";
@@ -364,7 +367,7 @@ export class HttpRouter implements IHttpRouter {
             req: httpReq,
             res: httpRes,
             context,
-            ...httpResHelpers,
+            ...createHttpResHelpers(httpRes),
         };
         let chain: InvocableFn<[], Promisable<IHttpRes>> = () => {
             return callInvocable(endpoint.handler, handlerArgs);
