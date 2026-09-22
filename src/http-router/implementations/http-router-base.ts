@@ -2,17 +2,35 @@
  * @module HttpRouter
  */
 import { MiddlewareBuilder } from "@/http-router/implementations/middleware-builder.js";
-import { callInvocable, isInvocable } from "@/utilities/_module.js";
+import { withPrefix } from "@/http-router/implementations/with-prefix.js";
+import {
+    callInvocable,
+    isInvocable,
+    resolveOneOrMore,
+} from "@/utilities/_module.js";
 
 import type { Router } from "hono/router";
 
 import type {
+    HttpMethod,
     HttpMiddleware,
     HttpRouteGroup,
     IHttpEndpoint,
     IHttpRouterBase,
 } from "@/http-router/contracts/_module.js";
 import type { RouterEntry } from "@/http-router/implementations/types.js";
+
+const DEFAULT_METHODS: Array<HttpMethod> = [
+    "CONNECT",
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+    "TRACE",
+];
 
 /**
  * @internal
@@ -29,24 +47,10 @@ export class HttpRouterBase implements IHttpRouterBase {
         return this;
     }
 
-    private withPrefix(subPath: string): string {
-        return [this.prefix, subPath].join("/").replaceAll("//", "/");
-    }
-
     endpoint(endpoint: IHttpEndpoint): IHttpRouterBase {
         const endpoint_ = endpoint;
         const {
-            method: methods = [
-                "CONNECT",
-                "DELETE",
-                "GET",
-                "HEAD",
-                "OPTIONS",
-                "PATCH",
-                "POST",
-                "PUT",
-                "TRACE",
-            ],
+            method: methods = DEFAULT_METHODS,
             url,
             middlewares = (builder) => builder,
         } = endpoint_;
@@ -54,24 +58,26 @@ export class HttpRouterBase implements IHttpRouterBase {
         const endpointMiddlewares: Array<HttpMiddleware> = [];
         callInvocable(middlewares, new MiddlewareBuilder(endpointMiddlewares));
 
-        for (const method of methods) {
+        const prefixedUrl = withPrefix(this.prefix, url);
+
+        for (const method of resolveOneOrMore(methods)) {
             const methodLowerCase = method.toLowerCase();
 
             for (const middleware of this.middlewares) {
-                this.router.add(methodLowerCase, url, {
+                this.router.add(methodLowerCase, prefixedUrl, {
                     type: "middleware",
                     middleware,
                 });
             }
 
             for (const middleware of endpointMiddlewares) {
-                this.router.add(methodLowerCase, url, {
+                this.router.add(methodLowerCase, prefixedUrl, {
                     type: "middleware",
                     middleware,
                 });
             }
 
-            this.router.add(methodLowerCase, url, {
+            this.router.add(methodLowerCase, prefixedUrl, {
                 type: "endpoint",
                 endpoint: endpoint_,
             });
@@ -90,7 +96,7 @@ export class HttpRouterBase implements IHttpRouterBase {
             callInvocable(
                 prefixOrGroup,
                 new HttpRouterBase(
-                    this.withPrefix("/"),
+                    withPrefix(this.prefix, "/"),
                     this.middlewares,
                     this.router,
                 ),
@@ -102,7 +108,7 @@ export class HttpRouterBase implements IHttpRouterBase {
             callInvocable(
                 group,
                 new HttpRouterBase(
-                    this.withPrefix(prefixOrGroup),
+                    withPrefix(this.prefix, prefixOrGroup),
                     this.middlewares,
                     this.router,
                 ),

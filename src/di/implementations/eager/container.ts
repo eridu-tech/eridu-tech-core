@@ -460,7 +460,7 @@ export class Container implements IContainer {
         this.deInitHandlers.push(handler);
     }
 
-    createDynamicServiceRegister(): IDynamicServiceRegister {
+    private createDynamicServiceRegister(): IDynamicServiceRegister {
         const exists = <T>(token: DiToken<T>) => {
             return this.graphManager.hasNodeProperty(token);
         };

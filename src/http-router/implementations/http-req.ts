@@ -696,28 +696,13 @@ export class HttpReq implements IHttpReq {
             )} files, but received ${String(collection.size())}.`;
         }
 
-        if (
-            staticFileDef.min !== undefined &&
-            collection.size() < staticFileDef.min
-        ) {
-            return `Expected at least ${String(
-                staticFileDef.min,
-            )} files, but received ${String(collection.size())}.`;
-        }
-
-        return null;
-    }
-
-    private static validateFileExists(
-        staticFileDef: StaticFileDef,
-        collection: IHttpFileCollection,
-    ): string | null {
-        if (
-            staticFileDef.optional !== undefined &&
-            !staticFileDef.optional &&
-            collection.isEmpty()
-        ) {
-            return "A file is required for this field, but none was uploaded.";
+        const min =
+            staticFileDef.min ?? (staticFileDef.optional === true ? 0 : 1);
+        if (collection.size() < min) {
+            const required = `${String(min)} file${min === 1 ? "" : "s"}`;
+            return `Expected at least ${required}, but received ${String(
+                collection.size(),
+            )}.`;
         }
 
         return null;
@@ -729,7 +714,6 @@ export class HttpReq implements IHttpReq {
         return (collection) => {
             const results = [
                 HttpReq.validateFileAmount(staticFileDef, collection),
-                HttpReq.validateFileExists(staticFileDef, collection),
                 HttpReq.validateFileSize(staticFileDef, collection),
                 HttpReq.validateContentType(staticFileDef, collection),
                 HttpReq.validateName(staticFileDef, collection),
@@ -773,30 +757,37 @@ export class HttpReq implements IHttpReq {
             return fileCollections;
         }
         const resolvedSchema = this.resolveFileInputDefs(schema);
+        HttpReq.validateFileCollections(resolvedSchema, fileCollections);
         const fields = Object.keys(schema);
         return Object.fromEntries(
-            Object.entries(fileCollections)
-                .filter(([field, _collection]) => {
-                    return fields.includes(field);
-                })
-                .map<[string, IHttpFileCollection]>(([field, collection]) => {
-                    const collectionSchema = resolvedSchema[field];
-                    if (collectionSchema === undefined) {
-                        return [field, collection];
-                    }
-                    const errorMessage = callInvocable(
-                        collectionSchema,
-                        collection,
-                    );
-                    if (typeof errorMessage === "string") {
-                        throw HttpError.create({
-                            status: "400",
-                            message: errorMessage,
-                        });
-                    }
-                    return [field, collection];
-                }),
+            Object.entries(fileCollections).filter(([field]) => {
+                return fields.includes(field);
+            }),
         );
+    }
+
+    private static validateFileCollections(
+        resolvedSchema: Partial<Record<string, DynamicFileDef>>,
+        fileCollections: Record<string, IHttpFileCollection>,
+    ): void {
+        for (const [field, collectionSchema] of Object.entries(
+            resolvedSchema,
+        )) {
+            if (collectionSchema === undefined) {
+                continue;
+            }
+
+            const collection =
+                fileCollections[field] ?? new HttpFileCollection(field, []);
+
+            const errorMessage = callInvocable(collectionSchema, collection);
+            if (typeof errorMessage === "string") {
+                throw HttpError.create({
+                    status: "400",
+                    message: errorMessage,
+                });
+            }
+        }
     }
 
     static convertValidationErrorSync<TReturn>(

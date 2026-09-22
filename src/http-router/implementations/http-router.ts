@@ -8,11 +8,19 @@ import { TrieRouter } from "hono/router/trie-router";
 import { Context } from "@/execution-context/implementations/derivables/execution-context/context.js";
 import { HttpError } from "@/http-router/contracts/_module.js";
 import { HttpReq } from "@/http-router/implementations/http-req.js";
-import { httpResHelpers } from "@/http-router/implementations/http-res-helpers.js";
+import {
+    createHttpResHelpers,
+    httpResHelpers,
+} from "@/http-router/implementations/http-res-helpers.js";
 import { HttpRes } from "@/http-router/implementations/http-res.js";
 import { HttpRouterBase } from "@/http-router/implementations/http-router-base.js";
+import { withPrefix } from "@/http-router/implementations/with-prefix.js";
 import { use } from "@/http-router/middlewares/_module.js";
-import { callInvocable, isInvocable } from "@/utilities/_module.js";
+import {
+    callInvocable,
+    isInvocable,
+    UnexpectedError,
+} from "@/utilities/_module.js";
 
 import type { ParamIndexMap, Params, ParamStash, Router } from "hono/router";
 
@@ -72,6 +80,36 @@ export type HttpRouterSettings = {
      * such as logging, CORS, authentication, or request timing.
      */
     middlewares?: OneOrMore<WinterTcMiddleware>;
+
+    /**
+     * A path prefix that is prepended to every route registered on this
+     * router, including routes registered through
+     * {@link IHttpRouterBase.group} and {@link IHttpRouterBase.endpoint}.
+     *
+     * Use it to mount the router under a sub-path without repeating the
+     * prefix on every endpoint.
+     *
+     * @default
+     * ```ts
+     * "/"
+     * ```
+     *
+     * @example
+     * ```ts
+     * const router = new HttpRouter({
+     *   router: defaultHttpRouterAdapter(),
+     *   baseUrl: "/api",
+     * });
+     *
+     * router.endpoint({
+     *   url: "/users",
+     *   method: ["GET"],
+     *   handler: async ({ json }) => json({ users: [] }),
+     * });
+     * // This endpoint now responds to GET /api/users
+     * ```
+     */
+    baseUrl?: string;
 };
 
 /**
@@ -91,9 +129,11 @@ export type HttpRouterSettings = {
  * IMPORT_PATH: `"eridu-tech/http-router"`
  * @group Implementations
  */
-export const defaultHttpRouterAdapter = new SmartRouter<RouterEntry>({
-    routers: [new RegExpRouter(), new TrieRouter()],
-});
+export function defaultHttpRouterAdapter(): Router<RouterEntry> {
+    return new SmartRouter<RouterEntry>({
+        routers: [new RegExpRouter(), new TrieRouter()],
+    });
+}
 
 /**
  * The default implementation of {@link IHttpRouter} and {@link IWinterTcFetch}.
@@ -162,52 +202,42 @@ export class HttpRouter implements IHttpRouter {
      * @param settings - Configuration options for the router.
      */
     constructor(settings: HttpRouterSettings) {
-        const { router, middlewares = [] } = settings;
+        const { router, middlewares = [], baseUrl = "/" } = settings;
 
         this.router = router;
         this.middlewares = middlewares;
-        this.httpRouterBase = new HttpRouterBase("/", [], this.router);
-        this.fetch = use(async (req) => {
-            try {
-                const routeResult = HttpRouter.resolveRoute(this.router, req);
-                if (routeResult === null) {
-                    return httpResHelpers.notFound().buildWebRes();
-                }
-
-                const { endpointMatch, middlewareMatches, paramsStash } =
-                    routeResult;
-
-                const rawParams = HttpRouter.resolveParams(
-                    endpointMatch[1],
-                    paramsStash,
-                );
-
-                const httpRes = await HttpRouter.buildHandlerChain(
-                    req,
-                    rawParams,
-                    endpointMatch,
-                    middlewareMatches,
-                );
-
-                return httpRes.buildWebRes();
-            } catch (error: unknown) {
-                if (!(error instanceof HttpError)) {
-                    return httpResHelpers
-                        .text("Unexpected error occurred")
-                        .setStatus(500)
-                        .buildWebRes();
-                }
-
-                return httpResHelpers
-                    .json({
-                        name: error.name,
-                        status: error.status,
-                        message: error.message,
-                        payload: error.payload,
-                    })
-                    .buildWebRes();
+        this.httpRouterBase = new HttpRouterBase(baseUrl, [], this.router);
+        const handleRequest = use(async (req) => {
+            const routeResult = HttpRouter.resolveRoute(this.router, req);
+            if (routeResult === null) {
+                return httpResHelpers.notFound().buildWebRes();
             }
+
+            const { endpointMatch, middlewareMatches, paramsStash } =
+                routeResult;
+
+            const rawParams = HttpRouter.resolveParams(
+                endpointMatch[1],
+                paramsStash,
+            );
+
+            const httpRes = await HttpRouter.buildHandlerChain(
+                req,
+                rawParams,
+                endpointMatch,
+                middlewareMatches,
+            );
+
+            return httpRes.buildWebRes();
         }, this.middlewares);
+
+        this.fetch = async (request) => {
+            try {
+                return await handleRequest(request);
+            } catch (error: unknown) {
+                return HttpRouter.errorToWebRes(error);
+            }
+        };
     }
 
     /**
@@ -251,12 +281,34 @@ export class HttpRouter implements IHttpRouter {
         };
     }
 
+    private static errorToWebRes(error: unknown): Response {
+        if (!(error instanceof HttpError)) {
+            return httpResHelpers
+                .text("Unexpected error occurred")
+                .setStatus(500)
+                .buildWebRes();
+        }
+
+        return httpResHelpers
+            .json({
+                name: error.name,
+                status: error.status,
+                message: error.message,
+                payload: error.payload,
+            })
+            .setStatus(error.status)
+            .buildWebRes();
+    }
+
     private static resolveRoute(
         router: Router<RouterEntry>,
         request: Request,
     ): ResolveRouteReturn | null {
         const url = new URL(request.url);
-        const result = router.match(request.method.toLowerCase(), url.pathname);
+        // Joining the path name with an empty sub-path canonicalizes it, so a
+        // request to "/users/" resolves to the same route as "/users".
+        const routePath = withPrefix(url.pathname, "");
+        const result = router.match(request.method.toLowerCase(), routePath);
         const [matches, paramsStash] = result;
 
         const index = matches.findIndex(
@@ -267,7 +319,7 @@ export class HttpRouter implements IHttpRouter {
             return null;
         }
         if (endpointMatch[0].type === "middleware") {
-            throw new Error(
+            throw new UnexpectedError(
                 "Internal router error: unexpected middleware entry at endpoint position.",
             );
         }
@@ -324,7 +376,7 @@ export class HttpRouter implements IHttpRouter {
             req: httpReq,
             res: httpRes,
             context,
-            ...httpResHelpers,
+            ...createHttpResHelpers(httpRes),
         };
         let chain: InvocableFn<[], Promisable<IHttpRes>> = () => {
             return callInvocable(endpoint.handler, handlerArgs);
