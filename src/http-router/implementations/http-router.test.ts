@@ -59,6 +59,13 @@ describe("class: HttpRouter", () => {
             // Verify the router was created without errors
             expect(router.fetch).toBeDefined();
         });
+        test("Should accept a baseUrl in settings", () => {
+            const router = new HttpRouter({
+                router: defaultHttpRouterAdapter(),
+                baseUrl: "/api",
+            });
+            expect(router.fetch).toBeDefined();
+        });
     });
     describe("method: endpoint", () => {
         test("Should delegate to the base router and register the endpoint", () => {
@@ -101,6 +108,26 @@ describe("class: HttpRouter", () => {
                     undefined,
                 ),
             ).toThrow(TypeError);
+        });
+        test("Should serve grouped endpoints under the given prefix", async () => {
+            const router = new HttpRouter({
+                router: defaultHttpRouterAdapter(),
+            });
+            const handlerSpy = vi.fn(async ({ text }) => text("Grouped"));
+            router.group("/api", (group) => {
+                group.endpoint({
+                    url: "/users",
+                    method: ["GET"],
+                    handler: handlerSpy,
+                });
+            });
+
+            const response = await router.fetch(
+                new Request("https://test.local/api/users"),
+            );
+            expect(handlerSpy).toHaveBeenCalledTimes(1);
+            expect(response.status).toBe(200);
+            expect(await response.text()).toBe("Grouped");
         });
     });
     describe("fetch: basic routing", () => {
@@ -146,6 +173,30 @@ describe("class: HttpRouter", () => {
             const response = await router.fetch(request);
             expect(handlerSpy).toHaveBeenCalledTimes(1);
             expect(response.status).toBe(200);
+        });
+        test("Should serve routes under the configured baseUrl", async () => {
+            const router = new HttpRouter({
+                router: defaultHttpRouterAdapter(),
+                baseUrl: "/api",
+            });
+            const handlerSpy = vi.fn(async ({ text }) => text("Prefixed"));
+            router.endpoint({
+                url: "/hello",
+                method: ["GET"],
+                handler: handlerSpy,
+            });
+
+            const prefixedResponse = await router.fetch(
+                new Request("https://test.local/api/hello"),
+            );
+            expect(handlerSpy).toHaveBeenCalledTimes(1);
+            expect(prefixedResponse.status).toBe(200);
+            expect(await prefixedResponse.text()).toBe("Prefixed");
+
+            const unprefixedResponse = await router.fetch(
+                new Request("https://test.local/hello"),
+            );
+            expect(unprefixedResponse.status).toBe(404);
         });
         test("Should return JSON responses correctly", async () => {
             const router = new HttpRouter({

@@ -72,6 +72,36 @@ export type HttpRouterSettings = {
      * such as logging, CORS, authentication, or request timing.
      */
     middlewares?: OneOrMore<WinterTcMiddleware>;
+
+    /**
+     * A path prefix that is prepended to every route registered on this
+     * router, including routes registered through
+     * {@link IHttpRouterBase.group} and {@link IHttpRouterBase.endpoint}.
+     *
+     * Use it to mount the router under a sub-path without repeating the
+     * prefix on every endpoint.
+     *
+     * @default
+     * ```ts
+     * "/"
+     * ```
+     *
+     * @example
+     * ```ts
+     * const router = new HttpRouter({
+     *   router: defaultHttpRouterAdapter(),
+     *   baseUrl: "/api",
+     * });
+     *
+     * router.endpoint({
+     *   url: "/users",
+     *   method: ["GET"],
+     *   handler: async ({ json }) => json({ users: [] }),
+     * });
+     * // This endpoint now responds to GET /api/users
+     * ```
+     */
+    baseUrl?: string;
 };
 
 /**
@@ -164,11 +194,11 @@ export class HttpRouter implements IHttpRouter {
      * @param settings - Configuration options for the router.
      */
     constructor(settings: HttpRouterSettings) {
-        const { router, middlewares = [] } = settings;
+        const { router, middlewares = [], baseUrl = "/" } = settings;
 
         this.router = router;
         this.middlewares = middlewares;
-        this.httpRouterBase = new HttpRouterBase("/", [], this.router);
+        this.httpRouterBase = new HttpRouterBase(baseUrl, [], this.router);
         this.fetch = use(async (req) => {
             try {
                 const routeResult = HttpRouter.resolveRoute(this.router, req);
