@@ -1,5 +1,64 @@
 # @daiso-tech/core
 
+## 0.65.0
+
+### Minor Changes
+
+- 93ae788: Added an optional `baseUrl` setting to `HttpRouter`.
+
+    - `baseUrl` is a path prefix prepended to every route registered on the router, so the router can be mounted under a sub-path without repeating the prefix on each endpoint. For example, with `baseUrl: "/api"` an endpoint registered at `/users` responds to `GET /api/users`.
+    - `baseUrl` defaults to `"/"`, which preserves the previous routing behavior.
+    - Fixed `HttpRouterBase.endpoint()` so it prepends the router prefix to endpoint URLs. Routes registered inside `group(prefix, ...)` are now served under that prefix, as documented, instead of being registered at their raw path.
+
+- 05188a3: Turned `defaultHttpRouterAdapter` into a factory that returns a new adapter on every call.
+
+    - `defaultHttpRouterAdapter()` returns a fresh `SmartRouter` instance, so `HttpRouter` instances no longer share one route matcher. Hono's `SmartRouter` builds and freezes its matcher on the first matched request, so a shared adapter both rejected route registrations made after that request and let one router serve another router's routes.
+
+        ### Breaking changes
+        - `defaultHttpRouterAdapter` is a function now, so it has to be called when it is passed to `HttpRouterSettings.router`.
+
+        ### Migration
+
+        **Before:**
+
+        ```ts
+        import {
+            HttpRouter,
+            defaultHttpRouterAdapter,
+        } from "eridu-tech/http-router";
+
+        const router = new HttpRouter({ router: defaultHttpRouterAdapter });
+        ```
+
+        **After:**
+
+        ```ts
+        import {
+            HttpRouter,
+            defaultHttpRouterAdapter,
+        } from "eridu-tech/http-router";
+
+        const router = new HttpRouter({ router: defaultHttpRouterAdapter() });
+        ```
+
+### Patch Changes
+
+- 10e7e7b: Fixed the route paths of `HttpRouter` so an endpoint is reachable at the path it was registered with, whatever slashes are used.
+
+    - A registered path never contains `//` anymore. Previously the prefix and the endpoint URL were joined and the doubled slashes collapsed afterwards, so the default prefix `/` plus `/users` registered `//users` and every request to `/users` answered `404`.
+    - Slashes were collapsed one pair at a time, so a prefix written as `baseUrl: "/api/"` or `group("/api/", ...)` left every endpoint under it unreachable.
+    - Leading, trailing and repeated slashes now resolve to one prefix: `"api"`, `"/api"`, `"/api/"` and `"//api//"` are the same, and a slashes-only prefix is the root path `/`.
+    - The request path is normalized the same way before matching, so `GET /users` and `GET /users/` both reach the endpoint registered at `/users`.
+
+- 89f5cd3: Made `Container.createDynamicServiceRegister` private.
+
+    - The method is only used internally by `Container` and is not part of the `IContainer` contract, so this only removes it from the accidental public surface of the class.
+
+- 89f5cd3: Tightened the `WinterTcRequestHandler` return type from `Promisable<Response>` to `Promise<Response>`.
+
+    - Implementations must now return a promise, so a handler that returned a `Response` synchronously has to be declared `async` or return `Promise.resolve(response)`.
+    - Removed the now unused `Promisable` import from the contract file.
+
 ## 0.64.2
 
 ### Patch Changes
