@@ -84,6 +84,25 @@ You can set custom slow call threshold that will be used when treating slow call
 
 ```
 
+### Tracking circuit-breaker metrics in the background
+
+By default tracking is awaited, so `runOrFail` only resolves after the metric is recorded.
+Set `enableAsyncTracking` to `true` to record metrics in the background instead, without blocking the wrapped function.
+
+```ts file=./samples/circuit-breaker-enable-async-tracking.ts
+
+```
+
+:::info
+The trade-off: the circuit-breaker may open slightly later, since a failure may not be recorded before the next call.
+Keep it disabled when you need deterministic state transitions, for example in tests.
+:::
+
+:::warning
+On serverless platforms (Cloudflare Workers, Vercel Functions) background promises are cancelled after the response.
+Pass the platform's `waitUntil` to `CircuitBreakerFactory` to keep them alive.
+:::
+
 ### Reseting the circuit-breaker
 
 You can reset circuit-breaker state to the closed state manually.
