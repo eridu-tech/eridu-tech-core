@@ -35,7 +35,6 @@ npm install eridu-tech hono
 │       └── [[...route]]
 │           └── route.ts
 ├── package.json
-└── next.config.js
 ```
 
 ### 3. Develop

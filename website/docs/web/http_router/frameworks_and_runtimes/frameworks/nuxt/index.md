@@ -34,7 +34,6 @@ npm install eridu-tech hono
 │   └── api
 │       └── [...].ts
 ├── package.json
-└── nuxt.config.ts
 ```
 
 ### 3. Develop

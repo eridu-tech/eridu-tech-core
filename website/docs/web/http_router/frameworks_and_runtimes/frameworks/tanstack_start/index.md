@@ -32,10 +32,8 @@ npm install eridu-tech hono
 .
 ├── app
 │   └── routes
-│       └── api
-│           └── $.ts
+│       └── api.$.ts
 ├── package.json
-└── app.config.ts
 ```
 
 ### 3. Develop

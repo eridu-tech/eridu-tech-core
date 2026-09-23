@@ -36,7 +36,6 @@ npm install eridu-tech hono
 │           └── [...route]
 │               └── +server.ts
 ├── package.json
-└── svelte.config.js
 ```
 
 ### 3. Develop

@@ -36,7 +36,6 @@ npm install eridu-tech hono
 │           └── api
 │               └── [...].ts
 ├── package.json
-└── vite.config.ts
 ```
 
 ### 3. Develop
