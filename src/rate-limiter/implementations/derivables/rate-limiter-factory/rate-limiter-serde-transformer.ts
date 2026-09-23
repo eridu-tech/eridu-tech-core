@@ -18,7 +18,6 @@ export type RateLimiterSerdeTransformerSettings = {
     errorPolicy: ErrorPolicy;
     onlyError: boolean;
     serdeTransformerName: string;
-    enableAsyncTracking: boolean;
     waitUntil: WaitUntil;
 };
 
@@ -32,7 +31,6 @@ export class RateLimiterSerdeTransformer implements ISerdeTransformer<
     private readonly adapter: IRateLimiterAdapter;
     private readonly errorPolicy: ErrorPolicy;
     private readonly serdeTransformerName: string;
-    private readonly enableAsyncTracking: boolean;
     private readonly onlyError: boolean;
     private readonly waitUntil: WaitUntil;
 
@@ -40,7 +38,6 @@ export class RateLimiterSerdeTransformer implements ISerdeTransformer<
         const {
             adapter,
             serdeTransformerName,
-            enableAsyncTracking,
             errorPolicy,
             onlyError,
             waitUntil,
@@ -48,7 +45,6 @@ export class RateLimiterSerdeTransformer implements ISerdeTransformer<
 
         this.waitUntil = waitUntil;
         this.onlyError = onlyError;
-        this.enableAsyncTracking = enableAsyncTracking;
         this.serdeTransformerName = serdeTransformerName;
         this.adapter = adapter;
         this.errorPolicy = errorPolicy;
@@ -87,7 +83,6 @@ export class RateLimiterSerdeTransformer implements ISerdeTransformer<
 
         return new RateLimiter({
             waitUntil: this.waitUntil,
-            enableAsyncTracking: this.enableAsyncTracking,
             adapter: this.adapter,
             key,
             limit,
