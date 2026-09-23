@@ -23,6 +23,17 @@
  *
  * The `name=` token is stripped from the meta, since it only tells this plugin
  * what to display.
+ *
+ * A `hide-suppressions` token drops the lines that only suppress a type or lint
+ * error, so a sample that demonstrates those errors keeps the suppressions out
+ * of the reader's way:
+ *
+ * ````md
+ * ```ts file=./samples/type-safety.ts hide-suppressions
+ * ```
+ * ````
+ *
+ * It is stripped from the meta too.
  */
 import type { Code, Parent, Root, RootContent } from "mdast";
 
@@ -34,6 +45,17 @@ const fileMetaRegex = /^file=(?<path>.+?)(?:#.*)?$/;
 
 /** A `name=<path>` token whose value replaces the displayed title. */
 const nameMetaRegex = /^name=(?<name>.+)$/;
+
+/** A token that drops the type and lint suppression lines from the sample. */
+const hideSuppressionsMeta = "hide-suppressions";
+
+/**
+ * A line whose only content is a suppression comment: `// @ts-ignore`,
+ * `// @ts-expect-error`, `// @ts-nocheck`, or an ESLint disable for
+ * `@typescript-eslint/ban-ts-comment` in the line or the block form.
+ */
+const suppressionLineRegex =
+    /^(?:\/\/\s*@ts-(?:ignore|expect-error|nocheck)|\/\/\s*eslint-disable-next-line\s+@typescript-eslint\/ban-ts-comment|\/\*\s*eslint-disable(?:-next-line)?\s+@typescript-eslint\/ban-ts-comment\s*\*\/)(?:\s+--.*)?$/;
 
 /**
  * Splits fence meta on the spaces that sit outside quotes and are not escaped,
@@ -95,6 +117,14 @@ function readFilePath(tokens: Array<string>): string | undefined {
     return path === undefined ? undefined : displayPath(path);
 }
 
+/** Drops the lines that only suppress a type or lint error. */
+function hideSuppressionLines(value: string): string {
+    return value
+        .split(/\r?\n/)
+        .filter((line) => !suppressionLineRegex.test(line.trim()))
+        .join("\n");
+}
+
 function forEachCode(node: RootContent, callback: (code: Code) => void): void {
     if (node.type === "code") {
         callback(node);
@@ -114,17 +144,25 @@ export default function remarkCodeFileTitle() {
             forEachCode(node, (code) => {
                 const meta = code.meta ?? "";
                 const tokens = splitMeta(meta);
+                const pluginTokens = tokens.filter(
+                    (token) =>
+                        token.startsWith("name=") ||
+                        token === hideSuppressionsMeta,
+                );
 
-                // The `name=` token only tells this plugin what to display, so
-                // it never reaches the rest of the meta.
-                const restMeta = tokens.some((token) =>
-                    token.startsWith("name="),
-                )
-                    ? tokens
-                          .filter((token) => !token.startsWith("name="))
-                          .join(" ")
-                    : meta;
+                // The tokens that drive this plugin never reach the rest of
+                // the meta.
+                const restMeta =
+                    pluginTokens.length === 0
+                        ? meta
+                        : tokens
+                              .filter((token) => !pluginTokens.includes(token))
+                              .join(" ");
                 code.meta = restMeta;
+
+                if (tokens.includes(hideSuppressionsMeta)) {
+                    code.value = hideSuppressionLines(code.value);
+                }
 
                 // Never override a title the author set explicitly.
                 if (explicitTitleRegex.test(code.meta)) {
