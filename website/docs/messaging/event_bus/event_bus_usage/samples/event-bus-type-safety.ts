@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-adapter";
 import { EventBus } from "eridu-tech/event-bus";
 
@@ -17,6 +15,8 @@ const eventBus = new EventBus<EventMap>({
 });
 
 // A typescript error will show up because the event name doesnt exist.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 await eventBus.dispatch("addd", {
     a: 2,
     b: 2,
@@ -24,11 +24,15 @@ await eventBus.dispatch("addd", {
 
 // A typescript error will show up because the event fields doesnt match
 await eventBus.dispatch("add", {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     nbr1: 1,
     nbr2: 2,
 });
 
 // A typescript error will show up because the event name doesnt exist.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 await eventBus.addListener("addd", (event) => {
     console.log(event);
 });
