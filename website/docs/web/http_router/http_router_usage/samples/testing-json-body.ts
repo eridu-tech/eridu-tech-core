@@ -7,7 +7,9 @@ import { describe, expect, test } from "vitest";
 
 describe("JSON body", () => {
     test("should send JSON data", async () => {
-        const router = new HttpRouter({ router: defaultHttpRouterAdapter });
+        const router = new HttpRouter({
+            router: defaultHttpRouterAdapter(),
+        });
 
         router.endpoint({
             url: "/users/:id",

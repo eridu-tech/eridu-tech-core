@@ -4,7 +4,7 @@ import { describe, expect, test } from "vitest";
 describe("My router", () => {
     test("should respond to GET /hello", async () => {
         const router = new HttpRouter({
-            router: defaultHttpRouterAdapter,
+            router: defaultHttpRouterAdapter(),
         });
 
         router.endpoint({
