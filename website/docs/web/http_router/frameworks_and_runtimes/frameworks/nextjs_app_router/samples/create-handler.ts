@@ -1,4 +1,3 @@
-// app/api/[[...route]]/route.ts
 import { HttpRouter, defaultHttpRouterAdapter } from "eridu-tech/http-router";
 
 const router = new HttpRouter({

@@ -1,4 +1,6 @@
-// app/routes/api.$.ts
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
+
 import { HttpRouter, defaultHttpRouterAdapter } from "eridu-tech/http-router";
 import { createFileRoute } from "@tanstack/react-router";
 

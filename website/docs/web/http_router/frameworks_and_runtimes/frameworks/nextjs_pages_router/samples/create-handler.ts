@@ -1,4 +1,3 @@
-// pages/api/[[...route]].ts
 import { HttpRouter, defaultHttpRouterAdapter } from "eridu-tech/http-router";
 import { getRequestListener } from "@hono/node-server";
 

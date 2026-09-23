@@ -22,7 +22,7 @@ npm install eridu-tech hono @hono/node-server
 
 ### 2. Create the handler
 
-```ts file=./samples/create-handler.ts
+```ts file=./samples/create-handler.ts name=pages/api/[[...route]].ts
 
 ```
 

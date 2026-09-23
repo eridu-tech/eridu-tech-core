@@ -1,4 +1,3 @@
-// src/routes/api/[...route].ts
 import { HttpRouter, defaultHttpRouterAdapter } from "eridu-tech/http-router";
 import type { APIEvent } from "@solidjs/start/server";
 

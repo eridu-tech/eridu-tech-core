@@ -12,7 +12,7 @@ keywords:
 
 # Analog.js
 
-Analog.js API routes are powered by [Nitro](https://nitro.unjs.io/) and [h3](https://h3.unjs.io/). Use [`toWebRequest`](https://v1.h3.dev/utils/request#towebrequest-event) from `h3` to convert the incoming event to a standard `Request`.
+Analog.js API routes are powered by [h3](https://h3.unjs.io/). Use [`fromWebHandler`](https://v1.h3.dev/guide/event-handler#converting-from-web-handlers) from `h3` to convert winter-tc request handler into h3 request handler.
 
 ### 1. Install
 
@@ -22,7 +22,7 @@ npm install eridu-tech hono
 
 ### 2. Create the handler
 
-```ts file=./samples/create-handler.ts
+```ts file=./samples/create-handler.ts name=src/server/routes/api/[...].ts
 
 ```
 
