@@ -22,7 +22,7 @@ npm install eridu-tech hono
 
 ### 2. Create the handler
 
-```ts file=./samples/create-handler.ts name=app/routes/api.$.ts
+```ts file=./samples/create-handler.ts name=app/routes/api.$.ts hide-suppressions
 
 ```
 

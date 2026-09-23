@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
 import { HttpRouter, defaultHttpRouterAdapter } from "eridu-tech/http-router";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -31,7 +28,11 @@ router.endpoint({
 const handler = async ({ request }: { request: Request }) => {
     return router.fetch(request);
 };
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export const Route = createFileRoute("/api/$")({
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     server: {
         handlers: {
             GET: handler,
