@@ -7,7 +7,9 @@ import { describe, expect, test } from "vitest";
 
 describe("Custom body", () => {
     test("should send raw data", async () => {
-        const router = new HttpRouter({ router: defaultHttpRouterAdapter });
+        const router = new HttpRouter({
+            router: defaultHttpRouterAdapter(),
+        });
 
         router.endpoint({
             url: "/raw",

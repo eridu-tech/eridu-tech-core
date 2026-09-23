@@ -55,7 +55,7 @@ To properly remove a listener, you must use a named function:
 
 An event map can be used to strictly type the events:
 
-```ts file=./samples/event-bus-type-safety.ts
+```ts file=./samples/event-bus-type-safety.ts hide-suppressions
 
 ```
 
@@ -70,7 +70,7 @@ When a schema map is provided, event data is validated:
 
 If no schema is defined for a particular event name, that event is passed through without validation. If validation fails, a `ValidationError` is thrown.
 
-```ts file=./samples/event-bus-runtime-validation.ts
+```ts file=./samples/event-bus-runtime-validation.ts hide-suppressions
 
 ```
 

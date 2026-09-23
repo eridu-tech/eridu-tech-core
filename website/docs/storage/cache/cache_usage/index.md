@@ -116,7 +116,7 @@ You can clear all the keys of the given namespace:
 
 You can enforce compile time type safety by setting the cache value type:
 
-```ts file=./samples/compile-time-type-safety.ts
+```ts file=./samples/compile-time-type-safety.ts hide-suppressions
 
 ```
 
@@ -143,7 +143,7 @@ When a schema is provided, values are validated:
 
 If validation fails, a `ValidationError` is thrown.
 
-```ts file=./samples/cache-runtime-validation.ts
+```ts file=./samples/cache-runtime-validation.ts hide-suppressions
 
 ```
 

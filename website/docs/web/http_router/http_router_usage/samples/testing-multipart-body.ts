@@ -7,7 +7,9 @@ import { describe, expect, test } from "vitest";
 
 describe("Multipart body", () => {
     test("should send multipart form with file uploads", async () => {
-        const router = new HttpRouter({ router: defaultHttpRouterAdapter });
+        const router = new HttpRouter({
+            router: defaultHttpRouterAdapter(),
+        });
 
         router.endpoint({
             url: "/upload",

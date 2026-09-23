@@ -7,7 +7,9 @@ import { describe, expect, test } from "vitest";
 
 describe("URL-encoded body", () => {
     test("should send form data", async () => {
-        const router = new HttpRouter({ router: defaultHttpRouterAdapter });
+        const router = new HttpRouter({
+            router: defaultHttpRouterAdapter(),
+        });
 
         router.endpoint({
             url: "/submit",

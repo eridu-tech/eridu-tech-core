@@ -23,5 +23,7 @@ await cache.add("user1", {
 await cache.add("user2", {
     name: "Jane",
     email: "not-an-email",
-    age: 25,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    age: "25",
 });

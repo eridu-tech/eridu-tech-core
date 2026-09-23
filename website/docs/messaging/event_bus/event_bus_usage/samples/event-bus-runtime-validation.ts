@@ -9,7 +9,7 @@ type UserCreatedEvent = {
 // The value type stays permissive so schema validation is what enforces the
 // full shape at runtime (compile-time safety is shown in event_bus_type_safety).
 type EventMap = {
-    "user.created": Partial<UserCreatedEvent>;
+    "user.created": UserCreatedEvent;
 };
 
 const eventBus = new EventBus<EventMap>({
@@ -28,6 +28,8 @@ await eventBus.dispatch("user.created", {
 });
 
 // Throws a ValidationError because userId is missing
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 await eventBus.dispatch("user.created", {
     name: "Jane",
 });
