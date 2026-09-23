@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
 import { Cache } from "eridu-tech/cache";
 
@@ -14,4 +12,6 @@ const cache = new Cache<IUser>({
 });
 
 // A typescript error will occur because the type is not matching.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 await cache.add("a", "asd");
