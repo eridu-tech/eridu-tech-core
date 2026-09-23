@@ -68,7 +68,7 @@ export type CircuitBreakerFactorySettingsBase = {
 
     /**
      * If true, metric tracking will run asynchronously in the background and won't block the function utilizing the circuit breaker logic.
-     * @default true
+     * @default false
      */
     enableAsyncTracking?: boolean;
 
@@ -169,7 +169,7 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
      */
     constructor(settings: CircuitBreakerFactorySettings) {
         const {
-            enableAsyncTracking = true,
+            enableAsyncTracking = false,
             adapter,
             defaultSlowCallTime = TimeSpan.fromSeconds(10),
             defaultTrigger = CIRCUIT_BREAKER_TRIGGER.BOTH,

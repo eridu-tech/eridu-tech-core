@@ -48,7 +48,6 @@ describe("class: RateLimiterFactory", () => {
         vi.resetAllMocks();
         rateLimiterFactory = new RateLimiterFactory({
             adapter,
-            enableAsyncTracking: false,
         });
     });
 

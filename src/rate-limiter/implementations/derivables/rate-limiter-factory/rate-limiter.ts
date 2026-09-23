@@ -9,7 +9,6 @@ import {
 import { TimeSpan } from "@/time-span/implementations/time-span.js";
 import {
     callErrorPolicyOnThrow,
-    callInvocable,
     resolveAsyncLazyable,
 } from "@/utilities/_module.js";
 
@@ -28,7 +27,6 @@ import type { AsyncLazy, ErrorPolicy, WaitUntil } from "@/utilities/_module.js";
  */
 export type RateLimiterSettings = {
     limit: number;
-    enableAsyncTracking: boolean;
     adapter: IRateLimiterAdapter;
     key: string;
     errorPolicy: ErrorPolicy;
@@ -69,13 +67,11 @@ export class RateLimiter implements IRateLimiter {
     private readonly errorPolicy: ErrorPolicy;
     private readonly onlyError: boolean;
     private readonly adapter: IRateLimiterAdapter;
-    private readonly enableAsyncTracking: boolean;
     private readonly serdeTransformerName: string;
 
     constructor(settings: RateLimiterSettings) {
         const {
             limit,
-            enableAsyncTracking,
             key,
             errorPolicy,
             onlyError,
@@ -87,7 +83,6 @@ export class RateLimiter implements IRateLimiter {
         this.waitUntil = waitUntil;
         this.serdeTransformerName = serdeTransformerName;
         this._limit = limit;
-        this.enableAsyncTracking = enableAsyncTracking;
         this.internalKey = key;
         this.errorPolicy = errorPolicy;
         this.onlyError = onlyError;
@@ -174,11 +169,7 @@ export class RateLimiter implements IRateLimiter {
                         this.limit,
                     );
                 };
-                if (this.enableAsyncTracking) {
-                    callInvocable(this.waitUntil, fn());
-                } else {
-                    await fn();
-                }
+                await fn();
             }
 
             throw error;

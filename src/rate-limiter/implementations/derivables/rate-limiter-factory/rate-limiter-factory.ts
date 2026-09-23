@@ -45,13 +45,6 @@ export type RateLimiterFactorySettingsBase = {
     onlyError?: boolean;
 
     /**
-     * If true, metric tracking will run asynchronously in the background and won't block the function utilizing the circuit breaker logic.
-     * This will only have effect if `onlyError` settings is true.
-     * @default true
-     */
-    enableAsyncTracking?: boolean;
-
-    /**
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link RateLimiterFactory | `RateLimiterFactory`} to register the rate limiter's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
@@ -104,7 +97,6 @@ export class RateLimiterFactory implements IRateLimiterFactory {
     private readonly adapter: IRateLimiterAdapter;
     private readonly onlyError: boolean;
     private readonly defaultErrorPolicy: ErrorPolicy;
-    private readonly enableAsyncTracking: boolean;
     private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serdeTransformerName: string;
     private readonly waitUntil: WaitUntil;
@@ -142,7 +134,6 @@ export class RateLimiterFactory implements IRateLimiterFactory {
      */
     constructor(settings: RateLimiterFactorySettings) {
         const {
-            enableAsyncTracking = true,
             adapter,
             onlyError = false,
             defaultErrorPolicy = () => true,
@@ -153,7 +144,6 @@ export class RateLimiterFactory implements IRateLimiterFactory {
 
         this.waitUntil = waitUntil;
         this.serdeTransformerName = serdeTransformerName;
-        this.enableAsyncTracking = enableAsyncTracking;
         this.adapter = adapter;
         this.onlyError = onlyError;
         this.defaultErrorPolicy = defaultErrorPolicy;
@@ -164,7 +154,6 @@ export class RateLimiterFactory implements IRateLimiterFactory {
     private registerToSerde(): void {
         const transformer = new RateLimiterSerdeTransformer({
             waitUntil: this.waitUntil,
-            enableAsyncTracking: this.enableAsyncTracking,
             adapter: this.adapter,
             onlyError: this.onlyError,
             errorPolicy: this.defaultErrorPolicy,
@@ -187,7 +176,6 @@ export class RateLimiterFactory implements IRateLimiterFactory {
         return new RateLimiter({
             limit,
             waitUntil: this.waitUntil,
-            enableAsyncTracking: this.enableAsyncTracking,
             adapter: this.adapter,
             key,
             errorPolicy,
