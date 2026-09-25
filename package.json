@@ -339,6 +339,10 @@
             "types": "./dist/lock/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/lock/implementations/middlewares/_module-exports.js"
         },
+        "./lock/middlewares/di": {
+            "types": "./dist/lock/implementations/middlewares/di/_module-exports.d.ts",
+            "import": "./dist/lock/implementations/middlewares/di/_module-exports.js"
+        },
         "./lock/plugins": {
             "types": "./dist/lock/implementations/plugins/_module-exports.d.ts",
             "import": "./dist/lock/implementations/plugins/_module-exports.js"
