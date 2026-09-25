@@ -10,6 +10,20 @@ import type { ISemaphoreFactory } from "@/semaphore/contracts/_module.js";
 import type { WithSemaphoreSettings } from "@/semaphore/implementations/middlewares/with-semaphore-factory/_module.js";
 
 /**
+ * Creates a distributed-semaphore middleware that resolves its
+ * {@link ISemaphoreFactory} from a dependency-injection container.
+ *
+ * The token is resolved on every invocation of the wrapped function, so a token
+ * that is overridden or scoped after the middleware was built still takes
+ * effect. Everything else matches {@link withSemaphoreFactory}.
+ *
+ * @param container - The container the semaphore factory is resolved from.
+ * @param semaphoreFactoryToken - The token the semaphore factory is registered
+ *        under.
+ * @returns A function that accepts {@link WithSemaphoreSettings} and returns a
+ *          middleware.
+ * @throws {@link CanNotResolveServiceDiError} When the token is not registered.
+ *
  * IMPORT_PATH: `"eridu-tech/semaphore/middlewares/di"`
  * @group Middlewares
  */
