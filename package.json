@@ -99,6 +99,10 @@
             "types": "./dist/cache/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/cache/implementations/middlewares/_module-exports.js"
         },
+        "./cache/middlewares/di": {
+            "types": "./dist/cache/implementations/middlewares/di/_module-exports.d.ts",
+            "import": "./dist/cache/implementations/middlewares/di/_module-exports.js"
+        },
         "./cache/plugins": {
             "types": "./dist/cache/implementations/plugins/_module-exports.d.ts",
             "import": "./dist/cache/implementations/plugins/_module-exports.js"
