@@ -8,9 +8,14 @@ Every component that ships middleware factories now also ships a `.../middleware
 
 ```ts
 import { registerWithLock } from "eridu-tech/lock/middlewares/di";
+import { LockFactory } from "eridu-tech/lock";
 import { use } from "eridu-tech/middleware";
 
-const withLock = registerWithLock(container, LOCK_FACTORY);
+const withLock = registerWithLock(container, LockFactory);
+
+async function createUser(id: string): Promise<void> {
+    // ...
+}
 
 const createUserWithLock = use(
     createUser,
