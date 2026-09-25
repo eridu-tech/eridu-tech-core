@@ -387,6 +387,10 @@
             "types": "./dist/rate-limiter/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/rate-limiter/implementations/middlewares/_module-exports.js"
         },
+        "./rate-limiter/middlewares/di": {
+            "types": "./dist/rate-limiter/implementations/middlewares/di/_module-exports.d.ts",
+            "import": "./dist/rate-limiter/implementations/middlewares/di/_module-exports.js"
+        },
         "./rate-limiter/plugins": {
             "types": "./dist/rate-limiter/implementations/plugins/_module-exports.d.ts",
             "import": "./dist/rate-limiter/implementations/plugins/_module-exports.js"
