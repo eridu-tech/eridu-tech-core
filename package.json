@@ -555,6 +555,10 @@
             "types": "./dist/transaction-context/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/transaction-context/implementations/middlewares/_module-exports.js"
         },
+        "./transaction-context/middlewares/di": {
+            "types": "./dist/transaction-context/implementations/middlewares/di/_module-exports.d.ts",
+            "import": "./dist/transaction-context/implementations/middlewares/di/_module-exports.js"
+        },
         "./transaction-context/contracts": {
             "types": "./dist/transaction-context/contracts/_module-exports.d.ts",
             "import": "./dist/transaction-context/contracts/_module-exports.js"
