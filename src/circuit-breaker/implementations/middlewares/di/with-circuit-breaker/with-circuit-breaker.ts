@@ -10,6 +10,20 @@ import type { DiToken, IContainer } from "@/di/contracts/_module.js";
 import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
 
 /**
+ * Creates a circuit-breaker middleware that resolves its
+ * {@link ICircuitBreakerFactory} from a dependency-injection container.
+ *
+ * The token is resolved on every invocation of the wrapped function, so a token
+ * that is overridden or scoped after the middleware was built still takes
+ * effect. Everything else matches {@link withCircuitBreakerFactory}.
+ *
+ * @param container - The container the circuit-breaker factory is resolved from.
+ * @param circuitBreakerFactoryToken - The token the circuit-breaker factory is
+ *        registered under.
+ * @returns A function that accepts {@link WithCircuitBreakerSettings} and returns
+ *          a middleware.
+ * @throws {@link CanNotResolveServiceDiError} When the token is not registered.
+ *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/middlewares/di"`
  * @group Middlewares
  */
