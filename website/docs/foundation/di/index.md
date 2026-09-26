@@ -34,7 +34,7 @@ The container follows a strict lifecycle.
 
 #### Register Services and Container Hooks
 
-Register your services by defining their lifespans, dependencies, and service factories. Register hooks that will run after container initialization or de-initialization. All registrations must occur before initialization. The following methods are used to register services: [`registerFactory`](#register_factory), [`registerValue`](#register_value), [`registerDynamic`](#dynamic), [`registerProvider`](#register_provider). The following are used to register container hooks: [`onContainerInit`](#container_hooks) and [`onContainerDeInit`](#container_hooks).
+Register your services by defining their lifespans, dependencies, and service factories. Register hooks that will run after container initialization or de-initialization. All registrations must occur before initialization. The following methods are used to register services: [`registerFactory`](#register_factory), [`registerValue`](#register_value), [`registerDynamic`](#dynamic), [`registerProvider`](#register_provider), [`registerAlias`](#register_alias). The following are used to register container hooks: [`onContainerInit`](#container_hooks) and [`onContainerDeInit`](#container_hooks).
 
 :::info
 Services and hooks can only be registered before the container is initialized. Once the container is initialized, registering new services or hooks will throw [`InvalidMethodCallDiError`](#invalid_method_call_di_error).
@@ -108,12 +108,13 @@ When registering a service, you also define its lifetime. There are four differe
 
 ### Registration
 
-The container provides four registration methods:
+The container provides five registration methods:
 
 - **`registerFactory`** — Registers a service using a factory function that creates the instance. Use it to register **Singleton**, **Scoped**, or **Transient** services with full control over how the instance is constructed.
 - **`registerValue`** — Registers a pre-constructed value or constant. Values are always resolved as singletons.
 - **`registerDynamic`** — Registers a token whose value is not known at registration time and is provided later at runtime, per [`run()`](#scoped) scope.
 - **`registerProvider`** — Registers a service provider that batches a group of related registrations into one reusable code block.
+- **`registerAlias`** — Registers an additional token for an existing service, so both tokens resolve the same instance.
 
 #### `registerFactory` {#register_factory}
 
@@ -197,6 +198,19 @@ The `Logger` services:
 :::tip
 Service providers are the recommended way to organize your registrations. Group related services together and keep each provider focused on a single concern.
 :::
+
+#### `registerAlias` {#register_alias}
+
+Use `registerAlias()` to expose an existing service under an additional token. Resolving the alias resolves the same instance as its target.
+
+- **`target`** — The token of the already-registered service to alias.
+- **`alias`** — The new token that resolves the same service as `target`.
+
+Aliases are registered as **Singleton** services that depend on their target, so the target must be a registered **Singleton** — a value registered with [`registerValue()`](#register_value) qualifies.
+
+```ts file=./samples/register-alias.ts
+
+```
 
 #### Registering a Service as Dynamic
 
@@ -489,7 +503,7 @@ Here is an example where `InvalidMethodCallDiError` is thrown.
 
 The container exposes several contracts that separate concerns for different use cases:
 
-- `IServiceRegister` — for **registering** services ([`registerFactory`](#register_factory), [`registerValue`](#register_value), [`registerDynamic`](#dynamic), [`registerProvider`](#register_provider)) and registering container lifecycle hooks.
+- `IServiceRegister` — for **registering** services ([`registerFactory`](#register_factory), [`registerValue`](#register_value), [`registerDynamic`](#dynamic), [`registerProvider`](#register_provider), [`registerAlias`](#register_alias)) and registering container lifecycle hooks.
 - `IServiceResolver` — for **resolving** services ([`resolve`](#resolve), [`resolveOr`](#resolve_or), [`resolveOrFail`](#resolve_or_fail), [`has`](#has)).
 - `IServiceOverrider` — for **overriding** existing registrations ([`overrideFactory`](#overriding_registrations), [`overrideValue`](#overriding_registrations)), useful for testing.
 - `IContainerScope` — for running scoped container executions ([`run`](#scoped)).
@@ -502,6 +516,7 @@ The container exposes several contracts that separate concerns for different use
 - [`registerValue(settings)`](#register_value)
 - [`registerDynamic(token)`](#dynamic)
 - [`registerProvider(provider)`](#register_provider)
+- [`registerAlias(settings)`](#register_alias)
 - [`onContainerInit(handler)`](#container_hooks)
 - [`onContainerDeInit(handler)`](#container_hooks)
 
