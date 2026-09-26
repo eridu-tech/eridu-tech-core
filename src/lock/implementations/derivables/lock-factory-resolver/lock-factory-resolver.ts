@@ -61,7 +61,7 @@ export class LockFactoryResolver<
      * import { RedisLockAdapter } from "eridu-tech/lock/redis-lock-adapter";
      * import { Serde } from "eridu-tech/serde";
      * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import Redis from "ioredis"
+     * import { Redis } from "ioredis";
      *
      * const serde = new Serde(new SuperJsonSerdeAdapter());
      * const lockFactoryResolver = new LockFactoryResolver({
@@ -110,7 +110,7 @@ export class LockFactoryResolver<
      * import { Serde } from "eridu-tech/serde";
      * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
      * import { TimeSpan } from "eridu-tech/time-span";
-     * import Redis from "ioredis";
+     * import { Redis } from "ioredis";
      *
      * const serde = new Serde(new SuperJsonSerdeAdapter());
      * const lockFactoryResolver = new LockFactoryResolver({
