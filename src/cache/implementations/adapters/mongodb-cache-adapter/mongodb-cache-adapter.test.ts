@@ -28,6 +28,7 @@ describe("class: MongodbCacheAdapter", () => {
         client = new MongoClient(startedContainer.getConnectionString(), {
             directConnection: true,
         });
+        await client.connect();
     }, timeout.toMilliseconds());
     afterEach(async () => {
         await client.close();
