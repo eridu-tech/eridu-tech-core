@@ -61,7 +61,7 @@ export class SharedLockFactoryResolver<
      * import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
      * import { Serde } from "eridu-tech/serde";
      * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import Redis from "ioredis"
+     * import { Redis } from "ioredis";
      *
      * const serde = new Serde(new SuperJsonSerdeAdapter());
      * const lockProviderFactory = new SharedLockFactoryResolver({
@@ -112,7 +112,7 @@ export class SharedLockFactoryResolver<
      * import { Serde } from "eridu-tech/serde";
      * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
      * import { TimeSpan } from "eridu-tech/time-span";
-     * import Redis from "ioredis";
+     * import { Redis } from "ioredis";
      *
      * const serde = new Serde(new SuperJsonSerdeAdapter());
      * const lockProviderFactory = new SharedLockFactoryResolver({

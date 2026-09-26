@@ -71,7 +71,7 @@ export class CacheResolver<
      * import { Serde } from "eridu-tech/serde";
      * import type { ISerde } from "eridu-tech/serde/contracts";
      * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import Redis from "ioredis"
+     * import { Redis } from "ioredis";
      *
      * const serde = new Serde(new SuperJsonSerdeAdapter());
      * const cacheResolver = new CacheResolver({
@@ -121,7 +121,7 @@ export class CacheResolver<
      * import type { ISerde } from "eridu-tech/serde/contracts";
      * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
      * import { TimeSpan } from "eridu-tech/time-span";
-     * import Redis from "ioredis"
+     * import { Redis } from "ioredis";
      *
      * const serde = new Serde(new SuperJsonSerdeAdapter());
      * const cacheResolver = new CacheResolver({

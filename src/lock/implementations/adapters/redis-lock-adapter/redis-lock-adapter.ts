@@ -70,7 +70,7 @@ export class RedisLockAdapter implements ILockAdapter {
      * @example
      * ```ts
      * import { RedisLockAdapter } from "eridu-tech/lock/redis-lock-adapter";
-     * import Redis from "ioredis";
+     * import { Redis } from "ioredis";
      *
      * const database = new Redis("YOUR_REDIS_CONNECTION_STRING");
      * const lockAdapter = new RedisLockAdapter(database);
