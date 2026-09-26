@@ -335,6 +335,10 @@
             "types": "./dist/http-router/contracts/_module-exports.d.ts",
             "import": "./dist/http-router/contracts/_module-exports.js"
         },
+        "./http-router/di": {
+            "types": "./dist/http-router/implementations/di/_module-exports.d.ts",
+            "import": "./dist/http-router/implementations/di/_module-exports.js"
+        },
         "./http-router/middlewares": {
             "types": "./dist/http-router/middlewares/_module-exports.d.ts",
             "import": "./dist/http-router/middlewares/_module-exports.js"
