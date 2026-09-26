@@ -183,6 +183,23 @@ export type ValueRegistration<TRegisteredType = unknown> = {
 };
 
 /**
+ * Configuration for registering a token as an alias of another token.
+ * Resolving the alias resolves the same service as its target.
+ *
+ * @typeParam TRegisteredType - The type of the aliased service.
+ *
+ * IMPORT_PATH: `"eridu-tech/di/contracts"`
+ * @group Contracts
+ */
+export type AliasRegistration<TRegisteredType = unknown> = {
+    /** The token of the existing service to alias. */
+    target: DiToken<TRegisteredType>;
+
+    /** The token that resolves the same service as `target`. */
+    alias: DiToken<TRegisteredType>;
+};
+
+/**
  * Core service registration interface providing factory, class, value,
  * and dynamic registration methods.
  *
@@ -227,6 +244,19 @@ export type IServiceRegisterBase = {
      * @throws {@link CanNotRegisterServiceDiError} When the token already has a registration.
      */
     registerDynamic(token: DiToken): void;
+
+    /**
+     * Registers a token as an alias of another token, so resolving the alias
+     * resolves the same service as its target.
+     *
+     * @param settings - The alias registration settings.
+     *
+     * @throws {@link InvalidMethodCallDiError} When called after {@link IContainer.init}.
+     * @throws {@link CanNotRegisterServiceDiError} When the alias token already has a registration.
+     */
+    registerAlias<TRegisteredType>(
+        settings: AliasRegistration<TRegisteredType>,
+    ): void;
 };
 
 /**
