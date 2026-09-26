@@ -107,7 +107,7 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
      * @example
      * ```ts
      * import { RedisRateLimiterAdapter } from "eridu-tech/rate-limiter/redis-rate-limiter-adapter";
-     * import Redis from "ioredis";
+     * import { Redis } from "ioredis";
      *
      * const database = new Redis("YOUR_REDIS_CONNECTION_STRING");
      * const rateLimiterAdapter = new RedisRateLimiterAdapter({
