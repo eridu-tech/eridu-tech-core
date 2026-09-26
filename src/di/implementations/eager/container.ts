@@ -4,6 +4,7 @@
 import {
     genericToken,
     CanNotRegisterServiceDiError,
+    LIFETIME,
 } from "@/di/contracts/_module-exports.js";
 import {
     InvalidMethodCallDiError,
@@ -35,6 +36,7 @@ import type {
     ValueRegistration,
     DepRecord,
     EmptyDepRecord,
+    AliasRegistration,
 } from "@/di/contracts/_module.js";
 import type { CanNotResolveServiceDiErrorCreateData } from "@/di/contracts/container.errors.js";
 import type { Node } from "@/di/implementations/eager/_shared.js";
@@ -603,6 +605,23 @@ export class Container implements IContainer {
         this.throwIfInsideRunScope(this.registerDynamic.name);
         this.throwIfTokenAlreadyRegistered(token);
         this.graphManager.registerDynamic(token);
+    }
+
+    registerAlias<TRegisteredType>(
+        settings: AliasRegistration<TRegisteredType>,
+    ): void {
+        const { alias: aliasToken, target: targetToken } = settings;
+
+        this.registerFactory({
+            token: aliasToken,
+            factory: ({ target }) => {
+                return target;
+            },
+            deps: {
+                target: targetToken,
+            },
+            lifetime: LIFETIME.SINGLETON,
+        });
     }
 
     registerProvider(provider: ServiceProvider): void {
