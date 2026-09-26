@@ -395,6 +395,38 @@
             "types": "./dist/middleware/contracts/_module-exports.d.ts",
             "import": "./dist/middleware/contracts/_module-exports.js"
         },
+        "./providers/kysely-mysql-provider": {
+            "types": "./dist/providers/kysely-mysql-provider/_module-exports.d.ts",
+            "import": "./dist/providers/kysely-mysql-provider/_module-exports.js"
+        },
+        "./providers/kysely-postgres-provider": {
+            "types": "./dist/providers/kysely-postgres-provider/_module-exports.d.ts",
+            "import": "./dist/providers/kysely-postgres-provider/_module-exports.js"
+        },
+        "./providers/kysely-sqlite-provider": {
+            "types": "./dist/providers/kysely-sqlite-provider/_module-exports.d.ts",
+            "import": "./dist/providers/kysely-sqlite-provider/_module-exports.js"
+        },
+        "./providers/mongodb-provider": {
+            "types": "./dist/providers/mongodb-provider/_module-exports.d.ts",
+            "import": "./dist/providers/mongodb-provider/_module-exports.js"
+        },
+        "./providers/mysql-provider": {
+            "types": "./dist/providers/mysql-provider/_module-exports.d.ts",
+            "import": "./dist/providers/mysql-provider/_module-exports.js"
+        },
+        "./providers/postgres-provider": {
+            "types": "./dist/providers/postgres-provider/_module-exports.d.ts",
+            "import": "./dist/providers/postgres-provider/_module-exports.js"
+        },
+        "./providers/redis-provider": {
+            "types": "./dist/providers/redis-provider/_module-exports.d.ts",
+            "import": "./dist/providers/redis-provider/_module-exports.js"
+        },
+        "./providers/sqlite-provider": {
+            "types": "./dist/providers/sqlite-provider/_module-exports.d.ts",
+            "import": "./dist/providers/sqlite-provider/_module-exports.js"
+        },
         "./rate-limiter": {
             "types": "./dist/rate-limiter/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/rate-limiter/implementations/derivables/_module-exports.js"
