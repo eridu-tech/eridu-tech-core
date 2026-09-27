@@ -2,11 +2,11 @@
  * @module FileSize
  */
 
-import { TO_BYTES } from "@/file-size/contracts/_module.js";
+import { TO_BYTES } from "@/file-size/contracts/_module-exports.js";
 
-import type { IFileSize } from "@/file-size/contracts/_module.js";
-import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
-import type { IComparable } from "@/utilities/_module.js";
+import type { IFileSize } from "@/file-size/contracts/_module-exports.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
+import type { IComparable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-size"`
