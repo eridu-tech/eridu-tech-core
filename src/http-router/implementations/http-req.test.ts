@@ -5,8 +5,8 @@
 import { describe, expect, test, vi } from "vitest";
 import { z } from "zod";
 
-import { FileSize } from "@/file-size/implementations/_module.js";
-import { HttpError } from "@/http-router/contracts/_module.js";
+import { FileSize } from "@/file-size/implementations/_module-exports.js";
+import { HttpError } from "@/http-router/contracts/_module-exports.js";
 import { HttpReq } from "@/http-router/implementations/http-req.js";
 
 describe("class: HttpReq", () => {

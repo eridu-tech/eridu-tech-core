@@ -4,7 +4,7 @@
 import type {
     HttpMiddleware,
     IMiddlewareBuilder,
-} from "@/http-router/contracts/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
 
 /**
  * @internal

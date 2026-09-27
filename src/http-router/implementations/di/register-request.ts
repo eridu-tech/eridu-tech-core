@@ -2,13 +2,13 @@
  * @module HttpRouter
  */
 
-import { genericToken } from "@/di/contracts/_module.js";
+import { genericToken } from "@/di/contracts/_module-exports.js";
 
-import type { IContainer } from "@/di/contracts/_module.js";
+import type { IContainer } from "@/di/contracts/_module-exports.js";
 import type {
     HttpMiddlewareFn,
     IHttpReq,
-} from "@/http-router/contracts/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
 
 /**
  * The token the incoming {@link IHttpReq} is registered under inside the request

@@ -6,7 +6,7 @@ import { SmartRouter } from "hono/router/smart-router";
 import { TrieRouter } from "hono/router/trie-router";
 
 import { Context } from "@/execution-context/implementations/derivables/execution-context/context.js";
-import { HttpError } from "@/http-router/contracts/_module.js";
+import { HttpError } from "@/http-router/contracts/_module-exports.js";
 import { HttpReq } from "@/http-router/implementations/http-req.js";
 import {
     createHttpResHelpers,
@@ -15,12 +15,12 @@ import {
 import { HttpRes } from "@/http-router/implementations/http-res.js";
 import { HttpRouterBase } from "@/http-router/implementations/http-router-base.js";
 import { withPrefix } from "@/http-router/implementations/with-prefix.js";
-import { use } from "@/http-router/middlewares/_module.js";
+import { use } from "@/http-router/middlewares/_module-exports.js";
 import {
     callInvocable,
     isInvocable,
     UnexpectedError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { ParamIndexMap, Params, ParamStash, Router } from "hono/router";
 
@@ -37,7 +37,7 @@ import type {
     HttpHandlerArgs,
     HttpMiddlewareArgs,
     HttpHandlerFn,
-} from "@/http-router/contracts/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
 import type {
     EndpointEntry,
     MiddlewareEntry,
@@ -47,7 +47,7 @@ import type {
     InvocableFn,
     OneOrMore,
     Promisable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * Configuration options for {@link HttpRouter}.

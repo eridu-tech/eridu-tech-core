@@ -4,7 +4,7 @@
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
-import type { IFileSize } from "@/file-size/contracts/_module.js";
+import type { IFileSize } from "@/file-size/contracts/_module-exports.js";
 import type {
     HttpResCacheControl,
     HttpResContentDisposition,
@@ -15,7 +15,7 @@ import type {
     HttpResETag,
 } from "@/http-router/contracts/http-res-headers.js";
 import type { HttpStatus } from "@/http-router/contracts/http-status.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
 /**
  * Defines the scope of a cookie — the `Path`, `Secure`, and `Domain` attributes

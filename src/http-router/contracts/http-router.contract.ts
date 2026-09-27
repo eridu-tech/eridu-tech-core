@@ -11,7 +11,7 @@ import type {
     IInvocableObject,
     OneOrAtLeastOne,
     Invocable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * A builder for registering type-safe middleware scoped to a single endpoint.
