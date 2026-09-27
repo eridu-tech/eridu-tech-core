@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NoOpCacheAdapter } from "@/cache/implementations/adapters/_module.js";
+import { NoOpCacheAdapter } from "@/cache/implementations/adapters/no-op-cache-adapter/_module-exports.js";
 import { Cache } from "@/cache/implementations/derivables/_module-exports.js";
 import { registerWithInvalidation } from "@/cache/implementations/middlewares/di/with-invalidation/with-invalidation.js";
 import { genericToken } from "@/di/contracts/_module-exports.js";

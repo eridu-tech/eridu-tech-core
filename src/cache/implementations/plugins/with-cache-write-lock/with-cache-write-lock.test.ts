@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NoOpCacheAdapter } from "@/cache/implementations/adapters/_module.js";
+import { NoOpCacheAdapter } from "@/cache/implementations/adapters/no-op-cache-adapter/_module-exports.js";
 import { withCacheWriteLock } from "@/cache/implementations/plugins/with-cache-write-lock/with-cache-write-lock.js";
 import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adapter/no-op-lock-adapter.js";
 import { LockFactory } from "@/lock/implementations/derivables/lock-factory/lock-factory.js";

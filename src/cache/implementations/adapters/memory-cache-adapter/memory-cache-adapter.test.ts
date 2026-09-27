@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
 
-import { MemoryCacheAdapter } from "@/cache/implementations/adapters/_module.js";
+import { MemoryCacheAdapter } from "@/cache/implementations/adapters/memory-cache-adapter/_module-exports.js";
 import { cacheAdapterTestSuite } from "@/cache/implementations/test-utilities/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { delay } from "@/utilities/_module-exports.js";
