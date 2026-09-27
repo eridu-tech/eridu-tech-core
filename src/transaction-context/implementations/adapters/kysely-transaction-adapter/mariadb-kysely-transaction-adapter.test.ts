@@ -3,7 +3,7 @@ import { Kysely, MysqlDialect } from "kysely";
 import { createPool } from "mysql2";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/kysely-transaction-adapter.js";
 
 import type { StartedMariaDbContainer } from "@testcontainers/mariadb";

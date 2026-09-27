@@ -5,7 +5,7 @@
 import type {
     ITransactionContext,
     TransactionAware,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 
 /**
  * @internal

@@ -4,7 +4,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { MandatoryPropagationError } from "@/transaction-context/contracts/transaction.errors.js";
-import type { AsyncLazy } from "@/utilities/_module.js";
+import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 /**
  * Exposes the current connection state of a transaction context: the base

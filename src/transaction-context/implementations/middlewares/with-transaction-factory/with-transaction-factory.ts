@@ -2,13 +2,13 @@
  * @module TransactionContext
  */
 
-import { TRANSACTION_PROPAGATION } from "@/transaction-context/contracts/_module.js";
+import { TRANSACTION_PROPAGATION } from "@/transaction-context/contracts/_module-exports.js";
 
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 import type {
     ITransactionContext,
     TransactionPropagation,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 
 /**
  * Creates a middleware factory that runs the wrapped function inside a transaction.

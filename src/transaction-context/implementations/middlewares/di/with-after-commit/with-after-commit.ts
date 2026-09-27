@@ -4,12 +4,12 @@
 
 import { withAfterCommitFactory } from "@/transaction-context/implementations/middlewares/with-after-commit-factory/_module.js";
 
-import type { DiToken, IContainer } from "@/di/contracts/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
+import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 import type {
     AfterCommitSettings,
     ITransactionHooks,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 
 /**
  * Creates a middleware that resolves its {@link ITransactionHooks} from a

@@ -2,14 +2,14 @@
  * @module TransactionContext
  */
 
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
     AfterCommitSettings,
     ITransactionContext,
     ITransactionHooks,
-} from "@/transaction-context/contracts/_module.js";
-import type { AsyncLazy } from "@/utilities/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
+import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 /**
  * An {@link ITransactionHooks} that fans out `afterCommit()` hooks to several

@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { contextToken } from "@/execution-context/contracts/_module.js";
-import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
+import { contextToken } from "@/execution-context/contracts/_module-exports.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import {
     AbortTransactionError,
     CommitTransactionError,
@@ -10,14 +10,14 @@ import {
     NeverPropagationError,
     StartTransactionError,
     TRANSACTION_PROPAGATION,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/transaction-context/transaction-context.js";
-import { UnexpectedError } from "@/utilities/_module.js";
+import { UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type {
     ITransaction,
     ITransactionAdapter,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/transaction-context/transaction-context.js";
 
 type Client = { readonly value: string };

@@ -2,7 +2,7 @@
  * @module TransactionContext
  */
 
-import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
 
 import type {
     ClientSession,
@@ -13,11 +13,11 @@ import type {
     TransactionOptions,
 } from "mongodb";
 
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type {
     ITransaction,
     ITransactionAdapter,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 
 /**
  * Configuration for `MongodbTransactionAdapter`.
