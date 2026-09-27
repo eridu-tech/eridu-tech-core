@@ -6,7 +6,7 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/_module.js";
 import { withSemaphorePrefix } from "@/semaphore/implementations/plugins/with-semaphore-prefix/with-semaphore-prefix.js";
 
-import type { ISemaphoreAdapter } from "@/semaphore/contracts/_module.js";
+import type { ISemaphoreAdapter } from "@/semaphore/contracts/_module-exports.js";
 
 describe("function: withSemaphorePrefix", () => {
     const adapter = new NoOpSemaphoreAdapter();

@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, test } from "vitest";
 
-import { MemorySemaphoreAdapter } from "@/semaphore/implementations/adapters/memory-semaphore-adapter/_module.js";
-import { semaphoreAdapterTestSuite } from "@/semaphore/implementations/test-utilities/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { delay } from "@/utilities/_module.js";
+import { MemorySemaphoreAdapter } from "@/semaphore/implementations/adapters/memory-semaphore-adapter/_module-exports.js";
+import { semaphoreAdapterTestSuite } from "@/semaphore/implementations/test-utilities/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { delay } from "@/utilities/_module-exports.js";
 
-import type { ISemaphoreAdapterState } from "@/semaphore/contracts/_module.js";
+import type { ISemaphoreAdapterState } from "@/semaphore/contracts/_module-exports.js";
 
 describe("class: MemorySemaphoreAdapter", () => {
     semaphoreAdapterTestSuite({

@@ -1,22 +1,22 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { genericToken } from "@/di/contracts/_module.js";
+import { genericToken } from "@/di/contracts/_module-exports.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
-import { use } from "@/middleware/implementations/_module.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/_module.js";
-import { SemaphoreFactory } from "@/semaphore/implementations/derivables/_module.js";
+import { SemaphoreFactory } from "@/semaphore/implementations/derivables/_module-exports.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { registerWithSemaphore } from "@/semaphore/implementations/middlewares/di/with-semaphore/with-semaphore.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { IContainer } from "@/di/contracts/_module.js";
+import type { IContainer } from "@/di/contracts/_module-exports.js";
 import type {
     ISemaphoreFactory,
     SemaphoreFactoryCreateSettings,
-} from "@/semaphore/contracts/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
 
 describe("function: registerWithSemaphore", () => {
     const SEMAPHORE_FACTORY =

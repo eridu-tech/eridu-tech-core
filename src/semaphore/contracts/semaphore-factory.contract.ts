@@ -3,7 +3,7 @@
  */
 
 import type { ISemaphore } from "@/semaphore/contracts/semaphore.contract.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
 /**
  * Configuration settings for creating a semaphore instance through the factory.

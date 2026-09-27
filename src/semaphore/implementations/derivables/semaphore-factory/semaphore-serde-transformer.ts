@@ -3,13 +3,13 @@
  */
 
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { getConstructorName } from "@/utilities/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { getConstructorName } from "@/utilities/_module-exports.js";
 
-import type { ISemaphoreAdapter } from "@/semaphore/contracts/_module.js";
+import type { ISemaphoreAdapter } from "@/semaphore/contracts/_module-exports.js";
 import type { ISerializedSemaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
-import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
-import type { OneOrMore } from "@/utilities/_module.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
+import type { OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * @internal

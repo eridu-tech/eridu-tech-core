@@ -2,8 +2,8 @@
  * @module Semaphore
  */
 
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type {
     Document,
@@ -18,12 +18,15 @@ import type {
     ISemaphoreAdapter,
     ISemaphoreAdapterState,
     SemaphoreAcquireSettings,
-} from "@/semaphore/contracts/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
 import type {
     ITransactionContext,
     TransactionAware,
-} from "@/transaction-context/contracts/_module.js";
-import type { IDeinitizable, IInitizable } from "@/utilities/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
+import type {
+    IDeinitizable,
+    IInitizable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/semaphore/mongodb-semaphore-adapter"`

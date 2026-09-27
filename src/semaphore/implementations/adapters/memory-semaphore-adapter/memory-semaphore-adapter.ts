@@ -8,8 +8,8 @@ import type {
     ISemaphoreAdapter,
     ISemaphoreAdapterState,
     SemaphoreAcquireSettings,
-} from "@/semaphore/contracts/_module.js";
-import type { IDeinitizable, IPrunable } from "@/utilities/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
+import type { IDeinitizable, IPrunable } from "@/utilities/_module-exports.js";
 
 /**
  * Note the `MemorySemaphoreAdapter` is limited to single process usage and cannot be shared across multiple servers or different processes.
