@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { use } from "@/middleware/implementations/_module-exports.js";
-import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/_module.js";
+import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op-semaphore-adapter/_module-exports.js";
 import { SemaphoreFactory } from "@/semaphore/implementations/derivables/_module-exports.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { withSemaphoreFactory } from "@/semaphore/implementations/middlewares/with-semaphore-factory/with-semaphore-factory.js";

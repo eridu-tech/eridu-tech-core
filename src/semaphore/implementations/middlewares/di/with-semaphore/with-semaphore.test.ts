@@ -6,7 +6,7 @@ import { Container } from "@/di/implementations/eager/container.js";
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { use } from "@/middleware/implementations/_module-exports.js";
-import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/_module.js";
+import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op-semaphore-adapter/_module-exports.js";
 import { SemaphoreFactory } from "@/semaphore/implementations/derivables/_module-exports.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { registerWithSemaphore } from "@/semaphore/implementations/middlewares/di/with-semaphore/with-semaphore.js";
