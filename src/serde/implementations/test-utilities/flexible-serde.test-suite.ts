@@ -11,7 +11,7 @@ import type { TestAPI, ExpectStatic } from "vitest";
 import type {
     IFlexibleSerde,
     ISerdeTransformer,
-} from "@/serde/contracts/_module.js";
+} from "@/serde/contracts/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/serde/test-utilities"`

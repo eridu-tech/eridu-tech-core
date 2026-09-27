@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
 import { Serde } from "@/serde/implementations/derivables/serde.js";
-import { flexibleSerdeTestSuite } from "@/serde/implementations/test-utilities/_module.js";
+import { flexibleSerdeTestSuite } from "@/serde/implementations/test-utilities/_module-exports.js";
 
 describe("class: Serde", () => {
     flexibleSerdeTestSuite({

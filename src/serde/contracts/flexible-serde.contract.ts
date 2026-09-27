@@ -3,7 +3,7 @@
  */
 
 import type { ISerde } from "@/serde/contracts/serde.contract.js";
-import type { OneOrMore } from "@/utilities/_module.js";
+import type { OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * Base structure for serialized values with version tracking.
