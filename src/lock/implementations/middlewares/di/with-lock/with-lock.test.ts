@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { genericToken } from "@/di/contracts/container.contract.js";
+import { genericToken } from "@/di/contracts/_module.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
@@ -12,7 +12,7 @@ import { registerWithLock } from "@/lock/implementations/middlewares/di/with-loc
 import { use } from "@/middleware/implementations/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module.js";
 
-import type { IContainer } from "@/di/contracts/container.contract.js";
+import type { IContainer } from "@/di/contracts/_module.js";
 import type {
     ILockFactory,
     LockFactoryCreateSettings,

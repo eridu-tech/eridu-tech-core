@@ -18,7 +18,7 @@ import { TransactionContext } from "@/transaction-context/implementations/deriva
 
 import type { Database } from "better-sqlite3";
 
-import type { ILock } from "@/lock/contracts/lock.contract.js";
+import type { ILock } from "@/lock/contracts/_module.js";
 import type { KyselyLockTables } from "@/lock/implementations/adapters/_module.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 
