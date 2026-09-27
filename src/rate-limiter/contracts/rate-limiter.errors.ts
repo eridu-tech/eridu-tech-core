@@ -3,7 +3,7 @@
  */
 
 import type { RateLimiterBlockedState } from "@/rate-limiter/contracts/rate-limiter-state.contract.js";
-import type { InferInstance } from "@/utilities/_module.js";
+import type { InferInstance } from "@/utilities/_module-exports.js";
 
 /**
  * The error is throw when rate limiter blocks the attempts.

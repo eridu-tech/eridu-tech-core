@@ -6,22 +6,22 @@ import {
     BACKOFFS,
     resolveBackoffSettingsEnum,
     serializeBackoffSettingsEnum,
-} from "@/backoff-policies/implementations/_module.js";
+} from "@/backoff-policies/implementations/_module-exports.js";
 import { rateLimiterFactoryLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/_module.js";
 import {
     LIMITER_POLICIES,
     resolveRateLimiterPolicySettings,
     serializeRateLimiterPolicySettingsEnum,
-} from "@/rate-limiter/implementations/policies/_module.js";
+} from "@/rate-limiter/implementations/policies/_module-exports.js";
 
 import type { Redis, Result } from "ioredis";
 
-import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module.js";
+import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module-exports.js";
 import type {
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
-} from "@/rate-limiter/contracts/_module.js";
-import type { RateLimiterPolicySettingsEnum } from "@/rate-limiter/implementations/policies/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
+import type { RateLimiterPolicySettingsEnum } from "@/rate-limiter/implementations/policies/_module-exports.js";
 
 /**
  * @internal

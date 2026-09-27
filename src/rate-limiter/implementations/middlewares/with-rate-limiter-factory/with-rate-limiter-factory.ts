@@ -2,11 +2,14 @@
  * @module RateLimiter
  */
 
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
-import type { IRateLimiterFactory } from "@/rate-limiter/contracts/_module.js";
-import type { ErrorPolicySettings, Invocable } from "@/utilities/_module.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
+import type { IRateLimiterFactory } from "@/rate-limiter/contracts/_module-exports.js";
+import type {
+    ErrorPolicySettings,
+    Invocable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Settings for the rate-limiter middleware.

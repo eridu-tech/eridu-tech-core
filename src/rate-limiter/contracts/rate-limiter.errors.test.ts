@@ -4,7 +4,7 @@ import {
     BlockedRateLimiterError,
     isRateLimiterError,
 } from "@/rate-limiter/contracts/rate-limiter.errors.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 describe("file: rate-limiter.errors.ts", () => {
     describe("function: isRateLimiterError", () => {

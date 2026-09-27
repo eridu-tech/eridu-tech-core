@@ -3,12 +3,16 @@
  */
 
 import { RateLimiter } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
-import { getConstructorName } from "@/utilities/_module.js";
+import { getConstructorName } from "@/utilities/_module-exports.js";
 
-import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module.js";
+import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-exports.js";
 import type { ISerializedRateLimiter } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
-import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
-import type { ErrorPolicy, OneOrMore, WaitUntil } from "@/utilities/_module.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
+import type {
+    ErrorPolicy,
+    OneOrMore,
+    WaitUntil,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal

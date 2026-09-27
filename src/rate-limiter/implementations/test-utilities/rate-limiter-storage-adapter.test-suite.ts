@@ -9,8 +9,8 @@ import type { TestAPI, SuiteAPI, ExpectStatic, beforeEach } from "vitest";
 import type {
     IRateLimiterData,
     IRateLimiterStorageAdapter,
-} from "@/rate-limiter/contracts/_module.js";
-import type { Promisable } from "@/utilities/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
+import type { Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter/test-utilities"`

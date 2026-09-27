@@ -3,8 +3,8 @@ import { Redis } from "ioredis";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { RedisRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/redis-rate-limiter-adapter.js";
-import { fixedWindowLimiterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { fixedWindowLimiterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
 

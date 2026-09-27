@@ -2,11 +2,11 @@
  * @module RateLimiter
  */
 
-import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { IRateLimiterPolicy } from "@/rate-limiter/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { IRateLimiterPolicy } from "@/rate-limiter/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter/policies"`

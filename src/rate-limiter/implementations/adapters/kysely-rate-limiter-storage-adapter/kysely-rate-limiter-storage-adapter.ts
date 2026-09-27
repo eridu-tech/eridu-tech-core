@@ -10,15 +10,15 @@ import type {
     IRateLimiterData,
     IRateLimiterStorageAdapter,
     IRateLimiterStorageAdapterTransaction,
-} from "@/rate-limiter/contracts/_module.js";
-import type { ISerde } from "@/serde/contracts/_module.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     IInitizable,
     InvocableFn,
     IPrunable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter"`

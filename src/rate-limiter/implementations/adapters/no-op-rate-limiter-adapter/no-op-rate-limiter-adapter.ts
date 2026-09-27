@@ -9,7 +9,7 @@ import type {
     IRateLimiterFactory,
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
-} from "@/rate-limiter/contracts/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
 
 /**
  * The `NoOpRateLimiterAdapter` will do nothing and is used for easily mocking {@link IRateLimiterFactory | `IRateLimiterFactory`} for testing.

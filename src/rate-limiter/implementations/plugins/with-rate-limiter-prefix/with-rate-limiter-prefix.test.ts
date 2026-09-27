@@ -6,7 +6,7 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 import { NoOpRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/_module.js";
 import { withRateLimiterPrefix } from "@/rate-limiter/implementations/plugins/with-rate-limiter-prefix/with-rate-limiter-prefix.js";
 
-import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module.js";
+import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-exports.js";
 
 describe("function: withRateLimiterPrefix", () => {
     const adapter = new NoOpRateLimiterAdapter();

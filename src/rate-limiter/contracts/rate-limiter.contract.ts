@@ -5,9 +5,9 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { BlockedRateLimiterError } from "@/rate-limiter/contracts/rate-limiter.errors.js";
 
-import type { RateLimiterState } from "@/rate-limiter/contracts/_module.js";
+import type { RateLimiterState } from "@/rate-limiter/contracts/_module-exports.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { AsyncLazy } from "@/utilities/_module.js";
+import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 /**
  * State and metadata methods for a rate limiter instance.

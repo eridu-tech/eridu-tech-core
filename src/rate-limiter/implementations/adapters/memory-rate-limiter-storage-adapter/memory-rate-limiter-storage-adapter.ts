@@ -8,12 +8,12 @@ import type {
     IRateLimiterData,
     IRateLimiterStorageAdapter,
     IRateLimiterStorageAdapterTransaction,
-} from "@/rate-limiter/contracts/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     InvocableFn,
     IPrunable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter"`

@@ -4,9 +4,9 @@
 
 import { withRateLimiterFactory } from "@/rate-limiter/implementations/middlewares/with-rate-limiter-factory/_module.js";
 
-import type { DiToken, IContainer } from "@/di/contracts/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
-import type { IRateLimiterFactory } from "@/rate-limiter/contracts/_module.js";
+import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
+import type { IRateLimiterFactory } from "@/rate-limiter/contracts/_module-exports.js";
 import type { WithRateLimiterSettings } from "@/rate-limiter/implementations/middlewares/with-rate-limiter-factory/_module.js";
 
 /**

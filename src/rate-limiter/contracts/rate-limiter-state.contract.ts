@@ -2,7 +2,7 @@
  * @module RateLimiter
  */
 
-import type { TimeSpan } from "@/time-span/implementations/_module.js";
+import type { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 /**
  * Enumerated states for rate limiter operation.
