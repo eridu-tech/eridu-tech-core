@@ -4,7 +4,10 @@
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { UninitializedEnvAccessorError } from "@/env-accessor/contracts/env-accessor.errors.js";
-import type { IInitizable, UndefinedToNull } from "@/utilities/_module.js";
+import type {
+    IInitizable,
+    UndefinedToNull,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @group Contracts
