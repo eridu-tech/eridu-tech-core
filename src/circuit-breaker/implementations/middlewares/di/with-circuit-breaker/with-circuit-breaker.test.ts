@@ -5,7 +5,7 @@ import { NoOpCircuitBreakerAdapter } from "@/circuit-breaker/implementations/ada
 import { CircuitBreakerFactory } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/_module.js";
 import { CircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
 import { registerWithCircuitBreaker } from "@/circuit-breaker/implementations/middlewares/di/with-circuit-breaker/with-circuit-breaker.js";
-import { genericToken } from "@/di/contracts/container.contract.js";
+import { genericToken } from "@/di/contracts/_module.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
@@ -17,7 +17,7 @@ import type {
     CircuitBreakerFactoryCreateSettings,
     ICircuitBreakerFactory,
 } from "@/circuit-breaker/contracts/_module.js";
-import type { IContainer } from "@/di/contracts/container.contract.js";
+import type { IContainer } from "@/di/contracts/_module.js";
 
 describe("function: registerWithCircuitBreaker", () => {
     const CIRCUIT_BREAKER_FACTORY = genericToken<ICircuitBreakerFactory>(
