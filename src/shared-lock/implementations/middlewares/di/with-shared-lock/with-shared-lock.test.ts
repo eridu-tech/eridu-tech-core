@@ -6,7 +6,7 @@ import { Container } from "@/di/implementations/eager/container.js";
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { use } from "@/middleware/implementations/_module-exports.js";
-import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/_module.js";
+import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/no-op-shared-lock-adapter/_module-exports.js";
 import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module-exports.js";
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import { registerWithSharedLock } from "@/shared-lock/implementations/middlewares/di/with-shared-lock/with-shared-lock.js";

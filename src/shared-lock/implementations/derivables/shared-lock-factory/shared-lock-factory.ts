@@ -4,7 +4,7 @@
 
 import { v4 } from "uuid";
 
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
+import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 import { SharedLockSerdeTransformer } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock-serde-transformer.js";
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";

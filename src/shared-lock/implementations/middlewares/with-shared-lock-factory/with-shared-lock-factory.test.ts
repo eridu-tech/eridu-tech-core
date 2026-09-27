@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { use } from "@/middleware/implementations/_module-exports.js";
-import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/_module.js";
+import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/no-op-shared-lock-adapter/_module-exports.js";
 import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module-exports.js";
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import {
