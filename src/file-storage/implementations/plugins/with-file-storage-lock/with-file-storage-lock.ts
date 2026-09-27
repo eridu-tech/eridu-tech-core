@@ -6,9 +6,9 @@ import type {
     IFileUrlAdapter,
     IFileStorageAdapter,
     ISignedFileStorageAdapter,
-} from "@/file-storage/contracts/_module.js";
-import type { ILockFactory } from "@/lock/contracts/_module.js";
-import type { PluginFn } from "@/middleware/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
+import type { ILockFactory } from "@/lock/contracts/_module-exports.js";
+import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * All methods of {@link ISignedFileStorageAdapter | `ISignedFileStorageAdapter`} that can be protected by a lock,

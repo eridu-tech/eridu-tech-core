@@ -4,7 +4,7 @@
 
 import { resolveFileContent } from "@/file-storage/implementations/derivables/file-storage/resolve-file-content.js";
 
-import type { FileContent } from "@/file-storage/contracts/_module.js";
+import type { FileContent } from "@/file-storage/contracts/_module-exports.js";
 
 /**
  * @internal

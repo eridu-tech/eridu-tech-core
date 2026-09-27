@@ -2,16 +2,16 @@
  * @module FileStorage
  */
 
-import { TO_BYTES } from "@/file-size/contracts/_module.js";
-import { FileSize } from "@/file-size/implementations/_module.js";
+import { TO_BYTES } from "@/file-size/contracts/_module-exports.js";
+import { FileSize } from "@/file-size/implementations/_module-exports.js";
 import {
     KeyExistsFileError,
     KeyNotFoundFileError,
     FILE_WRITE_ENUM,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 import { resolveFileContent } from "@/file-storage/implementations/derivables/file-storage/resolve-file-content.js";
 import { ResolveFileStream } from "@/file-storage/implementations/derivables/file-storage/resolve-file-stream.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type {
     IFile,
@@ -21,7 +21,7 @@ import type {
     FileDownloadUrlOptions,
     WritableFileContent,
     FileUploadUrlOptions,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 
 /**
  * @internal

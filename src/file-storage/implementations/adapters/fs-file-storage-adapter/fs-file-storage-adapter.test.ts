@@ -5,10 +5,10 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { FsFileStorageAdapter } from "@/file-storage/implementations/adapters/fs-file-storage-adapter/_module.js";
-import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module.js";
+import { FsFileStorageAdapter } from "@/file-storage/implementations/adapters/fs-file-storage-adapter/_module-exports.js";
+import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
 
-import type { FileAdapterMetadata } from "@/file-storage/contracts/_module.js";
+import type { FileAdapterMetadata } from "@/file-storage/contracts/_module-exports.js";
 
 describe("class: FsFileStorageAdapter", () => {
     let adapter_: FsFileStorageAdapter;

@@ -1,12 +1,12 @@
 /* eslint-disable no-shadow */
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module.js";
-import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/_module.js";
+import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js";
+import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js";
 import { FileStorage } from "@/file-storage/implementations/derivables/file-storage/file-storage.js";
-import { fileStorageTestSuite } from "@/file-storage/implementations/test-utilities/_module.js";
+import { fileStorageTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
 import type {
     FileAdapterMetadata,
@@ -18,7 +18,7 @@ import type {
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 
 describe("class: FileStorage", () => {
     fileStorageTestSuite({

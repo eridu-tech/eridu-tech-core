@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/_module.js";
+import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/_module-exports.js";
 import { withFileStorageLock } from "@/file-storage/implementations/plugins/with-file-storage-lock/with-file-storage-lock.js";
 import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adapter/no-op-lock-adapter.js";
 import { LockFactory } from "@/lock/implementations/derivables/lock-factory/lock-factory.js";

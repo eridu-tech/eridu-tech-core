@@ -18,8 +18,8 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module.js";
-import { callInvocable, UnexpectedError } from "@/utilities/_module.js";
+import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module-exports.js";
+import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type { S3Client, ServerSideEncryption } from "@aws-sdk/client-s3";
 
@@ -32,12 +32,12 @@ import type {
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     IInitizable,
     Invocable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/aws-file-storage-adapter"`

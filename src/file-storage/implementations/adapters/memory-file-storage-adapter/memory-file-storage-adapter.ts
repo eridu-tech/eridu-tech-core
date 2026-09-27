@@ -10,7 +10,7 @@ import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
     FILE_WRITE_ENUM,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 
 import type {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,8 +21,8 @@ import type {
     FileWriteEnum,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
-} from "@/file-storage/contracts/_module.js";
-import type { IDeinitizable } from "@/utilities/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
+import type { IDeinitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/memory-file-storage-adapter"`

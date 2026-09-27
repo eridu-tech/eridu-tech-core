@@ -2,7 +2,7 @@
  * @module FileStorage
  */
 
-import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module.js";
+import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module-exports.js";
 import {
     isUint8ByteArrayEqualityTester,
     resolveStream,
@@ -13,8 +13,8 @@ import type { beforeEach, ExpectStatic, SuiteAPI, TestAPI } from "vitest";
 import type {
     FileAdapterMetadata,
     IFileStorageAdapter,
-} from "@/file-storage/contracts/_module.js";
-import type { Promisable } from "@/utilities/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
+import type { Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/test-utilities"`

@@ -2,16 +2,16 @@
  * @module FileStorage
  */
 
-import { InvalidKeyFileError } from "@/file-storage/contracts/_module.js";
+import { InvalidKeyFileError } from "@/file-storage/contracts/_module-exports.js";
 import { defaultKeyValidator } from "@/file-storage/implementations/plugins/with-file-storage-key-validator/default-key-validator.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
     IFileUrlAdapter,
     IFileStorageAdapter,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 import type { FileKeyValidator } from "@/file-storage/implementations/plugins/with-file-storage-key-validator/default-key-validator.js";
-import type { PluginFn } from "@/middleware/contracts/_module.js";
+import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Creates a plugin that validates every file key passed to a file-storage adapter.

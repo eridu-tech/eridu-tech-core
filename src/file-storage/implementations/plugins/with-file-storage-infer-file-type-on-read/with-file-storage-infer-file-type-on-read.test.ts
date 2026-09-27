@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/_module.js";
+import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/_module-exports.js";
 import { withFileStorageInferFileTypeOnRead } from "@/file-storage/implementations/plugins/with-file-storage-infer-file-type-on-read/with-file-storage-infer-file-type-on-read.js";
 import { enhanceFactory } from "@/middleware/implementations/enhance-factory/enhance-factory.js";
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
@@ -9,7 +9,7 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 import type {
     FileAdapterMetadata,
     ISignedFileStorageAdapter,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 
 function iterableOf(chunk: Uint8Array): AsyncIterable<Uint8Array> {
     return {

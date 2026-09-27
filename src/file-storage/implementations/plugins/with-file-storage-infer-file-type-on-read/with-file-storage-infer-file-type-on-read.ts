@@ -4,8 +4,8 @@
 
 import { fileTypeFromStream } from "file-type";
 
-import type { IFileStorageAdapter } from "@/file-storage/contracts/_module.js";
-import type { PluginFn } from "@/middleware/contracts/_module.js";
+import type { IFileStorageAdapter } from "@/file-storage/contracts/_module-exports.js";
+import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Creates a plugin that infers the content type from the actual file content
