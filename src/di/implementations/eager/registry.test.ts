@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 
-import { genericToken } from "@/di/contracts/_module.js";
+import { genericToken } from "@/di/contracts/_module-exports.js";
 import { Registry } from "@/di/implementations/eager/registry.js";
 
 const A = genericToken<number>("A");

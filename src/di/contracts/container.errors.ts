@@ -2,7 +2,7 @@
  * @module DI
  */
 
-import { isClass, UnexpectedError } from "@/utilities/_module.js";
+import { isClass, UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type { DiToken } from "@/di/contracts/container.contract.js";
 import type { InternalLifetime } from "@/di/implementations/eager/_shared.js";

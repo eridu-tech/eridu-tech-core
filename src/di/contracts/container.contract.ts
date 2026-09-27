@@ -5,7 +5,7 @@
 import type {
     IExecutionContext,
     ContextToken,
-} from "@/execution-context/contracts/_module.js";
+} from "@/execution-context/contracts/_module-exports.js";
 import type {
     AsyncLazy,
     IDeinitizable,
@@ -14,7 +14,7 @@ import type {
     Invocable,
     InvocableFn,
     Promisable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * Creates a new generic token identified by the given `id`.

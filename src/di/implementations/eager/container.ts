@@ -37,10 +37,10 @@ import type {
     DepRecord,
     EmptyDepRecord,
     AliasRegistration,
-} from "@/di/contracts/_module.js";
+} from "@/di/contracts/_module-exports.js";
 import type { CanNotResolveServiceDiErrorCreateData } from "@/di/contracts/container.errors.js";
 import type { Node } from "@/di/implementations/eager/_shared.js";
-import type { IExecutionContext } from "@/execution-context/contracts/_module.js";
+import type { IExecutionContext } from "@/execution-context/contracts/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/di"`
