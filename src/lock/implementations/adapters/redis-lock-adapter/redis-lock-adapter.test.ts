@@ -2,9 +2,9 @@ import { RedisContainer } from "@testcontainers/redis";
 import { Redis } from "ioredis";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { RedisLockAdapter } from "@/lock/implementations/adapters/redis-lock-adapter/_module.js";
-import { lockAdapterTestSuite } from "@/lock/implementations/test-utilities/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { RedisLockAdapter } from "@/lock/implementations/adapters/redis-lock-adapter/_module-exports.js";
+import { lockAdapterTestSuite } from "@/lock/implementations/test-utilities/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
 

@@ -1,22 +1,22 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { genericToken } from "@/di/contracts/_module.js";
+import { genericToken } from "@/di/contracts/_module-exports.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { NoOpLockAdapter } from "@/lock/implementations/adapters/_module.js";
-import { LockFactory } from "@/lock/implementations/derivables/_module.js";
+import { LockFactory } from "@/lock/implementations/derivables/_module-exports.js";
 import { Lock } from "@/lock/implementations/derivables/lock-factory/lock.js";
 import { registerWithLock } from "@/lock/implementations/middlewares/di/with-lock/with-lock.js";
-import { use } from "@/middleware/implementations/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { IContainer } from "@/di/contracts/_module.js";
+import type { IContainer } from "@/di/contracts/_module-exports.js";
 import type {
     ILockFactory,
     LockFactoryCreateSettings,
-} from "@/lock/contracts/_module.js";
+} from "@/lock/contracts/_module-exports.js";
 
 describe("function: registerWithLock", () => {
     const LOCK_FACTORY = genericToken<ILockFactory>("ILockFactory");

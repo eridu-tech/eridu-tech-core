@@ -7,8 +7,8 @@ import type {
     ILockFactory,
     ILockAdapter,
     ILockAdapterState,
-} from "@/lock/contracts/_module.js";
-import type { IDeinitizable, IPrunable } from "@/utilities/_module.js";
+} from "@/lock/contracts/_module-exports.js";
+import type { IDeinitizable, IPrunable } from "@/utilities/_module-exports.js";
 
 /**
  * Note the `MemoryLockAdapter` is limited to single process usage and cannot be shared across multiple servers or different processes.

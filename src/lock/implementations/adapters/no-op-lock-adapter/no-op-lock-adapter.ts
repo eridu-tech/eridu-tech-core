@@ -7,7 +7,7 @@ import type {
     ILockAdapterState,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ILockFactory,
-} from "@/lock/contracts/_module.js";
+} from "@/lock/contracts/_module-exports.js";
 
 /**
  * The `NoOpLockAdapter` will do nothing and is used for easily mocking {@link ILockFactory | `ILockFactory`} for testing.

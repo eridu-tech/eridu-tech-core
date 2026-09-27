@@ -2,7 +2,7 @@
  * @module Lock
  */
 
-import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module.js";
+import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type {
     ClientSession,
@@ -15,12 +15,15 @@ import type {
 import type {
     ILockAdapter,
     ILockAdapterState,
-} from "@/lock/contracts/_module.js";
+} from "@/lock/contracts/_module-exports.js";
 import type {
     ITransactionContext,
     TransactionAware,
-} from "@/transaction-context/contracts/_module.js";
-import type { IDeinitizable, IInitizable } from "@/utilities/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
+import type {
+    IDeinitizable,
+    IInitizable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `MongodbLockAdapter`.

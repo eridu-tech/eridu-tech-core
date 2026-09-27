@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, test } from "vitest";
 
-import { MemoryLockAdapter } from "@/lock/implementations/adapters/memory-lock-adapter/_module.js";
-import { lockAdapterTestSuite } from "@/lock/implementations/test-utilities/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { delay } from "@/utilities/_module.js";
+import { MemoryLockAdapter } from "@/lock/implementations/adapters/memory-lock-adapter/_module-exports.js";
+import { lockAdapterTestSuite } from "@/lock/implementations/test-utilities/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { delay } from "@/utilities/_module-exports.js";
 
-import type { ILockAdapterState } from "@/lock/contracts/_module.js";
+import type { ILockAdapterState } from "@/lock/contracts/_module-exports.js";
 
 describe("class: MemoryLockAdapter", () => {
     lockAdapterTestSuite({

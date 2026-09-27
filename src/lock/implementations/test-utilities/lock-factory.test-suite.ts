@@ -8,11 +8,11 @@ import {
     FailedReleaseLockError,
     FailedRefreshLockError,
     LOCK_STATE,
-} from "@/lock/contracts/_module.js";
+} from "@/lock/contracts/_module-exports.js";
 import { createIsTimeSpanEqualityTester } from "@/test-utilities/_module.js";
-import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { delay } from "@/utilities/_module.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { delay } from "@/utilities/_module-exports.js";
 
 import type { TestAPI, SuiteAPI, ExpectStatic, beforeEach } from "vitest";
 
@@ -22,10 +22,10 @@ import type {
     ILockExpiredState,
     ILockFactory,
     ILockUnavailableState,
-} from "@/lock/contracts/_module.js";
-import type { ISerde } from "@/serde/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Promisable } from "@/utilities/_module.js";
+} from "@/lock/contracts/_module-exports.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/lock/test-utilities"`

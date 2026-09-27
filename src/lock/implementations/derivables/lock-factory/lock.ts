@@ -7,9 +7,9 @@ import {
     FailedReleaseLockError,
     FailedRefreshLockError,
     LOCK_STATE,
-} from "@/lock/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { resolveLazyable } from "@/utilities/_module.js";
+} from "@/lock/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { resolveLazyable } from "@/utilities/_module-exports.js";
 
 import type {
     ILock,
@@ -18,9 +18,9 @@ import type {
     ILockExpiredState,
     ILockAcquiredState,
     ILockUnavailableState,
-} from "@/lock/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { AsyncLazy } from "@/utilities/_module.js";
+} from "@/lock/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 /**
  * @internal
