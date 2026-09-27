@@ -6,16 +6,16 @@ import { MysqlAdapter } from "kysely";
 
 import type { Kysely } from "kysely";
 
-import type { ICacheAdapter } from "@/cache/contracts/_module.js";
-import type { ISerde } from "@/serde/contracts/_module.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
+import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     IInitizable,
     InvocableFn,
     IPrunable,
     Promisable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/cache/kysely-cache-adapter"`

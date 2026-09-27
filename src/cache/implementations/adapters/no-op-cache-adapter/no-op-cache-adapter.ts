@@ -2,9 +2,12 @@
  * @module Cache
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { ICacheAdapter, ICache } from "@/cache/contracts/_module.js";
-import type { InvocableFn, Promisable } from "@/utilities/_module.js";
+import type {
+    ICacheAdapter,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ICache,
+} from "@/cache/contracts/_module-exports.js";
+import type { InvocableFn, Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * The `NoOpCacheAdapter` will do nothing and is used for easily mocking {@link ICache | `ICache`} for testing.

@@ -5,9 +5,9 @@ import { withCacheJitter } from "@/cache/implementations/plugins/with-cache-jitt
 import { enhanceFactory } from "@/middleware/implementations/enhance-factory/enhance-factory.js";
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
 import { withPluginFactory } from "@/middleware/implementations/with-plugin-factory/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { ICacheAdapter } from "@/cache/contracts/_module.js";
+import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
 
 describe("function: withCacheJitter", () => {
     const adapter = new NoOpCacheAdapter<string>();

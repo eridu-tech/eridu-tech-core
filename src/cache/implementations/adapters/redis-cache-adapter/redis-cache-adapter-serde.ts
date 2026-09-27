@@ -4,9 +4,9 @@
 import {
     DeserializationSerdeError,
     SerializationSerdeError,
-} from "@/serde/contracts/_module.js";
+} from "@/serde/contracts/_module-exports.js";
 
-import type { ISerde } from "@/serde/contracts/_module.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
 
 /**
  * @internal

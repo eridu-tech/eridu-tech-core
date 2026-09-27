@@ -4,10 +4,10 @@
 
 import { withCacheFactory } from "@/cache/implementations/middlewares/with-cache-factory/_module.js";
 
-import type { ICache } from "@/cache/contracts/_module.js";
+import type { ICache } from "@/cache/contracts/_module-exports.js";
 import type { WithCacheSettings } from "@/cache/implementations/middlewares/with-cache-factory/_module.js";
-import type { DiToken, IContainer } from "@/di/contracts/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
+import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Creates a cache middleware that resolves its {@link ICache} from a

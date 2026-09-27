@@ -2,21 +2,21 @@ import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { KyselyCacheAdapter } from "@/cache/implementations/adapters/kysely-cache-adapter/_module.js";
-import { cacheAdapterTestSuite } from "@/cache/implementations/test-utilities/_module.js";
-import { contextToken } from "@/execution-context/contracts/_module.js";
-import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
+import { KyselyCacheAdapter } from "@/cache/implementations/adapters/kysely-cache-adapter/_module-exports.js";
+import { cacheAdapterTestSuite } from "@/cache/implementations/test-utilities/_module-exports.js";
+import { contextToken } from "@/execution-context/contracts/_module-exports.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
-import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
-import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type { Database } from "better-sqlite3";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 
-import type { KyselyCacheTables } from "@/cache/implementations/adapters/kysely-cache-adapter/_module.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
+import type { KyselyCacheTables } from "@/cache/implementations/adapters/kysely-cache-adapter/_module-exports.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("sqlite class: KyselyCacheAdapter", () => {
     let database: Database;

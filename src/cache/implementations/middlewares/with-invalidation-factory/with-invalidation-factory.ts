@@ -2,11 +2,11 @@
  * @module Cache
  */
 
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
-import type { ICache } from "@/cache/contracts/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
-import type { Invocable } from "@/utilities/_module.js";
+import type { ICache } from "@/cache/contracts/_module-exports.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * @typeParam TParameters - Tuple type of the wrapped function's parameters.

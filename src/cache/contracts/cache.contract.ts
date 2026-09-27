@@ -2,7 +2,7 @@
  * @module Cache
  */
 
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Invocable,
@@ -10,7 +10,7 @@ import type {
     NoneFunc,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ValidationError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * The `IReadableCache` contract defines a read-only interface for accessing cached key-value pairs.

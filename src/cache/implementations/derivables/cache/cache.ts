@@ -5,21 +5,24 @@
 import {
     KeyNotFoundCacheError,
     KeyExistsCacheError,
-} from "@/cache/contracts/_module.js";
+} from "@/cache/contracts/_module-exports.js";
 import { withCacheSchema } from "@/cache/implementations/derivables/cache/with-cache-schema.js";
-import { withPlugin } from "@/middleware/implementations/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     callInvocable,
     isInvocable,
     resolveAsyncLazyable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
-import type { ICache, ICacheAdapter } from "@/cache/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { AsyncLazyable, NoneFunc } from "@/utilities/_module.js";
+import type {
+    ICache,
+    ICacheAdapter,
+} from "@/cache/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { AsyncLazyable, NoneFunc } from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `Cache` variants.

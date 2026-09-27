@@ -2,10 +2,10 @@
  * @module Cache
  */
 
-import { withJitter } from "@/utilities/_module.js";
+import { withJitter } from "@/utilities/_module-exports.js";
 
-import type { ICacheAdapter } from "@/cache/contracts/_module.js";
-import type { PluginFn } from "@/middleware/contracts/_module.js";
+import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
+import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Settings for the {@link withCacheJitter} plugin.

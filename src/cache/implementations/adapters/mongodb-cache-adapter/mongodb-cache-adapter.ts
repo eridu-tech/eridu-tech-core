@@ -6,8 +6,8 @@ import escapeStringRegexp from "escape-string-regexp";
 import { MongoServerError } from "mongodb";
 
 import { MongodbCacheAdapterSerde } from "@/cache/implementations/adapters/mongodb-cache-adapter/mongodb-cache-adapter-serde.js";
-import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module.js";
-import { UnexpectedError } from "@/utilities/_module.js";
+import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module-exports.js";
+import { UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type {
     ObjectId,
@@ -18,20 +18,20 @@ import type {
     ClientSession,
 } from "mongodb";
 
-import type { ICacheAdapter } from "@/cache/contracts/_module.js";
-import type { ISerde } from "@/serde/contracts/_module.js";
+import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
 import type {
     ITransactionContext,
     TransactionAware,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     IInitizable,
     InvocableFn,
     Promisable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `MongodbCacheAdapter`.

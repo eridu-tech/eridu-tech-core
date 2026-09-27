@@ -4,10 +4,10 @@
 
 import { withInvalidationFactory } from "@/cache/implementations/middlewares/with-invalidation-factory/_module.js";
 
-import type { ICache } from "@/cache/contracts/_module.js";
+import type { ICache } from "@/cache/contracts/_module-exports.js";
 import type { WithInvalidationSettings } from "@/cache/implementations/middlewares/with-invalidation-factory/_module.js";
-import type { DiToken, IContainer } from "@/di/contracts/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
+import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Creates a cache-invalidation middleware that resolves its {@link ICache} from

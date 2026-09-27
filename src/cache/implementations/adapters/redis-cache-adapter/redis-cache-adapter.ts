@@ -9,11 +9,11 @@ import { ClearIterable } from "@/cache/implementations/adapters/redis-cache-adap
 
 import type { Redis, Result } from "ioredis";
 
-import type { ICacheAdapter } from "@/cache/contracts/_module.js";
-import type { ISerde } from "@/serde/contracts/_module.js";
+import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import type { InvocableFn, Promisable } from "@/utilities/_module.js";
+import type { InvocableFn, Promisable } from "@/utilities/_module-exports.js";
 
 declare module "ioredis" {
     // eslint-disable-next-line @typescript-eslint/naming-convention

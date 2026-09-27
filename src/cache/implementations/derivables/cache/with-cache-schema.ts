@@ -3,12 +3,12 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { validate, ValidationError } from "@/utilities/_module.js";
+import { validate, ValidationError } from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
-import type { ICacheAdapter } from "@/cache/contracts/_module.js";
-import type { PluginFn } from "@/middleware/contracts/_module.js";
+import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
+import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 /**
