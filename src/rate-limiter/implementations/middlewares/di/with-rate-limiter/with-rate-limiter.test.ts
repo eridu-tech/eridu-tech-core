@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { genericToken } from "@/di/contracts/container.contract.js";
+import { genericToken } from "@/di/contracts/_module.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
@@ -11,7 +11,7 @@ import { RateLimiterFactory } from "@/rate-limiter/implementations/derivables/ra
 import { RateLimiter } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
 import { registerWithRateLimiter } from "@/rate-limiter/implementations/middlewares/di/with-rate-limiter/with-rate-limiter.js";
 
-import type { IContainer } from "@/di/contracts/container.contract.js";
+import type { IContainer } from "@/di/contracts/_module.js";
 import type {
     IRateLimiterFactory,
     RateLimiterFactoryCreateSettings,
