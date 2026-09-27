@@ -12,7 +12,7 @@ import { delay } from "@/utilities/_module.js";
 import type { TestAPI, SuiteAPI, ExpectStatic, beforeEach } from "vitest";
 
 import type { ICache } from "@/cache/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module.js";
 import type { Promisable } from "@/utilities/_module.js";
 
 /**
