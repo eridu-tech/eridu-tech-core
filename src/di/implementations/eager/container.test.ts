@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 import { describe, test, expect, beforeEach, vi } from "vitest";
 
-import { genericToken, LIFETIME } from "@/di/contracts/container.contract.js";
+import { genericToken, LIFETIME } from "@/di/contracts/_module.js";
 import {
     InvalidGraphDiError,
     InvalidMethodCallDiError,
@@ -26,8 +26,8 @@ import type {
     ServiceFactory,
     DepsTokens,
     Lifetime,
-} from "@/di/contracts/container.contract.js";
-import type { IExecutionContext } from "@/execution-context/contracts/execution-context.contract.js";
+} from "@/di/contracts/_module.js";
+import type { IExecutionContext } from "@/execution-context/contracts/_module.js";
 
 // ---------------------------------------------------------------------------
 // Helper tokens and test classes

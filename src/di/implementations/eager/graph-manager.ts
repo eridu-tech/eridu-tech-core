@@ -28,7 +28,7 @@ import type {
     FactoryRegistrationOverride,
     DepRecord,
     EmptyDepRecord,
-} from "@/di/contracts/container.contract.js";
+} from "@/di/contracts/_module.js";
 import type {
     NodeProps,
     EdgeProps,

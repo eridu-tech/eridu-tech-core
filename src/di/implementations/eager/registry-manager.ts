@@ -1,13 +1,13 @@
 /**
  * @module DI
  */
-import { genericToken } from "@/di/contracts/container.contract.js";
+import { genericToken } from "@/di/contracts/_module.js";
 import { INTERNAL_LIFETIME } from "@/di/implementations/eager/_shared.js";
 import { Registry } from "@/di/implementations/eager/registry.js";
 import { tokenToString } from "@/di/implementations/eager/utils.js";
 import { UnexpectedError } from "@/utilities/_module-exports.js";
 
-import type { DiToken } from "@/di/contracts/container.contract.js";
+import type { DiToken } from "@/di/contracts/_module.js";
 import type { InternalLifetime } from "@/di/implementations/eager/_shared.js";
 import type { IExecutionContext } from "@/execution-context/contracts/_module-exports.js";
 /**
