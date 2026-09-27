@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module.js";
 import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module.js";
 
-import type { WritableFileAdapterContent } from "@/file-storage/contracts/file-storage-adapter.contract.js";
+import type { WritableFileAdapterContent } from "@/file-storage/contracts/_module.js";
 import type { MemoryFile } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module.js";
 
 describe("class: MemoryFileStorageAdapter", () => {
