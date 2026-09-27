@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeEach } from "vitest";
 
-import { contextToken } from "@/execution-context/contracts/execution-context.contract.js";
+import { contextToken } from "@/execution-context/contracts/_module.js";
 import { NotFoundExecutionContextError } from "@/execution-context/contracts/execution-context.errors.js";
 import { Context } from "@/execution-context/implementations/derivables/execution-context/context.js";
 

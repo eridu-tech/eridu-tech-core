@@ -13,7 +13,7 @@ import {
     resolveLazyable,
 } from "@/utilities/_module.js";
 
-import type { DiToken } from "@/di/contracts/container.contract.js";
+import type { DiToken } from "@/di/contracts/_module.js";
 import type {
     ContextToken,
     DecrementSettings,
