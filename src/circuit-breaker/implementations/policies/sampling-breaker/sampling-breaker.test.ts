@@ -4,9 +4,9 @@ import {
     CLOSED_TRANSITIONS,
     CIRCUIT_BREAKER_STATE,
     HALF_OPEN_TRANSITIONS,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import { SamplingBreaker } from "@/circuit-breaker/implementations/policies/sampling-breaker/sampling-breaker.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { SamplingBreakerState } from "@/circuit-breaker/implementations/policies/sampling-breaker/sampling-breaker.js";
 

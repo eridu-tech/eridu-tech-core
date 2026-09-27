@@ -7,26 +7,26 @@ import {
     IsolatedCircuitBreakerError,
     CIRCUIT_BREAKER_TRIGGER,
     CIRCUIT_BREAKER_STATE,
-} from "@/circuit-breaker/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     callErrorPolicyOnThrow,
     callInvocable,
     resolveAsyncLazyable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     CircuitBreakerState,
     CircuitBreakerTrigger,
     ICircuitBreaker,
     ICircuitBreakerAdapter,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import type {
     AsyncLazy,
     ErrorPolicy,
     InvocableFn,
     WaitUntil,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal

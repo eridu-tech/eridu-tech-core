@@ -2,17 +2,17 @@
  * @module CircuitBreaker
  */
 
-import { CIRCUIT_BREAKER_TRIGGER } from "@/circuit-breaker/contracts/_module.js";
+import { CIRCUIT_BREAKER_TRIGGER } from "@/circuit-breaker/contracts/_module-exports.js";
 import { CircuitBreakerSerdeTransformer } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-serde-transformer.js";
 import { CircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
 import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
 import { Serde } from "@/serde/implementations/derivables/serde.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     CORE,
     defaultWaitUntil,
     resolveOneOrMore,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     CircuitBreakerFactoryCreateSettings,
@@ -20,10 +20,14 @@ import type {
     ICircuitBreakerFactory,
     ICircuitBreakerAdapter,
     CircuitBreakerTrigger,
-} from "@/circuit-breaker/contracts/_module.js";
-import type { ISerdeRegister } from "@/serde/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { ErrorPolicy, OneOrMore, WaitUntil } from "@/utilities/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type {
+    ErrorPolicy,
+    OneOrMore,
+    WaitUntil,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `CircuitBreakerFactory` variants.

@@ -2,11 +2,11 @@
  * @module CircuitBreaker
  */
 
-import { exponentialBackoff } from "@/backoff-policies/implementations/_module.js";
+import { exponentialBackoff } from "@/backoff-policies/implementations/_module-exports.js";
 import { CircuitBreakerStateManager } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/circuit-breaker-state-manager.js";
 import { CircuitBreakerStorage } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/circuit-breaker-storage.js";
 import { InternalCircuitBreakerPolicy } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/internal-circuit-breaker-policy.js";
-import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module.js";
+import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 
 import type { BackoffPolicy } from "@/backoff-policies/contracts/_module.js";
 import type {
@@ -15,7 +15,7 @@ import type {
     CircuitBreakerState,
     CircuitBreakerStateTransition,
     ICircuitBreakerPolicy,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import type { AllCircuitBreakerState } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/internal-circuit-breaker-policy.js";
 
 /**

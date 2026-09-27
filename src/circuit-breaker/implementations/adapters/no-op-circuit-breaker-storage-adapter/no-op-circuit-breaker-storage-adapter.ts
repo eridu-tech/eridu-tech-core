@@ -7,8 +7,8 @@ import type {
     ICircuitBreakerFactory,
     ICircuitBreakerStorageAdapter,
     ICircuitBreakerStorageAdapterTransaction,
-} from "@/circuit-breaker/contracts/_module.js";
-import type { InvocableFn } from "@/utilities/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
+import type { InvocableFn } from "@/utilities/_module-exports.js";
 
 /**
  * The `NoOpCircuitBreakerStorageAdapter` will do nothing and is used for easily mocking {@link ICircuitBreakerFactory | `ICircuitBreakerFactory`} for testing.

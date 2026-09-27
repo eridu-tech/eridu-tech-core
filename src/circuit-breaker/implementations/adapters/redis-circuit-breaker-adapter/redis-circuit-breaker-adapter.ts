@@ -6,25 +6,25 @@ import {
     BACKOFFS,
     resolveBackoffSettingsEnum,
     serializeBackoffSettingsEnum,
-} from "@/backoff-policies/implementations/_module.js";
-import { CIRCUIT_BREAKER_STATE } from "@/circuit-breaker/contracts/_module.js";
+} from "@/backoff-policies/implementations/_module-exports.js";
+import { CIRCUIT_BREAKER_STATE } from "@/circuit-breaker/contracts/_module-exports.js";
 import { circuitBreakerFactoryLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/_module.js";
 import {
     BREAKER_POLICIES,
     resolveCircuitBreakerPolicySettings,
     serializeCircuitBreakerPolicySettingsEnum,
-} from "@/circuit-breaker/implementations/policies/_module.js";
+} from "@/circuit-breaker/implementations/policies/_module-exports.js";
 
 import type { Redis, Result } from "ioredis";
 
-import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module.js";
+import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module-exports.js";
 import type {
     CircuitBreakerStateTransition,
     ICircuitBreakerAdapter,
     CircuitBreakerState,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import type { AllCircuitBreakerState } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/internal-circuit-breaker-policy.js";
-import type { CircuitBreakerPolicySettingsEnum } from "@/circuit-breaker/implementations/policies/_module.js";
+import type { CircuitBreakerPolicySettingsEnum } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 
 /**
  * Configuration for `RedisCircuitBreakerAdapter`.

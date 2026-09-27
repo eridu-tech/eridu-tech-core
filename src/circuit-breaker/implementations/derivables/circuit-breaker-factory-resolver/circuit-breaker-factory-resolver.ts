@@ -8,17 +8,17 @@ import {
     UnregisteredAdapterError,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     DefaultAdapterNotDefinedError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     ICircuitBreakerFactoryResolver,
     CircuitBreakerTrigger,
     ICircuitBreakerFactory,
     ICircuitBreakerAdapter,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import type { CircuitBreakerFactorySettingsBase } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { ErrorPolicy, WaitUntil } from "@/utilities/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { ErrorPolicy, WaitUntil } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`

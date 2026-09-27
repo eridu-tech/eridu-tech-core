@@ -3,16 +3,20 @@
  */
 
 import { CircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
-import { getConstructorName } from "@/utilities/_module.js";
+import { getConstructorName } from "@/utilities/_module-exports.js";
 
 import type {
     CircuitBreakerTrigger,
     ICircuitBreakerAdapter,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import type { ISerializedCircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
-import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
-import type { TimeSpan } from "@/time-span/implementations/_module.js";
-import type { ErrorPolicy, OneOrMore, WaitUntil } from "@/utilities/_module.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
+import type { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import type {
+    ErrorPolicy,
+    OneOrMore,
+    WaitUntil,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal

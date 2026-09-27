@@ -6,7 +6,7 @@ import { enhanceFactory } from "@/middleware/implementations/enhance-factory/enh
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
 import { withPluginFactory } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
-import type { ICircuitBreakerAdapter } from "@/circuit-breaker/contracts/_module.js";
+import type { ICircuitBreakerAdapter } from "@/circuit-breaker/contracts/_module-exports.js";
 
 describe("function: withCircuitBreakerPrefix", () => {
     const adapter = new NoOpCircuitBreakerAdapter();

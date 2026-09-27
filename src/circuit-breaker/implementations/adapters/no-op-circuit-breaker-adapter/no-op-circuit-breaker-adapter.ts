@@ -5,7 +5,7 @@
 import {
     CIRCUIT_BREAKER_STATE,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 
 import type {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -13,7 +13,7 @@ import type {
     CircuitBreakerState,
     CircuitBreakerStateTransition,
     ICircuitBreakerAdapter,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 
 /**
  * The `NoOpCircuitBreakerAdapter` will do nothing and is used for easily mocking {@link ICircuitBreakerFactory | `ICircuitBreakerFactory`} for testing.

@@ -5,7 +5,7 @@
 import type {
     ICircuitBreakerStorageAdapter,
     CircuitBreakerStateTransition,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import type {
     AllCircuitBreakerState,
     InternalCircuitBreakerPolicy,

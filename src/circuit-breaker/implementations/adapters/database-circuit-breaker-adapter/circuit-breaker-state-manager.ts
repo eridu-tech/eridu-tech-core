@@ -2,7 +2,7 @@
  * @module CircuitBreaker
  */
 
-import { CIRCUIT_BREAKER_STATE } from "@/circuit-breaker/contracts/_module.js";
+import { CIRCUIT_BREAKER_STATE } from "@/circuit-breaker/contracts/_module-exports.js";
 
 import type { BackoffPolicy } from "@/backoff-policies/contracts/_module.js";
 import type { InternalCircuitBreakerPolicy } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/internal-circuit-breaker-policy.js";

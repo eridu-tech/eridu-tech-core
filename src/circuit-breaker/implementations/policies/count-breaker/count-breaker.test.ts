@@ -4,7 +4,7 @@ import {
     CLOSED_TRANSITIONS,
     CIRCUIT_BREAKER_STATE,
     HALF_OPEN_TRANSITIONS,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import { CountBreaker } from "@/circuit-breaker/implementations/policies/count-breaker/count-breaker.js";
 
 import type { CountBreakerState } from "@/circuit-breaker/implementations/policies/count-breaker/count-breaker.js";

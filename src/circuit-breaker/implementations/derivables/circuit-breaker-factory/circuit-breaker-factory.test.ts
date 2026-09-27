@@ -5,17 +5,17 @@ import {
     OpenCircuitBreakerError,
     CIRCUIT_BREAKER_TRIGGER,
     CIRCUIT_BREAKER_STATE,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import {
     DatabaseCircuitBreakerAdapter,
     MemoryCircuitBreakerStorageAdapter,
 } from "@/circuit-breaker/implementations/adapters/_module.js";
 import { CircuitBreakerFactory } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-factory.js";
-import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module.js";
+import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
 import { Serde } from "@/serde/implementations/derivables/serde.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { delay } from "@/utilities/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { delay } from "@/utilities/_module-exports.js";
 
 import type {
     CircuitBreakerStateTransition,
@@ -23,7 +23,7 @@ import type {
     ICircuitBreakerFactory,
     CircuitBreakerState,
     ICircuitBreaker,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 
 describe("class: CircuitBreakerFactory", () => {
     const adapter: ICircuitBreakerAdapter = {
