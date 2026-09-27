@@ -2,11 +2,11 @@ import { describe, expect, test, vi } from "vitest";
 
 import { RetryResilienceError } from "@/resilience/implementations/resilience.errors.js";
 import { retry } from "@/resilience/implementations/retry/retry.js";
-import { TO_MILLISECONDS } from "@/time-span/contracts/time-span.contract.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module.js";
 
 import type { NextFn } from "@/middleware/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module.js";
 import type { InvocableFn } from "@/utilities/_module.js";
 
 describe("function: retry", () => {
