@@ -7,14 +7,14 @@ import {
     resolveAsyncLazyable,
     callInvocable,
     callErrorPolicyOnThrow,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 import type {
     Invocable,
     AsyncLazyable,
     ErrorPolicySettings,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/resilience"`

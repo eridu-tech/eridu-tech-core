@@ -3,13 +3,13 @@
  */
 
 import { TimeoutResilienceError } from "@/resilience/implementations/resilience.errors.js";
-import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Invocable } from "@/utilities/_module.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/resilience"`
