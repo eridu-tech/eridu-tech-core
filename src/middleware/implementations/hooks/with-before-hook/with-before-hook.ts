@@ -2,10 +2,10 @@
  * @module Middleware
  */
 
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
-import type { Invocable, Promisable } from "@/utilities/_module.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
+import type { Invocable, Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * Callback invoked before the wrapped function executes.

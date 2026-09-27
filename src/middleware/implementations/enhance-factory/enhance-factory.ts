@@ -11,8 +11,8 @@ import type {
     InferReturn,
     Middleware,
     Use,
-} from "@/middleware/contracts/_module.js";
-import type { InvocableFn, OneOrMore } from "@/utilities/_module.js";
+} from "@/middleware/contracts/_module-exports.js";
+import type { InvocableFn, OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * @internal

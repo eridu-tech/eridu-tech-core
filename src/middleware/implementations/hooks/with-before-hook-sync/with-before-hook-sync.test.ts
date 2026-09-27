@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { use } from "@/middleware/implementations/_module.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 import { withBeforeHookSync } from "@/middleware/implementations/hooks/with-before-hook-sync/with-before-hook-sync.js";
 
 describe("function: withBeforeHookSync", () => {

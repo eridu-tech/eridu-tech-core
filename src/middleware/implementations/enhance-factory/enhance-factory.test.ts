@@ -7,7 +7,7 @@ import type {
     MiddlewareFn,
     NextFn,
     Use,
-} from "@/middleware/contracts/_module.js";
+} from "@/middleware/contracts/_module-exports.js";
 
 describe("function: enhanceFactory", () => {
     afterEach(() => {

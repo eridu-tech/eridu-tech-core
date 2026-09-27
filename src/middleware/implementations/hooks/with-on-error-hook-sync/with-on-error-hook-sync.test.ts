@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { use } from "@/middleware/implementations/_module.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 import { withOnErrorSync } from "@/middleware/implementations/hooks/with-on-error-hook-sync/with-on-error-hook-sync.js";
 
 describe("function: withOnErrorSync", () => {
