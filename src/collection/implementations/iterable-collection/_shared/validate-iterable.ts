@@ -1,7 +1,7 @@
 /**
  * @module Collection
  */
-import { validateSync, ValidationError } from "@/utilities/_module.js";
+import { validateSync, ValidationError } from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 

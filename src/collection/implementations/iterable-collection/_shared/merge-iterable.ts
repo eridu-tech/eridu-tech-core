@@ -2,9 +2,9 @@
  * @module Collection
  */
 
-import { resolveIterableValue } from "@/utilities/_module.js";
+import { resolveIterableValue } from "@/utilities/_module-exports.js";
 
-import type { IterableValue } from "@/utilities/_module.js";
+import type { IterableValue } from "@/utilities/_module-exports.js";
 
 /**
  * @internal

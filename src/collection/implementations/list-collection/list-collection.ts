@@ -6,7 +6,7 @@ import {
     ItemNotFoundCollectionError,
     MultipleItemsFoundCollectionError,
     EmptyCollectionError,
-} from "@/collection/contracts/_module.js";
+} from "@/collection/contracts/_module-exports.js";
 import {
     isInvocable,
     isIterable,
@@ -20,7 +20,7 @@ import {
     optionNone,
     ValidationError,
     validateSync,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
@@ -39,9 +39,13 @@ import type {
     EnsureMap,
     EnsureRecord,
     SerializedCollection,
-} from "@/collection/contracts/_module.js";
-import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
-import type { IterableValue, Lazyable, Option } from "@/utilities/_module.js";
+} from "@/collection/contracts/_module-exports.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
+import type {
+    IterableValue,
+    Lazyable,
+    Option,
+} from "@/utilities/_module-exports.js";
 
 /**
  * All methods in `ListCollection` are executed eagerly.

@@ -6,7 +6,7 @@ import {
     ItemNotFoundCollectionError,
     MultipleItemsFoundCollectionError,
     EmptyCollectionError,
-} from "@/collection/contracts/_module.js";
+} from "@/collection/contracts/_module-exports.js";
 import {
     CrossJoinIterable,
     SlidingIteralbe,
@@ -52,7 +52,7 @@ import {
     optionSome,
     optionNone,
     OPTION,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
@@ -71,9 +71,13 @@ import type {
     EnsureMap,
     EnsureRecord,
     SerializedCollection,
-} from "@/collection/contracts/_module.js";
-import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
-import type { IterableValue, Lazyable, Option } from "@/utilities/_module.js";
+} from "@/collection/contracts/_module-exports.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
+import type {
+    IterableValue,
+    Lazyable,
+    Option,
+} from "@/utilities/_module-exports.js";
 
 /**
  * All methods that return {@link ICollection | `ICollection`} are executed lazly, meaning the execution will occur iterating the items withthe `forEach` method or `for of` loop.

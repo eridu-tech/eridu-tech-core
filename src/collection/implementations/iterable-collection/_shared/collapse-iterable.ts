@@ -2,9 +2,12 @@
  * @module Collection
  */
 
-import { isIterable } from "@/utilities/_module.js";
+import { isIterable } from "@/utilities/_module-exports.js";
 
-import type { Collapse, ICollection } from "@/collection/contracts/_module.js";
+import type {
+    Collapse,
+    ICollection,
+} from "@/collection/contracts/_module-exports.js";
 
 /**
  * @internal
