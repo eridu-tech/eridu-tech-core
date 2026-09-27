@@ -2,12 +2,12 @@
  * @module EventBus
  */
 
-import { resolveInvocable } from "@/utilities/_module.js";
+import { resolveInvocable } from "@/utilities/_module-exports.js";
 
 import type {
     EventListener,
     EventListenerFn,
-} from "@/event-bus/contracts/_module.js";
+} from "@/event-bus/contracts/_module-exports.js";
 
 /**
  * @internal

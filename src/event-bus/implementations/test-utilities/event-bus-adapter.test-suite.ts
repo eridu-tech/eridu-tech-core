@@ -4,16 +4,16 @@
 
 import { describe, vi } from "vitest";
 
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { delay } from "@/utilities/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { delay } from "@/utilities/_module-exports.js";
 
 import type { TestAPI, SuiteAPI, ExpectStatic, beforeEach } from "vitest";
 
 import type {
     BaseEvent,
     IEventBusAdapter,
-} from "@/event-bus/contracts/_module.js";
-import type { Promisable } from "@/utilities/_module.js";
+} from "@/event-bus/contracts/_module-exports.js";
+import type { Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/event-bus/test-utilities"`

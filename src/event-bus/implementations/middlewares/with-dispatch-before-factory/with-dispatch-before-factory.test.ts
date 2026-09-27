@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/_module.js";
-import { EventBus } from "@/event-bus/implementations/derivables/_module.js";
+import { EventBus } from "@/event-bus/implementations/derivables/_module-exports.js";
 import { withDispatchBeforeFactory } from "@/event-bus/implementations/middlewares/with-dispatch-before-factory/with-dispatch-before-factory.js";
-import { use } from "@/middleware/implementations/_module.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 
 import type { WithDispatchBeforePayloadSettings } from "@/event-bus/implementations/middlewares/with-dispatch-before-factory/with-dispatch-before-factory.js";
 

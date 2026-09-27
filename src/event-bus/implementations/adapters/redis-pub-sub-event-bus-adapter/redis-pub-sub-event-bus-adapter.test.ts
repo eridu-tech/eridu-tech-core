@@ -5,19 +5,19 @@ import { Kysely, SqliteDialect } from "kysely";
 import { describe, test, beforeEach, expect, afterEach, vi } from "vitest";
 
 import { RedisPubSubEventBusAdapter } from "@/event-bus/implementations/adapters/redis-pub-sub-event-bus-adapter/redis-pub-sub-event-bus-adapter.js";
-import { eventBusAdapterTestSuite } from "@/event-bus/implementations/test-utilities/_module.js";
-import { contextToken } from "@/execution-context/contracts/_module.js";
-import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
+import { eventBusAdapterTestSuite } from "@/event-bus/implementations/test-utilities/_module-exports.js";
+import { contextToken } from "@/execution-context/contracts/_module-exports.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/kysely-transaction-adapter.js";
-import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
 
-import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module.js";
+import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("class: RedisPubSubEventBusAdapter", () => {

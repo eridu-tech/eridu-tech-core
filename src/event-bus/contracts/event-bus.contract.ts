@@ -11,7 +11,7 @@ import type {
     OneOrArray,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ValidationError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * Base type for event maps - a record of event names to their event payloads.

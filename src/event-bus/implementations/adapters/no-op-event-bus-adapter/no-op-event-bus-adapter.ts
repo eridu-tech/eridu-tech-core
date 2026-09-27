@@ -8,7 +8,7 @@ import type {
     IEventBusAdapter,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     IEventBus,
-} from "@/event-bus/contracts/_module.js";
+} from "@/event-bus/contracts/_module-exports.js";
 
 /**
  * The `NoOpEventBusAdapter` will do nothing and is used for easily mocking {@link IEventBus | `IEventBus`} for testing.

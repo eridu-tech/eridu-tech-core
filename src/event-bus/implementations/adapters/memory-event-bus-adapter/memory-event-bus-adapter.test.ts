@@ -5,14 +5,14 @@ import { Kysely, SqliteDialect } from "kysely";
 import { describe, test, beforeEach, expect, vi } from "vitest";
 
 import { MemoryEventBusAdapter } from "@/event-bus/implementations/adapters/memory-event-bus-adapter/memory-event-bus-adapter.js";
-import { eventBusAdapterTestSuite } from "@/event-bus/implementations/test-utilities/_module.js";
-import { contextToken } from "@/execution-context/contracts/_module.js";
-import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
-import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
-import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
+import { eventBusAdapterTestSuite } from "@/event-bus/implementations/test-utilities/_module-exports.js";
+import { contextToken } from "@/execution-context/contracts/_module-exports.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module.js";
+import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 describe("class: MemoryEventBusAdapter", () => {
     eventBusAdapterTestSuite({

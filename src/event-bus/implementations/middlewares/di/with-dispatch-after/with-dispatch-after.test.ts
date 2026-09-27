@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { genericToken } from "@/di/contracts/_module.js";
+import { genericToken } from "@/di/contracts/_module-exports.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
 import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/_module.js";
-import { EventBus } from "@/event-bus/implementations/derivables/_module.js";
+import { EventBus } from "@/event-bus/implementations/derivables/_module-exports.js";
 import { registerWithDispatchAfter } from "@/event-bus/implementations/middlewares/di/with-dispatch-after/with-dispatch-after.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
-import { use } from "@/middleware/implementations/_module.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 
-import type { IContainer } from "@/di/contracts/_module.js";
-import type { IEventDispatcher } from "@/event-bus/contracts/_module.js";
+import type { IContainer } from "@/di/contracts/_module-exports.js";
+import type { IEventDispatcher } from "@/event-bus/contracts/_module-exports.js";
 import type { WithDispatchAfterPayloadSettings } from "@/event-bus/implementations/middlewares/with-dispatch-after-factory/with-dispatch-after-factory.js";
 
 describe("function: registerWithDispatchAfter", () => {

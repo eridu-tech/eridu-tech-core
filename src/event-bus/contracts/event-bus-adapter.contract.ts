@@ -2,7 +2,7 @@
  * @module EventBus
  */
 
-import type { InvocableFn } from "@/utilities/_module.js";
+import type { InvocableFn } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/event-bus/contracts"`

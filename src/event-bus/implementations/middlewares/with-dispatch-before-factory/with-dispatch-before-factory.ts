@@ -3,14 +3,14 @@
  */
 
 import { withBeforeHook } from "@/middleware/implementations/hooks/_module.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
     BaseEventMap,
     IEventDispatcher,
-} from "@/event-bus/contracts/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
-import type { Invocable } from "@/utilities/_module.js";
+} from "@/event-bus/contracts/_module-exports.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * The settings object passed to the {@link WithDispatchBeforeSettings.payload | `payload`}
