@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { z } from "zod";
 
-import { MemoryEventBusAdapter } from "@/event-bus/implementations/adapters/_module.js";
+import { MemoryEventBusAdapter } from "@/event-bus/implementations/adapters/memory-event-bus-adapter/_module-exports.js";
 import { withEventBusSchema } from "@/event-bus/implementations/derivables/event-bus/with-event-bus-schema.js";
 import { enhanceFactory } from "@/middleware/implementations/enhance-factory/enhance-factory.js";
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";

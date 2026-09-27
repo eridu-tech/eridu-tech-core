@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/_module.js";
+import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/no-op-event-bus-adapter/_module-exports.js";
 import { EventBus } from "@/event-bus/implementations/derivables/_module-exports.js";
 import { withDispatchOnErrorFactory } from "@/event-bus/implementations/middlewares/with-dispatch-on-error-factory/with-dispatch-on-error-factory.js";
 import { use } from "@/middleware/implementations/_module-exports.js";

@@ -7,7 +7,7 @@ import { EventEmitter } from "node:events";
 import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     SuperJsonSerdeAdapter,
-} from "@/serde/implementations/adapters/_module.js";
+} from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type { Redis } from "ioredis";
