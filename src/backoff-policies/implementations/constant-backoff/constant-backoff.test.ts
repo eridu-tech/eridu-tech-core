@@ -4,9 +4,9 @@ import {
     constantBackoff,
     resolveConstantBackoffSettings,
 } from "@/backoff-policies/implementations/constant-backoff/constant-backoff.js";
-import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 describe("function: resolveConstantBackoffSettings", () => {
     test("Should use default values when no settings are provided", () => {
