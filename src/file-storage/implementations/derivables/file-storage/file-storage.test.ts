@@ -5,7 +5,7 @@ import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapter
 import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js";
 import { FileStorage } from "@/file-storage/implementations/derivables/file-storage/file-storage.js";
 import { fileStorageTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
 import type {
