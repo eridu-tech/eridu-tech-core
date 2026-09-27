@@ -6,13 +6,11 @@ import {
     CIRCUIT_BREAKER_TRIGGER,
     CIRCUIT_BREAKER_STATE,
 } from "@/circuit-breaker/contracts/_module-exports.js";
-import {
-    DatabaseCircuitBreakerAdapter,
-    MemoryCircuitBreakerStorageAdapter,
-} from "@/circuit-breaker/implementations/adapters/_module.js";
+import { DatabaseCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/_module-exports.js";
+import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementations/adapters/memory-circuit-breaker-storage-adapter/_module-exports.js";
 import { CircuitBreakerFactory } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-factory.js";
 import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/serde.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { delay } from "@/utilities/_module-exports.js";

@@ -5,7 +5,7 @@
 import { CIRCUIT_BREAKER_TRIGGER } from "@/circuit-breaker/contracts/_module-exports.js";
 import { CircuitBreakerSerdeTransformer } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-serde-transformer.js";
 import { CircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
+import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/serde.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
