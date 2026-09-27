@@ -5,7 +5,10 @@
 import type { Get, Paths } from "type-fest";
 
 // eslint-disable-next-line import/order
-import type { OneOrArray, UndefinedToNull } from "@/utilities/_module.js";
+import type {
+    OneOrArray,
+    UndefinedToNull,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @group Contracts
