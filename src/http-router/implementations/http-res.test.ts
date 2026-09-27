@@ -4,9 +4,9 @@
 
 import { describe, expect, test, vi } from "vitest";
 
-import { FileSize } from "@/file-size/implementations/_module.js";
+import { FileSize } from "@/file-size/implementations/_module-exports.js";
 import { HttpRes } from "@/http-router/implementations/http-res.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 describe("class: HttpRes", () => {
     describe("constructor", () => {

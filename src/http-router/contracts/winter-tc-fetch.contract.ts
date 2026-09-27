@@ -1,7 +1,7 @@
 /**
  * @module HttpRouter
  */
-import type { InvocableFn } from "@/utilities/_module.js";
+import type { InvocableFn } from "@/utilities/_module-exports.js";
 
 /**
  * A function that handles an HTTP request using the WinterTC fetch signature.

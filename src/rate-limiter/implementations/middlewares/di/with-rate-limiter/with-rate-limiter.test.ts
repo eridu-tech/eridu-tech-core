@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { genericToken } from "@/di/contracts/_module.js";
+import { genericToken } from "@/di/contracts/_module-exports.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
-import { use } from "@/middleware/implementations/_module.js";
-import { NoOpRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/_module.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
+import { NoOpRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/no-op-rate-limiter-adapter/_module-exports.js";
 import { RateLimiterFactory } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/_module.js";
 import { RateLimiter } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
 import { registerWithRateLimiter } from "@/rate-limiter/implementations/middlewares/di/with-rate-limiter/with-rate-limiter.js";
 
-import type { IContainer } from "@/di/contracts/_module.js";
+import type { IContainer } from "@/di/contracts/_module-exports.js";
 import type {
     IRateLimiterFactory,
     RateLimiterFactoryCreateSettings,
-} from "@/rate-limiter/contracts/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
 
 describe("function: registerWithRateLimiter", () => {
     const RATE_LIMITER_FACTORY = genericToken<IRateLimiterFactory>(

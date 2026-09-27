@@ -13,14 +13,14 @@ import type {
 import type {
     ICircuitBreakerStorageAdapter,
     ICircuitBreakerStorageAdapterTransaction,
-} from "@/circuit-breaker/contracts/_module.js";
-import type { ISerde } from "@/serde/contracts/_module.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     IInitizable,
     InvocableFn,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/mongodb-circuit-breaker-storage-adapter"`

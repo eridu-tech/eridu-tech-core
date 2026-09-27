@@ -7,7 +7,7 @@ import {
     callInvocable,
     isInvocable,
     resolveOneOrMore,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { Router } from "hono/router";
 
@@ -17,7 +17,7 @@ import type {
     HttpRouteGroup,
     IHttpEndpoint,
     IHttpRouterBase,
-} from "@/http-router/contracts/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
 import type { RouterEntry } from "@/http-router/implementations/types.js";
 
 const DEFAULT_METHODS: Array<HttpMethod> = [

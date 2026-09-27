@@ -2,7 +2,7 @@
  * @module Cache
  */
 
-import type { InvocableFn, Promisable } from "@/utilities/_module.js";
+import type { InvocableFn, Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * Low-level adapter contract for cache storage operations.

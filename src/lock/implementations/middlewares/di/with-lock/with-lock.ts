@@ -4,10 +4,10 @@
 
 import { withLockFactory } from "@/lock/implementations/middlewares/with-lock-factory/_module.js";
 
-import type { DiToken, IContainer } from "@/di/contracts/_module.js";
-import type { ILockFactory } from "@/lock/contracts/_module.js";
+import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type { ILockFactory } from "@/lock/contracts/_module-exports.js";
 import type { WithLockSettings } from "@/lock/implementations/middlewares/with-lock-factory/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Creates a distributed-lock middleware that resolves its {@link ILockFactory}

@@ -3,7 +3,7 @@
  */
 
 import type { ISharedLock } from "@/shared-lock/contracts/shared-lock.contract.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
 /**
  * Configuration settings for creating a shared lock instance through the factory.

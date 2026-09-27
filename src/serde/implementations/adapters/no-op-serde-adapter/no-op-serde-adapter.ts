@@ -6,7 +6,7 @@ import type {
     ISerdeTransformerAdapter,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     IFlexibleSerde,
-} from "@/serde/contracts/_module.js";
+} from "@/serde/contracts/_module-exports.js";
 
 /**
  * The `NoOpSerdeAdapter` will do nothing and is used for easily mocking {@link IFlexibleSerde | `IFlexibleSerde`} for testing.

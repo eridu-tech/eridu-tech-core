@@ -8,8 +8,8 @@ import type {
     IRateLimiterData,
     IRateLimiterStorageAdapter,
     IRateLimiterStorageAdapterTransaction,
-} from "@/rate-limiter/contracts/_module.js";
-import type { InvocableFn } from "@/utilities/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
+import type { InvocableFn } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter/no-op-rate-limiter-storage-adapter"`

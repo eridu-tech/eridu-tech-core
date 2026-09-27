@@ -5,7 +5,7 @@
 import type {
     ITransaction,
     ITransactionAdapter,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 
 /**
  * A no-op implementation of {@link ITransactionAdapter} that provides no real

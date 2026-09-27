@@ -4,9 +4,9 @@
 
 import { withSharedLockFactory } from "@/shared-lock/implementations/middlewares/with-shared-lock-factory/_module.js";
 
-import type { DiToken, IContainer } from "@/di/contracts/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
-import type { ISharedLockFactory } from "@/shared-lock/contracts/_module.js";
+import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
+import type { ISharedLockFactory } from "@/shared-lock/contracts/_module-exports.js";
 import type { WithSharedLockFactorySettings } from "@/shared-lock/implementations/middlewares/with-shared-lock-factory/_module.js";
 
 /**

@@ -5,8 +5,8 @@
 import type {
     IFileUrlAdapter,
     IFileStorageAdapter,
-} from "@/file-storage/contracts/_module.js";
-import type { PluginFn } from "@/middleware/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
+import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Creates a plugin that lowercases every file key passed to a file-storage adapter.

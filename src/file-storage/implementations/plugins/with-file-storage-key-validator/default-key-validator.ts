@@ -2,7 +2,7 @@
  * @module FileStorage
  */
 
-import type { Invocable } from "@/utilities/_module.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * A function or callable object that validates a file key.

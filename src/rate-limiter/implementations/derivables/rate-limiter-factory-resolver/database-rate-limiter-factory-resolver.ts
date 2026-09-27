@@ -2,14 +2,14 @@
  * @module RateLimiter
  */
 
-import { DatabaseRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/database-rate-limiter-adapter/_module.js";
+import { DatabaseRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/database-rate-limiter-adapter/_module-exports.js";
 import { RateLimiterFactory } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/_module.js";
 import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     UnregisteredAdapterError,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     DefaultAdapterNotDefinedError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { BackoffPolicy } from "@/backoff-policies/contracts/_module.js";
 import type {
@@ -17,9 +17,9 @@ import type {
     IRateLimiterFactory,
     IRateLimiterStorageAdapter,
     IRateLimiterPolicy,
-} from "@/rate-limiter/contracts/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
 import type { RateLimiterFactorySettingsBase } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/_module.js";
-import type { ErrorPolicy, WaitUntil } from "@/utilities/_module.js";
+import type { ErrorPolicy, WaitUntil } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`

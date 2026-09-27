@@ -2,14 +2,17 @@
  * @module Cache
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { ICacheAdapter, ICache } from "@/cache/contracts/_module.js";
+import type {
+    ICacheAdapter,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ICache,
+} from "@/cache/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     InvocableFn,
     IPrunable,
     Promisable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/cache/memory-cache-adapter"`

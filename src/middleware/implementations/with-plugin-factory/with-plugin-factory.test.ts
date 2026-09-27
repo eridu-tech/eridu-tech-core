@@ -10,7 +10,7 @@ import type {
     NextFn,
     PluginFn,
     Use,
-} from "@/middleware/contracts/_module.js";
+} from "@/middleware/contracts/_module-exports.js";
 
 describe("function: withPluginFactory", () => {
     afterEach(() => {

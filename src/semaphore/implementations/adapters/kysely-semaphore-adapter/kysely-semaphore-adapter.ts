@@ -10,13 +10,13 @@ import type {
     ISemaphoreAdapter,
     ISemaphoreAdapterState,
     SemaphoreAcquireSettings,
-} from "@/semaphore/contracts/_module.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     IInitizable,
     IPrunable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/semaphore/kysely-semaphore-adapter"`

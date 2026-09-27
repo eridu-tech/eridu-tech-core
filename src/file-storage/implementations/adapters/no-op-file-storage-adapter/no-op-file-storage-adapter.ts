@@ -2,7 +2,7 @@
  * @module FileStorage
  */
 
-import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module.js";
+import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module-exports.js";
 
 import type {
     ISignedFileStorageAdapter,
@@ -13,7 +13,7 @@ import type {
     WritableFileAdapterStream,
     FileAdapterSignedDownloadUrlSettings,
     FileAdapterSignedUploadUrlSettings,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 
 /**
  * The `NoOpFileStorageAdapter` will do nothing and is used for easily mocking {@link ISignedFileStorageAdapter | `ISignedFileStorageAdapter`} for testing.

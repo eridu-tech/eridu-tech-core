@@ -4,9 +4,9 @@
 
 import { withSemaphoreFactory } from "@/semaphore/implementations/middlewares/with-semaphore-factory/_module.js";
 
-import type { DiToken, IContainer } from "@/di/contracts/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
-import type { ISemaphoreFactory } from "@/semaphore/contracts/_module.js";
+import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
+import type { ISemaphoreFactory } from "@/semaphore/contracts/_module-exports.js";
 import type { WithSemaphoreSettings } from "@/semaphore/implementations/middlewares/with-semaphore-factory/_module.js";
 
 /**

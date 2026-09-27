@@ -3,7 +3,7 @@
  */
 
 import type { Middleware } from "@/middleware/contracts/use.contract.js";
-import type { InvocableFn, OneOrMore } from "@/utilities/_module.js";
+import type { InvocableFn, OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * Extracts the keys of an object whose values are invocable functions.

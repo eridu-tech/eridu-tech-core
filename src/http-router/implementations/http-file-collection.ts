@@ -2,12 +2,12 @@
  * @module HttpRouter
  */
 
-import { HttpError } from "@/http-router/contracts/_module.js";
+import { HttpError } from "@/http-router/contracts/_module-exports.js";
 
 import type {
     IHttpFileCollection,
     IHttpFile,
-} from "@/http-router/contracts/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
 
 /**
  * @internal

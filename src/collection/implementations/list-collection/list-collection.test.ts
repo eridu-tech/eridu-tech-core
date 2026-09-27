@@ -4,7 +4,7 @@ import {
     ItemNotFoundCollectionError,
     MultipleItemsFoundCollectionError,
     EmptyCollectionError,
-} from "@/collection/contracts/_module.js";
+} from "@/collection/contracts/_module-exports.js";
 import { ListCollection } from "@/collection/implementations/list-collection/_module.js";
 
 describe("class: ListCollection", () => {

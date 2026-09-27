@@ -4,7 +4,7 @@ import {
     CLOSED_TRANSITIONS,
     HALF_OPEN_TRANSITIONS,
     CIRCUIT_BREAKER_STATE,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/consecutive-breaker/consecutive-breaker.js";
 
 import type { ConsecutiveBreakerState } from "@/circuit-breaker/implementations/policies/consecutive-breaker/consecutive-breaker.js";

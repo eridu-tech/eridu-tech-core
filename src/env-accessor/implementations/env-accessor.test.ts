@@ -1,9 +1,9 @@
 import { describe, test, expect } from "vitest";
 import { z } from "zod";
 
-import { UninitializedEnvAccessorError } from "@/env-accessor/contracts/_module.js";
-import { EnvAccessor } from "@/env-accessor/implementations/_module.js";
-import { ValidationError } from "@/utilities/_module.js";
+import { UninitializedEnvAccessorError } from "@/env-accessor/contracts/_module-exports.js";
+import { EnvAccessor } from "@/env-accessor/implementations/_module-exports.js";
+import { ValidationError } from "@/utilities/_module-exports.js";
 
 describe("class: EnvAccessor", () => {
     describe("method: init", () => {

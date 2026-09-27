@@ -3,10 +3,13 @@
  */
 
 import { ListenerStore } from "@/event-bus/implementations/derivables/event-bus/listener-store.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
-import type { IEventBusAdapter } from "@/event-bus/contracts/_module.js";
-import type { Plugin, PluginFn } from "@/middleware/contracts/_module.js";
+import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
+import type {
+    Plugin,
+    PluginFn,
+} from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Wraps a plugin with automatic listener-reference tracking.

@@ -4,7 +4,7 @@
 
 import { describe, expect, test, vi } from "vitest";
 
-import { FileSize } from "@/file-size/implementations/_module.js";
+import { FileSize } from "@/file-size/implementations/_module-exports.js";
 import { HttpFile } from "@/http-router/implementations/http-file.js";
 
 describe("class: HttpFile", () => {

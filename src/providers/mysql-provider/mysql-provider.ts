@@ -1,12 +1,12 @@
 import { createPool } from "mysql2";
 
 import { genericToken } from "@/di/contracts/container.contract.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type { Pool, PoolOptions } from "mysql2";
 
 import type { ServiceProviderFn } from "@/di/contracts/container.contract.js";
-import type { Invocable } from "@/utilities/_module.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 export const MYSQL_CLIENT = genericToken<Pool>("MYSQL_CLIENT");
 

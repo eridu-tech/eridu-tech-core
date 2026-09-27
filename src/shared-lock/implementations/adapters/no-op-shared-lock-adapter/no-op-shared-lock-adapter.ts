@@ -8,7 +8,7 @@ import type {
     SharedLockAcquireSettings,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ISharedLockFactory,
-} from "@/shared-lock/contracts/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
 
 /**
  * The `NoOpSharedLockAdapter` will do nothing and is used for easily mocking {@link ISharedLockFactory | `ISharedLockFactory`} for testing.

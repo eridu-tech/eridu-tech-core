@@ -4,7 +4,7 @@
 
 import { EventEmitter } from "node:events";
 
-import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type {
     BaseEvent,
@@ -12,8 +12,8 @@ import type {
     IEventBusAdapter,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     IEventBus,
-} from "@/event-bus/contracts/_module.js";
-import type { ITransactionHooks } from "@/transaction-context/contracts/_module.js";
+} from "@/event-bus/contracts/_module-exports.js";
+import type { ITransactionHooks } from "@/transaction-context/contracts/_module-exports.js";
 
 /**
  * Configuration for the `MemoryEventBusAdapter`.

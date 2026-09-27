@@ -6,7 +6,7 @@ import {
     ItemNotFoundCollectionError,
     MultipleItemsFoundCollectionError,
     EmptyCollectionError,
-} from "@/collection/contracts/_module.js";
+} from "@/collection/contracts/_module-exports.js";
 import {
     AsyncCrossJoinIterable,
     AsyncSlidingIteralbe,
@@ -52,7 +52,7 @@ import {
     OPTION,
     optionSome,
     optionNone,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
@@ -70,12 +70,12 @@ import type {
     CrossJoinResult,
     EnsureMap,
     EnsureRecord,
-} from "@/collection/contracts/_module.js";
+} from "@/collection/contracts/_module-exports.js";
 import type {
     AsyncIterableValue,
     AsyncLazyable,
     Option,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * All methods that return {@link IAsyncCollection | `IAsyncCollection`} are executed lazly, meaning the execution will occur iterating the items withthe `forEach` method or `for await` loop.

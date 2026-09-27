@@ -4,22 +4,22 @@ import { createPool } from "mysql2";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 
 import { KyselyCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-storage-adapter/kysely-circuit-breaker-storage-adapter.js";
-import { circuitBreakerStorageAdapterTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module.js";
-import { contextToken } from "@/execution-context/contracts/_module.js";
-import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module.js";
-import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
+import { circuitBreakerStorageAdapterTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
+import { contextToken } from "@/execution-context/contracts/_module-exports.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type { StartedMariaDbContainer } from "@testcontainers/mariadb";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 import type { Pool } from "mysql2";
 
 import type { KyselyCircuitBreakerStorageTables } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-storage-adapter/kysely-circuit-breaker-storage-adapter.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {

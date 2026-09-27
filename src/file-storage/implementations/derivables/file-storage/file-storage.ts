@@ -4,17 +4,17 @@
 
 import { FileSerdeTransformer } from "@/file-storage/implementations/derivables/file-storage/file-serde-transformer.js";
 import { File } from "@/file-storage/implementations/derivables/file-storage/file.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
-import { CORE, resolveOneOrMore } from "@/utilities/_module.js";
+import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { CORE, resolveOneOrMore } from "@/utilities/_module-exports.js";
 
 import type {
     IFile,
     IFileStorage,
     ISignedFileStorageAdapter,
-} from "@/file-storage/contracts/_module.js";
-import type { ISerdeRegister } from "@/serde/contracts/_module.js";
-import type { OneOrMore } from "@/utilities/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
+import type { OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage"`

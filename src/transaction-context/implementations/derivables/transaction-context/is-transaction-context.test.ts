@@ -9,13 +9,13 @@ import { MongoClient } from "mongodb";
 import { describe, expect, test } from "vitest";
 
 import { isTransactionContext } from "@/transaction-context/implementations/derivables/transaction-context/is-transaction-context.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
     ITransactionContext,
     TransactionPropagation,
-} from "@/transaction-context/contracts/_module.js";
-import type { AsyncLazy } from "@/utilities/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
+import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 describe("function: isTransactionContext", () => {
     test("Should return false for a Kysely instance", () => {

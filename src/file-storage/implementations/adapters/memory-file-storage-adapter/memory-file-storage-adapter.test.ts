@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module.js";
-import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module.js";
+import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js";
+import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
 
-import type { WritableFileAdapterContent } from "@/file-storage/contracts/_module.js";
-import type { MemoryFile } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module.js";
+import type { WritableFileAdapterContent } from "@/file-storage/contracts/_module-exports.js";
+import type { MemoryFile } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js";
 
 describe("class: MemoryFileStorageAdapter", () => {
     let map = new Map<string, MemoryFile>();

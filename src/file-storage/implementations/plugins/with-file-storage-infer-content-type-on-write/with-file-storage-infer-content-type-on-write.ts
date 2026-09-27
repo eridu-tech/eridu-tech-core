@@ -7,8 +7,8 @@ import { lookup } from "mime-types";
 import type {
     IFileUrlAdapter,
     IFileStorageAdapter,
-} from "@/file-storage/contracts/_module.js";
-import type { PluginFn } from "@/middleware/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
+import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Configuration for the {@link withFileStorageInferContentTypeOnWrite} plugin.

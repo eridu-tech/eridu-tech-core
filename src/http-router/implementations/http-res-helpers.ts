@@ -3,14 +3,14 @@
  */
 
 import { HttpRes } from "@/http-router/implementations/http-res.js";
-import { validateSync } from "@/utilities/_module.js";
+import { validateSync } from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 import type {
     IHttpRes,
     IHttpResHelpers,
-} from "@/http-router/contracts/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
 
 /**
  * Creates the response helpers bound to the response builder of a single

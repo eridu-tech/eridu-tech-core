@@ -1,10 +1,8 @@
 /**
  * @module CircuitBreaker
  */
-import {
-    BACKOFFS,
-    backoffsLua,
-} from "@/backoff-policies/implementations/_module.js";
+import { BACKOFFS } from "@/backoff-policies/implementations/_module-exports.js";
+import { backoffsLua } from "@/backoff-policies/implementations/backoffs-lua.js";
 import { circuitBreakerLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/circuit-breaker-lua.js";
 import { circuitBreakerStateManagerLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/circuit-breaker-state-manager-lua.js";
 import { circuitBreakerStorageLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/circuit-breaker-storage-lua.js";
@@ -12,7 +10,7 @@ import { consecutiveBreakerLua } from "@/circuit-breaker/implementations/adapter
 import { countBreakerLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/count-breaker-lua.js";
 import { circuitBreakerPolicyLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/internal-circuit-breaker-policy-lua.js";
 import { samplingBreakerLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/sampling-breaker-lua.js";
-import { BREAKER_POLICIES } from "@/circuit-breaker/implementations/policies/_module.js";
+import { BREAKER_POLICIES } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 
 /**
  * @internal

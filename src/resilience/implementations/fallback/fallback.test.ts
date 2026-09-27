@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { use } from "@/middleware/implementations/_module.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 import { fallback } from "@/resilience/implementations/fallback/fallback.js";
 
 describe("function: fallback", () => {

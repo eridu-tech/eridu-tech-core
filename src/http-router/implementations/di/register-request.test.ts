@@ -11,8 +11,8 @@ import {
     InvalidMethodCallDiError,
 } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
-import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import {
     REQUEST,
     registerRequest,

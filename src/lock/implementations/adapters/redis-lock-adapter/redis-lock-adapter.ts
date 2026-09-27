@@ -7,7 +7,7 @@ import type { Result, Redis } from "ioredis";
 import type {
     ILockAdapter,
     ILockAdapterState,
-} from "@/lock/contracts/_module.js";
+} from "@/lock/contracts/_module-exports.js";
 
 /**
  * @internal

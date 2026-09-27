@@ -13,7 +13,7 @@ import type {
     CoercibleMultiStringInputs,
 } from "@/http-router/contracts/_shared.js";
 import type { IHttpFileCollection } from "@/http-router/contracts/http-file-collection.contract.js";
-import type { StrIntellisense } from "@/utilities/_module.js";
+import type { StrIntellisense } from "@/utilities/_module-exports.js";
 
 /**
  * Represents the HTTP request method: common verbs autocomplete, any string is

@@ -4,22 +4,26 @@
 
 import { v4 } from "uuid";
 
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
+import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 import { SharedLockSerdeTransformer } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock-serde-transformer.js";
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { CORE, resolveOneOrMore, callInvocable } from "@/utilities/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import {
+    CORE,
+    resolveOneOrMore,
+    callInvocable,
+} from "@/utilities/_module-exports.js";
 
-import type { ISerdeRegister } from "@/serde/contracts/_module.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
 import type {
     ISharedLock,
     ISharedLockAdapter,
     SharedLockFactoryCreateSettings,
     ISharedLockFactory,
-} from "@/shared-lock/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Invocable, OneOrMore } from "@/utilities/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Invocable, OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `SharedLockFactory` variants.

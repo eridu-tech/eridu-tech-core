@@ -6,13 +6,13 @@ import { FileStorage } from "@/file-storage/implementations/derivables/file-stor
 import {
     DefaultAdapterNotDefinedError,
     UnregisteredAdapterError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     IFileStorage,
     ISignedFileStorageAdapter,
     IFileStorageResolver,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 import type { FileStorageSettingsBase } from "@/file-storage/implementations/derivables/file-storage/_module.js";
 
 /**

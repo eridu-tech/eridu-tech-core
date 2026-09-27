@@ -2,7 +2,7 @@
  * @module CircuitBreaker
  */
 import type { AllCircuitBreakerState } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/internal-circuit-breaker-policy.js";
-import type { InvocableFn } from "@/utilities/_module.js";
+import type { InvocableFn } from "@/utilities/_module-exports.js";
 
 /**
  * @internal

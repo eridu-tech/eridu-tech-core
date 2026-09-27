@@ -12,9 +12,9 @@
 import { describe, expect, test } from "vitest";
 import { z } from "zod";
 
-import { contextToken } from "@/execution-context/contracts/_module.js";
-import { FileSize } from "@/file-size/implementations/_module.js";
-import { HttpError } from "@/http-router/contracts/_module.js";
+import { contextToken } from "@/execution-context/contracts/_module-exports.js";
+import { FileSize } from "@/file-size/implementations/_module-exports.js";
+import { HttpError } from "@/http-router/contracts/_module-exports.js";
 import {
     HttpRouter,
     defaultHttpRouterAdapter,
@@ -24,7 +24,7 @@ import type {
     IHttpRouter,
     WinterTcMiddleware,
     WinterTcRequestHandler,
-} from "@/http-router/contracts/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
 import type { HttpRouterSettings } from "@/http-router/implementations/http-router.js";
 
 const USER = contextToken<string>("USER");

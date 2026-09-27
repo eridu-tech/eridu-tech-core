@@ -2,13 +2,13 @@
  * @module Collection
  */
 
-import { resolveInvocable } from "@/utilities/_module.js";
+import { resolveInvocable } from "@/utilities/_module-exports.js";
 
 import type {
     PredicateInvocable,
     ICollection,
     Map,
-} from "@/collection/contracts/_module.js";
+} from "@/collection/contracts/_module-exports.js";
 
 /**
  * @internal

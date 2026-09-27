@@ -6,7 +6,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import { MiddlewareBuilder } from "@/http-router/implementations/middleware-builder.js";
 
-import type { HttpMiddleware } from "@/http-router/contracts/_module.js";
+import type { HttpMiddleware } from "@/http-router/contracts/_module-exports.js";
 
 describe("class: MiddlewareBuilder", () => {
     describe("method: use", () => {

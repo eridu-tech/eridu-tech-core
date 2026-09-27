@@ -5,15 +5,15 @@ import { SemaphoreFactory } from "@/semaphore/implementations/derivables/semapho
 import {
     DefaultAdapterNotDefinedError,
     UnregisteredAdapterError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     ISemaphoreFactoryResolver,
     ISemaphoreFactory,
     ISemaphoreAdapter,
-} from "@/semaphore/contracts/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
 import type { SemaphoreFactorySettingsBase } from "@/semaphore/implementations/derivables/semaphore-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/semaphore"`

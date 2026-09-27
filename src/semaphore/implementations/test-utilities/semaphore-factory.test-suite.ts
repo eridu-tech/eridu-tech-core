@@ -10,11 +10,11 @@ import {
     FailedReleaseSemaphoreError,
     FailedRefreshSemaphoreError,
     SEMAPHORE_STATE,
-} from "@/semaphore/contracts/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
 import { createIsTimeSpanEqualityTester } from "@/test-utilities/_module.js";
-import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { delay } from "@/utilities/_module.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { delay } from "@/utilities/_module-exports.js";
 
 import type { TestAPI, SuiteAPI, ExpectStatic, beforeEach } from "vitest";
 
@@ -25,10 +25,10 @@ import type {
     ISemaphoreUnacquiredState,
     ISemaphoreLimitReachedState,
     ISemaphoreAcquiredState,
-} from "@/semaphore/contracts/_module.js";
-import type { ISerde } from "@/serde/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Promisable } from "@/utilities/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/semaphore/test-utilities"`

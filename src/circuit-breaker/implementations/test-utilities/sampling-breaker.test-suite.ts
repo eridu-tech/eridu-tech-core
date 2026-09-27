@@ -3,18 +3,18 @@
  * @module CircuitBreaker
  */
 
-import { BACKOFFS } from "@/backoff-policies/implementations/_module.js";
-import { BREAKER_POLICIES } from "@/circuit-breaker/implementations/policies/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { delay } from "@/utilities/_module.js";
+import { BACKOFFS } from "@/backoff-policies/implementations/_module-exports.js";
+import { BREAKER_POLICIES } from "@/circuit-breaker/implementations/policies/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { delay } from "@/utilities/_module-exports.js";
 
 import type { TestAPI, SuiteAPI, ExpectStatic, beforeEach } from "vitest";
 
-import type { ConstantBackoffSettingsEnum } from "@/backoff-policies/implementations/_module.js";
-import type { ICircuitBreakerAdapter } from "@/circuit-breaker/contracts/_module.js";
-import type { SamplingBreakerSettingsEnum } from "@/circuit-breaker/implementations/policies/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Promisable } from "@/utilities/_module.js";
+import type { ConstantBackoffSettingsEnum } from "@/backoff-policies/implementations/_module-exports.js";
+import type { ICircuitBreakerAdapter } from "@/circuit-breaker/contracts/_module-exports.js";
+import type { SamplingBreakerSettingsEnum } from "@/circuit-breaker/implementations/policies/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/test-utilities"`

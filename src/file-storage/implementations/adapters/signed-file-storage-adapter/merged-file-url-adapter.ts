@@ -7,7 +7,7 @@ import type {
     FileAdapterSignedDownloadUrlSettings,
     FileAdapterSignedUploadUrlSettings,
     IFileUrlAdapter,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 
 /**
  * @internal

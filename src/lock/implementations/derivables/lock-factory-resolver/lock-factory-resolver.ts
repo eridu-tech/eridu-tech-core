@@ -5,16 +5,16 @@ import { LockFactory } from "@/lock/implementations/derivables/lock-factory/_mod
 import {
     DefaultAdapterNotDefinedError,
     UnregisteredAdapterError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     ILockFactoryResolver,
     ILockFactory,
     ILockAdapter,
-} from "@/lock/contracts/_module.js";
+} from "@/lock/contracts/_module-exports.js";
 import type { LockFactorySettingsBase } from "@/lock/implementations/derivables/lock-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Invocable } from "@/utilities/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/lock"`

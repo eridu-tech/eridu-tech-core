@@ -4,22 +4,26 @@
 
 import { RateLimiterSerdeTransformer } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter-serde-transformer.js";
 import { RateLimiter } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
+import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 import {
     CORE,
     defaultWaitUntil,
     resolveOneOrMore,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     IRateLimiter,
     IRateLimiterAdapter,
     IRateLimiterFactory,
     RateLimiterFactoryCreateSettings,
-} from "@/rate-limiter/contracts/_module.js";
-import type { ISerdeRegister } from "@/serde/contracts/_module.js";
-import type { ErrorPolicy, OneOrMore, WaitUntil } from "@/utilities/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
+import type {
+    ErrorPolicy,
+    OneOrMore,
+    WaitUntil,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `RateLimiterFactory` variants.

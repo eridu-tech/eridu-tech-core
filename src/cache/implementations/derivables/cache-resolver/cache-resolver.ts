@@ -6,7 +6,7 @@ import { Cache } from "@/cache/implementations/derivables/cache/_module.js";
 import {
     DefaultAdapterNotDefinedError,
     UnregisteredAdapterError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
@@ -14,12 +14,12 @@ import type {
     ICache,
     ICacheAdapter,
     ICacheResolver,
-} from "@/cache/contracts/_module.js";
+} from "@/cache/contracts/_module-exports.js";
 import type {
     CacheSettings,
     CacheSettingsBase,
 } from "@/cache/implementations/derivables/cache/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/cache"`

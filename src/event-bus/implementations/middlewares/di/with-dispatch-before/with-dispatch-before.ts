@@ -4,13 +4,13 @@
 
 import { withDispatchBeforeFactory } from "@/event-bus/implementations/middlewares/with-dispatch-before-factory/_module.js";
 
-import type { DiToken, IContainer } from "@/di/contracts/_module.js";
+import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
 import type {
     BaseEventMap,
     IEventDispatcher,
-} from "@/event-bus/contracts/_module.js";
+} from "@/event-bus/contracts/_module-exports.js";
 import type { WithDispatchBeforeSettings } from "@/event-bus/implementations/middlewares/with-dispatch-before-factory/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Creates a middleware that resolves its {@link IEventDispatcher} from a

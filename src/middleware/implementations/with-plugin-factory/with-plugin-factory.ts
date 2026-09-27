@@ -7,14 +7,14 @@ import {
     callInvocable,
     copyObj,
     resolveOneOrMore,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     Plugin,
     WithPlugin,
     Enhance,
-} from "@/middleware/contracts/_module.js";
-import type { OneOrMore } from "@/utilities/_module.js";
+} from "@/middleware/contracts/_module-exports.js";
+import type { OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * @internal

@@ -8,15 +8,15 @@ import {
     UnregisteredAdapterError,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     DefaultAdapterNotDefinedError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     IRateLimiterFactoryResolver,
     IRateLimiterFactory,
     IRateLimiterAdapter,
-} from "@/rate-limiter/contracts/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
 import type { RateLimiterFactorySettingsBase } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/_module.js";
-import type { ErrorPolicy, WaitUntil } from "@/utilities/_module.js";
+import type { ErrorPolicy, WaitUntil } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`

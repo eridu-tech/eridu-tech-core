@@ -2,7 +2,7 @@
  * @module RateLimiter
  */
 
-import type { InvocableFn } from "@/utilities/_module.js";
+import type { InvocableFn } from "@/utilities/_module-exports.js";
 
 /**
  * Persisted rate limiter state data.

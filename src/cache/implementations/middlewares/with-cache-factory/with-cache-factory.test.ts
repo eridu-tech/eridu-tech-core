@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NoOpCacheAdapter } from "@/cache/implementations/adapters/_module.js";
-import { Cache } from "@/cache/implementations/derivables/_module.js";
+import { NoOpCacheAdapter } from "@/cache/implementations/adapters/no-op-cache-adapter/_module-exports.js";
+import { Cache } from "@/cache/implementations/derivables/_module-exports.js";
 import { withCacheFactory } from "@/cache/implementations/middlewares/with-cache-factory/with-cache-factory.js";
-import { use } from "@/middleware/implementations/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 describe("function: withCacheFactory", () => {
     const cache = new Cache<string>({

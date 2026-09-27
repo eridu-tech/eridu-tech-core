@@ -8,7 +8,7 @@ import type {
     IInvocableObject,
     InvocableFn,
     Promisable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * The next function in the middleware chain.

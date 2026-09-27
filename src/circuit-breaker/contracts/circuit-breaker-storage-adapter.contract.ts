@@ -2,7 +2,7 @@
  * @module CircuitBreaker
  */
 
-import type { InvocableFn } from "@/utilities/_module.js";
+import type { InvocableFn } from "@/utilities/_module-exports.js";
 
 /**
  * Transactional operations interface for circuit breaker state storage.

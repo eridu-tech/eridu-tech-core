@@ -4,7 +4,7 @@
 
 import { Context } from "@/execution-context/implementations/derivables/execution-context/context.js";
 import { NoOpContext } from "@/execution-context/implementations/derivables/execution-context/no-op-context.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
     ContextToken,
@@ -16,8 +16,12 @@ import type {
     IncrementSettings,
     PutDecrementSettings,
     PutIncrementSettings,
-} from "@/execution-context/contracts/_module.js";
-import type { Invocable, InvocableFn, Lazyable } from "@/utilities/_module.js";
+} from "@/execution-context/contracts/_module-exports.js";
+import type {
+    Invocable,
+    InvocableFn,
+    Lazyable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/execution-context"`

@@ -2,7 +2,7 @@
  * @module HttpRouter
  */
 
-import type { IContext } from "@/execution-context/contracts/_module.js";
+import type { IContext } from "@/execution-context/contracts/_module-exports.js";
 import type { IHttpReq } from "@/http-router/contracts/http-req.contract.js";
 import type {
     IHttpRes,
@@ -12,7 +12,7 @@ import type {
     IInvocableObject,
     InvocableFn,
     Promisable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * The arguments passed to a request handler function or object.

@@ -1,13 +1,13 @@
 /**
  * @module DI
  */
-import { LIFETIME } from "@/di/contracts/_module.js";
+import { LIFETIME } from "@/di/contracts/_module-exports.js";
 
 import type {
     ServiceFactory,
     DiToken,
     DepRecord,
-} from "@/di/contracts/_module.js";
+} from "@/di/contracts/_module-exports.js";
 
 /**
  * @internal

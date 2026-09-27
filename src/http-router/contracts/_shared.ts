@@ -5,7 +5,7 @@
 import type { IFileSize } from "@/file-size/contracts/file-size.contract.js";
 import type { IHttpFileCollection } from "@/http-router/contracts/http-file-collection.contract.js";
 import type { IHttpFile } from "@/http-router/contracts/http-file.contract.js";
-import type { Invocable, OneOrArray } from "@/utilities/_module.js";
+import type { Invocable, OneOrArray } from "@/utilities/_module-exports.js";
 
 /**
  * Raw request input values before parsing and validation.

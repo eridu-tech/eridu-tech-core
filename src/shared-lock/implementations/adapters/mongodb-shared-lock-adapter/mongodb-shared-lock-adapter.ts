@@ -2,14 +2,14 @@
  * @module SharedLock
  */
 
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module-exports.js";
 import {
     OPTION,
     optionNone,
     optionSome,
     UnexpectedError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     ClientSession,
@@ -24,16 +24,16 @@ import type {
     ISharedLockAdapter,
     ISharedLockAdapterState,
     SharedLockAcquireSettings,
-} from "@/shared-lock/contracts/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
 import type {
     ITransactionContext,
     TransactionAware,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     IInitizable,
     Option,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `MongodbSharedLockAdapter`.

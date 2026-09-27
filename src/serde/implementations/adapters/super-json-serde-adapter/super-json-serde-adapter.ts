@@ -7,12 +7,12 @@ import { SuperJSON } from "superjson";
 import {
     DeserializationSerdeError,
     SerializationSerdeError,
-} from "@/serde/contracts/_module.js";
+} from "@/serde/contracts/_module-exports.js";
 
 import type {
     ISerdeTransformerAdapter,
     IFlexibleSerdeAdapter,
-} from "@/serde/contracts/_module.js";
+} from "@/serde/contracts/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/serde/super-json-serde-adapter"`

@@ -8,7 +8,7 @@ import type {
     SemaphoreAcquireSettings,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ISemaphoreFactory,
-} from "@/semaphore/contracts/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
 
 /**
  * The `NoOpSemaphoreAdapter` will do nothing and is used for easily mocking {@link ISemaphoreFactory | `ISemaphoreFactory`} for testing.

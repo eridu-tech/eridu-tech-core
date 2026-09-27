@@ -7,7 +7,7 @@ import type {
     IInvocableObject,
     OneOrMore,
     Invocable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * Represents the next middleware function in the chain.

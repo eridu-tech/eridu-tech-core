@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NoOpLockAdapter } from "@/lock/implementations/adapters/_module.js";
+import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adapter/_module-exports.js";
 import { withLockPrefix } from "@/lock/implementations/plugins/with-lock-prefix/with-lock-prefix.js";
 import { enhanceFactory } from "@/middleware/implementations/enhance-factory/enhance-factory.js";
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
 import { withPluginFactory } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
-import type { ILockAdapter } from "@/lock/contracts/_module.js";
+import type { ILockAdapter } from "@/lock/contracts/_module-exports.js";
 
 describe("function: withLockPrefix", () => {
     const adapter = new NoOpLockAdapter();

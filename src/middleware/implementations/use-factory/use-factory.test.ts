@@ -2,7 +2,10 @@ import { describe, expect, test, vi } from "vitest";
 
 import { useFactory } from "@/middleware/implementations/use-factory/use-factory.js";
 
-import type { MiddlewareArgs, NextFn } from "@/middleware/contracts/_module.js";
+import type {
+    MiddlewareArgs,
+    NextFn,
+} from "@/middleware/contracts/_module-exports.js";
 
 describe("function: useFactory", () => {
     test("Should call middleware before next function", () => {

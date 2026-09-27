@@ -2,7 +2,7 @@
  * @module BackoffPolicy
  */
 
-import type { Invocable } from "@/utilities/_module.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/backoff-policies/contracts"`

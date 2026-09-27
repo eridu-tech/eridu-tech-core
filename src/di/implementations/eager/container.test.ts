@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 import { describe, test, expect, beforeEach, vi } from "vitest";
 
-import { genericToken, LIFETIME } from "@/di/contracts/_module.js";
+import { genericToken, LIFETIME } from "@/di/contracts/_module-exports.js";
 import {
     InvalidGraphDiError,
     InvalidMethodCallDiError,
@@ -13,7 +13,7 @@ import {
 import { Container } from "@/di/implementations/eager/container.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { callInvocable, UnexpectedError } from "@/utilities/_module.js";
+import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type {
     IServiceRegister,
@@ -26,8 +26,8 @@ import type {
     ServiceFactory,
     DepsTokens,
     Lifetime,
-} from "@/di/contracts/_module.js";
-import type { IExecutionContext } from "@/execution-context/contracts/_module.js";
+} from "@/di/contracts/_module-exports.js";
+import type { IExecutionContext } from "@/execution-context/contracts/_module-exports.js";
 
 // ---------------------------------------------------------------------------
 // Helper tokens and test classes

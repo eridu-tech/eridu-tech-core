@@ -5,16 +5,16 @@ import { SharedLockFactory } from "@/shared-lock/implementations/derivables/shar
 import {
     DefaultAdapterNotDefinedError,
     UnregisteredAdapterError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     ISharedLockFactoryResolver,
     ISharedLockFactory,
     ISharedLockAdapter,
-} from "@/shared-lock/contracts/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
 import type { SharedLockFactorySettingsBase } from "@/shared-lock/implementations/derivables/shared-lock-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Invocable } from "@/utilities/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/shared-lock"`

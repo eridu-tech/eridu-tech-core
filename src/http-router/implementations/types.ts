@@ -4,7 +4,7 @@
 import type {
     HttpMiddleware,
     IHttpEndpoint,
-} from "@/http-router/contracts/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/http-router"`

@@ -3,13 +3,13 @@
  */
 
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { getConstructorName } from "@/utilities/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { getConstructorName } from "@/utilities/_module-exports.js";
 
-import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
-import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
+import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports.js";
 import type { ISerializedSharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
-import type { OneOrMore } from "@/utilities/_module.js";
+import type { OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * @internal

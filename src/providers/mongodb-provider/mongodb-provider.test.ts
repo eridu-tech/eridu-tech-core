@@ -3,13 +3,13 @@ import { MongoClient, ObjectId } from "mongodb";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { Container } from "@/di/implementations/eager/container.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import {
     mongodbProvider,
     MONGODB_CLIENT,
 } from "@/providers/mongodb-provider/mongodb-provider.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
 

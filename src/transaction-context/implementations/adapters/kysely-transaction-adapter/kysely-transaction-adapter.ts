@@ -12,7 +12,7 @@ import type {
 import type {
     ITransaction,
     ITransactionAdapter,
-} from "@/transaction-context/contracts/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
 
 /**
  * A Kysely-backed {@link ITransaction} that wraps a Kysely `ControlledTransaction`.

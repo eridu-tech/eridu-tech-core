@@ -6,25 +6,25 @@ import { v4 } from "uuid";
 
 import { SemaphoreSerdeTransformer } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore-serde-transformer.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     callInvocable,
     CORE,
     isPositiveNbr,
     resolveOneOrMore,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     ISemaphore,
     ISemaphoreAdapter,
     SemaphoreFactoryCreateSettings,
     ISemaphoreFactory,
-} from "@/semaphore/contracts/_module.js";
-import type { ISerdeRegister } from "@/serde/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Invocable, OneOrMore } from "@/utilities/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Invocable, OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `SemaphoreFactory` variants.

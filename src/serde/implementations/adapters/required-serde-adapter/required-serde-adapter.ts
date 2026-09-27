@@ -4,7 +4,7 @@
 import type {
     IFlexibleSerdeAdapter,
     ISerdeTransformerAdapter,
-} from "@/serde/contracts/_module.js";
+} from "@/serde/contracts/_module-exports.js";
 
 /**
  * The `RequiredSerdeAdapter` will always throw errors is used for forcing the user to pass in a valid adapter.

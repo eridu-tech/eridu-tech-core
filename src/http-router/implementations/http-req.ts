@@ -2,8 +2,8 @@
  * @module HttpRouter
  */
 
-import { TO_BYTES } from "@/file-size/contracts/_module.js";
-import { HttpError } from "@/http-router/contracts/_module.js";
+import { TO_BYTES } from "@/file-size/contracts/_module-exports.js";
+import { HttpError } from "@/http-router/contracts/_module-exports.js";
 import { HttpFileCollection } from "@/http-router/implementations/http-file-collection.js";
 import { HttpFile } from "@/http-router/implementations/http-file.js";
 import {
@@ -13,7 +13,7 @@ import {
     validate,
     validateSync,
     ValidationError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
@@ -31,8 +31,8 @@ import type {
     IHttpFileCollection,
     StaticFileDef,
     DynamicFileDef,
-} from "@/http-router/contracts/_module.js";
-import type { InvocableFn, OneOrArray } from "@/utilities/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
+import type { InvocableFn, OneOrArray } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for creating an {@link HttpReq} from a standard Web API `Request`.

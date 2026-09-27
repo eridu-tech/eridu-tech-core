@@ -3,7 +3,7 @@
  */
 import { isClass } from "@/utilities/_module-exports.js";
 
-import type { DiToken } from "@/di/contracts/_module.js";
+import type { DiToken } from "@/di/contracts/_module-exports.js";
 
 /**
  * Converts a DI token to a readable string representation.

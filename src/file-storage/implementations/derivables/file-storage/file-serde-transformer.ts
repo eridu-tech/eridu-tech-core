@@ -3,12 +3,12 @@
  */
 
 import { File } from "@/file-storage/implementations/derivables/file-storage/file.js";
-import { getConstructorName } from "@/utilities/_module.js";
+import { getConstructorName } from "@/utilities/_module-exports.js";
 
-import type { ISignedFileStorageAdapter } from "@/file-storage/contracts/_module.js";
+import type { ISignedFileStorageAdapter } from "@/file-storage/contracts/_module-exports.js";
 import type { ISerializedFile } from "@/file-storage/implementations/derivables/file-storage/file.js";
-import type { ISerdeTransformer } from "@/serde/contracts/_module.js";
-import type { OneOrMore } from "@/utilities/_module.js";
+import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
+import type { OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * @internal

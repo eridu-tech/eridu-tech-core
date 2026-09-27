@@ -5,8 +5,11 @@
 import { ListenerStore } from "@/event-bus/implementations/derivables/event-bus/listener-store.js";
 import { withEventBusSchema } from "@/event-bus/implementations/derivables/event-bus/with-event-bus-schema.js";
 import { withListenerTracking } from "@/event-bus/implementations/plugins/_module-exports.js";
-import { withPlugin } from "@/middleware/implementations/_module.js";
-import { resolveInvocable, resolveOneOrMore } from "@/utilities/_module.js";
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
+import {
+    resolveInvocable,
+    resolveOneOrMore,
+} from "@/utilities/_module-exports.js";
 
 import type {
     IEventBus,
@@ -17,9 +20,9 @@ import type {
     EventListenerFn,
     Unsubscribe,
     InferEvent,
-} from "@/event-bus/contracts/_module.js";
+} from "@/event-bus/contracts/_module-exports.js";
 import type { EventMapSchema } from "@/event-bus/implementations/derivables/event-bus/with-event-bus-schema.js";
-import type { OneOrArray, InvocableFn } from "@/utilities/_module.js";
+import type { OneOrArray, InvocableFn } from "@/utilities/_module-exports.js";
 
 /**
  * A helper function to create a typed {@link EventMapSchema}.

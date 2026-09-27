@@ -2,12 +2,12 @@
  * @module HttpRouter
  */
 
-import { TO_BYTES } from "@/file-size/contracts/_module.js";
-import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
+import { TO_BYTES } from "@/file-size/contracts/_module-exports.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/time-span.js";
-import { isAsyncIterable } from "@/utilities/_module.js";
+import { isAsyncIterable } from "@/utilities/_module-exports.js";
 
-import type { IFileSize } from "@/file-size/contracts/_module.js";
+import type { IFileSize } from "@/file-size/contracts/_module-exports.js";
 import type {
     HttpResContentType,
     HttpResContentEncoding,
@@ -20,7 +20,7 @@ import type {
     HttpStatus,
     CookieSetSettings,
     CookieScope,
-} from "@/http-router/contracts/_module.js";
+} from "@/http-router/contracts/_module-exports.js";
 
 /**
  * @internal

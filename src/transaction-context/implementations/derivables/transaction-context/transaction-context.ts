@@ -2,14 +2,14 @@
  * @module TransactionContext
  */
 
-import { contextToken } from "@/execution-context/contracts/_module.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
+import { contextToken } from "@/execution-context/contracts/_module-exports.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import {
     withAfterHook,
     withOnError,
     withPlugin,
-} from "@/middleware/implementations/_module.js";
+} from "@/middleware/implementations/_module-exports.js";
 import {
     AbortTransactionError,
     CommitTransactionError,
@@ -17,23 +17,23 @@ import {
     NeverPropagationError,
     StartTransactionError,
     TRANSACTION_PROPAGATION,
-} from "@/transaction-context/contracts/_module.js";
-import { NoOpTransactionAdapter } from "@/transaction-context/implementations/adapters/no-op-transaction-adapter/_module.js";
-import { callInvocable, UnexpectedError } from "@/utilities/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
+import { NoOpTransactionAdapter } from "@/transaction-context/implementations/adapters/no-op-transaction-adapter/_module-exports.js";
+import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type {
     ContextToken,
     IExecutionContext,
-} from "@/execution-context/contracts/_module.js";
-import type { PluginFn } from "@/middleware/contracts/_module.js";
+} from "@/execution-context/contracts/_module-exports.js";
+import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 import type {
     AfterCommitSettings,
     ITransaction,
     ITransactionAdapter,
     ITransactionContext,
     TransactionPropagation,
-} from "@/transaction-context/contracts/_module.js";
-import type { AsyncLazy, InvocableFn } from "@/utilities/_module.js";
+} from "@/transaction-context/contracts/_module-exports.js";
+import type { AsyncLazy, InvocableFn } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for the `TransactionContext` derivable.

@@ -4,12 +4,12 @@
 
 import { v4 } from "uuid";
 
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
-import type { ILockFactory } from "@/lock/contracts/_module.js";
-import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Invocable } from "@/utilities/_module.js";
+import type { ILockFactory } from "@/lock/contracts/_module-exports.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * Settings for the distributed-lock middleware.

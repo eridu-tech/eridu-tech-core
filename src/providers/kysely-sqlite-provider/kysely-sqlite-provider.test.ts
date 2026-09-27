@@ -2,8 +2,8 @@ import { sql } from "kysely";
 import { beforeEach, describe, expect, test } from "vitest";
 
 import { Container } from "@/di/implementations/eager/container.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import {
     kyselySqliteProvider,
     KYSELY_SQLITE,

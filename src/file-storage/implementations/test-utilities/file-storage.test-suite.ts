@@ -2,11 +2,11 @@
  * @module FileStorage
  */
 
-import { FileSize } from "@/file-size/implementations/_module.js";
+import { FileSize } from "@/file-size/implementations/_module-exports.js";
 import {
     KeyExistsFileError,
     KeyNotFoundFileError,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 import {
     isBytesArrayEqualityTester,
     resolveStream,
@@ -18,9 +18,9 @@ import type {
     FileMetadata,
     IFile,
     IFileStorage,
-} from "@/file-storage/contracts/_module.js";
-import type { ISerde } from "@/serde/contracts/_module.js";
-import type { Promisable } from "@/utilities/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
+import type { Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/test-utilities"`

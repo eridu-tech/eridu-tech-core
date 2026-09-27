@@ -2,9 +2,9 @@ import { RedisContainer } from "@testcontainers/redis";
 import { Redis } from "ioredis";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { RedisCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/_module.js";
-import { consecutiveBreakerTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { RedisCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/_module-exports.js";
+import { consecutiveBreakerTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
 

@@ -2,9 +2,9 @@
  * @module Collection
  */
 
-import { resolveInvocable } from "@/utilities/_module.js";
+import { resolveInvocable } from "@/utilities/_module-exports.js";
 
-import type { Comparator } from "@/collection/contracts/_module.js";
+import type { Comparator } from "@/collection/contracts/_module-exports.js";
 
 /**
  * @internal

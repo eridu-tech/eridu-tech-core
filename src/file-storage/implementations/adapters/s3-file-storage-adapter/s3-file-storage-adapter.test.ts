@@ -8,9 +8,9 @@ import { MinioContainer } from "@testcontainers/minio";
 import { Wait } from "testcontainers";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { S3FileStorageAdapter } from "@/file-storage/implementations/adapters/s3-file-storage-adapter/_module.js";
-import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { S3FileStorageAdapter } from "@/file-storage/implementations/adapters/s3-file-storage-adapter/_module-exports.js";
+import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedMinioContainer } from "@testcontainers/minio";
 

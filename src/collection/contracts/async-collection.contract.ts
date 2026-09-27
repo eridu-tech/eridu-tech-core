@@ -25,7 +25,10 @@ import type {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     EmptyCollectionError,
 } from "@/collection/contracts/collection.errors.js";
-import type { AsyncLazyable, AsyncIterableValue } from "@/utilities/_module.js";
+import type {
+    AsyncLazyable,
+    AsyncIterableValue,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Collapses 1 layer of nested array, iterable, async iterable, or async-collection types into their element type.

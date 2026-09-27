@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/_module.js";
+import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/no-op-event-bus-adapter/_module-exports.js";
 import { withEventBusPrefix } from "@/event-bus/implementations/plugins/with-event-bus-prefix/with-event-bus-prefix.js";
 import { enhanceFactory } from "@/middleware/implementations/enhance-factory/enhance-factory.js";
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
 import { withPluginFactory } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
-import type { IEventBusAdapter } from "@/event-bus/contracts/_module.js";
+import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
 
 describe("function: withEventBusPrefix", () => {
     const adapter = new NoOpEventBusAdapter();

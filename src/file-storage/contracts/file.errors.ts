@@ -2,7 +2,7 @@
  * @module FileStorage
  */
 
-import type { InferInstance } from "@/utilities/_module.js";
+import type { InferInstance } from "@/utilities/_module-exports.js";
 
 /**
  * The error is thrown when a file key is not found

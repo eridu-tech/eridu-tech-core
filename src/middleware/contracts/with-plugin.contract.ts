@@ -7,7 +7,7 @@ import type {
     InvocableFn,
     IInvocableObject,
     OneOrMore,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * A function-based plugin that receives the target instance and an {@link Enhance} utility.

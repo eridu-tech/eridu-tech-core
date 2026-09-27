@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { use } from "@/middleware/implementations/_module.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/transaction-context/transaction-context.js";
 import { withAfterCommitFactory } from "@/transaction-context/implementations/middlewares/with-after-commit-factory/with-after-commit-factory.js";
 
-import type { AfterCommitSettings } from "@/transaction-context/contracts/_module.js";
+import type { AfterCommitSettings } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("function: withAfterCommitFactory", () => {
     const transactionContext = TransactionContext.noOp(null);

@@ -6,14 +6,14 @@ import { EventBus } from "@/event-bus/implementations/derivables/event-bus/_modu
 import {
     DefaultAdapterNotDefinedError,
     UnregisteredAdapterError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     IEventBus,
     IEventBusResolver,
     BaseEventMap,
     IEventBusAdapter,
-} from "@/event-bus/contracts/_module.js";
+} from "@/event-bus/contracts/_module-exports.js";
 import type { EventBusSettingsBase } from "@/event-bus/implementations/derivables/event-bus/_module.js";
 import type { EventMapSchema } from "@/event-bus/implementations/derivables/event-bus/with-event-bus-schema.js";
 

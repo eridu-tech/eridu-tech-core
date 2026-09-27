@@ -15,7 +15,7 @@ import type {
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 
 /**
  * Configuration for `SignedFileStorageAdapter`.

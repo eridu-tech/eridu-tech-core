@@ -10,7 +10,7 @@ import type {
     ISharedLockAdapter,
     ISharedLockAdapterState,
     SharedLockAcquireSettings,
-} from "@/shared-lock/contracts/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
 
 /**
  * @internal

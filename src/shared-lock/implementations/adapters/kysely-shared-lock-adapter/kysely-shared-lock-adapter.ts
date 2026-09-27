@@ -12,13 +12,13 @@ import type {
     ISharedLockAdapterState,
     IWriterLockAdapterState,
     SharedLockAcquireSettings,
-} from "@/shared-lock/contracts/_module.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
     IDeinitizable,
     IInitizable,
     IPrunable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/shared-lock/kysely-shared-lock-adapter"`

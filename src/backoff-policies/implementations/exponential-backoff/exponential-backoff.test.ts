@@ -4,9 +4,9 @@ import {
     exponentialBackoff,
     resolveExponentialBackoffSettings,
 } from "@/backoff-policies/implementations/exponential-backoff/exponential-backoff.js";
-import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 describe("function: resolveExponentialBackoffSettings", () => {
     test("Should use default values when no settings are provided", () => {

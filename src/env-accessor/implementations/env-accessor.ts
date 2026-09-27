@@ -2,13 +2,13 @@
  * @module EnvAccessor
  */
 
-import { UninitializedEnvAccessorError } from "@/env-accessor/contracts/_module.js";
+import { UninitializedEnvAccessorError } from "@/env-accessor/contracts/_module-exports.js";
 import {
     resolveOneOrMore,
     isInvocable,
     callInvocable,
     validate,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
@@ -16,13 +16,13 @@ import type {
     BaseEnvConfig,
     IEnvAccessor,
     RawEnvConfig,
-} from "@/env-accessor/contracts/_module.js";
+} from "@/env-accessor/contracts/_module-exports.js";
 import type {
     UndefinedToNull,
     OneOrMore,
     AsyncLazyable,
     AsyncLazy,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * Settings for configuring an {@link  EnvAccessor | `EnvAccessor`} instance.

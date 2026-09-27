@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NoOpCacheAdapter } from "@/cache/implementations/adapters/_module.js";
-import { Cache } from "@/cache/implementations/derivables/_module.js";
+import { NoOpCacheAdapter } from "@/cache/implementations/adapters/no-op-cache-adapter/_module-exports.js";
+import { Cache } from "@/cache/implementations/derivables/_module-exports.js";
 import { registerWithInvalidation } from "@/cache/implementations/middlewares/di/with-invalidation/with-invalidation.js";
-import { genericToken } from "@/di/contracts/_module.js";
+import { genericToken } from "@/di/contracts/_module-exports.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
-import { use } from "@/middleware/implementations/_module.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 
-import type { ICache } from "@/cache/contracts/_module.js";
-import type { IContainer } from "@/di/contracts/_module.js";
+import type { ICache } from "@/cache/contracts/_module-exports.js";
+import type { IContainer } from "@/di/contracts/_module-exports.js";
 
 describe("function: registerWithInvalidation", () => {
     const CACHE = genericToken<Pick<ICache, "remove">>("ICache");

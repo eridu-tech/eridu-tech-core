@@ -1,7 +1,7 @@
 /**
  * @module ConfigAccessor
  */
-import { validateSync, UnexpectedError } from "@/utilities/_module.js";
+import { validateSync, UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
@@ -10,7 +10,7 @@ import type {
     IConfigAccessor,
     RestrictedPaths,
     PathValue,
-} from "@/config-accessor/contracts/_module.js";
+} from "@/config-accessor/contracts/_module-exports.js";
 
 /**
  * Settings for configuring an {@link  ConfigAccessor | `ConfigAccessor`} instance.

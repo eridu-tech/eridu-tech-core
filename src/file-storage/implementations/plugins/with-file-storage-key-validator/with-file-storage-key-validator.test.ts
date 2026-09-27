@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { InvalidKeyFileError } from "@/file-storage/contracts/_module.js";
-import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/_module.js";
+import { InvalidKeyFileError } from "@/file-storage/contracts/_module-exports.js";
+import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/_module-exports.js";
 import { withFileStorageKeyValidator } from "@/file-storage/implementations/plugins/with-file-storage-key-validator/with-file-storage-key-validator.js";
 import { enhanceFactory } from "@/middleware/implementations/enhance-factory/enhance-factory.js";
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
@@ -10,8 +10,8 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 import type {
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
-} from "@/file-storage/contracts/_module.js";
-import type { InvocableFn } from "@/utilities/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
+import type { InvocableFn } from "@/utilities/_module-exports.js";
 
 describe("function: withFileStorageKeyValidator", () => {
     const adapter = new NoOpFileStorageAdapter();

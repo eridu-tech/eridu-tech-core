@@ -6,7 +6,7 @@ import {
     CIRCUIT_BREAKER_STATE,
     HALF_OPEN_TRANSITIONS,
     CLOSED_TRANSITIONS,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 
 import type {
     HalfOpenTransitions,
@@ -14,7 +14,7 @@ import type {
     CircuitBreakerTrackState,
     ICircuitBreakerPolicy,
     ClosedTransitions,
-} from "@/circuit-breaker/contracts/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
 
 /**
  * Tracks in-memory failure and success counts for the consecutive circuit breaker.

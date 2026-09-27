@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { use } from "@/middleware/implementations/_module.js";
-import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/_module.js";
-import { SemaphoreFactory } from "@/semaphore/implementations/derivables/_module.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
+import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op-semaphore-adapter/_module-exports.js";
+import { SemaphoreFactory } from "@/semaphore/implementations/derivables/_module-exports.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { withSemaphoreFactory } from "@/semaphore/implementations/middlewares/with-semaphore-factory/with-semaphore-factory.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { SemaphoreFactoryCreateSettings } from "@/semaphore/contracts/_module.js";
+import type { SemaphoreFactoryCreateSettings } from "@/semaphore/contracts/_module-exports.js";
 
 describe("function: withSemaphoreFactory", () => {
     const semaphoreFactory = new SemaphoreFactory({

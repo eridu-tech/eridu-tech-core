@@ -1,7 +1,7 @@
 import Sqlite from "better-sqlite3";
 
 import { genericToken } from "@/di/contracts/container.contract.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type { Database, Options } from "better-sqlite3";
 
@@ -9,7 +9,7 @@ import type {
     DiToken,
     ServiceProviderFn,
 } from "@/di/contracts/container.contract.js";
-import type { Invocable } from "@/utilities/_module.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 export const SQLITE_CLIENT: DiToken<Database> =
     genericToken<Database>("SQLITE_CLIENT");

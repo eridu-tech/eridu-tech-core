@@ -3,21 +3,21 @@ import { MongoClient } from "mongodb";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { MongodbCacheAdapter } from "@/cache/implementations/adapters/mongodb-cache-adapter/mongodb-cache-adapter.js";
-import { cacheAdapterTestSuite } from "@/cache/implementations/test-utilities/_module.js";
-import { contextToken } from "@/execution-context/contracts/_module.js";
-import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/_module.js";
-import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
+import { cacheAdapterTestSuite } from "@/cache/implementations/test-utilities/_module-exports.js";
+import { contextToken } from "@/execution-context/contracts/_module-exports.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/_module-exports.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
 import type { ClientSession } from "mongodb";
 
 import type { MongodbCacheEntryDocument } from "@/cache/implementations/adapters/mongodb-cache-adapter/mongodb-cache-adapter.js";
-import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module.js";
+import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("class: MongodbCacheAdapter", () => {

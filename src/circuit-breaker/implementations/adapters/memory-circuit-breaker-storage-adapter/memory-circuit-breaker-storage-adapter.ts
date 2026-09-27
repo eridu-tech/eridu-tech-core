@@ -7,8 +7,11 @@ import type {
     ICircuitBreakerStorageAdapterTransaction,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ICircuitBreakerFactory,
-} from "@/circuit-breaker/contracts/_module.js";
-import type { IDeinitizable, InvocableFn } from "@/utilities/_module.js";
+} from "@/circuit-breaker/contracts/_module-exports.js";
+import type {
+    IDeinitizable,
+    InvocableFn,
+} from "@/utilities/_module-exports.js";
 
 /**
  * The `MemoryCircuitBreakerStorageAdapter` is used for easily facking {@link ICircuitBreakerFactory | `ICircuitBreakerFactory`} for testing.

@@ -2,11 +2,11 @@ import { MongoDBContainer } from "@testcontainers/mongodb";
 import { MongoClient, MongoError } from "mongodb";
 
 import { resolveFileContent } from "@/file-storage/implementations/derivables/file-storage/resolve-file-content.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
 
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
 export async function startMongoReplicaSet(): Promise<{
     container: StartedMongoDBContainer;

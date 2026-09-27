@@ -7,8 +7,8 @@ import { EventEmitter } from "node:events";
 import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     SuperJsonSerdeAdapter,
-} from "@/serde/implementations/adapters/_module.js";
-import { TransactionContext } from "@/transaction-context/implementations/derivables/_module.js";
+} from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type { Redis } from "ioredis";
 
@@ -16,9 +16,9 @@ import type {
     BaseEvent,
     EventListenerFn,
     IEventBusAdapter,
-} from "@/event-bus/contracts/_module.js";
-import type { ISerde } from "@/serde/contracts/_module.js";
-import type { ITransactionHooks } from "@/transaction-context/contracts/_module.js";
+} from "@/event-bus/contracts/_module-exports.js";
+import type { ISerde } from "@/serde/contracts/_module-exports.js";
+import type { ITransactionHooks } from "@/transaction-context/contracts/_module-exports.js";
 
 /**
  * Configuration for `RedisPubSubEventBusAdapter`.

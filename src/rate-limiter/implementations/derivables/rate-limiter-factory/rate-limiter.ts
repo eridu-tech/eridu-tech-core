@@ -5,12 +5,12 @@
 import {
     BlockedRateLimiterError,
     RATE_LIMITER_STATE,
-} from "@/rate-limiter/contracts/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/time-span.js";
 import {
     callErrorPolicyOnThrow,
     resolveAsyncLazyable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     IRateLimiter,
@@ -19,8 +19,12 @@ import type {
     RateLimiterAllowedState,
     RateLimiterBlockedState,
     RateLimiterState,
-} from "@/rate-limiter/contracts/_module.js";
-import type { AsyncLazy, ErrorPolicy, WaitUntil } from "@/utilities/_module.js";
+} from "@/rate-limiter/contracts/_module-exports.js";
+import type {
+    AsyncLazy,
+    ErrorPolicy,
+    WaitUntil,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal

@@ -26,15 +26,15 @@ import {
     URLSerdeTransformer,
     URLSearchParamsSerdeTransformer,
 } from "@/serde/implementations/derivables/serde-transformers.js";
-import { resolveOneOrMoreStr } from "@/utilities/_module.js";
+import { resolveOneOrMoreStr } from "@/utilities/_module-exports.js";
 
 import type {
     IFlexibleSerde,
     IFlexibleSerdeAdapter,
     ISerdeTransformer,
     SerializedValueBase,
-} from "@/serde/contracts/_module.js";
-import type { OneOrMore } from "@/utilities/_module.js";
+} from "@/serde/contracts/_module-exports.js";
+import type { OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for the `Serde` class.

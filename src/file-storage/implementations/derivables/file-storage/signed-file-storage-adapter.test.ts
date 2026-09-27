@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module.js";
+import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module-exports.js";
 import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/signed-file-storage-adapter.js";
 
 import type {
@@ -13,7 +13,7 @@ import type {
     IFileUrlAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
-} from "@/file-storage/contracts/_module.js";
+} from "@/file-storage/contracts/_module-exports.js";
 
 describe("class: SignedFileStorageAdapter", () => {
     let signedFileStorageAdapter: SignedFileStorageAdapter;

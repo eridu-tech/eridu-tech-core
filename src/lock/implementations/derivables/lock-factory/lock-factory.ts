@@ -6,20 +6,24 @@ import { v4 } from "uuid";
 
 import { LockSerdeTransformer } from "@/lock/implementations/derivables/lock-factory/lock-serde-transformer.js";
 import { Lock } from "@/lock/implementations/derivables/lock-factory/lock.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
-import { Serde } from "@/serde/implementations/derivables/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { CORE, resolveOneOrMore, callInvocable } from "@/utilities/_module.js";
+import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import {
+    CORE,
+    resolveOneOrMore,
+    callInvocable,
+} from "@/utilities/_module-exports.js";
 
 import type {
     ILock,
     LockFactoryCreateSettings,
     ILockFactory,
     ILockAdapter,
-} from "@/lock/contracts/_module.js";
-import type { ISerdeRegister } from "@/serde/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { OneOrMore, Invocable } from "@/utilities/_module.js";
+} from "@/lock/contracts/_module-exports.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { OneOrMore, Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `LockFactory` variants.

@@ -8,7 +8,7 @@ import type {
     ISemaphoreAdapter,
     ISemaphoreAdapterState,
     SemaphoreAcquireSettings,
-} from "@/semaphore/contracts/_module.js";
+} from "@/semaphore/contracts/_module-exports.js";
 
 /**
  * @internal

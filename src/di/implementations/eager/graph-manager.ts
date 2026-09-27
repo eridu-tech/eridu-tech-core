@@ -22,13 +22,11 @@ import type {
     EdgeErrorInfo,
     FactoryRegistration,
     ServiceFactory,
-} from "@/di/contracts/_module-exports.js";
-import type {
     DepsTokens,
     FactoryRegistrationOverride,
     DepRecord,
     EmptyDepRecord,
-} from "@/di/contracts/_module.js";
+} from "@/di/contracts/_module-exports.js";
 import type {
     NodeProps,
     EdgeProps,

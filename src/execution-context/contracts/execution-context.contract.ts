@@ -7,7 +7,7 @@ import type {
     InvocableFn,
     Lazyable,
     Class,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 /**
  * A class constructor used as a context token. The class itself serves as the

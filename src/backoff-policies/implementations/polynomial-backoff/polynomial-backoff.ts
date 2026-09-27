@@ -2,15 +2,19 @@
  * @module BackoffPolicy
  */
 
-import { TO_MILLISECONDS } from "@/time-span/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { callInvocable, isInvocable, withJitter } from "@/utilities/_module.js";
+import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import {
+    callInvocable,
+    isInvocable,
+    withJitter,
+} from "@/utilities/_module-exports.js";
 
 import type {
     BackoffPolicy,
     DynamicBackoffPolicy,
 } from "@/backoff-policies/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
 /**
  * Configuration for the polynomial backoff policy.

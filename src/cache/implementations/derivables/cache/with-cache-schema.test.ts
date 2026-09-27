@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { z } from "zod";
 
-import { MemoryCacheAdapter } from "@/cache/implementations/adapters/_module.js";
+import { MemoryCacheAdapter } from "@/cache/implementations/adapters/memory-cache-adapter/_module-exports.js";
 import { withCacheSchema } from "@/cache/implementations/derivables/cache/with-cache-schema.js";
-import { withPlugin } from "@/middleware/implementations/_module.js";
-import { ValidationError } from "@/utilities/_module.js";
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
+import { ValidationError } from "@/utilities/_module-exports.js";
 
 describe("function: withCacheSchema", () => {
     let adapter = new MemoryCacheAdapter<string>();
