@@ -4,13 +4,11 @@ import {
     BlockedRateLimiterError,
     RATE_LIMITER_STATE,
 } from "@/rate-limiter/contracts/_module-exports.js";
-import {
-    DatabaseRateLimiterAdapter,
-    MemoryRateLimiterStorageAdapter,
-} from "@/rate-limiter/implementations/adapters/_module.js";
+import { DatabaseRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/database-rate-limiter-adapter/_module-exports.js";
+import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-storage-adapter/_module-exports.js";
 import { RateLimiterFactory } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter-factory.js";
 import { FixedWindowLimiter } from "@/rate-limiter/implementations/policies/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
