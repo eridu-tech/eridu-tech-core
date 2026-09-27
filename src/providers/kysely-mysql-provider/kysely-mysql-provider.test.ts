@@ -3,8 +3,8 @@ import { sql } from "kysely";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { Container } from "@/di/implementations/eager/container.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import {
     kyselyMysqlProvider,
     KYSELY_MYSQL,
@@ -13,7 +13,7 @@ import {
     mysqlProvider,
     MYSQL_CLIENT,
 } from "@/providers/mysql-provider/mysql-provider.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedMySqlContainer } from "@testcontainers/mysql";
 

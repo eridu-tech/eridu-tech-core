@@ -1,12 +1,12 @@
 import { Pool } from "pg";
 
 import { genericToken } from "@/di/contracts/container.contract.js";
-import { callInvocable } from "@/utilities/_module.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type { PoolConfig } from "pg";
 
 import type { ServiceProviderFn } from "@/di/contracts/container.contract.js";
-import type { Invocable } from "@/utilities/_module.js";
+import type { Invocable } from "@/utilities/_module-exports.js";
 
 export const POSTGRES_CLIENT = genericToken<Pool>("POSTGRES_CLIENT");
 
