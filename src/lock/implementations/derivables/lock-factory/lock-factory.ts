@@ -6,7 +6,7 @@ import { v4 } from "uuid";
 
 import { LockSerdeTransformer } from "@/lock/implementations/derivables/lock-factory/lock-serde-transformer.js";
 import { Lock } from "@/lock/implementations/derivables/lock-factory/lock.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/_module.js";
+import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {

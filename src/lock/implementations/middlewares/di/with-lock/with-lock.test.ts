@@ -5,7 +5,7 @@ import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js"
 import { Container } from "@/di/implementations/eager/container.js";
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { NoOpLockAdapter } from "@/lock/implementations/adapters/_module.js";
+import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adapter/_module-exports.js";
 import { LockFactory } from "@/lock/implementations/derivables/_module-exports.js";
 import { Lock } from "@/lock/implementations/derivables/lock-factory/lock.js";
 import { registerWithLock } from "@/lock/implementations/middlewares/di/with-lock/with-lock.js";
