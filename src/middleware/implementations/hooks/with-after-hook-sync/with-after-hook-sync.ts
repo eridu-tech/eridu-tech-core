@@ -4,7 +4,7 @@
 
 import { callInvocable } from "@/utilities/_module.js";
 
-import type { MiddlewareFn } from "@/middleware/contracts/use.contract.js";
+import type { MiddlewareFn } from "@/middleware/contracts/_module.js";
 import type { Invocable } from "@/utilities/_module.js";
 
 /**
