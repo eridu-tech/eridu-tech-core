@@ -4,7 +4,7 @@
 
 import { NotFoundExecutionContextError } from "@/execution-context/contracts/execution-context.errors.js";
 import { tokenToString } from "@/execution-context/implementations/derivables/execution-context/_shared.js";
-import { resolveLazyable } from "@/utilities/_module.js";
+import { resolveLazyable } from "@/utilities/_module-exports.js";
 
 import type {
     ContextToken,
@@ -14,8 +14,8 @@ import type {
     IncrementSettings,
     PutDecrementSettings,
     PutIncrementSettings,
-} from "@/execution-context/contracts/_module.js";
-import type { Invocable, Lazyable } from "@/utilities/_module.js";
+} from "@/execution-context/contracts/_module-exports.js";
+import type { Invocable, Lazyable } from "@/utilities/_module-exports.js";
 
 /**
  * @internal

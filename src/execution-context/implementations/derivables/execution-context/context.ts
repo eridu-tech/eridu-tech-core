@@ -11,9 +11,9 @@ import {
     optionNone,
     optionSome,
     resolveLazyable,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
-import type { DiToken } from "@/di/contracts/_module.js";
+import type { DiToken } from "@/di/contracts/_module-exports.js";
 import type {
     ContextToken,
     DecrementSettings,
@@ -22,8 +22,12 @@ import type {
     IncrementSettings,
     PutDecrementSettings,
     PutIncrementSettings,
-} from "@/execution-context/contracts/_module.js";
-import type { Invocable, Lazyable, Option } from "@/utilities/_module.js";
+} from "@/execution-context/contracts/_module-exports.js";
+import type {
+    Invocable,
+    Lazyable,
+    Option,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal
