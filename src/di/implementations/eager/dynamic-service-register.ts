@@ -6,7 +6,7 @@ import type {
     DiToken,
     DynamicRegistration,
     IDynamicServiceRegister,
-} from "@/di/contracts/container.contract.js";
+} from "@/di/contracts/_module.js";
 
 /**
  * @internal

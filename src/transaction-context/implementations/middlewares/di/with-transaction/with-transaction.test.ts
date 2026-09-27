@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { genericToken } from "@/di/contracts/container.contract.js";
+import { genericToken } from "@/di/contracts/_module.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
 import { contextToken } from "@/execution-context/contracts/_module.js";
@@ -12,7 +12,7 @@ import { NoOpTransactionAdapter } from "@/transaction-context/implementations/ad
 import { TransactionContext } from "@/transaction-context/implementations/derivables/transaction-context/transaction-context.js";
 import { registerWithTransaction } from "@/transaction-context/implementations/middlewares/di/with-transaction/with-transaction.js";
 
-import type { IContainer } from "@/di/contracts/container.contract.js";
+import type { IContainer } from "@/di/contracts/_module.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/transaction-context/transaction-context.js";
 
