@@ -10,15 +10,15 @@ import {
     FailedReleaseWriterLockError,
     LimitReachedReaderSemaphoreError,
     SHARED_LOCK_STATE,
-} from "@/shared-lock/contracts/_module.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     OPTION,
     optionNone,
     optionSome,
     resolveLazyable,
     UnexpectedError,
-} from "@/utilities/_module.js";
+} from "@/utilities/_module-exports.js";
 
 import type {
     ISharedLock,
@@ -26,9 +26,9 @@ import type {
     ISharedLockAdapterState,
     ISharedLockExpiredState,
     ISharedLockState,
-} from "@/shared-lock/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { AsyncLazy, Option } from "@/utilities/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { AsyncLazy, Option } from "@/utilities/_module-exports.js";
 
 /**
  * @internal

@@ -6,7 +6,7 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/_module.js";
 import { withSharedLockPrefix } from "@/shared-lock/implementations/plugins/with-shared-lock-prefix/with-shared-lock-prefix.js";
 
-import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module.js";
+import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports.js";
 
 describe("function: withSharedLockPrefix", () => {
     const adapter = new NoOpSharedLockAdapter();

@@ -1,17 +1,17 @@
 /**
  * @module SharedLock
  */
-import { TimeSpan } from "@/time-span/implementations/_module.js";
-import { delay } from "@/utilities/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { delay } from "@/utilities/_module-exports.js";
 
 import type { TestAPI, SuiteAPI, ExpectStatic, beforeEach } from "vitest";
 
 import type {
     ISharedLockAdapter,
     ISharedLockAdapterState,
-} from "@/shared-lock/contracts/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module.js";
-import type { Promisable } from "@/utilities/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/shared-lock/test-utilities"`

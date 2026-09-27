@@ -2,7 +2,7 @@
  * @module SharedLock
  */
 
-import { UnexpectedError } from "@/utilities/_module.js";
+import { UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -12,8 +12,8 @@ import type {
     SharedLockAcquireSettings,
     IWriterLockAdapterState,
     IReaderSemaphoreAdapterState,
-} from "@/shared-lock/contracts/_module.js";
-import type { IDeinitizable, IPrunable } from "@/utilities/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
+import type { IDeinitizable, IPrunable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/shared-lock/memory-shared-lock-adapter"`

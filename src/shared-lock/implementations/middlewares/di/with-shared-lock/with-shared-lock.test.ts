@@ -1,23 +1,23 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { genericToken } from "@/di/contracts/_module.js";
+import { genericToken } from "@/di/contracts/_module-exports.js";
 import { CanNotResolveServiceDiError } from "@/di/contracts/container.errors.js";
 import { Container } from "@/di/implementations/eager/container.js";
-import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module.js";
-import { use } from "@/middleware/implementations/_module.js";
+import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/_module.js";
-import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module.js";
+import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module-exports.js";
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import { registerWithSharedLock } from "@/shared-lock/implementations/middlewares/di/with-shared-lock/with-shared-lock.js";
 import { SHARED_LOCK_WHEN } from "@/shared-lock/implementations/middlewares/with-shared-lock-factory/with-shared-lock-factory.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { IContainer } from "@/di/contracts/_module.js";
+import type { IContainer } from "@/di/contracts/_module-exports.js";
 import type {
     ISharedLockFactory,
     SharedLockFactoryCreateSettings,
-} from "@/shared-lock/contracts/_module.js";
+} from "@/shared-lock/contracts/_module-exports.js";
 
 describe("function: registerWithSharedLock", () => {
     const SHARED_LOCK_FACTORY =

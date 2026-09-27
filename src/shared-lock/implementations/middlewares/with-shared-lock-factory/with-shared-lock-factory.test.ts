@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { use } from "@/middleware/implementations/_module.js";
+import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/_module.js";
-import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module.js";
+import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module-exports.js";
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import {
     SHARED_LOCK_WHEN,
     withSharedLockFactory,
 } from "@/shared-lock/implementations/middlewares/with-shared-lock-factory/with-shared-lock-factory.js";
-import { TimeSpan } from "@/time-span/implementations/_module.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { SharedLockFactoryCreateSettings } from "@/shared-lock/contracts/_module.js";
+import type { SharedLockFactoryCreateSettings } from "@/shared-lock/contracts/_module-exports.js";
 
 describe("function: withSharedLockFactory", () => {
     const sharedLockFactory = new SharedLockFactory({
