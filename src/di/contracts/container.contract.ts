@@ -62,7 +62,7 @@ export type DepRecord = Partial<Record<string, unknown>>;
  * @group Contracts
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export type EmptyDepRecord = {};
+export type EmptyRecord = {};
 
 /**
  * A callback invoked by the container to create a service instance.
@@ -76,7 +76,7 @@ export type EmptyDepRecord = {};
  * @group Contracts
  */
 export type ServiceFactory<
-    TDeps extends DepRecord = EmptyDepRecord,
+    TDeps extends DepRecord = EmptyRecord,
     TRegisteredType = unknown,
 > = Invocable<
     [deps: TDeps, executionContext: IExecutionContext],
@@ -112,8 +112,25 @@ export type Lifetime = (typeof LIFETIME)[keyof typeof LIFETIME];
  * IMPORT_PATH: `"eridu-tech/di/contracts"`
  * @group Contracts
  */
-export type DepsTokens<TDeps extends DepRecord = EmptyDepRecord> = {
+export type DepsTokens<TDeps extends DepRecord = EmptyRecord> = {
     [K in keyof TDeps]: DiToken<TDeps[K]>;
+};
+
+/**
+ * Optional lifecycle hooks for a service registration.
+ * Each hook receives the resolved service instance and may be async.
+ *
+ * @typeParam TRegisteredType - The type of the registered service.
+ *
+ * IMPORT_PATH: `"eridu-tech/di/contracts"`
+ * @group Contracts
+ */
+export type ServiceHooks<TRegisteredType = unknown> = {
+    /** Invoked after the container is initialized, with the resolved service instance. */
+    onInit?: Invocable<[registration: TRegisteredType], Promisable<void>>;
+
+    /** Invoked before the container is deinitialized, with the resolved service instance. */
+    onDeInit?: Invocable<[registration: TRegisteredType], Promisable<void>>;
 };
 
 /**
@@ -126,9 +143,9 @@ export type DepsTokens<TDeps extends DepRecord = EmptyDepRecord> = {
  * @group Contracts
  */
 export type FactoryRegistration<
-    TDeps extends DepRecord = EmptyDepRecord,
+    TDeps extends DepRecord = EmptyRecord,
     TRegisteredType = unknown,
-> = {
+> = ServiceHooks & {
     /** The token used to identify and resolve this service. */
     token: DiToken<TRegisteredType>;
 
@@ -152,7 +169,7 @@ export type FactoryRegistration<
  * @group Contracts
  */
 export type FactoryRegistrationOverride<
-    TDeps extends DepRecord = EmptyDepRecord,
+    TDeps extends DepRecord = EmptyRecord,
     TRegisteredType = unknown,
 > = {
     /** The token used to identify and resolve this service. */
@@ -174,7 +191,7 @@ export type FactoryRegistrationOverride<
  * IMPORT_PATH: `"eridu-tech/di/contracts"`
  * @group Contracts
  */
-export type ValueRegistration<TRegisteredType = unknown> = {
+export type ValueRegistration<TRegisteredType = unknown> = ServiceHooks & {
     /** The token used to identify and resolve this service. */
     token: DiToken<TRegisteredType>;
 
@@ -216,7 +233,7 @@ export type IServiceRegisterBase = {
      * @throws {@link CanNotRegisterServiceDiError} When the token already has a registration.
      */
     registerFactory<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(
         settings: FactoryRegistration<TDeps, TRegisteredType>,
@@ -260,108 +277,13 @@ export type IServiceRegisterBase = {
 };
 
 /**
- * A hook callback invoked during container lifecycle events.
- * Receives an {@link IServiceResolver} to resolve services during the hook.
- *
- * IMPORT_PATH: `"eridu-tech/di/contracts"`
- * @group Contracts
- */
-export type DiHook = Invocable<[resolver: IServiceResolver], Promisable<void>>;
-
-/**
- * Interface for registering lifecycle hooks that run on container
- * initialization and deinitialization.
- *
- * IMPORT_PATH: `"eridu-tech/di/contracts"`
- * @group Contracts
- */
-export type IContainerHooks = {
-    /**
-     * Registers a handler to be invoked after the container is initialized (when {@link IContainer.init} method is called).
-     * Can be called multiple times to register multiple hooks. All registered hooks run after {@link IContainer.init} completes.
-     *
-     * @param handler - The hook to invoke after the container is initialized.
-     *
-     * @throws {@link InvalidMethodCallDiError} When called after {@link IContainer.init}.
-     */
-    onContainerInit(handler: DiHook): void;
-
-    /**
-     * Registers a handler to be invoked before the container is deinitialized (when {@link IContainer.deInit} method is called).
-     * Can be called multiple times to register multiple hooks. All registered hooks run before {@link IContainer.deInit} completes.
-     *
-     * @param handler - The hook to invoke before the container is deinitialized.
-     *
-     * @throws {@link InvalidMethodCallDiError} When called after {@link IContainer.init}.
-     */
-    onContainerDeInit(handler: DiHook): void;
-};
-
-/**
  * The full service registration interface, combining base registration,
  * provider registration, and container lifecycle hooks.
  *
  * IMPORT_PATH: `"eridu-tech/di/contracts"`
  * @group Contracts
  */
-export type IServiceRegister = IServiceRegisterBase &
-    IServiceProviderRegister &
-    IContainerHooks;
-
-/**
- * A plain function that acts as a service provider, receiving an
- * {@link IServiceRegister} to register services.
- *
- * IMPORT_PATH: `"eridu-tech/di/contracts"`
- * @group Contracts
- */
-export type ServiceProviderFn = InvocableFn<
-    [serviceRegister: IServiceRegister],
-    void
->;
-
-/**
- * An object with an {@link IInvocableObject.invoke} method that acts as a service provider,
- * receiving an {@link IServiceRegister} to register services.
- *
- * IMPORT_PATH: `"eridu-tech/di/contracts"`
- * @group Contracts
- */
-export type IServiceProvider = IInvocableObject<
-    [serviceRegister: IServiceRegister],
-    void
->;
-
-/**
- * A service provider, either as a plain function ({@link ServiceProviderFn})
- * or an object with an {@link IInvocableObject.invoke} method ({@link IServiceProvider}).
- *
- * IMPORT_PATH: `"eridu-tech/di/contracts"`
- * @group Contracts
- */
-export type ServiceProvider = ServiceProviderFn | IServiceProvider;
-
-/**
- * Interface for registering a {@link ServiceProvider} that can
- * batch-register multiple services at once.
- *
- * Useful for creating reusable, isolated code blocks.
- * service providers — that encapsulate a group of related registrations.
- *
- * IMPORT_PATH: `"eridu-tech/di/contracts"`
- * @group Contracts
- */
-export type IServiceProviderRegister = {
-    /**
-     * Registers a {@link ServiceProvider} that can register multiple services
-     * via the provided {@link IServiceRegister}.
-     *
-     * @param provider - The service provider to register.
-     *
-     * @throws {@link InvalidMethodCallDiError} If the container is inactive (e.g., called before {@link IContainer.init} or after {@link IContainer.deInit}).
-     */
-    registerProvider(provider: ServiceProvider): void;
-};
+export type IServiceRegister = IServiceRegisterBase;
 
 /**
  * Interface for resolving registered services by token, with nullable,
@@ -613,7 +535,7 @@ export type IServiceOverrider = {
      * @throws {@link CanNotOverrideServiceDiError} When can not override the service.
      */
     overrideFactory<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(
         settings: FactoryRegistrationOverride<TDeps, TRegisteredType>,

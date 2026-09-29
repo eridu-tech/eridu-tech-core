@@ -13,14 +13,12 @@ import {
 import { Container } from "@/di/implementations/eager/container.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
-    IServiceRegister,
-    IServiceProvider,
     DiToken,
     IContainer,
-    EmptyDepRecord,
+    EmptyRecord,
     DepRecord,
     FactoryRegistration,
     ServiceFactory,
@@ -118,7 +116,7 @@ function wrapInParenthesis(word: string, ...args: Array<unknown>): string {
     return `${word}(${str})`;
 }
 
-function dependency<TDeps extends DepRecord = EmptyDepRecord>(
+function dependency<TDeps extends DepRecord = EmptyRecord>(
     deps: DepsTokens<TDeps>,
 ): {
     factory: <TRegisteredType = unknown>(
@@ -322,112 +320,6 @@ describe("class: Container", () => {
             expect(() => {
                 container.registerDynamic(REQUEST_ID);
             }).not.toThrow();
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // registerProvider
-    // -----------------------------------------------------------------------
-    describe("method: registerProvider", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should register a service provider as a plain function", () => {
-            expect(() => {
-                function loggingProvider(register: IServiceRegister): void {
-                    register.registerFactory({
-                        token: ConsoleLogger,
-                        factory: () => new ConsoleLogger(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-                }
-
-                container.registerProvider(loggingProvider);
-            }).not.toThrow();
-        });
-
-        test("Should register a service provider as an object with an invoke method", () => {
-            expect(() => {
-                class DatabaseProvider implements IServiceProvider {
-                    invoke(register: IServiceRegister): void {
-                        register.registerFactory({
-                            token: Database,
-                            factory: () => new Database(),
-                            deps: {},
-                            lifetime: LIFETIME.SINGLETON,
-                        });
-                    }
-                }
-
-                container.registerProvider(new DatabaseProvider());
-            }).not.toThrow();
-        });
-
-        test("Should register multiple services from a single provider", () => {
-            expect(() => {
-                function appProvider(register: IServiceRegister): void {
-                    register.registerFactory({
-                        token: ConsoleLogger,
-                        factory: () => new ConsoleLogger(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-
-                    register.registerFactory({
-                        token: Database,
-                        factory: () => new Database(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-
-                    register.registerValue({
-                        token: ICONFIG,
-                        value: {
-                            apiUrl: "https://api.example.com",
-                            timeout: 5000,
-                        },
-                    });
-                }
-
-                container.registerProvider(appProvider);
-            }).not.toThrow();
-        });
-
-        test("Should accept a provider that registers a factory", () => {
-            expect(() => {
-                function appProvider(register: IServiceRegister): void {
-                    register.registerFactory({
-                        token: ConsoleLogger,
-                        factory: () => new ConsoleLogger(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-                }
-
-                container.registerProvider(appProvider);
-            }).not.toThrow();
-        });
-
-        test("Should reject a promise-returning (async) provider", () => {
-            function asyncProvider(register: IServiceRegister): Promise<void> {
-                return Promise.resolve().then(() => {
-                    register.registerFactory({
-                        token: ConsoleLogger,
-                        factory: () => new ConsoleLogger(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-                });
-            }
-
-            expect(() => {
-                // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                container.registerProvider(asyncProvider);
-            }).toThrow(UnexpectedError);
         });
     });
 
@@ -1155,43 +1047,6 @@ describe("class: Container", () => {
             const parentDb = await appContainer.resolveOrFail(Database);
             expect(parentDb).toBeInstanceOf(Database);
         });
-
-        test("Should support service providers for batch registration", async () => {
-            const container = createContainerAndExecutionContext().container;
-
-            function appProvider(register: IServiceRegister): void {
-                register.registerFactory({
-                    token: ConsoleLogger,
-                    factory: () => new ConsoleLogger(),
-                    deps: {},
-                    lifetime: LIFETIME.SINGLETON,
-                });
-
-                register.registerFactory({
-                    token: Database,
-                    factory: () => new Database(),
-                    deps: {},
-                    lifetime: LIFETIME.SINGLETON,
-                });
-
-                register.registerValue({
-                    token: ICONFIG,
-                    value: { apiUrl: "https://api.example.com", timeout: 5000 },
-                });
-            }
-
-            container.registerProvider(appProvider);
-
-            await container.init();
-
-            const logger = await container.resolveOrFail(ConsoleLogger);
-            expect(logger).toBeInstanceOf(ConsoleLogger);
-
-            const db = await container.resolveOrFail(Database);
-            expect(db).toBeInstanceOf(Database);
-
-            await container.deInit();
-        });
     });
 });
 
@@ -1343,12 +1198,6 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
                 container.registerValue({ token: A, value: new A() });
             },
             name: Container.prototype.registerValue.name,
-        },
-        {
-            func: () => {
-                container.registerProvider(() => {});
-            },
-            name: Container.prototype.registerProvider.name,
         },
     ];
 
@@ -1897,33 +1746,6 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             );
 
             expect(value).toBe(correctValue);
-        });
-
-        /**
-         * container.registerProvider is shortcut for registering multiple factories at once and is independent of node type.
-         * Only singleton registration through container.registerProvider is tested because implementation of container.registerProvider can done independent of node type.
-         * The method lambda argument to container.registerProvider can be implemented as proxy object of IContainer.
-         */
-        test(`Should resolve successfully when resolving a singleton dependency through ${Container.name}.${Container.prototype.registerProvider.name} with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
-            const nodeA = dependency({})
-                .factory(() => "_")
-                .lifeTime(LIFETIME.SINGLETON)
-                .createToken("A");
-
-            container.registerProvider((provider) => {
-                provider.registerFactory(nodeA);
-            });
-
-            await container.init();
-
-            const correctValue = await callInvocable(
-                nodeA.factory,
-                {},
-                executionContext,
-            );
-            await expect(container.resolve(nodeA.token)).resolves.toBe(
-                correctValue,
-            );
         });
 
         /**

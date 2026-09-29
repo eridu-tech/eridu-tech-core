@@ -24,23 +24,22 @@ import {
 import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type {
-    DiHook,
     DiToken,
     FactoryRegistration,
     FactoryRegistrationOverride,
     IContainer,
     IDynamicServiceRegister,
-    IServiceRegister,
     RunSettings,
-    ServiceProvider,
     ValueRegistration,
     DepRecord,
-    EmptyDepRecord,
+    EmptyRecord,
     AliasRegistration,
+    IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
 import type { CanNotResolveServiceDiErrorCreateData } from "@/di/contracts/container.errors.js";
 import type { Node } from "@/di/implementations/eager/_shared.js";
 import type { IExecutionContext } from "@/execution-context/contracts/_module-exports.js";
+import type { InvocableFn, Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/di"`
@@ -55,7 +54,15 @@ export type ContainerSettings = {
     executionContext: IExecutionContext;
 };
 
+/**
+ * @internal
+ */
 type TState = (typeof Container.STATE)[keyof typeof Container.STATE];
+
+/**
+ * @internal
+ */
+type DiHook = InvocableFn<[resolver: IServiceResolver], Promisable<void>>;
 
 /**
  * IMPORT_PATH: `"eridu-tech/di"`
@@ -76,9 +83,9 @@ export class Container implements IContainer {
             "Boolean indicator if container is inside DynamicServiceProvider",
         );
     private graphManager: GraphManager;
-    private initHandlers: Array<DiHook> = [];
-    private deInitHandlers: Array<DiHook> = [];
-    private registryManager: RegistryManager;
+    private readonly initHandlers: Array<DiHook> = [];
+    private readonly deInitHandlers: Array<DiHook> = [];
+    private readonly registryManager: RegistryManager;
     private currentState: TState = Container.STATE.UNINITIALIZED;
 
     constructor(private readonly settings: ContainerSettings) {
@@ -448,14 +455,14 @@ export class Container implements IContainer {
         }
     }
 
-    onContainerInit(handler: DiHook): void {
+    private onContainerInit(handler: DiHook): void {
         this.throwIfContainerAlreadyInitialized(this.onContainerInit.name);
         this.throwIfInsideRunScope(this.onContainerInit.name);
 
         this.initHandlers.push(handler);
     }
 
-    onContainerDeInit(handler: DiHook): void {
+    private onContainerDeInit(handler: DiHook): void {
         this.throwIfContainerAlreadyInitialized(this.onContainerDeInit.name);
         this.throwIfInsideRunScope(this.onContainerDeInit.name);
 
@@ -577,13 +584,33 @@ export class Container implements IContainer {
     }
 
     registerFactory<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(settings: FactoryRegistration<TDeps, TRegisteredType>): void {
         this.throwIfContainerAlreadyInitialized(this.registerFactory.name);
         this.throwIfInsideRunScope(this.registerFactory.name);
         this.throwIfTokenAlreadyRegistered(settings.token);
         this.graphManager.registerFactory(settings);
+
+        if (settings.onInit !== undefined) {
+            this.onContainerInit(async (resolver) => {
+                const service = await resolver.resolveOrFail(settings.token);
+                if (settings.onInit === undefined) {
+                    return;
+                }
+                callInvocable(settings.onInit, service);
+            });
+        }
+
+        if (settings.onDeInit !== undefined) {
+            this.onContainerInit(async (resolver) => {
+                const service = await resolver.resolveOrFail(settings.token);
+                if (settings.onDeInit === undefined) {
+                    return;
+                }
+                callInvocable(settings.onDeInit, service);
+            });
+        }
     }
 
     registerValue<TRegisteredType = unknown>(
@@ -597,6 +624,8 @@ export class Container implements IContainer {
             token: settings.token,
             factory: () => settings.value,
             lifetime: INTERNAL_LIFETIME.SINGLETON,
+            onInit: settings.onInit,
+            onDeInit: settings.onDeInit,
         });
     }
 
@@ -622,24 +651,6 @@ export class Container implements IContainer {
             },
             lifetime: LIFETIME.SINGLETON,
         });
-    }
-
-    registerProvider(provider: ServiceProvider): void {
-        this.throwIfContainerAlreadyInitialized(this.registerProvider.name);
-        this.throwIfInsideRunScope(this.registerProvider.name);
-        const result = callInvocable<[IServiceRegister], unknown>(
-            provider,
-            this,
-        );
-        if (result instanceof Promise) {
-            // A promise-returning (async) provider would be fire-and-forgotten:
-            // its registrations could be missing at init() and any rejection
-            // would be unhandled. Fail loudly instead of ignoring it.
-            void result.catch(() => {});
-            throw new UnexpectedError(
-                "Service providers must be synchronous. Async providers are not supported because their registrations would not complete before init().",
-            );
-        }
     }
 
     private async resolveOrGiveExplanation<TType>(
@@ -969,7 +980,7 @@ export class Container implements IContainer {
     }
 
     overrideFactory<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(settings: FactoryRegistrationOverride<TDeps, TRegisteredType>): void {
         this.throwIfContainerAlreadyInitialized(this.overrideFactory.name);
