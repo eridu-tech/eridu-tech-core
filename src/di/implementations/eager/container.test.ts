@@ -1119,7 +1119,7 @@ describe("class: Container", () => {
 
 // TODO remove duplicate tests above if any
 
-describe(`Illegal method call before ${Container.name}.${Container.prototype.init.name} or after ${Container.name}.${Container.prototype.deInit.name} (when container not active)`, () => {
+describe("Illegal method call before Container.init or after Container.deInit (when container not active)", () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -1138,28 +1138,28 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
                         const token = createToken();
                         await container.resolve(token);
                     },
-                    name: Container.prototype.resolve.name,
+                    name: "resolve",
                 },
                 {
                     func: async () => {
                         const token = createToken();
                         await container.resolveOr(token, "_");
                     },
-                    name: Container.prototype.resolveOr.name,
+                    name: "resolveOr",
                 },
                 {
                     func: async () => {
                         const token = createToken();
                         await container.resolveOrFail(token);
                     },
-                    name: Container.prototype.resolveOrFail.name,
+                    name: "resolveOrFail",
                 },
                 {
                     func: async () => {
                         const token = createToken();
                         await container.has(token);
                     },
-                    name: Container.prototype.has.name,
+                    name: "has",
                 },
             ] satisfies Array<TestData>,
     );
@@ -1169,7 +1169,7 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
             func: async () => {
                 await container.deInit();
             },
-            name: Container.prototype.deInit.name,
+            name: "deInit",
         },
         {
             func: async () => {
@@ -1177,14 +1177,14 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
                     scope: () => {},
                 });
             },
-            name: Container.prototype.run.name,
+            name: "run",
         },
     ];
 
     const testCases = [...testCases1, ...testCases2];
 
     test.each(testCases)(
-        `When method ${Container.name}.$name is called before ${Container.name}.${Container.prototype.init.name} then should fail with ${InvalidMethodCallDiError.name}`,
+        "When method Container.$name is called before Container.init then should fail with InvalidMethodCallDiError",
         async (testCase) => {
             const promise = testCase.func();
             await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
@@ -1196,7 +1196,7 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
     );
 
     test.each(testCases)(
-        `When $name is called after ${Container.prototype.init.name} then should not fail with ${InvalidMethodCallDiError.name}`,
+        "When $name is called after Container.init then should not fail with InvalidMethodCallDiError",
         async (testCase) => {
             await container.init();
             let error: unknown = null;
@@ -1212,7 +1212,7 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
     );
 
     test.each(testCases)(
-        `When ${Container.name}.$name is called after ${Container.name}.${Container.prototype.deInit.name} then should fail with ${InvalidMethodCallDiError.name}`,
+        "When Container.$name is called after Container.deInit then should fail with InvalidMethodCallDiError",
         async (testCase) => {
             await container.init();
             await container.deInit();
@@ -1226,7 +1226,7 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
     );
 });
 
-describe(`illegal method call after ${Container.prototype.init.name} (when container is active)`, () => {
+describe("illegal method call after Container.init (when container is active)", () => {
     class A {
         private: unknown;
     }
@@ -1251,20 +1251,20 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
                 });
             },
 
-            name: Container.prototype.registerFactory.name,
+            name: "registerFactory",
         },
 
         {
             func: () => {
                 container.registerDynamic(A);
             },
-            name: Container.prototype.registerDynamic.name,
+            name: "registerDynamic",
         },
         {
             func: () => {
                 container.registerValue({ token: A, value: new A() });
             },
-            name: Container.prototype.registerValue.name,
+            name: "registerValue",
         },
     ];
 
@@ -1277,13 +1277,13 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
                     factory: () => new A(),
                 });
             },
-            name: Container.prototype.overrideFactory.name,
+            name: "overrideFactory",
         },
         {
             func() {
                 container.overrideValue({ token: A, value: new A() });
             },
-            name: Container.prototype.overrideValue.name,
+            name: "overrideValue",
         },
     ];
 
@@ -1292,7 +1292,7 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
             async func() {
                 await container.init();
             },
-            name: Container.prototype.init.name,
+            name: "init",
         },
     ];
 
@@ -1301,7 +1301,7 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
             func() {
                 container.fork();
             },
-            name: Container.prototype.fork.name,
+            name: "fork",
         },
     ];
 
@@ -1313,7 +1313,7 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
     ];
 
     test.each(testCases)(
-        `When ${Container.name}.$name is called after ${Container.name}.${Container.prototype.init.name} then should fail with ${InvalidMethodCallDiError.name}`,
+        "When Container.$name is called after Container.init then should fail with InvalidMethodCallDiError",
         async (testCase) => {
             await container.init();
             const promise = (async () => {
@@ -1328,8 +1328,8 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
     );
 });
 
-describe(`illegal method call inside ${Container.prototype.run.name}`, () => {
-    test(`${Container.prototype.fork.name} method call inside ${Container.prototype.run.name} should fail`, async () => {
+describe("illegal method call inside Container.run", () => {
+    test("fork method call inside Container.run should fail", async () => {
         const container = createContainerAndExecutionContext().container;
         await container.init();
 
@@ -1347,8 +1347,8 @@ describe(`illegal method call inside ${Container.prototype.run.name}`, () => {
     });
 });
 
-describe(`illegal method call inside DynamicServiceProvider in ${Container.prototype.run.name} block`, () => {
-    test(`${Container.prototype.resolve.name} method should fail inside DynamicServiceProvider`, async () => {
+describe("illegal method call inside DynamicServiceProvider in Container.run block", () => {
+    test("resolve method should fail inside DynamicServiceProvider", async () => {
         const container = createContainerAndExecutionContext().container;
         await container.init();
         const tokenA = genericToken("A");
@@ -1366,7 +1366,7 @@ describe(`illegal method call inside DynamicServiceProvider in ${Container.proto
         );
     });
 
-    test(`${Container.prototype.resolveOr.name} method should fail inside DynamicServiceProvider`, async () => {
+    test("resolveOr method should fail inside DynamicServiceProvider", async () => {
         const container = createContainerAndExecutionContext().container;
         await container.init();
         const tokenA = genericToken("A");
@@ -1384,7 +1384,7 @@ describe(`illegal method call inside DynamicServiceProvider in ${Container.proto
         );
     });
 
-    test(`${Container.prototype.resolveOrFail.name} method should fail inside DynamicServiceProvider`, async () => {
+    test("resolveOrFail method should fail inside DynamicServiceProvider", async () => {
         const container = createContainerAndExecutionContext().container;
         await container.init();
         const tokenA = genericToken("A");
@@ -1530,7 +1530,7 @@ describe("register", () => {
         container = createContainerAndExecutionContext().container;
     });
 
-    test(`When a token is registered twice should fail with ${CanNotRegisterServiceDiError.name}`, () => {
+    test("When a token is registered twice should fail with CanNotRegisterServiceDiError", () => {
         const node = dependency({})
             .factory(() => "")
             .lifeTime(LIFETIME.SINGLETON)
@@ -1551,7 +1551,7 @@ describe("register", () => {
     });
 });
 
-describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.prototype.init.name} & ${Container.name}.${Container.prototype.run.name}`, () => {
+describe("resolve & Container.init & Container.run", () => {
     let container: IContainer;
     let tokenA: DiToken<string>;
     beforeEach(async () => {
@@ -1561,7 +1561,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
     });
 
     describe("nonexistent token", () => {
-        test(`should return null when resolving a nonexistent token at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a nonexistent token at top with Container.resolve", async () => {
             await expect(container.resolve(tokenA)).resolves.toBe(null);
         });
 
@@ -1578,7 +1578,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
          * ```
          * This behaviour should be same for singleton, transient, scoped, dynamic and transient tokens.
          */
-        test(`should fail when resolving a nonexistent token at top with ${Container.name}.${Container.prototype.resolveOrFail.name}`, async () => {
+        test("should fail when resolving a nonexistent token at top with Container.resolveOrFail", async () => {
             const promise = container.resolveOrFail(tokenA);
             await expect(promise).rejects.toThrow(CanNotResolveServiceDiError);
             await expect(promise).rejects.toHaveProperty(
@@ -1598,14 +1598,14 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
          * ```
          * This behaviour should be same for all singleton,transient,scoped,dynamic and transient tokens.
          */
-        test(`should return the default value when resolving a nonexistent token at top with ${Container.name}.${Container.prototype.resolveOr.name}`, async () => {
+        test("should return the default value when resolving a nonexistent token at top with Container.resolveOr", async () => {
             const defaultValue = "_";
             await expect(
                 container.resolveOr(tokenA, defaultValue),
             ).resolves.toBe(defaultValue);
         });
 
-        test(`should return null when resolving a nonexistent token inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a nonexistent token inside run block scope with Container.resolve", async () => {
             let value: undefined | string | null = undefined as
                 undefined | string | null;
 
@@ -1618,7 +1618,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
             expect(value).toBe(null);
         });
 
-        test(`should fail when resolving a nonexistent token inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolveOrFail.name}`, async () => {
+        test("should fail when resolving a nonexistent token inside run block scope with Container.resolveOrFail", async () => {
             const promise = container.run({
                 scope: async () => {
                     return await container.resolveOrFail(tokenA);
@@ -1631,7 +1631,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
             );
         });
 
-        test(`should return the default value when resolving a nonexistent token inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolveOr.name}`, async () => {
+        test("should return the default value when resolving a nonexistent token inside run block scope with Container.resolveOr", async () => {
             const defaultValue = "_";
             let value: undefined | string = undefined as undefined | string;
 
@@ -1646,7 +1646,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
     });
 });
 
-describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Container.prototype.resolve.name}`, () => {
+describe("register & Container.init & resolve", () => {
     let container: IContainer;
     let executionContext: IExecutionContext;
     beforeEach(() => {
@@ -1656,7 +1656,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("singleton", () => {
-        test(`Should resolve successfully when resolving a singleton dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully when resolving a singleton dependency at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "_")
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1675,7 +1675,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             );
         });
 
-        test(`Should resolve successfully a deep singleton dependency chain at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully a deep singleton dependency chain at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "1")
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1731,7 +1731,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
          * This behavior is independent of node type and should apply for singleton scoped, dynamic and transient nodes.
          * Only singleton is tested because behavior and implementation of container.resolveOr can done independent of node type.
          */
-        test(`Should resolve to the default value when resolving a singleton dependency at top where its factory returns null with ${Container.name}.${Container.prototype.resolveOr.name}`, async () => {
+        test("Should resolve to the default value when resolving a singleton dependency at top where its factory returns null with Container.resolveOr", async () => {
             const nodeA = dependency({})
                 .factory(() => null as null | string)
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1750,7 +1750,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
          * This behavior is independent of node type and should apply for singleton scoped, dynamic and transient nodes.
          * Only singleton is tested because behavior and implementation of container.resolveOr can done independent of node type.
          */
-        test(`Should fail when resolving a singleton dependency at top where its factory returns null with ${Container.name}.${Container.prototype.resolveOrFail.name}`, async () => {
+        test("Should fail when resolving a singleton dependency at top where its factory returns null with Container.resolveOrFail", async () => {
             const nodeA = dependency({})
                 .factory(() => null as null | string)
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1767,7 +1767,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             );
         });
 
-        test(`Should resolve successfully a singleton dependency defined by a factory that uses the executionContext with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully a singleton dependency defined by a factory that uses the executionContext with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -1795,7 +1795,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(correctValue);
         });
 
-        test(`Should resolve successfully eagerly a singleton dependency defined by a factory that uses the executionContext with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully eagerly a singleton dependency defined by a factory that uses the executionContext with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -1832,7 +1832,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueB).toBe(correctValue);
         });
 
-        test(`Should equal by reference when comparing two items resolved from the same token with ${Container.name}.${Container.prototype.resolve.name} at different scope depths`, async () => {
+        test("Should equal by reference when comparing two items resolved from the same token with Container.resolve at different scope depths", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1856,7 +1856,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
         // where "b","c" depends on "a" and where factory_b=()=>factory_a(),factory_b =()=> factory_a()
         // "d" depends on "b","c" and factory_d = (factory_b,factory_c)=>({b:factory_b(),c:factory_c()}).
         // Since all nodes are singleton "b","c" should have same instance of "a" and hence "resolved_d.b" === "resolved_d.c".
-        test(`Should equal by reference when resolving a singleton diamond where two nodes reference the same singleton instance with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when resolving a singleton diamond where two nodes reference the same singleton instance with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1908,7 +1908,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
          * ```
          * Therefore, container.registerValue should behave same as container.registerFactory().singleton().
          */
-        test(`Should resolve a singleton value successfully after registration with ${Container.name}.${Container.prototype.registerValue.name} at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve a singleton value successfully after registration with Container.registerValue at top with Container.resolve", async () => {
             const value = "_";
             const tokenA = genericToken<string>("A");
             container.registerValue({ token: tokenA, value });
@@ -1919,7 +1919,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("transient", () => {
-        test(`Should resolve successfully when resolving a transient dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully when resolving a transient dependency at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "_")
                 .lifeTime(LIFETIME.TRANSIENT)
@@ -1938,7 +1938,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             );
         });
 
-        test(`Should resolve successfully a deep transient dependency chain at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully a deep transient dependency chain at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "1")
                 .lifeTime(LIFETIME.TRANSIENT)
@@ -1992,7 +1992,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(value).toBe(correctValue);
         });
 
-        test(`Should resolve successfully a transient dependency defined by a factory that uses the executionContext with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully a transient dependency defined by a factory that uses the executionContext with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -2029,7 +2029,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueB).toBe(correctValue1);
         });
 
-        test(`Should not equal by reference when comparing two items resolved by the same token with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when comparing two items resolved by the same token with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2046,7 +2046,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
         // where "b","c" depends on "a" and where factory_b=()=>factory_a(),factory_b =()=> factory_a()
         // "d" depends on "b","c" and factory_d = (factory_b,factory_c)=>({b:factory_b(),c:factory_c()}).
         // Since all nodes are transient "b","c" should have own instance of "a" and hence "resolved_d.b" !== "resolved_d.c".
-        test(`Should not equal by reference when resolving a transient diamond where two nodes reference distinct transient instances with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when resolving a transient diamond where two nodes reference distinct transient instances with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.TRANSIENT)
@@ -2086,7 +2086,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("scoped", () => {
-        test(`should return null when resolving a scoped dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a scoped dependency at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "")
                 .lifeTime(LIFETIME.SCOPED)
@@ -2097,7 +2097,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             await expect(container.resolve(nodeA.token)).resolves.toBe(null);
         });
 
-        test(`Should resolve successfully when resolving a scoped dependency inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully when resolving a scoped dependency inside run block scope with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "_")
                 .lifeTime(LIFETIME.SCOPED)
@@ -2123,7 +2123,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(value).toBe(correctValue);
         });
 
-        test(`should return null when resolving a scoped dependency at top but inside an execution context ${Container.prototype.run.name} block with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a scoped dependency at top but inside an execution context run block with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "")
                 .lifeTime(LIFETIME.SCOPED)
@@ -2140,7 +2140,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(value).toBe(null);
         });
 
-        test(`Should resolve a scoped dependency defined by a factory that uses the executionContext with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve a scoped dependency defined by a factory that uses the executionContext with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -2172,7 +2172,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(correctValue0);
         });
 
-        test(`Should eagerly create a distinct scoped instance per scope from the executionContext value at scope entry with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should eagerly create a distinct scoped instance per scope from the executionContext value at scope entry with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -2217,7 +2217,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueB).toBe(correctValue1);
         });
 
-        test(`Should not equal by reference when comparing two items resolved by the same token with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when comparing two items resolved by the same token with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2230,7 +2230,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).not.toBe(valueB);
         });
 
-        test(`Should equal by reference when comparing two items resolved by the same token in the same scope depth with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two items resolved by the same token in the same scope depth with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2254,7 +2254,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(valueB);
         });
 
-        test(`Should not equal by reference when comparing two items resolved by the same token in the same scope depth consecutively with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when comparing two items resolved by the same token in the same scope depth consecutively with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2287,7 +2287,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).not.toBe(valueB);
         });
 
-        test(`Should not equal by reference when comparing two items resolved by the same token in different scope depths with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when comparing two items resolved by the same token in different scope depths with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2319,7 +2319,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
         // where "b","c" depends on "a" and where factory_b=()=>factory_a(),factory_b =()=> factory_a()
         // "d" depends on "b","c" and factory_d = (factory_b,factory_c)=>({b:factory_b(),c:factory_c()}).
         // Since all nodes are scoped and resolved within the same scope "b","c" share the same scoped instance of "a" and hence "resolved_d.b" === "resolved_d.c".
-        test(`Should equal by reference when resolving a scoped diamond where two nodes reference the same scoped instance within a scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when resolving a scoped diamond where two nodes reference the same scoped instance within a scope with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2364,7 +2364,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("dynamic", () => {
-        test(`should return null when resolving a dynamic dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a dynamic dependency at top with Container.resolve", async () => {
             const tokenA = genericToken<string>("A");
             container.registerDynamic(tokenA);
 
@@ -2372,7 +2372,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             await expect(container.resolve(tokenA)).resolves.toBe(null);
         });
 
-        test(`Should fail when resolving a dynamic dependency inside ${Container.prototype.run.name} scope block where its factory returns null with ${Container.name}.${Container.prototype.resolveOrFail.name}`, async () => {
+        test("Should fail when resolving a dynamic dependency inside run scope block where its factory returns null with Container.resolveOrFail", async () => {
             const tokenA = genericToken<string | null>("A");
 
             container.registerDynamic(tokenA);
@@ -2391,7 +2391,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             );
         });
 
-        test(`Should resolve successfully when resolving a dynamic dependency inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully when resolving a dynamic dependency inside run block scope with Container.resolve", async () => {
             const tokenA = genericToken<string>("A");
             container.registerDynamic(tokenA);
             const correctValueA = "_";
@@ -2453,7 +2453,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(scope1ValueOfA);
         });
 
-        test(`Should equal by reference when comparing two items resolved by the same token in the same scope depth with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two items resolved by the same token in the same scope depth with Container.resolve", async () => {
             const tokenA = genericToken<object>("A");
 
             let valueA: undefined | object | null = undefined as
@@ -2477,7 +2477,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(valueB);
         });
 
-        test(`Should equal by reference when comparing two items resolved by the same token in different scope depths with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two items resolved by the same token in different scope depths with Container.resolve", async () => {
             const tokenA = genericToken<object>("A");
 
             let valueA: undefined | object | null = undefined as
@@ -2505,7 +2505,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(valueB);
         });
 
-        test(`should return null when resolving an existing dynamic token with no value provided inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving an existing dynamic token with no value provided inside run block scope with Container.resolve", async () => {
             const tokenA = genericToken<string>("A");
             let value: undefined | string | null = undefined as
                 undefined | string | null;
@@ -2931,7 +2931,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("singleton & scoped", () => {
-        test(`Should equal by reference when comparing two singleton objects referenced by two scoped items resolved by two different tokens in different scope depths with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two singleton objects referenced by two scoped items resolved by two different tokens in different scope depths with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SINGLETON)
@@ -2975,7 +2975,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("singleton & transient", () => {
-        test(`Should equal by reference when comparing two singleton objects referenced by two transient items resolved by two different tokens with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two singleton objects referenced by two transient items resolved by two different tokens with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SINGLETON)
@@ -3006,7 +3006,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("scoped & transient", () => {
-        test(`should return null when resolving a transient dependency that depends on a scoped dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a transient dependency that depends on a scoped dependency at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "")
                 .lifeTime(LIFETIME.SCOPED)
@@ -3023,7 +3023,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             await expect(container.resolve(nodeB.token)).resolves.toBe(null);
         });
 
-        test(`should resolve successfully when resolving a transient dependency that depends on a scoped dependency inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should resolve successfully when resolving a transient dependency that depends on a scoped dependency inside run block scope with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "")
                 .lifeTime(LIFETIME.SCOPED)
@@ -3057,7 +3057,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(value).toBe(correctValue);
         });
 
-        test(`Should equal by reference when comparing two scoped objects referenced by two transient items resolved by two different tokens in the same scope depth with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two scoped objects referenced by two transient items resolved by two different tokens in the same scope depth with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -3095,7 +3095,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueB?.nodeAValue).toBe(valueC?.nodeAValue);
         });
 
-        test(`Should not equal by reference when comparing two scoped objects referenced by two transient items resolved by two different tokens in different scope depths with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when comparing two scoped objects referenced by two transient items resolved by two different tokens in different scope depths with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -3348,7 +3348,7 @@ describe("override", () => {
         executionContext = res.executionContext;
     });
 
-    test(`should override nodeA with ${Container.prototype.overrideFactory.name}`, async () => {
+    test("should override nodeA with Container.overrideFactory", async () => {
         const nodeA = dependency({})
             .factory(() => `A`)
             .lifeTime(LIFETIME.SINGLETON)
@@ -3921,7 +3921,7 @@ describe("forked container & hooks", () => {
         containerA = new Container({ executionContext });
     });
 
-    test(`${Container.prototype.deInit.name} of fork does not ${Container.prototype.deInit.name} the original container`, async () => {
+    test("deInit of fork does not deInit the original container", async () => {
         const nodeA = dependency({})
             .factory(() => "A")
             .lifeTime(LIFETIME.SINGLETON)
@@ -3945,7 +3945,7 @@ describe("forked container & hooks", () => {
         );
     });
 
-    test(`${Container.prototype.deInit.name} of original does not ${Container.prototype.deInit.name} the fork`, async () => {
+    test("deInit of original does not deInit the fork", async () => {
         const nodeA = dependency({})
             .factory(() => "A")
             .lifeTime(LIFETIME.SINGLETON)
