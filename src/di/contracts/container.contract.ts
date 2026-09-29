@@ -116,6 +116,20 @@ export type DepsTokens<TDeps extends DepRecord = EmptyRecord> = {
     [K in keyof TDeps]: DiToken<TDeps[K]>;
 };
 
+export type FactoryRegistrationBase<
+    TDeps extends DepRecord = EmptyRecord,
+    TRegisteredType = unknown,
+> = {
+    /** The token used to identify and resolve this service. */
+    token: DiToken<TRegisteredType>;
+
+    /** The factory function that creates the service instance. */
+    factory: ServiceFactory<TDeps, TRegisteredType>;
+
+    /** The dependency tokens to resolve and inject into the factory. */
+    deps: DepsTokens<TDeps>;
+};
+
 /**
  * Optional lifecycle hooks for a service registration.
  * Each hook receives the resolved service instance and may be async.
@@ -133,6 +147,21 @@ export type ServiceHooks<TRegisteredType = unknown> = {
     onDeInit?: Invocable<[registration: TRegisteredType], Promisable<void>>;
 };
 
+export type FactoryRegistrationSingleton<
+    TDeps extends DepRecord = EmptyRecord,
+    TRegisteredType = unknown,
+> = ServiceHooks<TRegisteredType> &
+    FactoryRegistrationBase<TDeps, TRegisteredType> & {
+        lifetime: (typeof LIFETIME)["SINGLETON"];
+    };
+
+export type FactoryRegistrationNoneSingleton<
+    TDeps extends DepRecord = EmptyRecord,
+    TRegisteredType = unknown,
+> = FactoryRegistrationBase<TDeps, TRegisteredType> & {
+    lifetime: (typeof LIFETIME)["TRANSIENT"] | (typeof LIFETIME)["SCOPED"];
+};
+
 /**
  * Configuration for registering a factory-based service.
  *
@@ -145,19 +174,9 @@ export type ServiceHooks<TRegisteredType = unknown> = {
 export type FactoryRegistration<
     TDeps extends DepRecord = EmptyRecord,
     TRegisteredType = unknown,
-> = ServiceHooks & {
-    /** The token used to identify and resolve this service. */
-    token: DiToken<TRegisteredType>;
-
-    /** The factory function that creates the service instance. */
-    factory: ServiceFactory<TDeps, TRegisteredType>;
-
-    /** The dependency tokens to resolve and inject into the factory. */
-    deps: DepsTokens<TDeps>;
-
-    /** The lifetime of the service — how its instances are created and shared. */
-    lifetime: Lifetime;
-};
+> =
+    | FactoryRegistrationSingleton<TDeps, TRegisteredType>
+    | FactoryRegistrationNoneSingleton<TDeps, TRegisteredType>;
 
 /**
  * Configuration for overriding a factory-based service.
@@ -191,13 +210,14 @@ export type FactoryRegistrationOverride<
  * IMPORT_PATH: `"eridu-tech/di/contracts"`
  * @group Contracts
  */
-export type ValueRegistration<TRegisteredType = unknown> = ServiceHooks & {
-    /** The token used to identify and resolve this service. */
-    token: DiToken<TRegisteredType>;
+export type ValueRegistration<TRegisteredType = unknown> =
+    ServiceHooks<TRegisteredType> & {
+        /** The token used to identify and resolve this service. */
+        token: DiToken<TRegisteredType>;
 
-    /** The pre-constructed value to register. */
-    value: TRegisteredType;
-};
+        /** The pre-constructed value to register. */
+        value: TRegisteredType;
+    };
 
 /**
  * Configuration for registering a token as an alias of another token.

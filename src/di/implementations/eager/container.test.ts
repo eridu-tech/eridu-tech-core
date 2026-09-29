@@ -593,7 +593,7 @@ describe("class: Container", () => {
     });
 
     // -----------------------------------------------------------------------
-    // lifecycle hooks: onContainerInit / onContainerDeInit
+    // per-registration lifecycle hooks: onInit / onDeInit
     // -----------------------------------------------------------------------
     describe("lifecycle hooks", () => {
         let container: IContainer;
@@ -602,49 +602,92 @@ describe("class: Container", () => {
             container = createContainerAndExecutionContext().container;
         });
 
-        test("Should register an onContainerInit hook", () => {
-            expect(() => {
-                container.onContainerInit((_resolver) => {
-                    // Hook registered
-                });
-            }).not.toThrow();
-        });
-
-        test("Should register an onContainerDeInit hook", () => {
-            expect(() => {
-                container.onContainerDeInit((_resolver) => {
-                    // Hook registered
-                });
-            }).not.toThrow();
-        });
-
-        test("Should call onContainerInit hooks when init() is called", async () => {
+        test("Should call the onInit hook with the resolved service when init() is called", async () => {
             const hook = vi.fn();
+            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
 
-            container.onContainerInit(hook);
+            container.registerValue({ token: ICONFIG, value, onInit: hook });
 
             await container.init();
 
-            expect(hook).toHaveBeenCalledOnce();
+            expect(hook).toHaveBeenCalledExactlyOnceWith(value);
         });
 
-        test("Should call onContainerDeInit hooks when deInit() is called", async () => {
+        test("Should call the onDeInit hook with the resolved service when deInit() is called", async () => {
             const hook = vi.fn();
+            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
 
-            container.onContainerDeInit(hook);
+            container.registerValue({ token: ICONFIG, value, onDeInit: hook });
 
             await container.init();
             await container.deInit();
 
-            expect(hook).toHaveBeenCalledOnce();
+            expect(hook).toHaveBeenCalledExactlyOnceWith(value);
         });
 
-        test("Should call multiple onContainerInit hooks in registration order", async () => {
+        test("Should not call any hook when the registration provides none", async () => {
+            container.registerValue({
+                token: ICONFIG,
+                value: { apiUrl: "https://api.example.com", timeout: 5000 },
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(container.deInit()).resolves.toBeUndefined();
+        });
+
+        test("Should not call the onDeInit hook during init()", async () => {
+            const hook = vi.fn();
+
+            container.registerValue({
+                token: ICONFIG,
+                value: { apiUrl: "https://api.example.com", timeout: 5000 },
+                onDeInit: hook,
+            });
+
+            await container.init();
+
+            expect(hook).not.toHaveBeenCalled();
+        });
+
+        test("Should support hooks on factory registrations", async () => {
+            const onInit = vi.fn();
+            const onDeInit = vi.fn();
+
+            container.registerFactory({
+                token: ILOGGER,
+                factory: () => new ConsoleLogger(),
+                deps: {},
+                lifetime: LIFETIME.SINGLETON,
+                onInit,
+                onDeInit,
+            });
+
+            await container.init();
+
+            expect(onInit).toHaveBeenCalledOnce();
+            expect(onDeInit).not.toHaveBeenCalled();
+
+            await container.deInit();
+
+            expect(onDeInit).toHaveBeenCalledOnce();
+        });
+
+        test("Should call onInit hooks in registration order", async () => {
             const hook1 = vi.fn();
             const hook2 = vi.fn();
+            const TOKEN_A = genericToken<string>("A");
+            const TOKEN_B = genericToken<string>("B");
 
-            container.onContainerInit(hook1);
-            container.onContainerInit(hook2);
+            container.registerValue({
+                token: TOKEN_A,
+                value: "a",
+                onInit: hook1,
+            });
+            container.registerValue({
+                token: TOKEN_B,
+                value: "b",
+                onInit: hook2,
+            });
 
             await container.init();
 
@@ -655,12 +698,22 @@ describe("class: Container", () => {
             );
         });
 
-        test("Should call multiple onContainerDeInit hooks in registration order", async () => {
+        test("Should call onDeInit hooks in registration order", async () => {
             const hook1 = vi.fn();
             const hook2 = vi.fn();
+            const TOKEN_A = genericToken<string>("A");
+            const TOKEN_B = genericToken<string>("B");
 
-            container.onContainerDeInit(hook1);
-            container.onContainerDeInit(hook2);
+            container.registerValue({
+                token: TOKEN_A,
+                value: "a",
+                onDeInit: hook1,
+            });
+            container.registerValue({
+                token: TOKEN_B,
+                value: "b",
+                onDeInit: hook2,
+            });
 
             await container.init();
             await container.deInit();
@@ -672,45 +725,59 @@ describe("class: Container", () => {
             );
         });
 
-        test("Should allow resolving services within init hooks", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
+        test("Should pass the resolved instance to the onInit hook", async () => {
+            const logger = new ConsoleLogger();
+            const hook = vi.fn();
 
-            let resolvedConfig: IConfig | null = null;
-
-            container.onContainerInit(async (resolver) => {
-                resolvedConfig = await resolver.resolveOrFail(ICONFIG);
+            container.registerFactory({
+                token: ILOGGER,
+                factory: () => logger,
+                deps: {},
+                lifetime: LIFETIME.SINGLETON,
+                onInit: hook,
             });
 
             await container.init();
 
-            expect(resolvedConfig).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
-            });
+            expect(hook).toHaveBeenCalledWith(logger);
+            expect(await container.resolveOrFail(ILOGGER)).toBe(logger);
         });
 
-        test("Should allow resolving services within deInit hooks", async () => {
+        test("Should run the onInit hook while the container is active", async () => {
+            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
+            let isActiveDuringHook = false;
+
             container.registerValue({
                 token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
+                value,
+                onInit: async () => {
+                    isActiveDuringHook =
+                        (await container.resolveOrFail(ICONFIG)) === value;
+                },
             });
 
-            let resolvedConfig: IConfig | null = null;
+            await container.init();
 
-            container.onContainerDeInit(async (resolver) => {
-                resolvedConfig = await resolver.resolveOrFail(ICONFIG);
+            expect(isActiveDuringHook).toBe(true);
+        });
+
+        test("Should run the onDeInit hook while the container is active", async () => {
+            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
+            let isActiveDuringHook = false;
+
+            container.registerValue({
+                token: ICONFIG,
+                value,
+                onDeInit: async () => {
+                    isActiveDuringHook =
+                        (await container.resolveOrFail(ICONFIG)) === value;
+                },
             });
 
             await container.init();
             await container.deInit();
 
-            expect(resolvedConfig).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
-            });
+            expect(isActiveDuringHook).toBe(true);
         });
     });
 
@@ -1201,21 +1268,6 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
         },
     ];
 
-    const containerHooks: Array<TestData> = [
-        {
-            func() {
-                container.onContainerInit(() => {});
-            },
-            name: Container.prototype.onContainerInit.name,
-        },
-        {
-            func() {
-                container.onContainerDeInit(() => {});
-            },
-            name: Container.prototype.onContainerDeInit.name,
-        },
-    ];
-
     const overrides: Array<TestData> = [
         {
             func() {
@@ -1255,7 +1307,6 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
 
     const testCases: Array<TestData> = [
         ...allRegistration,
-        ...containerHooks,
         ...init,
         ...overrides,
         ...fork,
@@ -1352,104 +1403,16 @@ describe(`illegal method call inside DynamicServiceProvider in ${Container.proto
     });
 });
 
-describe(`${Container.prototype.onContainerInit.name} & ${Container.prototype.init.name}`, () => {
-    let container: IContainer;
-    let executionContext: IExecutionContext;
-    beforeEach(() => {
-        const res = createContainerAndExecutionContext();
-        container = res.container;
-        executionContext = res.executionContext;
-    });
-
-    test(`should register all and call ${Container.prototype.init.name} hooks in the correct order`, async () => {
-        const spyFunc0 = vi.fn();
-        const spyFunc1 = vi.fn();
-        const spyFunc2 = vi.fn();
-
-        container.onContainerInit(spyFunc0);
-        container.onContainerInit(spyFunc1);
-        container.onContainerInit(spyFunc2);
-
-        await container.init();
-        expect(spyFunc0).toHaveBeenCalledBefore(spyFunc1);
-        expect(spyFunc1).toHaveBeenCalledBefore(spyFunc2);
-    });
-
-    test(`should resolve successfully in the ${Container.prototype.init.name} handler`, async () => {
-        const nodeA = dependency({})
-            .factory(() => "_")
-            .lifeTime(LIFETIME.SINGLETON)
-            .createToken("A");
-
-        container.registerFactory(nodeA);
-        let value: string | null | undefined = undefined as
-            string | null | undefined;
-
-        container.onContainerInit(async (serviceResolver) => {
-            value = await serviceResolver.resolve(nodeA.token);
-        });
-
-        await container.init();
-        expect(value).toBe(
-            await callInvocable(nodeA.factory, {}, executionContext),
-        );
-    });
-});
-
-describe(`${Container.prototype.onContainerDeInit.name} & ${Container.prototype.deInit.name}`, () => {
-    let container: IContainer;
-    let executionContext: IExecutionContext;
-    beforeEach(() => {
-        const res = createContainerAndExecutionContext();
-        container = res.container;
-        executionContext = res.executionContext;
-    });
-
-    test(`should register all and call ${Container.prototype.deInit.name} hooks in the correct order`, async () => {
-        const spyFunc0 = vi.fn();
-        const spyFunc1 = vi.fn();
-        const spyFunc2 = vi.fn();
-
-        container.onContainerDeInit(spyFunc0);
-        container.onContainerDeInit(spyFunc1);
-        container.onContainerDeInit(spyFunc2);
-
-        await container.init();
-        await container.deInit();
-
-        expect(spyFunc0).toHaveBeenCalledBefore(spyFunc1);
-        expect(spyFunc1).toHaveBeenCalledBefore(spyFunc2);
-    });
-
-    test(`should resolve successfully in the ${Container.prototype.deInit.name} handler`, async () => {
-        const nodeA = dependency({})
-            .factory(() => "_")
-            .lifeTime(LIFETIME.SINGLETON)
-            .createToken("A");
-
-        container.registerFactory(nodeA);
-        let value: string | null | undefined = undefined as
-            string | null | undefined;
-
-        container.onContainerDeInit(async (serviceResolver) => {
-            value = await serviceResolver.resolve(nodeA.token);
-        });
-
-        await container.init();
-        await container.deInit();
-
-        expect(value).toBe(
-            await callInvocable(nodeA.factory, {}, executionContext),
-        );
-    });
-});
-
 describe("init / deInit failure semantics", () => {
-    test("Should move to a non-active state when an init hook rejects", async () => {
+    test("Should move to a non-active state when an onInit hook rejects", async () => {
         const { container } = createContainerAndExecutionContext();
 
-        container.onContainerInit(() => {
-            throw new Error("init hook failed");
+        container.registerValue({
+            token: ICONFIG,
+            value: { apiUrl: "https://api.example.com", timeout: 5000 },
+            onInit: () => {
+                throw new Error("init hook failed");
+            },
         });
 
         await expect(container.init()).rejects.toThrow("init hook failed");
@@ -1464,16 +1427,32 @@ describe("init / deInit failure semantics", () => {
         );
     });
 
-    test("Should run every deInit hook and still terminate when one rejects", async () => {
+    test("Should run every onDeInit hook and still terminate when one rejects", async () => {
         const { container } = createContainerAndExecutionContext();
 
         const hook1 = vi.fn();
         const hook2 = vi.fn();
-        container.onContainerDeInit(hook1);
-        container.onContainerDeInit(() => {
-            throw new Error("deInit hook failed");
+        const TOKEN_A = genericToken<string>("A");
+        const TOKEN_B = genericToken<string>("B");
+        const TOKEN_C = genericToken<string>("C");
+
+        container.registerValue({
+            token: TOKEN_A,
+            value: "a",
+            onDeInit: hook1,
         });
-        container.onContainerDeInit(hook2);
+        container.registerValue({
+            token: TOKEN_B,
+            value: "b",
+            onDeInit: () => {
+                throw new Error("deInit hook failed");
+            },
+        });
+        container.registerValue({
+            token: TOKEN_C,
+            value: "c",
+            onDeInit: hook2,
+        });
 
         await container.init();
         await expect(container.deInit()).rejects.toThrow("deInit hook failed");
@@ -1483,7 +1462,7 @@ describe("init / deInit failure semantics", () => {
         expect(hook2).toHaveBeenCalled();
 
         // Cleanup still ran: the container is terminated.
-        await expect(container.resolve(ICONFIG)).rejects.toThrow(
+        await expect(container.resolve(TOKEN_A)).rejects.toThrow(
             InvalidMethodCallDiError,
         );
     });
@@ -3990,12 +3969,16 @@ describe("forked container & hooks", () => {
         );
     });
 
-    test(`fork inherits ${Container.prototype.init.name} and ${Container.prototype.deInit.name} hooks from the original`, async () => {
+    test("fork inherits the service hooks of the original container", async () => {
         const inheritedInitSpy = vi.fn();
         const inheritedDeInitSpy = vi.fn();
 
-        containerA.onContainerInit(inheritedInitSpy);
-        containerA.onContainerDeInit(inheritedDeInitSpy);
+        containerA.registerValue({
+            token: ICONFIG,
+            value: { apiUrl: "https://api.example.com", timeout: 5000 },
+            onInit: inheritedInitSpy,
+            onDeInit: inheritedDeInitSpy,
+        });
 
         const containerB = containerA.fork();
 
@@ -4009,5 +3992,21 @@ describe("forked container & hooks", () => {
         await containerB.deInit();
 
         expect(inheritedDeInitSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test("service hooks registered in a fork do not run for the original container", async () => {
+        const hook = vi.fn();
+
+        const containerB = containerA.fork();
+        containerB.registerValue({
+            token: ICONFIG,
+            value: { apiUrl: "https://api.example.com", timeout: 5000 },
+            onInit: hook,
+        });
+
+        await containerA.init();
+        await containerB.init();
+
+        expect(hook).toHaveBeenCalledOnce();
     });
 });

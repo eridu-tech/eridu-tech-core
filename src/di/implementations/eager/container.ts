@@ -35,6 +35,9 @@ import type {
     EmptyRecord,
     AliasRegistration,
     IServiceResolver,
+    Lifetime,
+    ServiceHooks,
+    FactoryRegistrationBase,
 } from "@/di/contracts/_module-exports.js";
 import type { CanNotResolveServiceDiErrorCreateData } from "@/di/contracts/container.errors.js";
 import type { Node } from "@/di/implementations/eager/_shared.js";
@@ -591,6 +594,26 @@ export class Container implements IContainer {
         this.throwIfInsideRunScope(this.registerFactory.name);
         this.throwIfTokenAlreadyRegistered(settings.token);
         this.graphManager.registerFactory(settings);
+        this.registerServiceHooks(settings);
+    }
+
+    private registerServiceHooks<
+        TDeps extends DepRecord = EmptyRecord,
+        TRegisteredType = unknown,
+    >(
+        settings: ServiceHooks<TRegisteredType> &
+            FactoryRegistrationBase<TDeps, TRegisteredType> & {
+                lifetime: Lifetime;
+            },
+    ): void {
+        if (
+            settings.lifetime !== LIFETIME.SINGLETON &&
+            (settings.onDeInit !== undefined || settings.onInit !== undefined)
+        ) {
+            throw new UnexpectedError(
+                `Service hooks (onInit/onDeInit) are only supported for singleton services, but token "${tokenToString(settings.token)}" was registered with the "${settings.lifetime}" lifetime.`,
+            );
+        }
 
         if (settings.onInit !== undefined) {
             this.onContainerInit(async (resolver) => {
@@ -603,7 +626,7 @@ export class Container implements IContainer {
         }
 
         if (settings.onDeInit !== undefined) {
-            this.onContainerInit(async (resolver) => {
+            this.onContainerDeInit(async (resolver) => {
                 const service = await resolver.resolveOrFail(settings.token);
                 if (settings.onDeInit === undefined) {
                     return;
