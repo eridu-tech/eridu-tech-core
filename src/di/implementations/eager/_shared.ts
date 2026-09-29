@@ -13,7 +13,7 @@ import type {
  * @internal
  */
 export type EdgeProps = {
-    argIndex: number | string;
+    arg: string;
 };
 
 /**

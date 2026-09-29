@@ -25,7 +25,7 @@ import type {
     DepsTokens,
     FactoryRegistrationOverride,
     DepRecord,
-    EmptyDepRecord,
+    EmptyRecord,
 } from "@/di/contracts/_module-exports.js";
 import type {
     NodeProps,
@@ -153,6 +153,37 @@ export type GraphValidationStatus =
       };
 
 /**
+ * Settings used to construct a {@link GraphManager}.
+ * @internal
+ */
+export type GraphManagerSettings = {
+    /** The graph to manage. A new empty graph is created when omitted. */
+    graph?: Graph<NodeProps, EdgeProps>;
+    /** Tokens that have already been overridden. */
+    overrideSet?: Set<Node>;
+    /** Maximum number of invalid edges to include in validation errors. */
+    maxInvalidEdgeInError?: number;
+    /** Maximum number of cycles to include in validation errors. */
+    maxCyclesInError?: number;
+    /** Maximum number of undeclared dependencies to include in validation errors. */
+    maxUndeclaredDependenciesInError?: number;
+};
+
+/**
+ * Parameters for {@link GraphManager.depsToEdges}.
+ * @internal
+ */
+export type DepsToEdgesArgs<
+    TDeps extends DepRecord = EmptyRecord,
+    TRegisteredType = unknown,
+> = {
+    /** The token that owns the dependencies. */
+    token: DiToken<TRegisteredType>;
+    /** The dependency tokens to convert into graph edges. */
+    deps: DepsTokens<TDeps>;
+};
+
+/**
  * @internal
  */
 export class GraphManager {
@@ -162,13 +193,7 @@ export class GraphManager {
     private readonly maxCyclesInError?: number;
     private readonly maxUndeclaredDependenciesInError?: number;
 
-    constructor(args?: {
-        graph?: Graph<NodeProps, EdgeProps>;
-        overrideSet?: Set<Node>;
-        maxInvalidEdgeInError?: number;
-        maxCyclesInError?: number;
-        maxUndeclaredDependenciesInError?: number;
-    }) {
+    constructor(args?: GraphManagerSettings) {
         this.graph = args?.graph ?? new Graph<NodeProps, EdgeProps>();
         this.maxInvalidEdgeInError = args?.maxInvalidEdgeInError;
         this.maxCyclesInError = args?.maxCyclesInError;
@@ -279,9 +304,9 @@ export class GraphManager {
     }
 
     private depsToEdges<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
-    >(args: { token: DiToken<TRegisteredType>; deps: DepsTokens<TDeps> }) {
+    >(args: DepsToEdgesArgs<TDeps, TRegisteredType>) {
         const keys = Object.keys(args.deps);
 
         const edges: Array<[Edge, EdgeProps]> = keys.map((key) => {
@@ -292,14 +317,14 @@ export class GraphManager {
                 );
             }
 
-            return [[args.token, diDependencyToken], { argIndex: key }];
+            return [[args.token, diDependencyToken], { arg: key }];
         });
 
         return edges;
     }
 
     registerFactory<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(settings: FactoryRegistration<TDeps, TRegisteredType>): void {
         const factory = settings.factory;
@@ -323,7 +348,7 @@ export class GraphManager {
     }
 
     overrideFactory<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(
         settings: FactoryRegistrationOverride<TDeps, TRegisteredType>,
@@ -440,8 +465,8 @@ export class GraphManager {
             .map(([_, successorNode]) => successorNode);
     }
 
-    getArgKey(edge: Edge): EdgeProps["argIndex"] {
-        return this.getEdgePropertyOrThrow(edge).argIndex;
+    getArgKey(edge: Edge): EdgeProps["arg"] {
+        return this.getEdgePropertyOrThrow(edge).arg;
     }
 
     isTransient(node: Node): boolean {
