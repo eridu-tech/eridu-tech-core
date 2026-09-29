@@ -99,10 +99,6 @@ class UserController {
     }
 }
 
-class ScopedService {
-    public readonly id = Math.random();
-}
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -324,37 +320,6 @@ describe("class: Container", () => {
     });
 
     // -----------------------------------------------------------------------
-    // resolve
-    // -----------------------------------------------------------------------
-    describe("method: resolve", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should return null when token is not registered", async () => {
-            await container.init();
-            const result = await container.resolve(ILOGGER);
-            expect(result).toBeNull();
-        });
-
-        test("Should return the registered service when a value is registered for the token", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            await container.init();
-            const result = await container.resolve(ICONFIG);
-            expect(result).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
-            });
-        });
-    });
-
-    // -----------------------------------------------------------------------
     // resolveOr
     // -----------------------------------------------------------------------
     describe("method: resolveOr", () => {
@@ -362,14 +327,6 @@ describe("class: Container", () => {
 
         beforeEach(() => {
             container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should return default value when token is not registered", async () => {
-            const defaultValue: IConfig = { apiUrl: "default", timeout: 1000 };
-
-            await container.init();
-            const result = await container.resolveOr(ICONFIG, defaultValue);
-            expect(result).toBe(defaultValue);
         });
 
         test("Should return registered value when token is registered", async () => {
@@ -430,29 +387,6 @@ describe("class: Container", () => {
             const result = await container.has(ILOGGER);
             expect(result).toBe(false);
         });
-
-        test("Should return true when token is registered", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            await container.init();
-            const result = await container.has(ICONFIG);
-            expect(result).toBe(true);
-        });
-
-        /**
-         * A dynamic token is registered up front but only carries a value once
-         * one is set inside a run() scope, so has() is false at the top level.
-         */
-        test("Should return false for a registered dynamic token when no value exists for it yet", async () => {
-            container.registerDynamic(REQUEST_ID);
-
-            await container.init();
-            const result = await container.has(REQUEST_ID);
-            expect(result).toBe(false);
-        });
     });
 
     // -----------------------------------------------------------------------
@@ -474,46 +408,6 @@ describe("class: Container", () => {
             });
 
             expect(scopeFn).toHaveBeenCalledOnce();
-        });
-
-        test("Should set dynamic values before scope execution", async () => {
-            container.registerDynamic(REQUEST_ID);
-
-            let capturedRequestId: string | undefined;
-            await container.init();
-            await container.run({
-                registration: (register) => {
-                    register.set({
-                        token: REQUEST_ID,
-                        value: "req-123",
-                    });
-                },
-                scope: async () => {
-                    capturedRequestId =
-                        await container.resolveOrFail(REQUEST_ID);
-                },
-            });
-
-            expect(capturedRequestId).toBe("req-123");
-        });
-
-        test("Should share scoped services within the same run() call", async () => {
-            container.registerFactory({
-                token: ScopedService,
-                factory: () => new ScopedService(),
-                deps: {},
-                lifetime: LIFETIME.SCOPED,
-            });
-            await container.init();
-            await container.run({
-                scope: async () => {
-                    const instance1 =
-                        await container.resolveOrFail(ScopedService);
-                    const instance2 =
-                        await container.resolveOrFail(ScopedService);
-                    expect(instance1).toBe(instance2);
-                },
-            });
         });
     });
 
@@ -834,22 +728,6 @@ describe("class: Container", () => {
             expect(child).toBeDefined();
         });
 
-        test("Should inherit value registrations from parent", async () => {
-            parentContainer.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            const child = parentContainer.fork();
-            await child.init();
-            const result = await child.resolveOrFail(ICONFIG);
-
-            expect(result).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
-            });
-        });
-
         test("Should allow child to override registrations without affecting parent", async () => {
             parentContainer.registerValue({
                 token: ICONFIG,
@@ -871,50 +749,12 @@ describe("class: Container", () => {
             expect(parentConfig.apiUrl).toBe("https://parent.example.com");
             expect(childConfig.apiUrl).toBe("https://child.example.com");
         });
-
-        test("Should support forking and overriding specific services for test isolation", async () => {
-            parentContainer.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://real.example.com", timeout: 5000 },
-            });
-
-            const testContainer = parentContainer.fork();
-
-            testContainer.overrideValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://test.example.com", timeout: 100 },
-            });
-
-            // Verify parent still has original config
-
-            await parentContainer.init();
-            const parentConfig = await parentContainer.resolveOrFail(ICONFIG);
-            expect(parentConfig.apiUrl).toBe("https://real.example.com");
-
-            // Verify child has overridden config
-            await testContainer.init();
-            const childConfig = await testContainer.resolveOrFail(ICONFIG);
-            expect(childConfig.apiUrl).toBe("https://test.example.com");
-        });
     });
 
     // -----------------------------------------------------------------------
     // feature: edge cases
     // -----------------------------------------------------------------------
     describe("feature: edge cases", () => {
-        test("Should handle registration with no dependencies", () => {
-            const container = createContainerAndExecutionContext().container;
-
-            expect(() => {
-                container.registerFactory({
-                    token: ConsoleLogger,
-                    factory: () => new ConsoleLogger(),
-                    deps: {},
-                    lifetime: LIFETIME.SINGLETON,
-                });
-            }).not.toThrow();
-        });
-
         /**
          * init() is deliberately not called: this only asserts that the
          * registration API accepts a dependency chain without throwing.
@@ -1124,8 +964,6 @@ describe("class: Container", () => {
         });
     });
 });
-
-// TODO remove duplicate tests above if any
 
 describe("Illegal method call before Container.init or after Container.deInit (when container not active)", () => {
     let container: IContainer;
@@ -2051,23 +1889,6 @@ describe("register & Container.init & resolve", () => {
 
             expect(valueA).toBe(correctValue0);
             expect(valueB).toBe(correctValue1);
-        });
-
-        /**
-         * Note: the node is SCOPED and resolved outside run(), so neither
-         * call produces a shared instance (the promises are not awaited).
-         */
-        test("Should not equal by reference when comparing two items resolved by the same token with Container.resolve", async () => {
-            const nodeA = dependency({})
-                .factory(() => ({}))
-                .lifeTime(LIFETIME.SCOPED)
-                .createToken("A");
-
-            container.registerFactory(nodeA);
-            await container.init();
-            const valueA = container.resolve(nodeA.token);
-            const valueB = container.resolve(nodeA.token);
-            expect(valueA).not.toBe(valueB);
         });
 
         // simple diamond case
