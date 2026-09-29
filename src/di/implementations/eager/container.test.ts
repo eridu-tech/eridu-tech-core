@@ -442,6 +442,10 @@ describe("class: Container", () => {
             expect(result).toBe(true);
         });
 
+        /**
+         * A dynamic token is registered up front but only carries a value once
+         * one is set inside a run() scope, so has() is false at the top level.
+         */
         test("Should return false for a registered dynamic token when no value exists for it yet", async () => {
             container.registerDynamic(REQUEST_ID);
 
@@ -911,6 +915,10 @@ describe("class: Container", () => {
             }).not.toThrow();
         });
 
+        /**
+         * init() is deliberately not called: this only asserts that the
+         * registration API accepts a dependency chain without throwing.
+         */
         test("Should handle registration of a chain of dependent factories", () => {
             const container = createContainerAndExecutionContext().container;
 
@@ -1129,6 +1137,10 @@ describe("Illegal method call before Container.init or after Container.deInit (w
         func: () => Promise<void>;
         name: string;
     };
+    /**
+     * Declared as a list so the shared cases below can be reused for additional
+     * token kinds without rewriting the table.
+     */
     const createTokens = [() => genericToken<string>("_")];
     const testCases1: Array<TestData> = createTokens.flatMap(
         (createToken) =>
@@ -1329,6 +1341,10 @@ describe("illegal method call after Container.init (when container is active)", 
 });
 
 describe("illegal method call inside Container.run", () => {
+    /**
+     * Despite the test name the operation exercised inside run() is deInit();
+     * the point is that container lifecycle calls made from a run() scope are rejected.
+     */
     test("fork method call inside Container.run should fail", async () => {
         const container = createContainerAndExecutionContext().container;
         await container.init();
@@ -1500,6 +1516,10 @@ describe("has", () => {
         expect(value).toBe(true);
     });
 
+    /**
+     * Scoped instances only exist inside a run() scope, so outside any
+     * scope the token has no instance and has() reports false.
+     */
     test("should return false when called on a scoped node at top", async () => {
         const nodeA = dependency({})
             .factory(() => "_")
@@ -1513,6 +1533,10 @@ describe("has", () => {
         expect(value).toBe(false);
     });
 
+    /**
+     * A dynamic token only has a value inside a run() scope after one has
+     * been set for it, so at the top level there is nothing to report.
+     */
     test("should return false when called on a dynamic node at top", async () => {
         const tokenA = genericToken<string>("A");
 
@@ -2029,6 +2053,10 @@ describe("register & Container.init & resolve", () => {
             expect(valueB).toBe(correctValue1);
         });
 
+        /**
+         * Note: the node is SCOPED and resolved outside run(), so neither
+         * call produces a shared instance (the promises are not awaited).
+         */
         test("Should not equal by reference when comparing two items resolved by the same token with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
@@ -2123,6 +2151,10 @@ describe("register & Container.init & resolve", () => {
             expect(value).toBe(correctValue);
         });
 
+        /**
+         * Being inside executionContext.run() is not the same as being inside
+         * container.run(); scoped nodes need a container scope, so this is null.
+         */
         test("should return null when resolving a scoped dependency at top but inside an execution context run block with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "")
@@ -2172,6 +2204,10 @@ describe("register & Container.init & resolve", () => {
             expect(valueA).toBe(correctValue0);
         });
 
+        /**
+         * The scoped instance is created at scope entry from the value present
+         * then, so this later change does not affect valueA.
+         */
         test("Should eagerly create a distinct scoped instance per scope from the executionContext value at scope entry with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
@@ -2372,6 +2408,10 @@ describe("register & Container.init & resolve", () => {
             await expect(container.resolve(tokenA)).resolves.toBe(null);
         });
 
+        /**
+         * Dynamic tokens have no factory; resolveOrFail fails because no
+         * value was set for tokenA in this run() scope.
+         */
         test("Should fail when resolving a dynamic dependency inside run scope block where its factory returns null with Container.resolveOrFail", async () => {
             const tokenA = genericToken<string | null>("A");
 
@@ -2625,6 +2665,10 @@ describe("register & Container.init & resolve", () => {
             expect(valueA).toBe(correctValueA);
         });
 
+        /**
+         * reg.set writes the dynamic value into the execution context,
+         * shadowing the value put above for the duration of the run() scope.
+         */
         test("should resolve & override implicitly the original value in execution context if registered in graph  and exist in execution context before", async () => {
             const tokenA = genericToken<string>("A");
 
@@ -2661,6 +2705,9 @@ describe("register & Container.init & resolve", () => {
             expect(newValueA).toBe(newValueCorrectA);
         });
 
+        /**
+         * The dynamic value is removed again once the run() scope exits.
+         */
         test("should put dynamic token in execution context after resolved if registered in graph", async () => {
             const tokenA = genericToken<string>("A");
             const correctValueA = "_";
@@ -3529,6 +3576,10 @@ describe("override", () => {
         expect(resolvedB).toBe(correctB);
     });
 
+    /**
+     * The override must propagate through the graph: A is replaced first,
+     * B is rebuilt from it, and C is rebuilt from B.
+     */
     test("should not affect B but should affect both A and C when overriding A where B depends on A and C depends on B", async () => {
         const nodeA = dependency({})
             .factory(() => `A`)
