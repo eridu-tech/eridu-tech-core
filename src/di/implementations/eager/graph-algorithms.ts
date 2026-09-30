@@ -336,8 +336,7 @@ export function getMissingNodes<T>(
 
     for (const node of nodes) {
         const dependent = node;
-        for (const successor of getSuccessor(dependent)) {
-            const dependency = successor;
+        for (const dependency of getSuccessor(dependent)) {
             const isUndeclaredDependency = !allNodes.has(dependency);
             if (isUndeclaredDependency) {
                 const dependents = missingDependenciesMap.get(dependency) ?? [];
@@ -352,7 +351,7 @@ export function getMissingNodes<T>(
             missingDependency,
             dependents,
         }),
-    ) satisfies Array<UndeclaredDependencyInfo<T>>;
+    );
 }
 
 /**
