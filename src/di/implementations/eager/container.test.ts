@@ -2,7 +2,11 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 import { describe, test, expect, beforeEach, vi } from "vitest";
 
-import { genericToken, LIFETIME } from "@/di/contracts/_module-exports.js";
+import {
+    genericToken,
+    optionalToken,
+    LIFETIME,
+} from "@/di/contracts/_module-exports.js";
 import {
     InvalidGraphDiError,
     InvalidMethodCallDiError,
@@ -3880,5 +3884,735 @@ describe("forked container & hooks", () => {
         await containerB.init();
 
         expect(hook).toHaveBeenCalledOnce();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// feature: optional tokens
+// ---------------------------------------------------------------------------
+describe("feature: optional tokens", () => {
+    let container: IContainer;
+
+    beforeEach(() => {
+        container = createContainerAndExecutionContext().container;
+    });
+
+    // -----------------------------------------------------------------------
+    // unregistered optional dependency
+    // -----------------------------------------------------------------------
+    describe("unregistered optional dependency", () => {
+        test("Should initialize successfully when a singleton factory depends on an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(container.resolveOrFail(consumer)).resolves.toBe(
+                "consumer",
+            );
+        });
+
+        test("Should initialize successfully when a transient factory depends on an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.TRANSIENT,
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(container.resolveOrFail(consumer)).resolves.toBe(
+                "consumer",
+            );
+        });
+
+        test("Should initialize successfully when a scoped factory depends on an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SCOPED,
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(
+                container.run({
+                    scope: () => container.resolveOrFail(consumer),
+                }),
+            ).resolves.toBe("consumer");
+        });
+
+        test("Should pass undefined to a singleton factory for an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(received).toBeUndefined();
+        });
+
+        test("Should pass undefined to a transient factory for an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.TRANSIENT,
+            });
+
+            await container.init();
+            await container.resolveOrFail(consumer);
+
+            expect(received).toBeUndefined();
+        });
+
+        test("Should pass undefined to a scoped factory for an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SCOPED,
+            });
+
+            await container.init();
+            await container.run({
+                scope: () => container.resolveOrFail(consumer),
+            });
+
+            expect(received).toBeUndefined();
+        });
+
+        test("Should pass undefined for an unregistered optional token alongside the value of a required token", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let receivedRequired: unknown = "NOT_CALLED";
+            let receivedOptional: unknown = "NOT_CALLED";
+
+            container.registerValue({
+                token: required,
+                value: "required-value",
+            });
+            container.registerFactory({
+                deps: { required, optional },
+                token: consumer,
+                factory: ({
+                    required: requiredValue,
+                    optional: optionalValue,
+                }) => {
+                    receivedRequired = requiredValue;
+                    receivedOptional = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(receivedRequired).toBe("required-value");
+            expect(receivedOptional).toBeUndefined();
+        });
+
+        test("Should pass undefined for every unregistered optional token", async () => {
+            const first = optionalToken(genericToken<string>("first"));
+            const second = optionalToken(genericToken<string>("second"));
+            const consumer = genericToken<string>("consumer");
+            let receivedFirst: unknown = "NOT_CALLED";
+            let receivedSecond: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { first, second },
+                token: consumer,
+                factory: ({ first: firstValue, second: secondValue }) => {
+                    receivedFirst = firstValue;
+                    receivedSecond = secondValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(receivedFirst).toBeUndefined();
+            expect(receivedSecond).toBeUndefined();
+        });
+
+        test("Should allow an unregistered optional token to be shared by multiple consumers", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const firstConsumer = genericToken<string>("firstConsumer");
+            const secondConsumer = genericToken<string>("secondConsumer");
+            let receivedByFirst: unknown = "NOT_CALLED";
+            let receivedBySecond: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: firstConsumer,
+                factory: ({ optional: optionalValue }) => {
+                    receivedByFirst = optionalValue;
+                    return "first";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: secondConsumer,
+                factory: ({ optional: optionalValue }) => {
+                    receivedBySecond = optionalValue;
+                    return "second";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(receivedByFirst).toBeUndefined();
+            expect(receivedBySecond).toBeUndefined();
+        });
+
+        test("Should pass undefined for an unregistered optional class token", async () => {
+            const optional = optionalToken(ConsoleLogger);
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(received).toBeUndefined();
+        });
+
+        test("Should initialize successfully when an unregistered optional token is a transitive dependency", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const dependencyToken = genericToken<string>("dependency");
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: dependencyToken,
+                factory: () => "dependency",
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { dependencyToken },
+                token: consumer,
+                factory: ({ dependencyToken: dependencyValue }) =>
+                    `consumer(${dependencyValue})`,
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            await expect(container.resolveOrFail(consumer)).resolves.toBe(
+                "consumer(dependency)",
+            );
+        });
+
+        test("Should not register an unregistered optional token as a graph node", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            await expect(container.has(optional)).resolves.toBe(false);
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // undeclared dependency validation
+    // -----------------------------------------------------------------------
+    describe("undeclared dependency validation", () => {
+        test("Should fail initialization with an undeclared dependency error when a required token is missing", async () => {
+            const required = genericToken<string>("required");
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { required },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.UNDECLARED_DEPENDENCIES,
+            );
+            expect(error).toHaveProperty("info.dependencies", [
+                { dependency: "required", referencedBy: ["consumer"] },
+            ]);
+        });
+
+        test("Should report only required tokens as undeclared when optional tokens are also missing", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { required, optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.UNDECLARED_DEPENDENCIES,
+            );
+            expect(error).toHaveProperty("info.dependencies", [
+                { dependency: "required", referencedBy: ["consumer"] },
+            ]);
+        });
+
+        test("Should not report an undeclared dependency error when only optional tokens are missing", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // registered optional dependency
+    // -----------------------------------------------------------------------
+    describe("registered optional dependency", () => {
+        test("Should pass the registered value to a singleton factory for a registered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(received).toBe("optional-value");
+        });
+
+        test("Should pass the registered value to a transient factory for a registered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.TRANSIENT,
+            });
+
+            await container.init();
+            await container.resolveOrFail(consumer);
+
+            expect(received).toBe("optional-value");
+        });
+
+        test("Should pass the registered value to a scoped factory for a registered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SCOPED,
+            });
+
+            await container.init();
+            await container.run({
+                scope: () => container.resolveOrFail(consumer),
+            });
+
+            expect(received).toBe("optional-value");
+        });
+
+        test("Should resolve a registered optional token that is registered after its consumer", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+
+            await container.init();
+
+            expect(received).toBe("optional-value");
+        });
+
+        test("Should pass the registered class instance to a factory for a registered optional class token", async () => {
+            const optional = optionalToken(ConsoleLogger);
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = null;
+
+            container.registerFactory({
+                deps: {},
+                token: optional,
+                factory: () => new ConsoleLogger(),
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(received).toBeInstanceOf(ConsoleLogger);
+        });
+
+        test("Should pass the registered dynamic value to a scoped factory for a registered optional dynamic token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerDynamic(optional);
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SCOPED,
+            });
+
+            await container.init();
+            const value = await container.run({
+                registration: (reg) => {
+                    reg.set({ token: optional, value: "dynamic-value" });
+                },
+                scope: () => container.resolveOrFail(consumer),
+            });
+
+            expect(value).toBe("consumer");
+            expect(received).toBe("dynamic-value");
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // registered optional dependency still obeys graph validation
+    // -----------------------------------------------------------------------
+    describe("registered optional dependency graph validation", () => {
+        test("Should still fail graph validation when a registered optional token creates an invalid edge", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: {},
+                token: optional,
+                factory: () => "optional",
+                lifetime: LIFETIME.SCOPED,
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.INVALID_EDGE_RELATIONSHIP,
+            );
+        });
+
+        test("Should still fail graph validation when a registered optional dynamic token is a dependency of a singleton", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerDynamic(optional);
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.INVALID_EDGE_RELATIONSHIP,
+            );
+        });
+
+        test("Should still fail graph validation when a registered optional token creates a cycle", async () => {
+            const tokenA = genericToken<string>("A");
+            const tokenB = optionalToken(genericToken<string>("B"));
+
+            container.registerFactory({
+                deps: { tokenB },
+                token: tokenA,
+                factory: () => "A",
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { tokenA },
+                token: tokenB,
+                factory: () => "B",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.CYCLE_DEPENDENCY,
+            );
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // resolution of an unregistered optional token
+    // -----------------------------------------------------------------------
+    describe("resolution of an unregistered optional token", () => {
+        test("Should return null when resolving an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+
+            await container.init();
+
+            await expect(container.resolve(optional)).resolves.toBeNull();
+        });
+
+        test("Should fail when resolving an unregistered optional token with resolveOrFail", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+
+            await container.init();
+
+            await expect(container.resolveOrFail(optional)).rejects.toThrow(
+                CanNotResolveServiceDiError,
+            );
+        });
+
+        test("Should return the default value when resolving an unregistered optional token with resolveOr", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+
+            await container.init();
+
+            await expect(
+                container.resolveOr(optional, "default-value"),
+            ).resolves.toBe("default-value");
+        });
+
+        test("Should return false when checking has for an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+
+            await container.init();
+
+            await expect(container.has(optional)).resolves.toBe(false);
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // override and fork
+    // -----------------------------------------------------------------------
+    describe("override and fork", () => {
+        test("Should pass undefined to an overriding factory that depends on an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: {},
+                token: consumer,
+                factory: () => "original",
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.overrideFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "overridden";
+                },
+            });
+
+            await container.init();
+
+            await expect(container.resolveOrFail(consumer)).resolves.toBe(
+                "overridden",
+            );
+            expect(received).toBeUndefined();
+        });
+
+        test("Should keep unregistered optional dependencies when forking a container", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            const forked = container.fork();
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(forked.init()).resolves.toBeUndefined();
+
+            await expect(forked.resolveOrFail(consumer)).resolves.toBe(
+                "consumer",
+            );
+            expect(received).toBeUndefined();
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // optional token marker
+    // -----------------------------------------------------------------------
+    describe("optional token marker", () => {
+        test("Should allow an optional token to be used as a registration token", async () => {
+            const token = optionalToken(genericToken<string>("token"));
+
+            container.registerFactory({
+                deps: {},
+                token,
+                factory: () => "value",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            await expect(container.resolveOrFail(token)).resolves.toBe("value");
+        });
     });
 });
