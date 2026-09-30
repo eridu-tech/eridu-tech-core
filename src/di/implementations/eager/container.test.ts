@@ -4229,6 +4229,43 @@ describe("feature: optional tokens", () => {
             ]);
         });
 
+        test("Should fail initialization when one consumer requires a token that another consumer depends on optionally", async () => {
+            const serviceA = genericToken<string>("A");
+            const serviceB = genericToken<string>("B");
+            const serviceC = genericToken<string>("C");
+
+            // A depends on C optionally while B requires the same C.
+            container.registerFactory({
+                deps: { serviceC: optionalToken(serviceC) },
+                token: serviceA,
+                factory: () => "A",
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { serviceC },
+                token: serviceB,
+                factory: () => "B",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.UNDECLARED_DEPENDENCIES,
+            );
+            // C is only optional for A, so the requirement from B still fails.
+            expect(error).toHaveProperty("info.dependencies", [
+                { dependency: "C", referencedBy: ["B"] },
+            ]);
+        });
+
         test("Should not report an undeclared dependency error when only optional tokens are missing", async () => {
             const optional = optionalToken(genericToken<string>("optional"));
             const consumer = genericToken<string>("consumer");
