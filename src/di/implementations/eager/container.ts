@@ -146,10 +146,6 @@ export class Container implements IContainer {
         }
     }
 
-    private getRunScopeDepthCounter(): number | null {
-        return this.settings.executionContext.get(this.SCOPE_DEPTH_COUNT_KEY);
-    }
-
     private transformArrayDepToRecordDep<T>(
         entries: Array<{ key: string | number; value: T }>,
     ): Partial<Record<string, T>> {
