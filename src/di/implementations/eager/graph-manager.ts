@@ -5,6 +5,7 @@
 import {
     CanNotOverrideServiceDiError,
     InvalidGraphDiError,
+    isOptionalTokenSymbol,
 } from "@/di/contracts/_module-exports.js";
 import { INTERNAL_LIFETIME } from "@/di/implementations/eager/_shared.js";
 import {
@@ -221,19 +222,29 @@ export class GraphManager {
         const declaredNodes = this.nodes().filter((node) =>
             this.hasNodeProperty(node),
         );
-        const getSuccessor = (node: Node) => this.getSuccessorsOf(node);
 
         const missing = getMissingNodes({
-            getSuccessor,
+            getSuccessor: (node) => this.getSuccessorsOf(node),
             nodes: declaredNodes,
         });
 
-        if (missing.length !== 0) {
+        const filteredMissingNodes = missing.filter((item): boolean => {
+            // Token that contains this isOptionalTokenSymbol means it is optional and can be excluded as missing
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const isOptional: boolean =
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                (item as any)[isOptionalTokenSymbol] ?? false;
+
+            return !isOptional;
+        });
+
+        if (filteredMissingNodes.length !== 0) {
             return {
                 valid: false,
                 error: InvalidGraphDiError.create({
                     flag: InvalidGraphDiError.FLAG.UNDECLARED_DEPENDENCIES,
-                    undeclaredDependencies: missing.slice(
+                    undeclaredDependencies: filteredMissingNodes.slice(
                         undefined,
                         this.maxUndeclaredDependenciesInError,
                     ),
@@ -286,7 +297,7 @@ export class GraphManager {
         }
 
         const cycles = findAllCycles({
-            getSuccessor,
+            getSuccessor: (node) => this.getSuccessorsOf(node),
             nodes: declaredNodes,
         });
 
@@ -327,13 +338,11 @@ export class GraphManager {
         TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(settings: FactoryRegistration<TDeps, TRegisteredType>): void {
-        const factory = settings.factory;
-
         const edges = this.depsToEdges(settings);
 
         this.setNodeProperty(settings.token, {
             lifetime: settings.lifetime,
-            service: factory as ServiceFactory<DepRecord>,
+            service: settings.factory as ServiceFactory<DepRecord>,
         });
 
         edges.forEach(([edge, value]) => {
