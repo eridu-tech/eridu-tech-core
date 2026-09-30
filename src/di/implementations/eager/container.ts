@@ -26,7 +26,6 @@ import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
 import type {
     DiToken,
     FactoryRegistration,
-    FactoryRegistrationOverride,
     IContainer,
     IDynamicServiceRegister,
     RunSettings,
@@ -1005,7 +1004,7 @@ export class Container implements IContainer {
     overrideFactory<
         TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
-    >(settings: FactoryRegistrationOverride<TDeps, TRegisteredType>): void {
+    >(settings: FactoryRegistrationBase<TDeps, TRegisteredType>): void {
         this.throwIfContainerAlreadyInitialized(this.overrideFactory.name);
         this.throwIfInsideRunScope(this.overrideFactory.name);
 

@@ -9,7 +9,7 @@ import {
 import { INTERNAL_LIFETIME } from "@/di/implementations/eager/_shared.js";
 import {
     findAllCycles,
-    getMissingNodes as getMissingDependencies,
+    getMissingNodes,
     getInvalidEdges,
     visitedNodes,
 } from "@/di/implementations/eager/graph-algorithms.js";
@@ -23,7 +23,7 @@ import type {
     FactoryRegistration,
     ServiceFactory,
     DepsTokens,
-    FactoryRegistrationOverride,
+    FactoryRegistrationBase,
     DepRecord,
     EmptyRecord,
 } from "@/di/contracts/_module-exports.js";
@@ -223,7 +223,7 @@ export class GraphManager {
         );
         const getSuccessor = (node: Node) => this.getSuccessorsOf(node);
 
-        const missing = getMissingDependencies({
+        const missing = getMissingNodes({
             getSuccessor,
             nodes: declaredNodes,
         });
@@ -351,7 +351,7 @@ export class GraphManager {
         TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(
-        settings: FactoryRegistrationOverride<TDeps, TRegisteredType>,
+        settings: FactoryRegistrationBase<TDeps, TRegisteredType>,
     ):
         | { success: true }
         | { success: false; error: CanNotOverrideServiceDiError } {

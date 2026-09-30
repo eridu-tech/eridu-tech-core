@@ -179,29 +179,6 @@ export type FactoryRegistration<
     | FactoryRegistrationNoneSingleton<TDeps, TRegisteredType>;
 
 /**
- * Configuration for overriding a factory-based service.
- *
- * @typeParam TDeps - Record of dependency names mapped to the types the factory consumes.
- * @typeParam TRegisteredType - The type produced by the factory.
- *
- * IMPORT_PATH: `"eridu-tech/di/contracts"`
- * @group Contracts
- */
-export type FactoryRegistrationOverride<
-    TDeps extends DepRecord = EmptyRecord,
-    TRegisteredType = unknown,
-> = {
-    /** The token used to identify and resolve this service. */
-    token: DiToken<TRegisteredType>;
-
-    /** The factory function that creates the service instance. */
-    factory: ServiceFactory<TDeps, TRegisteredType>;
-
-    /** The dependency tokens to resolve and inject into the factory. */
-    deps: DepsTokens<TDeps>;
-};
-
-/**
  * Configuration for registering a pre-constructed value as a service.
  * Value registrations are always resolved as singletons.
  *
@@ -558,7 +535,7 @@ export type IServiceOverrider = {
         TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(
-        settings: FactoryRegistrationOverride<TDeps, TRegisteredType>,
+        settings: FactoryRegistrationBase<TDeps, TRegisteredType>,
     ): void;
 
     /**
