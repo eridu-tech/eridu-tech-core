@@ -42,14 +42,18 @@ export function genericToken<TRegisteredType>(
 export const isOptionalTokenSymbol = Symbol("isOptionalTokenSymbol");
 
 /**
- * Marks a {@link DiToken} as optional.
+ * Creates an optional variant of a {@link DiToken}.
+ *
+ * The result is a distinct token that carries the optional marker, so the
+ * original `token` is left untouched: the same service can be a required
+ * dependency for one factory and an optional dependency for another.
  *
  * When an optional token is used in a factory's `deps` record, the
  * corresponding dependency received by the factory is typed as
  * `TRegisteredType | undefined` instead of `TRegisteredType`.
  *
- * @param token - The token to mark as optional.
- * @returns The same token, with its resolved type widened to include `undefined`.
+ * @param token - The token to create an optional variant of.
+ * @returns A new token, with its resolved type widened to include `undefined`.
  *
  * IMPORT_PATH: `"eridu-tech/di/contracts"`
  * @group Contracts
@@ -57,9 +61,13 @@ export const isOptionalTokenSymbol = Symbol("isOptionalTokenSymbol");
 export function optionalToken<TRegisteredType>(
     token: DiToken<TRegisteredType>,
 ): DiToken<TRegisteredType | undefined> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (token as any)[isOptionalTokenSymbol] = true;
-    return token;
+    const optionalTokenVariant = Object.create(token) as DiToken<
+        TRegisteredType | undefined
+    >;
+    Object.defineProperty(optionalTokenVariant, isOptionalTokenSymbol, {
+        value: true,
+    });
+    return optionalTokenVariant;
 }
 
 /**

@@ -5,7 +5,6 @@
 import {
     CanNotOverrideServiceDiError,
     InvalidGraphDiError,
-    isOptionalTokenSymbol,
 } from "@/di/contracts/_module-exports.js";
 import { INTERNAL_LIFETIME } from "@/di/implementations/eager/_shared.js";
 import {
@@ -15,7 +14,10 @@ import {
     visitedNodes,
 } from "@/di/implementations/eager/graph-algorithms.js";
 import { Graph } from "@/di/implementations/eager/graph.js";
-import { tokenToString } from "@/di/implementations/eager/utils.js";
+import {
+    isOptionalToken,
+    tokenToString,
+} from "@/di/implementations/eager/utils.js";
 import { UnexpectedError } from "@/utilities/errors.js";
 
 import type {
@@ -218,33 +220,37 @@ export class GraphManager {
         return graphManagerCopy;
     }
 
-    validateGraph(): GraphValidationStatus {
-        const declaredNodes = this.nodes().filter((node) =>
-            this.hasNodeProperty(node),
+    /**
+     * All nodes that carry a registration property.
+     *
+     * A node without a property is only a placeholder created as the target of
+     * an edge to a dependency that was never registered; it is not a
+     * registration itself.
+     */
+    declaredNodes(): Array<Node> {
+        return this.nodes().filter((node) => this.hasNodeProperty(node));
+    }
+
+    private declaredSuccessorsOf(node: Node): Array<Node> {
+        return this.getSuccessorsOf(node).filter((successor) =>
+            this.hasNodeProperty(successor),
         );
+    }
+
+    validateGraph(): GraphValidationStatus {
+        const declaredNodes = this.declaredNodes();
 
         const missing = getMissingNodes({
             getSuccessor: (node) => this.getSuccessorsOf(node),
             nodes: declaredNodes,
-        });
+        }).filter((item) => !isOptionalToken(item.missingDependency));
 
-        const filteredMissingNodes = missing.filter((item): boolean => {
-            // Token that contains this isOptionalTokenSymbol means it is optional and can be excluded as missing
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const isOptional: boolean =
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                (item as any)[isOptionalTokenSymbol] ?? false;
-
-            return !isOptional;
-        });
-
-        if (filteredMissingNodes.length !== 0) {
+        if (missing.length !== 0) {
             return {
                 valid: false,
                 error: InvalidGraphDiError.create({
                     flag: InvalidGraphDiError.FLAG.UNDECLARED_DEPENDENCIES,
-                    undeclaredDependencies: filteredMissingNodes.slice(
+                    undeclaredDependencies: missing.slice(
                         undefined,
                         this.maxUndeclaredDependenciesInError,
                     ),
@@ -432,7 +438,7 @@ export class GraphManager {
             throw new UnexpectedError("Expected node to be transient");
         }
         const nodesVisited = visitedNodes({
-            getNeighbors: (node) => this.getSuccessorsOf(node),
+            getNeighbors: (node) => this.declaredSuccessorsOf(node),
             breakBranchSearch: (node) => {
                 return this.getLifespan(node) === INTERNAL_LIFETIME.SCOPED;
             },
@@ -455,7 +461,7 @@ export class GraphManager {
             throw new UnexpectedError("Expected node to be scoped");
         }
         const nodesVisited = visitedNodes({
-            getNeighbors: (node) => this.getSuccessorsOf(node),
+            getNeighbors: (node) => this.declaredSuccessorsOf(node),
             node: nodeId,
         });
         const dynamicNodeVisited = nodesVisited.filter((visited) =>
@@ -465,13 +471,7 @@ export class GraphManager {
     }
 
     dependencyOf(node: Node): Array<Node> {
-        return this.getSuccessorEdgesOf(node)
-            .map((edge) => ({
-                edge,
-                property: this.getEdgePropertyOrThrow(edge),
-            }))
-            .map((item) => item.edge)
-            .map(([_, successorNode]) => successorNode);
+        return this.declaredSuccessorsOf(node);
     }
 
     getArgKey(edge: Edge): EdgeProps["arg"] {

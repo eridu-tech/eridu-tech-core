@@ -1,9 +1,25 @@
 /**
  * @module DI
  */
+import { isOptionalTokenSymbol } from "@/di/contracts/_module-exports.js";
 import { isClass } from "@/utilities/_module-exports.js";
 
 import type { DiToken } from "@/di/contracts/_module-exports.js";
+
+/**
+ * Checks whether a token is an optional variant created by `optionalToken`.
+ *
+ * @param token - The token to check.
+ * @returns `true` when the token carries the optional marker.
+ * @internal
+ */
+export function isOptionalToken(token: unknown): boolean {
+    return (
+        typeof token === "object" &&
+        token !== null &&
+        isOptionalTokenSymbol in token
+    );
+}
 
 /**
  * Converts a DI token to a readable string representation.

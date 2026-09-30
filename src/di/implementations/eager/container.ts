@@ -186,7 +186,7 @@ export class Container implements IContainer {
 
     private async initSingletonsValues(): Promise<void> {
         const singletons = this.graphManager
-            .nodes()
+            .declaredNodes()
             .filter((node) => this.graphManager.isSingleton(node));
 
         const getSingletonNeighbors = (node: Node) =>
@@ -240,7 +240,7 @@ export class Container implements IContainer {
 
     private async initTransientFactories(): Promise<void> {
         const transients = this.graphManager
-            .nodes()
+            .declaredNodes()
             .filter((node) => this.graphManager.isTransient(node));
 
         const getTransientNeighbors = (node: Node) =>
@@ -342,7 +342,7 @@ export class Container implements IContainer {
 
     private async initScopedValues(): Promise<void> {
         const scoped = this.graphManager
-            .nodes()
+            .declaredNodes()
             .filter((node) => this.graphManager.isScoped(node));
 
         const getScopedNeighbors = (nodeId: Node) =>
