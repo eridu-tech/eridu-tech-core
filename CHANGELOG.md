@@ -1,5 +1,231 @@
 # @daiso-tech/core
 
+## 0.68.0
+
+### Minor Changes
+
+- 7afa2cd: Added dependency-injection aware service providers for the MongoDB, MySQL, PostgreSQL, Redis and SQLite clients, plus Kysely providers for MySQL, PostgreSQL and SQLite.
+
+    Every provider registers its client as a singleton in the container and wires the container lifecycle to it: initialization-time setup runs during `container.init()` and the client is closed during `container.deInit()`. The Kysely providers take the driver token as a dependency instead of creating the client themselves, so they layer on top of the client providers:
+
+    ```ts
+    import { sql } from "kysely";
+    import { Container } from "eridu-tech/di";
+    import {
+        kyselySqliteProvider,
+        KYSELY_SQLITE,
+    } from "eridu-tech/providers/kysely-sqlite-provider";
+    import {
+        sqliteProvider,
+        SQLITE_CLIENT,
+    } from "eridu-tech/providers/sqlite-provider";
+
+    const container = new Container({ executionContext });
+
+    container.registerProvider(sqliteProvider({ filename: ":memory:" }));
+    container.registerProvider(
+        kyselySqliteProvider({ sqliteToken: SQLITE_CLIENT }),
+    );
+
+    await container.init();
+
+    const kysely = await container.resolveOrFail(KYSELY_SQLITE);
+    await sql`select 1 as value`.execute(kysely);
+
+    await container.deInit();
+    ```
+
+    - `eridu-tech/providers/mongodb-provider` exports `mongodbProvider`, the `MONGODB_CLIENT` token and the `MongodbProviderSettings` type.
+    - `eridu-tech/providers/mysql-provider` exports `mysqlProvider`, the `MYSQL_CLIENT` token and the `MysqlProviderSettings` type.
+    - `eridu-tech/providers/postgres-provider` exports `postgresProvider`, the `POSTGRES_CLIENT` token and the `PostgresProviderSettings` type.
+    - `eridu-tech/providers/redis-provider` exports `redisProvider`, the `REDIS_CLIENT` token and the `RedisSettings` type.
+    - `eridu-tech/providers/sqlite-provider` exports `sqliteProvider`, the `SQLITE_CLIENT` token and the `SqliteProviderSettings` type.
+    - `eridu-tech/providers/kysely-mysql-provider` exports `kyselyMysqlProvider`, the `KYSELY_MYSQL` token and the `KyselyMysqlProviderSettings`/`KyselyMysqlDialectSettings` types.
+    - `eridu-tech/providers/kysely-postgres-provider` exports `kyselyPostgresProvider`, the `KYSELY_POSTGRES` token and the `KyselyPostgresProviderSettings`/`KyselyPostgresDialectSettings` types.
+    - `eridu-tech/providers/kysely-sqlite-provider` exports `kyselySqliteProvider`, the `KYSELY_SQLITE` token and the `KyselySqliteProviderSettings`/`KyselySqliteDialectSettings` types.
+
+    ### Details
+    - `sqliteProvider`, `postgresProvider` and `mysqlProvider` accept an optional `onInit` callback that receives the connected client, so pragmas, migrations or other one-time setup can run during `container.init()`.
+    - `mongodbProvider` connects during `container.init()` by default; set `eagerConnect: false` to connect lazily on the first operation instead.
+    - `redisProvider` connects lazily on first use and only closes the connection during `container.deInit()`.
+    - The Kysely providers accept either a `KyselyConfig` or a `KyselyProps` shape (minus `dialect`), so plugins and logging can be configured, and expose a `dialectSettings` option for the remaining dialect options.
+
+- f769c1d: Added token aliases to the DI container, so an existing service can be resolved through additional tokens.
+
+    ```ts
+    import { Container } from "eridu-tech/di";
+    import { genericToken } from "eridu-tech/di/contracts";
+    import { ExecutionContext } from "eridu-tech/execution-context";
+    import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+
+    const executionContext = new ExecutionContext(
+        new AlsExecutionContextAdapter(),
+    );
+    const container = new Container({ executionContext });
+
+    const IDATABASE = genericToken<IDatabase>("Database service");
+    const DATABASE_ALIAS = genericToken<IDatabase>(
+        "Alias for the database service",
+    );
+
+    container.registerAlias({
+        target: IDATABASE,
+        alias: DATABASE_ALIAS,
+    });
+    ```
+
+    - `container.registerAlias({ target, alias })` registers `alias` as another token for the service registered under `target`, so resolving either token returns the same instance.
+    - `eridu-tech/di/contracts` exports the `AliasRegistration<TRegisteredType>` type used by the new method.
+    - An alias is registered as a `Singleton` service that depends on its target, so the target must be a singleton (a value registered with `registerValue()` qualifies).
+
+- 126c0e4: Reworked the DI container contracts: registrations can run their own lifecycle hooks, and dependencies can be marked as optional.
+
+    ```ts
+    import { Container } from "eridu-tech/di";
+    import {
+        genericToken,
+        optionalToken,
+        LIFETIME,
+    } from "eridu-tech/di/contracts";
+    import { ExecutionContext } from "eridu-tech/execution-context";
+    import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+
+    const CONFIG = genericToken<Config>("CONFIG");
+    const CACHE = genericToken<Cache>("CACHE");
+
+    const executionContext = new ExecutionContext(
+        new AlsExecutionContextAdapter(),
+    );
+    const container = new Container({ executionContext });
+
+    container.registerFactory({
+        token: CONFIG,
+        // CACHE is optional: when it is never registered the factory receives
+        // `undefined` instead of the graph failing validation.
+        deps: { cache: optionalToken(CACHE) },
+        factory: ({ cache }) => loadConfig(cache),
+        lifetime: LIFETIME.SINGLETON,
+        onInit: (config) => config.warmUp(),
+        onDeInit: (config) => config.dispose(),
+    });
+
+    await container.init();
+    await container.deInit();
+    ```
+
+    - Added `optionalToken(token)`, which creates an optional variant of a token. The variant is a distinct token, so the original stays a required dependency elsewhere: one service can require a dependency while another only optionally depends on it. An optional dependency that was never registered is dropped from the graph, so `container.init()` succeeds and the factory receives `undefined` for it (typed as `TRegisteredType | undefined`). Registered optional dependencies behave exactly like required ones, including lifetime/edge and cycle validation.
+    - Added per-registration lifecycle hooks: `FactoryRegistration` and `ValueRegistration` accept `onInit` / `onDeInit`, which receive the resolved service instance. `onInit` runs during `container.init()` once the service is available and `onDeInit` runs during `container.deInit()`. Hooks are only available on singleton registrations.
+    - Added the `ServiceHooks<TRegisteredType>`, `FactoryRegistrationBase<TDeps, TRegisteredType>`, `FactoryRegistrationSingleton<TDeps, TRegisteredType>` and `FactoryRegistrationNoneSingleton<TDeps, TRegisteredType>` types to `eridu-tech/di/contracts`. `FactoryRegistration` is now a union of the singleton variant (which carries the hooks) and the non-singleton variant.
+    - Renamed the `EmptyDepRecord` type to `EmptyRecord`.
+
+    ### Breaking changes
+    - Removed the container-level lifecycle hooks: the `IContainerHooks` and `DiHook` types and the `Container.onContainerInit()` / `Container.onContainerDeInit()` methods. Use the per-registration `onInit` / `onDeInit` hooks instead.
+    - Removed the `FactoryRegistrationOverride` type. `container.overrideFactory()` now takes `FactoryRegistrationBase`, the dependency-injection settings shared by every factory registration.
+    - Renamed the exported `EmptyDepRecord` type to `EmptyRecord`, so imports of the old name no longer resolve.
+    - Removed the service-provider registration API (`IServiceProviderRegister`, `ServiceProviderFn`, `IServiceProvider`, `ServiceProvider` and `IServiceRegister.registerProvider`) as part of dropping the `providers` module; see the `removed-providers-module` changeset for the migration.
+
+    ### Migration
+
+    Move container-level hooks onto the registration that owns the service:
+
+    **Before:**
+
+    ```ts
+    container.registerFactory({
+        token: CONFIG,
+        deps: {},
+        factory: () => createConfig(),
+        lifetime: LIFETIME.SINGLETON,
+    });
+
+    container.onContainerInit(async (resolver) => {
+        const config = await resolver.resolveOrFail(CONFIG);
+        config.warmUp();
+    });
+
+    container.onContainerDeInit(async (resolver) => {
+        const config = await resolver.resolveOrFail(CONFIG);
+        config.dispose();
+    });
+    ```
+
+    **After:**
+
+    ```ts
+    container.registerFactory({
+        token: CONFIG,
+        deps: {},
+        factory: () => createConfig(),
+        lifetime: LIFETIME.SINGLETON,
+        onInit: (config) => {
+            config.warmUp();
+        },
+        onDeInit: (config) => {
+            config.dispose();
+        },
+    });
+    ```
+
+- 668b9fe: Removed the `providers` module and its `eridu-tech/providers/*` package exports.
+
+    The module bundled dependency-injection aware service providers for the MongoDB, MySQL, PostgreSQL, Redis and SQLite clients, plus the Kysely providers layered on top of them. The container service-provider pattern they were built on turned out to be insufficient and too constrained to scale: it was not flexible enough to describe how applications actually wire their infrastructure, and it made the DI container glue code hard to maintain. The providers and the container API they relied on are gone.
+
+    - Removed the `eridu-tech/providers/mongodb-provider`, `eridu-tech/providers/mysql-provider`, `eridu-tech/providers/postgres-provider`, `eridu-tech/providers/redis-provider` and `eridu-tech/providers/sqlite-provider` entry points, along with their `mongodbProvider` / `mysqlProvider` / `postgresProvider` / `redisProvider` / `sqliteProvider` functions, their `MONGODB_CLIENT` / `MYSQL_CLIENT` / `POSTGRES_CLIENT` / `REDIS_CLIENT` / `SQLITE_CLIENT` tokens and their settings types.
+    - Removed the `eridu-tech/providers/kysely-mysql-provider`, `eridu-tech/providers/kysely-postgres-provider` and `eridu-tech/providers/kysely-sqlite-provider` entry points, along with their `kyselyMysqlProvider` / `kyselyPostgresProvider` / `kyselySqliteProvider` functions, their `KYSELY_MYSQL` / `KYSELY_POSTGRES` / `KYSELY_SQLITE` tokens and their settings types.
+
+    ### Breaking changes
+    - Removed the container service-provider registration API: `Container.registerProvider`, `IServiceRegister.registerProvider`, `ServiceProviderFn`, `IServiceProvider` and `IServiceProviderRegister`.
+    - Removed every `eridu-tech/providers/*` package export listed above, so imports from the `providers` module no longer resolve.
+
+    ### Migration
+
+    Register the client yourself with `registerFactory` and move the work the provider used to do into the per-registration `onInit` / `onDeInit` hooks:
+
+    **Before:**
+
+    ```ts
+    import { Container } from "eridu-tech/di";
+    import {
+        sqliteProvider,
+        SQLITE_CLIENT,
+    } from "eridu-tech/providers/sqlite-provider";
+
+    const container = new Container({ executionContext });
+
+    container.registerProvider(sqliteProvider({ filename: ":memory:" }));
+
+    await container.init();
+    await container.deInit();
+    ```
+
+    **After:**
+
+    ```ts
+    import Sqlite, { type Database } from "better-sqlite3";
+    import { Container } from "eridu-tech/di";
+    import { genericToken, LIFETIME } from "eridu-tech/di/contracts";
+
+    const SQLITE_CLIENT = genericToken<Database>("SQLITE_CLIENT");
+
+    const container = new Container({ executionContext });
+
+    container.registerFactory({
+        token: SQLITE_CLIENT,
+        deps: {},
+        factory: () => new Sqlite(":memory:"),
+        lifetime: LIFETIME.SINGLETON,
+        onInit: (client) => {
+            client.pragma("journal_mode = WAL");
+        },
+        onDeInit: (client) => {
+            client.close();
+        },
+    });
+
+    await container.init();
+    await container.deInit();
+    ```
+
 ## 0.67.0
 
 ### Minor Changes
