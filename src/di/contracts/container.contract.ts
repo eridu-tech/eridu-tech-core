@@ -110,7 +110,7 @@ export type EmptyRecord = {};
  * @group Contracts
  */
 export type ServiceFactory<
-    TDeps extends DepRecord = EmptyRecord,
+    TDeps extends DepRecord = DepRecord,
     TRegisteredType = unknown,
 > = Invocable<
     [deps: TDeps, executionContext: IExecutionContext],
@@ -146,12 +146,12 @@ export type Lifetime = (typeof LIFETIME)[keyof typeof LIFETIME];
  * IMPORT_PATH: `"eridu-tech/di/contracts"`
  * @group Contracts
  */
-export type DepsTokens<TDeps extends DepRecord = EmptyRecord> = {
+export type DepsTokens<TDeps extends DepRecord = DepRecord> = {
     [K in keyof TDeps]: DiToken<TDeps[K]>;
 };
 
 export type FactoryRegistrationBase<
-    TDeps extends DepRecord = EmptyRecord,
+    TDeps extends DepRecord = DepRecord,
     TRegisteredType = unknown,
 > = {
     /** The token used to identify and resolve this service. */
@@ -182,7 +182,7 @@ export type ServiceHooks<TRegisteredType = unknown> = {
 };
 
 export type FactoryRegistrationSingleton<
-    TDeps extends DepRecord = EmptyRecord,
+    TDeps extends DepRecord = DepRecord,
     TRegisteredType = unknown,
 > = ServiceHooks<TRegisteredType> &
     FactoryRegistrationBase<TDeps, TRegisteredType> & {
@@ -190,7 +190,7 @@ export type FactoryRegistrationSingleton<
     };
 
 export type FactoryRegistrationNoneSingleton<
-    TDeps extends DepRecord = EmptyRecord,
+    TDeps extends DepRecord = DepRecord,
     TRegisteredType = unknown,
 > = FactoryRegistrationBase<TDeps, TRegisteredType> & {
     lifetime: (typeof LIFETIME)["TRANSIENT"] | (typeof LIFETIME)["SCOPED"];
@@ -206,7 +206,7 @@ export type FactoryRegistrationNoneSingleton<
  * @group Contracts
  */
 export type FactoryRegistration<
-    TDeps extends DepRecord = EmptyRecord,
+    TDeps extends DepRecord = DepRecord,
     TRegisteredType = unknown,
 > =
     | FactoryRegistrationSingleton<TDeps, TRegisteredType>
