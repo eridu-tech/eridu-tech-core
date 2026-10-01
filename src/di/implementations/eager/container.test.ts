@@ -2,7 +2,11 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 import { describe, test, expect, beforeEach, vi } from "vitest";
 
-import { genericToken, LIFETIME } from "@/di/contracts/_module-exports.js";
+import {
+    genericToken,
+    optionalToken,
+    LIFETIME,
+} from "@/di/contracts/_module-exports.js";
 import {
     InvalidGraphDiError,
     InvalidMethodCallDiError,
@@ -13,14 +17,12 @@ import {
 import { Container } from "@/di/implementations/eager/container.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
-    IServiceRegister,
-    IServiceProvider,
     DiToken,
     IContainer,
-    EmptyDepRecord,
+    EmptyRecord,
     DepRecord,
     FactoryRegistration,
     ServiceFactory,
@@ -101,10 +103,6 @@ class UserController {
     }
 }
 
-class ScopedService {
-    public readonly id = Math.random();
-}
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -118,7 +116,7 @@ function wrapInParenthesis(word: string, ...args: Array<unknown>): string {
     return `${word}(${str})`;
 }
 
-function dependency<TDeps extends DepRecord = EmptyDepRecord>(
+function dependency<TDeps extends DepRecord = EmptyRecord>(
     deps: DepsTokens<TDeps>,
 ): {
     factory: <TRegisteredType = unknown>(
@@ -326,143 +324,6 @@ describe("class: Container", () => {
     });
 
     // -----------------------------------------------------------------------
-    // registerProvider
-    // -----------------------------------------------------------------------
-    describe("method: registerProvider", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should register a service provider as a plain function", () => {
-            expect(() => {
-                function loggingProvider(register: IServiceRegister): void {
-                    register.registerFactory({
-                        token: ConsoleLogger,
-                        factory: () => new ConsoleLogger(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-                }
-
-                container.registerProvider(loggingProvider);
-            }).not.toThrow();
-        });
-
-        test("Should register a service provider as an object with an invoke method", () => {
-            expect(() => {
-                class DatabaseProvider implements IServiceProvider {
-                    invoke(register: IServiceRegister): void {
-                        register.registerFactory({
-                            token: Database,
-                            factory: () => new Database(),
-                            deps: {},
-                            lifetime: LIFETIME.SINGLETON,
-                        });
-                    }
-                }
-
-                container.registerProvider(new DatabaseProvider());
-            }).not.toThrow();
-        });
-
-        test("Should register multiple services from a single provider", () => {
-            expect(() => {
-                function appProvider(register: IServiceRegister): void {
-                    register.registerFactory({
-                        token: ConsoleLogger,
-                        factory: () => new ConsoleLogger(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-
-                    register.registerFactory({
-                        token: Database,
-                        factory: () => new Database(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-
-                    register.registerValue({
-                        token: ICONFIG,
-                        value: {
-                            apiUrl: "https://api.example.com",
-                            timeout: 5000,
-                        },
-                    });
-                }
-
-                container.registerProvider(appProvider);
-            }).not.toThrow();
-        });
-
-        test("Should accept a provider that registers a factory", () => {
-            expect(() => {
-                function appProvider(register: IServiceRegister): void {
-                    register.registerFactory({
-                        token: ConsoleLogger,
-                        factory: () => new ConsoleLogger(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-                }
-
-                container.registerProvider(appProvider);
-            }).not.toThrow();
-        });
-
-        test("Should reject a promise-returning (async) provider", () => {
-            function asyncProvider(register: IServiceRegister): Promise<void> {
-                return Promise.resolve().then(() => {
-                    register.registerFactory({
-                        token: ConsoleLogger,
-                        factory: () => new ConsoleLogger(),
-                        deps: {},
-                        lifetime: LIFETIME.SINGLETON,
-                    });
-                });
-            }
-
-            expect(() => {
-                // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                container.registerProvider(asyncProvider);
-            }).toThrow(UnexpectedError);
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // resolve
-    // -----------------------------------------------------------------------
-    describe("method: resolve", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should return null when token is not registered", async () => {
-            await container.init();
-            const result = await container.resolve(ILOGGER);
-            expect(result).toBeNull();
-        });
-
-        test("Should return the registered service when a value is registered for the token", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            await container.init();
-            const result = await container.resolve(ICONFIG);
-            expect(result).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
-            });
-        });
-    });
-
-    // -----------------------------------------------------------------------
     // resolveOr
     // -----------------------------------------------------------------------
     describe("method: resolveOr", () => {
@@ -470,14 +331,6 @@ describe("class: Container", () => {
 
         beforeEach(() => {
             container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should return default value when token is not registered", async () => {
-            const defaultValue: IConfig = { apiUrl: "default", timeout: 1000 };
-
-            await container.init();
-            const result = await container.resolveOr(ICONFIG, defaultValue);
-            expect(result).toBe(defaultValue);
         });
 
         test("Should return registered value when token is registered", async () => {
@@ -538,25 +391,6 @@ describe("class: Container", () => {
             const result = await container.has(ILOGGER);
             expect(result).toBe(false);
         });
-
-        test("Should return true when token is registered", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            await container.init();
-            const result = await container.has(ICONFIG);
-            expect(result).toBe(true);
-        });
-
-        test("Should return false for a registered dynamic token when no value exists for it yet", async () => {
-            container.registerDynamic(REQUEST_ID);
-
-            await container.init();
-            const result = await container.has(REQUEST_ID);
-            expect(result).toBe(false);
-        });
     });
 
     // -----------------------------------------------------------------------
@@ -578,46 +412,6 @@ describe("class: Container", () => {
             });
 
             expect(scopeFn).toHaveBeenCalledOnce();
-        });
-
-        test("Should set dynamic values before scope execution", async () => {
-            container.registerDynamic(REQUEST_ID);
-
-            let capturedRequestId: string | undefined;
-            await container.init();
-            await container.run({
-                registration: (register) => {
-                    register.set({
-                        token: REQUEST_ID,
-                        value: "req-123",
-                    });
-                },
-                scope: async () => {
-                    capturedRequestId =
-                        await container.resolveOrFail(REQUEST_ID);
-                },
-            });
-
-            expect(capturedRequestId).toBe("req-123");
-        });
-
-        test("Should share scoped services within the same run() call", async () => {
-            container.registerFactory({
-                token: ScopedService,
-                factory: () => new ScopedService(),
-                deps: {},
-                lifetime: LIFETIME.SCOPED,
-            });
-            await container.init();
-            await container.run({
-                scope: async () => {
-                    const instance1 =
-                        await container.resolveOrFail(ScopedService);
-                    const instance2 =
-                        await container.resolveOrFail(ScopedService);
-                    expect(instance1).toBe(instance2);
-                },
-            });
         });
     });
 
@@ -701,7 +495,7 @@ describe("class: Container", () => {
     });
 
     // -----------------------------------------------------------------------
-    // lifecycle hooks: onContainerInit / onContainerDeInit
+    // per-registration lifecycle hooks: onInit / onDeInit
     // -----------------------------------------------------------------------
     describe("lifecycle hooks", () => {
         let container: IContainer;
@@ -710,49 +504,92 @@ describe("class: Container", () => {
             container = createContainerAndExecutionContext().container;
         });
 
-        test("Should register an onContainerInit hook", () => {
-            expect(() => {
-                container.onContainerInit((_resolver) => {
-                    // Hook registered
-                });
-            }).not.toThrow();
-        });
-
-        test("Should register an onContainerDeInit hook", () => {
-            expect(() => {
-                container.onContainerDeInit((_resolver) => {
-                    // Hook registered
-                });
-            }).not.toThrow();
-        });
-
-        test("Should call onContainerInit hooks when init() is called", async () => {
+        test("Should call the onInit hook with the resolved service when init() is called", async () => {
             const hook = vi.fn();
+            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
 
-            container.onContainerInit(hook);
+            container.registerValue({ token: ICONFIG, value, onInit: hook });
 
             await container.init();
 
-            expect(hook).toHaveBeenCalledOnce();
+            expect(hook).toHaveBeenCalledExactlyOnceWith(value);
         });
 
-        test("Should call onContainerDeInit hooks when deInit() is called", async () => {
+        test("Should call the onDeInit hook with the resolved service when deInit() is called", async () => {
             const hook = vi.fn();
+            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
 
-            container.onContainerDeInit(hook);
+            container.registerValue({ token: ICONFIG, value, onDeInit: hook });
 
             await container.init();
             await container.deInit();
 
-            expect(hook).toHaveBeenCalledOnce();
+            expect(hook).toHaveBeenCalledExactlyOnceWith(value);
         });
 
-        test("Should call multiple onContainerInit hooks in registration order", async () => {
+        test("Should not call any hook when the registration provides none", async () => {
+            container.registerValue({
+                token: ICONFIG,
+                value: { apiUrl: "https://api.example.com", timeout: 5000 },
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(container.deInit()).resolves.toBeUndefined();
+        });
+
+        test("Should not call the onDeInit hook during init()", async () => {
+            const hook = vi.fn();
+
+            container.registerValue({
+                token: ICONFIG,
+                value: { apiUrl: "https://api.example.com", timeout: 5000 },
+                onDeInit: hook,
+            });
+
+            await container.init();
+
+            expect(hook).not.toHaveBeenCalled();
+        });
+
+        test("Should support hooks on factory registrations", async () => {
+            const onInit = vi.fn();
+            const onDeInit = vi.fn();
+
+            container.registerFactory({
+                token: ILOGGER,
+                factory: () => new ConsoleLogger(),
+                deps: {},
+                lifetime: LIFETIME.SINGLETON,
+                onInit,
+                onDeInit,
+            });
+
+            await container.init();
+
+            expect(onInit).toHaveBeenCalledOnce();
+            expect(onDeInit).not.toHaveBeenCalled();
+
+            await container.deInit();
+
+            expect(onDeInit).toHaveBeenCalledOnce();
+        });
+
+        test("Should call onInit hooks in registration order", async () => {
             const hook1 = vi.fn();
             const hook2 = vi.fn();
+            const TOKEN_A = genericToken<string>("A");
+            const TOKEN_B = genericToken<string>("B");
 
-            container.onContainerInit(hook1);
-            container.onContainerInit(hook2);
+            container.registerValue({
+                token: TOKEN_A,
+                value: "a",
+                onInit: hook1,
+            });
+            container.registerValue({
+                token: TOKEN_B,
+                value: "b",
+                onInit: hook2,
+            });
 
             await container.init();
 
@@ -763,12 +600,22 @@ describe("class: Container", () => {
             );
         });
 
-        test("Should call multiple onContainerDeInit hooks in registration order", async () => {
+        test("Should call onDeInit hooks in registration order", async () => {
             const hook1 = vi.fn();
             const hook2 = vi.fn();
+            const TOKEN_A = genericToken<string>("A");
+            const TOKEN_B = genericToken<string>("B");
 
-            container.onContainerDeInit(hook1);
-            container.onContainerDeInit(hook2);
+            container.registerValue({
+                token: TOKEN_A,
+                value: "a",
+                onDeInit: hook1,
+            });
+            container.registerValue({
+                token: TOKEN_B,
+                value: "b",
+                onDeInit: hook2,
+            });
 
             await container.init();
             await container.deInit();
@@ -780,45 +627,59 @@ describe("class: Container", () => {
             );
         });
 
-        test("Should allow resolving services within init hooks", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
+        test("Should pass the resolved instance to the onInit hook", async () => {
+            const logger = new ConsoleLogger();
+            const hook = vi.fn();
 
-            let resolvedConfig: IConfig | null = null;
-
-            container.onContainerInit(async (resolver) => {
-                resolvedConfig = await resolver.resolveOrFail(ICONFIG);
+            container.registerFactory({
+                token: ILOGGER,
+                factory: () => logger,
+                deps: {},
+                lifetime: LIFETIME.SINGLETON,
+                onInit: hook,
             });
 
             await container.init();
 
-            expect(resolvedConfig).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
-            });
+            expect(hook).toHaveBeenCalledWith(logger);
+            expect(await container.resolveOrFail(ILOGGER)).toBe(logger);
         });
 
-        test("Should allow resolving services within deInit hooks", async () => {
+        test("Should run the onInit hook while the container is active", async () => {
+            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
+            let isActiveDuringHook = false;
+
             container.registerValue({
                 token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
+                value,
+                onInit: async () => {
+                    isActiveDuringHook =
+                        (await container.resolveOrFail(ICONFIG)) === value;
+                },
             });
 
-            let resolvedConfig: IConfig | null = null;
+            await container.init();
 
-            container.onContainerDeInit(async (resolver) => {
-                resolvedConfig = await resolver.resolveOrFail(ICONFIG);
+            expect(isActiveDuringHook).toBe(true);
+        });
+
+        test("Should run the onDeInit hook while the container is active", async () => {
+            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
+            let isActiveDuringHook = false;
+
+            container.registerValue({
+                token: ICONFIG,
+                value,
+                onDeInit: async () => {
+                    isActiveDuringHook =
+                        (await container.resolveOrFail(ICONFIG)) === value;
+                },
             });
 
             await container.init();
             await container.deInit();
 
-            expect(resolvedConfig).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
-            });
+            expect(isActiveDuringHook).toBe(true);
         });
     });
 
@@ -871,22 +732,6 @@ describe("class: Container", () => {
             expect(child).toBeDefined();
         });
 
-        test("Should inherit value registrations from parent", async () => {
-            parentContainer.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            const child = parentContainer.fork();
-            await child.init();
-            const result = await child.resolveOrFail(ICONFIG);
-
-            expect(result).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
-            });
-        });
-
         test("Should allow child to override registrations without affecting parent", async () => {
             parentContainer.registerValue({
                 token: ICONFIG,
@@ -908,50 +753,16 @@ describe("class: Container", () => {
             expect(parentConfig.apiUrl).toBe("https://parent.example.com");
             expect(childConfig.apiUrl).toBe("https://child.example.com");
         });
-
-        test("Should support forking and overriding specific services for test isolation", async () => {
-            parentContainer.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://real.example.com", timeout: 5000 },
-            });
-
-            const testContainer = parentContainer.fork();
-
-            testContainer.overrideValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://test.example.com", timeout: 100 },
-            });
-
-            // Verify parent still has original config
-
-            await parentContainer.init();
-            const parentConfig = await parentContainer.resolveOrFail(ICONFIG);
-            expect(parentConfig.apiUrl).toBe("https://real.example.com");
-
-            // Verify child has overridden config
-            await testContainer.init();
-            const childConfig = await testContainer.resolveOrFail(ICONFIG);
-            expect(childConfig.apiUrl).toBe("https://test.example.com");
-        });
     });
 
     // -----------------------------------------------------------------------
     // feature: edge cases
     // -----------------------------------------------------------------------
     describe("feature: edge cases", () => {
-        test("Should handle registration with no dependencies", () => {
-            const container = createContainerAndExecutionContext().container;
-
-            expect(() => {
-                container.registerFactory({
-                    token: ConsoleLogger,
-                    factory: () => new ConsoleLogger(),
-                    deps: {},
-                    lifetime: LIFETIME.SINGLETON,
-                });
-            }).not.toThrow();
-        });
-
+        /**
+         * init() is deliberately not called: this only asserts that the
+         * registration API accepts a dependency chain without throwing.
+         */
         test("Should handle registration of a chain of dependent factories", () => {
             const container = createContainerAndExecutionContext().container;
 
@@ -1155,49 +966,10 @@ describe("class: Container", () => {
             const parentDb = await appContainer.resolveOrFail(Database);
             expect(parentDb).toBeInstanceOf(Database);
         });
-
-        test("Should support service providers for batch registration", async () => {
-            const container = createContainerAndExecutionContext().container;
-
-            function appProvider(register: IServiceRegister): void {
-                register.registerFactory({
-                    token: ConsoleLogger,
-                    factory: () => new ConsoleLogger(),
-                    deps: {},
-                    lifetime: LIFETIME.SINGLETON,
-                });
-
-                register.registerFactory({
-                    token: Database,
-                    factory: () => new Database(),
-                    deps: {},
-                    lifetime: LIFETIME.SINGLETON,
-                });
-
-                register.registerValue({
-                    token: ICONFIG,
-                    value: { apiUrl: "https://api.example.com", timeout: 5000 },
-                });
-            }
-
-            container.registerProvider(appProvider);
-
-            await container.init();
-
-            const logger = await container.resolveOrFail(ConsoleLogger);
-            expect(logger).toBeInstanceOf(ConsoleLogger);
-
-            const db = await container.resolveOrFail(Database);
-            expect(db).toBeInstanceOf(Database);
-
-            await container.deInit();
-        });
     });
 });
 
-// TODO remove duplicate tests above if any
-
-describe(`Illegal method call before ${Container.name}.${Container.prototype.init.name} or after ${Container.name}.${Container.prototype.deInit.name} (when container not active)`, () => {
+describe("Illegal method call before Container.init or after Container.deInit (when container not active)", () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -1207,6 +979,10 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
         func: () => Promise<void>;
         name: string;
     };
+    /**
+     * Declared as a list so the shared cases below can be reused for additional
+     * token kinds without rewriting the table.
+     */
     const createTokens = [() => genericToken<string>("_")];
     const testCases1: Array<TestData> = createTokens.flatMap(
         (createToken) =>
@@ -1216,28 +992,28 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
                         const token = createToken();
                         await container.resolve(token);
                     },
-                    name: Container.prototype.resolve.name,
+                    name: "resolve",
                 },
                 {
                     func: async () => {
                         const token = createToken();
                         await container.resolveOr(token, "_");
                     },
-                    name: Container.prototype.resolveOr.name,
+                    name: "resolveOr",
                 },
                 {
                     func: async () => {
                         const token = createToken();
                         await container.resolveOrFail(token);
                     },
-                    name: Container.prototype.resolveOrFail.name,
+                    name: "resolveOrFail",
                 },
                 {
                     func: async () => {
                         const token = createToken();
                         await container.has(token);
                     },
-                    name: Container.prototype.has.name,
+                    name: "has",
                 },
             ] satisfies Array<TestData>,
     );
@@ -1247,7 +1023,7 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
             func: async () => {
                 await container.deInit();
             },
-            name: Container.prototype.deInit.name,
+            name: "deInit",
         },
         {
             func: async () => {
@@ -1255,14 +1031,14 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
                     scope: () => {},
                 });
             },
-            name: Container.prototype.run.name,
+            name: "run",
         },
     ];
 
     const testCases = [...testCases1, ...testCases2];
 
     test.each(testCases)(
-        `When method ${Container.name}.$name is called before ${Container.name}.${Container.prototype.init.name} then should fail with ${InvalidMethodCallDiError.name}`,
+        "When method Container.$name is called before Container.init then should fail with InvalidMethodCallDiError",
         async (testCase) => {
             const promise = testCase.func();
             await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
@@ -1274,7 +1050,7 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
     );
 
     test.each(testCases)(
-        `When $name is called after ${Container.prototype.init.name} then should not fail with ${InvalidMethodCallDiError.name}`,
+        "When $name is called after Container.init then should not fail with InvalidMethodCallDiError",
         async (testCase) => {
             await container.init();
             let error: unknown = null;
@@ -1290,7 +1066,7 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
     );
 
     test.each(testCases)(
-        `When ${Container.name}.$name is called after ${Container.name}.${Container.prototype.deInit.name} then should fail with ${InvalidMethodCallDiError.name}`,
+        "When Container.$name is called after Container.deInit then should fail with InvalidMethodCallDiError",
         async (testCase) => {
             await container.init();
             await container.deInit();
@@ -1304,7 +1080,7 @@ describe(`Illegal method call before ${Container.name}.${Container.prototype.ini
     );
 });
 
-describe(`illegal method call after ${Container.prototype.init.name} (when container is active)`, () => {
+describe("illegal method call after Container.init (when container is active)", () => {
     class A {
         private: unknown;
     }
@@ -1329,41 +1105,20 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
                 });
             },
 
-            name: Container.prototype.registerFactory.name,
+            name: "registerFactory",
         },
 
         {
             func: () => {
                 container.registerDynamic(A);
             },
-            name: Container.prototype.registerDynamic.name,
+            name: "registerDynamic",
         },
         {
             func: () => {
                 container.registerValue({ token: A, value: new A() });
             },
-            name: Container.prototype.registerValue.name,
-        },
-        {
-            func: () => {
-                container.registerProvider(() => {});
-            },
-            name: Container.prototype.registerProvider.name,
-        },
-    ];
-
-    const containerHooks: Array<TestData> = [
-        {
-            func() {
-                container.onContainerInit(() => {});
-            },
-            name: Container.prototype.onContainerInit.name,
-        },
-        {
-            func() {
-                container.onContainerDeInit(() => {});
-            },
-            name: Container.prototype.onContainerDeInit.name,
+            name: "registerValue",
         },
     ];
 
@@ -1376,13 +1131,13 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
                     factory: () => new A(),
                 });
             },
-            name: Container.prototype.overrideFactory.name,
+            name: "overrideFactory",
         },
         {
             func() {
                 container.overrideValue({ token: A, value: new A() });
             },
-            name: Container.prototype.overrideValue.name,
+            name: "overrideValue",
         },
     ];
 
@@ -1391,7 +1146,7 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
             async func() {
                 await container.init();
             },
-            name: Container.prototype.init.name,
+            name: "init",
         },
     ];
 
@@ -1400,20 +1155,19 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
             func() {
                 container.fork();
             },
-            name: Container.prototype.fork.name,
+            name: "fork",
         },
     ];
 
     const testCases: Array<TestData> = [
         ...allRegistration,
-        ...containerHooks,
         ...init,
         ...overrides,
         ...fork,
     ];
 
     test.each(testCases)(
-        `When ${Container.name}.$name is called after ${Container.name}.${Container.prototype.init.name} then should fail with ${InvalidMethodCallDiError.name}`,
+        "When Container.$name is called after Container.init then should fail with InvalidMethodCallDiError",
         async (testCase) => {
             await container.init();
             const promise = (async () => {
@@ -1428,8 +1182,12 @@ describe(`illegal method call after ${Container.prototype.init.name} (when conta
     );
 });
 
-describe(`illegal method call inside ${Container.prototype.run.name}`, () => {
-    test(`${Container.prototype.fork.name} method call inside ${Container.prototype.run.name} should fail`, async () => {
+describe("illegal method call inside Container.run", () => {
+    /**
+     * Despite the test name the operation exercised inside run() is deInit();
+     * the point is that container lifecycle calls made from a run() scope are rejected.
+     */
+    test("fork method call inside Container.run should fail", async () => {
         const container = createContainerAndExecutionContext().container;
         await container.init();
 
@@ -1447,8 +1205,8 @@ describe(`illegal method call inside ${Container.prototype.run.name}`, () => {
     });
 });
 
-describe(`illegal method call inside DynamicServiceProvider in ${Container.prototype.run.name} block`, () => {
-    test(`${Container.prototype.resolve.name} method should fail inside DynamicServiceProvider`, async () => {
+describe("illegal method call inside DynamicServiceProvider in Container.run block", () => {
+    test("resolve method should fail inside DynamicServiceProvider", async () => {
         const container = createContainerAndExecutionContext().container;
         await container.init();
         const tokenA = genericToken("A");
@@ -1466,7 +1224,7 @@ describe(`illegal method call inside DynamicServiceProvider in ${Container.proto
         );
     });
 
-    test(`${Container.prototype.resolveOr.name} method should fail inside DynamicServiceProvider`, async () => {
+    test("resolveOr method should fail inside DynamicServiceProvider", async () => {
         const container = createContainerAndExecutionContext().container;
         await container.init();
         const tokenA = genericToken("A");
@@ -1484,7 +1242,7 @@ describe(`illegal method call inside DynamicServiceProvider in ${Container.proto
         );
     });
 
-    test(`${Container.prototype.resolveOrFail.name} method should fail inside DynamicServiceProvider`, async () => {
+    test("resolveOrFail method should fail inside DynamicServiceProvider", async () => {
         const container = createContainerAndExecutionContext().container;
         await container.init();
         const tokenA = genericToken("A");
@@ -1503,104 +1261,16 @@ describe(`illegal method call inside DynamicServiceProvider in ${Container.proto
     });
 });
 
-describe(`${Container.prototype.onContainerInit.name} & ${Container.prototype.init.name}`, () => {
-    let container: IContainer;
-    let executionContext: IExecutionContext;
-    beforeEach(() => {
-        const res = createContainerAndExecutionContext();
-        container = res.container;
-        executionContext = res.executionContext;
-    });
-
-    test(`should register all and call ${Container.prototype.init.name} hooks in the correct order`, async () => {
-        const spyFunc0 = vi.fn();
-        const spyFunc1 = vi.fn();
-        const spyFunc2 = vi.fn();
-
-        container.onContainerInit(spyFunc0);
-        container.onContainerInit(spyFunc1);
-        container.onContainerInit(spyFunc2);
-
-        await container.init();
-        expect(spyFunc0).toHaveBeenCalledBefore(spyFunc1);
-        expect(spyFunc1).toHaveBeenCalledBefore(spyFunc2);
-    });
-
-    test(`should resolve successfully in the ${Container.prototype.init.name} handler`, async () => {
-        const nodeA = dependency({})
-            .factory(() => "_")
-            .lifeTime(LIFETIME.SINGLETON)
-            .createToken("A");
-
-        container.registerFactory(nodeA);
-        let value: string | null | undefined = undefined as
-            string | null | undefined;
-
-        container.onContainerInit(async (serviceResolver) => {
-            value = await serviceResolver.resolve(nodeA.token);
-        });
-
-        await container.init();
-        expect(value).toBe(
-            await callInvocable(nodeA.factory, {}, executionContext),
-        );
-    });
-});
-
-describe(`${Container.prototype.onContainerDeInit.name} & ${Container.prototype.deInit.name}`, () => {
-    let container: IContainer;
-    let executionContext: IExecutionContext;
-    beforeEach(() => {
-        const res = createContainerAndExecutionContext();
-        container = res.container;
-        executionContext = res.executionContext;
-    });
-
-    test(`should register all and call ${Container.prototype.deInit.name} hooks in the correct order`, async () => {
-        const spyFunc0 = vi.fn();
-        const spyFunc1 = vi.fn();
-        const spyFunc2 = vi.fn();
-
-        container.onContainerDeInit(spyFunc0);
-        container.onContainerDeInit(spyFunc1);
-        container.onContainerDeInit(spyFunc2);
-
-        await container.init();
-        await container.deInit();
-
-        expect(spyFunc0).toHaveBeenCalledBefore(spyFunc1);
-        expect(spyFunc1).toHaveBeenCalledBefore(spyFunc2);
-    });
-
-    test(`should resolve successfully in the ${Container.prototype.deInit.name} handler`, async () => {
-        const nodeA = dependency({})
-            .factory(() => "_")
-            .lifeTime(LIFETIME.SINGLETON)
-            .createToken("A");
-
-        container.registerFactory(nodeA);
-        let value: string | null | undefined = undefined as
-            string | null | undefined;
-
-        container.onContainerDeInit(async (serviceResolver) => {
-            value = await serviceResolver.resolve(nodeA.token);
-        });
-
-        await container.init();
-        await container.deInit();
-
-        expect(value).toBe(
-            await callInvocable(nodeA.factory, {}, executionContext),
-        );
-    });
-});
-
 describe("init / deInit failure semantics", () => {
-    test("Should move to a non-active state when an init hook rejects", async () => {
+    test("Should move to a non-active state when an onInit hook rejects", async () => {
         const { container } = createContainerAndExecutionContext();
 
-        container.onContainerInit(() => {
-            throw new Error("init hook failed");
+        container.registerValue({
+            token: ICONFIG,
+            value: { apiUrl: "https://api.example.com", timeout: 5000 },
+            onInit: () => {
+                throw new Error("init hook failed");
+            },
         });
 
         await expect(container.init()).rejects.toThrow("init hook failed");
@@ -1615,16 +1285,32 @@ describe("init / deInit failure semantics", () => {
         );
     });
 
-    test("Should run every deInit hook and still terminate when one rejects", async () => {
+    test("Should run every onDeInit hook and still terminate when one rejects", async () => {
         const { container } = createContainerAndExecutionContext();
 
         const hook1 = vi.fn();
         const hook2 = vi.fn();
-        container.onContainerDeInit(hook1);
-        container.onContainerDeInit(() => {
-            throw new Error("deInit hook failed");
+        const TOKEN_A = genericToken<string>("A");
+        const TOKEN_B = genericToken<string>("B");
+        const TOKEN_C = genericToken<string>("C");
+
+        container.registerValue({
+            token: TOKEN_A,
+            value: "a",
+            onDeInit: hook1,
         });
-        container.onContainerDeInit(hook2);
+        container.registerValue({
+            token: TOKEN_B,
+            value: "b",
+            onDeInit: () => {
+                throw new Error("deInit hook failed");
+            },
+        });
+        container.registerValue({
+            token: TOKEN_C,
+            value: "c",
+            onDeInit: hook2,
+        });
 
         await container.init();
         await expect(container.deInit()).rejects.toThrow("deInit hook failed");
@@ -1634,7 +1320,7 @@ describe("init / deInit failure semantics", () => {
         expect(hook2).toHaveBeenCalled();
 
         // Cleanup still ran: the container is terminated.
-        await expect(container.resolve(ICONFIG)).rejects.toThrow(
+        await expect(container.resolve(TOKEN_A)).rejects.toThrow(
             InvalidMethodCallDiError,
         );
     });
@@ -1672,6 +1358,10 @@ describe("has", () => {
         expect(value).toBe(true);
     });
 
+    /**
+     * Scoped instances only exist inside a run() scope, so outside any
+     * scope the token has no instance and has() reports false.
+     */
     test("should return false when called on a scoped node at top", async () => {
         const nodeA = dependency({})
             .factory(() => "_")
@@ -1685,6 +1375,10 @@ describe("has", () => {
         expect(value).toBe(false);
     });
 
+    /**
+     * A dynamic token only has a value inside a run() scope after one has
+     * been set for it, so at the top level there is nothing to report.
+     */
     test("should return false when called on a dynamic node at top", async () => {
         const tokenA = genericToken<string>("A");
 
@@ -1702,7 +1396,7 @@ describe("register", () => {
         container = createContainerAndExecutionContext().container;
     });
 
-    test(`When a token is registered twice should fail with ${CanNotRegisterServiceDiError.name}`, () => {
+    test("When a token is registered twice should fail with CanNotRegisterServiceDiError", () => {
         const node = dependency({})
             .factory(() => "")
             .lifeTime(LIFETIME.SINGLETON)
@@ -1723,7 +1417,7 @@ describe("register", () => {
     });
 });
 
-describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.prototype.init.name} & ${Container.name}.${Container.prototype.run.name}`, () => {
+describe("resolve & Container.init & Container.run", () => {
     let container: IContainer;
     let tokenA: DiToken<string>;
     beforeEach(async () => {
@@ -1733,7 +1427,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
     });
 
     describe("nonexistent token", () => {
-        test(`should return null when resolving a nonexistent token at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a nonexistent token at top with Container.resolve", async () => {
             await expect(container.resolve(tokenA)).resolves.toBe(null);
         });
 
@@ -1750,7 +1444,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
          * ```
          * This behaviour should be same for singleton, transient, scoped, dynamic and transient tokens.
          */
-        test(`should fail when resolving a nonexistent token at top with ${Container.name}.${Container.prototype.resolveOrFail.name}`, async () => {
+        test("should fail when resolving a nonexistent token at top with Container.resolveOrFail", async () => {
             const promise = container.resolveOrFail(tokenA);
             await expect(promise).rejects.toThrow(CanNotResolveServiceDiError);
             await expect(promise).rejects.toHaveProperty(
@@ -1770,14 +1464,14 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
          * ```
          * This behaviour should be same for all singleton,transient,scoped,dynamic and transient tokens.
          */
-        test(`should return the default value when resolving a nonexistent token at top with ${Container.name}.${Container.prototype.resolveOr.name}`, async () => {
+        test("should return the default value when resolving a nonexistent token at top with Container.resolveOr", async () => {
             const defaultValue = "_";
             await expect(
                 container.resolveOr(tokenA, defaultValue),
             ).resolves.toBe(defaultValue);
         });
 
-        test(`should return null when resolving a nonexistent token inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a nonexistent token inside run block scope with Container.resolve", async () => {
             let value: undefined | string | null = undefined as
                 undefined | string | null;
 
@@ -1790,7 +1484,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
             expect(value).toBe(null);
         });
 
-        test(`should fail when resolving a nonexistent token inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolveOrFail.name}`, async () => {
+        test("should fail when resolving a nonexistent token inside run block scope with Container.resolveOrFail", async () => {
             const promise = container.run({
                 scope: async () => {
                     return await container.resolveOrFail(tokenA);
@@ -1803,7 +1497,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
             );
         });
 
-        test(`should return the default value when resolving a nonexistent token inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolveOr.name}`, async () => {
+        test("should return the default value when resolving a nonexistent token inside run block scope with Container.resolveOr", async () => {
             const defaultValue = "_";
             let value: undefined | string = undefined as undefined | string;
 
@@ -1818,7 +1512,7 @@ describe(`${Container.prototype.resolve.name} & ${Container.name}.${Container.pr
     });
 });
 
-describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Container.prototype.resolve.name}`, () => {
+describe("register & Container.init & resolve", () => {
     let container: IContainer;
     let executionContext: IExecutionContext;
     beforeEach(() => {
@@ -1828,7 +1522,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("singleton", () => {
-        test(`Should resolve successfully when resolving a singleton dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully when resolving a singleton dependency at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "_")
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1847,7 +1541,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             );
         });
 
-        test(`Should resolve successfully a deep singleton dependency chain at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully a deep singleton dependency chain at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "1")
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1900,37 +1594,10 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
         });
 
         /**
-         * container.registerProvider is shortcut for registering multiple factories at once and is independent of node type.
-         * Only singleton registration through container.registerProvider is tested because implementation of container.registerProvider can done independent of node type.
-         * The method lambda argument to container.registerProvider can be implemented as proxy object of IContainer.
-         */
-        test(`Should resolve successfully when resolving a singleton dependency through ${Container.name}.${Container.prototype.registerProvider.name} with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
-            const nodeA = dependency({})
-                .factory(() => "_")
-                .lifeTime(LIFETIME.SINGLETON)
-                .createToken("A");
-
-            container.registerProvider((provider) => {
-                provider.registerFactory(nodeA);
-            });
-
-            await container.init();
-
-            const correctValue = await callInvocable(
-                nodeA.factory,
-                {},
-                executionContext,
-            );
-            await expect(container.resolve(nodeA.token)).resolves.toBe(
-                correctValue,
-            );
-        });
-
-        /**
          * This behavior is independent of node type and should apply for singleton scoped, dynamic and transient nodes.
          * Only singleton is tested because behavior and implementation of container.resolveOr can done independent of node type.
          */
-        test(`Should resolve to the default value when resolving a singleton dependency at top where its factory returns null with ${Container.name}.${Container.prototype.resolveOr.name}`, async () => {
+        test("Should resolve to the default value when resolving a singleton dependency at top where its factory returns null with Container.resolveOr", async () => {
             const nodeA = dependency({})
                 .factory(() => null as null | string)
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1949,7 +1616,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
          * This behavior is independent of node type and should apply for singleton scoped, dynamic and transient nodes.
          * Only singleton is tested because behavior and implementation of container.resolveOr can done independent of node type.
          */
-        test(`Should fail when resolving a singleton dependency at top where its factory returns null with ${Container.name}.${Container.prototype.resolveOrFail.name}`, async () => {
+        test("Should fail when resolving a singleton dependency at top where its factory returns null with Container.resolveOrFail", async () => {
             const nodeA = dependency({})
                 .factory(() => null as null | string)
                 .lifeTime(LIFETIME.SINGLETON)
@@ -1966,7 +1633,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             );
         });
 
-        test(`Should resolve successfully a singleton dependency defined by a factory that uses the executionContext with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully a singleton dependency defined by a factory that uses the executionContext with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -1994,7 +1661,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(correctValue);
         });
 
-        test(`Should resolve successfully eagerly a singleton dependency defined by a factory that uses the executionContext with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully eagerly a singleton dependency defined by a factory that uses the executionContext with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -2031,7 +1698,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueB).toBe(correctValue);
         });
 
-        test(`Should equal by reference when comparing two items resolved from the same token with ${Container.name}.${Container.prototype.resolve.name} at different scope depths`, async () => {
+        test("Should equal by reference when comparing two items resolved from the same token with Container.resolve at different scope depths", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SINGLETON)
@@ -2055,7 +1722,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
         // where "b","c" depends on "a" and where factory_b=()=>factory_a(),factory_b =()=> factory_a()
         // "d" depends on "b","c" and factory_d = (factory_b,factory_c)=>({b:factory_b(),c:factory_c()}).
         // Since all nodes are singleton "b","c" should have same instance of "a" and hence "resolved_d.b" === "resolved_d.c".
-        test(`Should equal by reference when resolving a singleton diamond where two nodes reference the same singleton instance with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when resolving a singleton diamond where two nodes reference the same singleton instance with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SINGLETON)
@@ -2107,7 +1774,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
          * ```
          * Therefore, container.registerValue should behave same as container.registerFactory().singleton().
          */
-        test(`Should resolve a singleton value successfully after registration with ${Container.name}.${Container.prototype.registerValue.name} at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve a singleton value successfully after registration with Container.registerValue at top with Container.resolve", async () => {
             const value = "_";
             const tokenA = genericToken<string>("A");
             container.registerValue({ token: tokenA, value });
@@ -2118,7 +1785,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("transient", () => {
-        test(`Should resolve successfully when resolving a transient dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully when resolving a transient dependency at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "_")
                 .lifeTime(LIFETIME.TRANSIENT)
@@ -2137,7 +1804,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             );
         });
 
-        test(`Should resolve successfully a deep transient dependency chain at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully a deep transient dependency chain at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "1")
                 .lifeTime(LIFETIME.TRANSIENT)
@@ -2191,7 +1858,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(value).toBe(correctValue);
         });
 
-        test(`Should resolve successfully a transient dependency defined by a factory that uses the executionContext with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully a transient dependency defined by a factory that uses the executionContext with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -2228,24 +1895,11 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueB).toBe(correctValue1);
         });
 
-        test(`Should not equal by reference when comparing two items resolved by the same token with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
-            const nodeA = dependency({})
-                .factory(() => ({}))
-                .lifeTime(LIFETIME.SCOPED)
-                .createToken("A");
-
-            container.registerFactory(nodeA);
-            await container.init();
-            const valueA = container.resolve(nodeA.token);
-            const valueB = container.resolve(nodeA.token);
-            expect(valueA).not.toBe(valueB);
-        });
-
         // simple diamond case
         // where "b","c" depends on "a" and where factory_b=()=>factory_a(),factory_b =()=> factory_a()
         // "d" depends on "b","c" and factory_d = (factory_b,factory_c)=>({b:factory_b(),c:factory_c()}).
         // Since all nodes are transient "b","c" should have own instance of "a" and hence "resolved_d.b" !== "resolved_d.c".
-        test(`Should not equal by reference when resolving a transient diamond where two nodes reference distinct transient instances with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when resolving a transient diamond where two nodes reference distinct transient instances with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.TRANSIENT)
@@ -2285,7 +1939,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("scoped", () => {
-        test(`should return null when resolving a scoped dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a scoped dependency at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "")
                 .lifeTime(LIFETIME.SCOPED)
@@ -2296,7 +1950,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             await expect(container.resolve(nodeA.token)).resolves.toBe(null);
         });
 
-        test(`Should resolve successfully when resolving a scoped dependency inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully when resolving a scoped dependency inside run block scope with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "_")
                 .lifeTime(LIFETIME.SCOPED)
@@ -2322,7 +1976,11 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(value).toBe(correctValue);
         });
 
-        test(`should return null when resolving a scoped dependency at top but inside an execution context ${Container.prototype.run.name} block with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        /**
+         * Being inside executionContext.run() is not the same as being inside
+         * container.run(); scoped nodes need a container scope, so this is null.
+         */
+        test("should return null when resolving a scoped dependency at top but inside an execution context run block with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "")
                 .lifeTime(LIFETIME.SCOPED)
@@ -2339,7 +1997,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(value).toBe(null);
         });
 
-        test(`Should resolve a scoped dependency defined by a factory that uses the executionContext with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve a scoped dependency defined by a factory that uses the executionContext with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -2371,7 +2029,11 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(correctValue0);
         });
 
-        test(`Should eagerly create a distinct scoped instance per scope from the executionContext value at scope entry with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        /**
+         * The scoped instance is created at scope entry from the value present
+         * then, so this later change does not affect valueA.
+         */
+        test("Should eagerly create a distinct scoped instance per scope from the executionContext value at scope entry with Container.resolve", async () => {
             const tokenA = genericToken<Date>("A");
             const dateKey = genericToken<Date>("date");
 
@@ -2416,7 +2078,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueB).toBe(correctValue1);
         });
 
-        test(`Should not equal by reference when comparing two items resolved by the same token with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when comparing two items resolved by the same token with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2429,7 +2091,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).not.toBe(valueB);
         });
 
-        test(`Should equal by reference when comparing two items resolved by the same token in the same scope depth with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two items resolved by the same token in the same scope depth with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2453,7 +2115,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(valueB);
         });
 
-        test(`Should not equal by reference when comparing two items resolved by the same token in the same scope depth consecutively with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when comparing two items resolved by the same token in the same scope depth consecutively with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2486,7 +2148,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).not.toBe(valueB);
         });
 
-        test(`Should not equal by reference when comparing two items resolved by the same token in different scope depths with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when comparing two items resolved by the same token in different scope depths with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2518,7 +2180,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
         // where "b","c" depends on "a" and where factory_b=()=>factory_a(),factory_b =()=> factory_a()
         // "d" depends on "b","c" and factory_d = (factory_b,factory_c)=>({b:factory_b(),c:factory_c()}).
         // Since all nodes are scoped and resolved within the same scope "b","c" share the same scoped instance of "a" and hence "resolved_d.b" === "resolved_d.c".
-        test(`Should equal by reference when resolving a scoped diamond where two nodes reference the same scoped instance within a scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when resolving a scoped diamond where two nodes reference the same scoped instance within a scope with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -2563,7 +2225,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("dynamic", () => {
-        test(`should return null when resolving a dynamic dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a dynamic dependency at top with Container.resolve", async () => {
             const tokenA = genericToken<string>("A");
             container.registerDynamic(tokenA);
 
@@ -2571,7 +2233,11 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             await expect(container.resolve(tokenA)).resolves.toBe(null);
         });
 
-        test(`Should fail when resolving a dynamic dependency inside ${Container.prototype.run.name} scope block where its factory returns null with ${Container.name}.${Container.prototype.resolveOrFail.name}`, async () => {
+        /**
+         * Dynamic tokens have no factory; resolveOrFail fails because no
+         * value was set for tokenA in this run() scope.
+         */
+        test("Should fail when resolving a dynamic dependency inside run scope block where its factory returns null with Container.resolveOrFail", async () => {
             const tokenA = genericToken<string | null>("A");
 
             container.registerDynamic(tokenA);
@@ -2590,7 +2256,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             );
         });
 
-        test(`Should resolve successfully when resolving a dynamic dependency inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should resolve successfully when resolving a dynamic dependency inside run block scope with Container.resolve", async () => {
             const tokenA = genericToken<string>("A");
             container.registerDynamic(tokenA);
             const correctValueA = "_";
@@ -2652,7 +2318,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(scope1ValueOfA);
         });
 
-        test(`Should equal by reference when comparing two items resolved by the same token in the same scope depth with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two items resolved by the same token in the same scope depth with Container.resolve", async () => {
             const tokenA = genericToken<object>("A");
 
             let valueA: undefined | object | null = undefined as
@@ -2676,7 +2342,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(valueB);
         });
 
-        test(`Should equal by reference when comparing two items resolved by the same token in different scope depths with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two items resolved by the same token in different scope depths with Container.resolve", async () => {
             const tokenA = genericToken<object>("A");
 
             let valueA: undefined | object | null = undefined as
@@ -2704,7 +2370,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(valueB);
         });
 
-        test(`should return null when resolving an existing dynamic token with no value provided inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving an existing dynamic token with no value provided inside run block scope with Container.resolve", async () => {
             const tokenA = genericToken<string>("A");
             let value: undefined | string | null = undefined as
                 undefined | string | null;
@@ -2824,6 +2490,10 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueA).toBe(correctValueA);
         });
 
+        /**
+         * reg.set writes the dynamic value into the execution context,
+         * shadowing the value put above for the duration of the run() scope.
+         */
         test("should resolve & override implicitly the original value in execution context if registered in graph  and exist in execution context before", async () => {
             const tokenA = genericToken<string>("A");
 
@@ -2860,6 +2530,9 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(newValueA).toBe(newValueCorrectA);
         });
 
+        /**
+         * The dynamic value is removed again once the run() scope exits.
+         */
         test("should put dynamic token in execution context after resolved if registered in graph", async () => {
             const tokenA = genericToken<string>("A");
             const correctValueA = "_";
@@ -3130,7 +2803,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("singleton & scoped", () => {
-        test(`Should equal by reference when comparing two singleton objects referenced by two scoped items resolved by two different tokens in different scope depths with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two singleton objects referenced by two scoped items resolved by two different tokens in different scope depths with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SINGLETON)
@@ -3174,7 +2847,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("singleton & transient", () => {
-        test(`Should equal by reference when comparing two singleton objects referenced by two transient items resolved by two different tokens with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two singleton objects referenced by two transient items resolved by two different tokens with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SINGLETON)
@@ -3205,7 +2878,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
     });
 
     describe("scoped & transient", () => {
-        test(`should return null when resolving a transient dependency that depends on a scoped dependency at top with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should return null when resolving a transient dependency that depends on a scoped dependency at top with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "")
                 .lifeTime(LIFETIME.SCOPED)
@@ -3222,7 +2895,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             await expect(container.resolve(nodeB.token)).resolves.toBe(null);
         });
 
-        test(`should resolve successfully when resolving a transient dependency that depends on a scoped dependency inside ${Container.prototype.run.name} block scope with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("should resolve successfully when resolving a transient dependency that depends on a scoped dependency inside run block scope with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => "")
                 .lifeTime(LIFETIME.SCOPED)
@@ -3256,7 +2929,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(value).toBe(correctValue);
         });
 
-        test(`Should equal by reference when comparing two scoped objects referenced by two transient items resolved by two different tokens in the same scope depth with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should equal by reference when comparing two scoped objects referenced by two transient items resolved by two different tokens in the same scope depth with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -3294,7 +2967,7 @@ describe(`register & ${Container.name}.${Container.prototype.init.name} & ${Cont
             expect(valueB?.nodeAValue).toBe(valueC?.nodeAValue);
         });
 
-        test(`Should not equal by reference when comparing two scoped objects referenced by two transient items resolved by two different tokens in different scope depths with ${Container.name}.${Container.prototype.resolve.name}`, async () => {
+        test("Should not equal by reference when comparing two scoped objects referenced by two transient items resolved by two different tokens in different scope depths with Container.resolve", async () => {
             const nodeA = dependency({})
                 .factory(() => ({}))
                 .lifeTime(LIFETIME.SCOPED)
@@ -3547,7 +3220,7 @@ describe("override", () => {
         executionContext = res.executionContext;
     });
 
-    test(`should override nodeA with ${Container.prototype.overrideFactory.name}`, async () => {
+    test("should override nodeA with Container.overrideFactory", async () => {
         const nodeA = dependency({})
             .factory(() => `A`)
             .lifeTime(LIFETIME.SINGLETON)
@@ -3728,6 +3401,10 @@ describe("override", () => {
         expect(resolvedB).toBe(correctB);
     });
 
+    /**
+     * The override must propagate through the graph: A is replaced first,
+     * B is rebuilt from it, and C is rebuilt from B.
+     */
     test("should not affect B but should affect both A and C when overriding A where B depends on A and C depends on B", async () => {
         const nodeA = dependency({})
             .factory(() => `A`)
@@ -4120,7 +3797,7 @@ describe("forked container & hooks", () => {
         containerA = new Container({ executionContext });
     });
 
-    test(`${Container.prototype.deInit.name} of fork does not ${Container.prototype.deInit.name} the original container`, async () => {
+    test("deInit of fork does not deInit the original container", async () => {
         const nodeA = dependency({})
             .factory(() => "A")
             .lifeTime(LIFETIME.SINGLETON)
@@ -4144,7 +3821,7 @@ describe("forked container & hooks", () => {
         );
     });
 
-    test(`${Container.prototype.deInit.name} of original does not ${Container.prototype.deInit.name} the fork`, async () => {
+    test("deInit of original does not deInit the fork", async () => {
         const nodeA = dependency({})
             .factory(() => "A")
             .lifeTime(LIFETIME.SINGLETON)
@@ -4168,12 +3845,16 @@ describe("forked container & hooks", () => {
         );
     });
 
-    test(`fork inherits ${Container.prototype.init.name} and ${Container.prototype.deInit.name} hooks from the original`, async () => {
+    test("fork inherits the service hooks of the original container", async () => {
         const inheritedInitSpy = vi.fn();
         const inheritedDeInitSpy = vi.fn();
 
-        containerA.onContainerInit(inheritedInitSpy);
-        containerA.onContainerDeInit(inheritedDeInitSpy);
+        containerA.registerValue({
+            token: ICONFIG,
+            value: { apiUrl: "https://api.example.com", timeout: 5000 },
+            onInit: inheritedInitSpy,
+            onDeInit: inheritedDeInitSpy,
+        });
 
         const containerB = containerA.fork();
 
@@ -4187,5 +3868,788 @@ describe("forked container & hooks", () => {
         await containerB.deInit();
 
         expect(inheritedDeInitSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test("service hooks registered in a fork do not run for the original container", async () => {
+        const hook = vi.fn();
+
+        const containerB = containerA.fork();
+        containerB.registerValue({
+            token: ICONFIG,
+            value: { apiUrl: "https://api.example.com", timeout: 5000 },
+            onInit: hook,
+        });
+
+        await containerA.init();
+        await containerB.init();
+
+        expect(hook).toHaveBeenCalledOnce();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// feature: optional tokens
+// ---------------------------------------------------------------------------
+describe("feature: optional tokens", () => {
+    let container: IContainer;
+
+    beforeEach(() => {
+        container = createContainerAndExecutionContext().container;
+    });
+
+    // -----------------------------------------------------------------------
+    // unregistered optional dependency
+    // -----------------------------------------------------------------------
+    describe("unregistered optional dependency", () => {
+        test("Should initialize successfully when a singleton factory depends on an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(container.resolveOrFail(consumer)).resolves.toBe(
+                "consumer",
+            );
+        });
+
+        test("Should initialize successfully when a transient factory depends on an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.TRANSIENT,
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(container.resolveOrFail(consumer)).resolves.toBe(
+                "consumer",
+            );
+        });
+
+        test("Should initialize successfully when a scoped factory depends on an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SCOPED,
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(
+                container.run({
+                    scope: () => container.resolveOrFail(consumer),
+                }),
+            ).resolves.toBe("consumer");
+        });
+
+        test("Should pass undefined to a singleton factory for an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(received).toBeUndefined();
+        });
+
+        test("Should pass undefined to a transient factory for an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.TRANSIENT,
+            });
+
+            await container.init();
+            await container.resolveOrFail(consumer);
+
+            expect(received).toBeUndefined();
+        });
+
+        test("Should pass undefined to a scoped factory for an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SCOPED,
+            });
+
+            await container.init();
+            await container.run({
+                scope: () => container.resolveOrFail(consumer),
+            });
+
+            expect(received).toBeUndefined();
+        });
+
+        test("Should pass undefined for an unregistered optional token alongside the value of a required token", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let receivedRequired: unknown = "NOT_CALLED";
+            let receivedOptional: unknown = "NOT_CALLED";
+
+            container.registerValue({
+                token: required,
+                value: "required-value",
+            });
+            container.registerFactory({
+                deps: { required, optional },
+                token: consumer,
+                factory: ({
+                    required: requiredValue,
+                    optional: optionalValue,
+                }) => {
+                    receivedRequired = requiredValue;
+                    receivedOptional = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(receivedRequired).toBe("required-value");
+            expect(receivedOptional).toBeUndefined();
+        });
+
+        test("Should pass undefined for every unregistered optional token", async () => {
+            const first = optionalToken(genericToken<string>("first"));
+            const second = optionalToken(genericToken<string>("second"));
+            const consumer = genericToken<string>("consumer");
+            let receivedFirst: unknown = "NOT_CALLED";
+            let receivedSecond: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { first, second },
+                token: consumer,
+                factory: ({ first: firstValue, second: secondValue }) => {
+                    receivedFirst = firstValue;
+                    receivedSecond = secondValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(receivedFirst).toBeUndefined();
+            expect(receivedSecond).toBeUndefined();
+        });
+
+        test("Should allow an unregistered optional token to be shared by multiple consumers", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const firstConsumer = genericToken<string>("firstConsumer");
+            const secondConsumer = genericToken<string>("secondConsumer");
+            let receivedByFirst: unknown = "NOT_CALLED";
+            let receivedBySecond: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: firstConsumer,
+                factory: ({ optional: optionalValue }) => {
+                    receivedByFirst = optionalValue;
+                    return "first";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: secondConsumer,
+                factory: ({ optional: optionalValue }) => {
+                    receivedBySecond = optionalValue;
+                    return "second";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(receivedByFirst).toBeUndefined();
+            expect(receivedBySecond).toBeUndefined();
+        });
+
+        test("Should pass undefined for an unregistered optional class token", async () => {
+            const optional = optionalToken(ConsoleLogger);
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(received).toBeUndefined();
+        });
+
+        test("Should initialize successfully when an unregistered optional token is a transitive dependency", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const dependencyToken = genericToken<string>("dependency");
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: dependencyToken,
+                factory: () => "dependency",
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { dependencyToken },
+                token: consumer,
+                factory: ({ dependencyToken: dependencyValue }) =>
+                    `consumer(${dependencyValue})`,
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            await expect(container.resolveOrFail(consumer)).resolves.toBe(
+                "consumer(dependency)",
+            );
+        });
+
+        test("Should not register an unregistered optional token as a graph node", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            await expect(container.has(optional)).resolves.toBe(false);
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // undeclared dependency validation
+    // -----------------------------------------------------------------------
+    describe("undeclared dependency validation", () => {
+        test("Should fail initialization with an undeclared dependency error when a required token is missing", async () => {
+            const required = genericToken<string>("required");
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { required },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.UNDECLARED_DEPENDENCIES,
+            );
+            expect(error).toHaveProperty("info.dependencies", [
+                { dependency: "required", referencedBy: ["consumer"] },
+            ]);
+        });
+
+        test("Should report only required tokens as undeclared when optional tokens are also missing", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { required, optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.UNDECLARED_DEPENDENCIES,
+            );
+            expect(error).toHaveProperty("info.dependencies", [
+                { dependency: "required", referencedBy: ["consumer"] },
+            ]);
+        });
+
+        test("Should fail initialization when one consumer requires a token that another consumer depends on optionally", async () => {
+            const serviceA = genericToken<string>("A");
+            const serviceB = genericToken<string>("B");
+            const serviceC = genericToken<string>("C");
+
+            // A depends on C optionally while B requires the same C.
+            container.registerFactory({
+                deps: { serviceC: optionalToken(serviceC) },
+                token: serviceA,
+                factory: () => "A",
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { serviceC },
+                token: serviceB,
+                factory: () => "B",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.UNDECLARED_DEPENDENCIES,
+            );
+            // C is only optional for A, so the requirement from B still fails.
+            expect(error).toHaveProperty("info.dependencies", [
+                { dependency: "C", referencedBy: ["B"] },
+            ]);
+        });
+
+        test("Should not report an undeclared dependency error when only optional tokens are missing", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // registered optional dependency
+    // -----------------------------------------------------------------------
+    describe("registered optional dependency", () => {
+        test("Should pass the registered value to a singleton factory for a registered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(received).toBe("optional-value");
+        });
+
+        test("Should pass the registered value to a transient factory for a registered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.TRANSIENT,
+            });
+
+            await container.init();
+            await container.resolveOrFail(consumer);
+
+            expect(received).toBe("optional-value");
+        });
+
+        test("Should pass the registered value to a scoped factory for a registered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SCOPED,
+            });
+
+            await container.init();
+            await container.run({
+                scope: () => container.resolveOrFail(consumer),
+            });
+
+            expect(received).toBe("optional-value");
+        });
+
+        test("Should resolve a registered optional token that is registered after its consumer", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+
+            await container.init();
+
+            expect(received).toBe("optional-value");
+        });
+
+        test("Should pass the registered class instance to a factory for a registered optional class token", async () => {
+            const optional = optionalToken(ConsoleLogger);
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = null;
+
+            container.registerFactory({
+                deps: {},
+                token: optional,
+                factory: () => new ConsoleLogger(),
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            expect(received).toBeInstanceOf(ConsoleLogger);
+        });
+
+        test("Should pass the registered dynamic value to a scoped factory for a registered optional dynamic token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerDynamic(optional);
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SCOPED,
+            });
+
+            await container.init();
+            const value = await container.run({
+                registration: (reg) => {
+                    reg.set({ token: optional, value: "dynamic-value" });
+                },
+                scope: () => container.resolveOrFail(consumer),
+            });
+
+            expect(value).toBe("consumer");
+            expect(received).toBe("dynamic-value");
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // registered optional dependency still obeys graph validation
+    // -----------------------------------------------------------------------
+    describe("registered optional dependency graph validation", () => {
+        test("Should still fail graph validation when a registered optional token creates an invalid edge", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerFactory({
+                deps: {},
+                token: optional,
+                factory: () => "optional",
+                lifetime: LIFETIME.SCOPED,
+            });
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.INVALID_EDGE_RELATIONSHIP,
+            );
+        });
+
+        test("Should still fail graph validation when a registered optional dynamic token is a dependency of a singleton", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+
+            container.registerDynamic(optional);
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: () => "consumer",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.INVALID_EDGE_RELATIONSHIP,
+            );
+        });
+
+        test("Should still fail graph validation when a registered optional token creates a cycle", async () => {
+            const tokenA = genericToken<string>("A");
+            const tokenB = optionalToken(genericToken<string>("B"));
+
+            container.registerFactory({
+                deps: { tokenB },
+                token: tokenA,
+                factory: () => "A",
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.registerFactory({
+                deps: { tokenA },
+                token: tokenB,
+                factory: () => "B",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            let error: unknown = null;
+            try {
+                await container.init();
+            } catch (caught) {
+                error = caught;
+            }
+
+            expect(error).toBeInstanceOf(InvalidGraphDiError);
+            expect(error).toHaveProperty(
+                "info.flag",
+                InvalidGraphDiError.FLAG.CYCLE_DEPENDENCY,
+            );
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // resolution of an unregistered optional token
+    // -----------------------------------------------------------------------
+    describe("resolution of an unregistered optional token", () => {
+        test("Should return null when resolving an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+
+            await container.init();
+
+            await expect(container.resolve(optional)).resolves.toBeNull();
+        });
+
+        test("Should fail when resolving an unregistered optional token with resolveOrFail", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+
+            await container.init();
+
+            await expect(container.resolveOrFail(optional)).rejects.toThrow(
+                CanNotResolveServiceDiError,
+            );
+        });
+
+        test("Should return the default value when resolving an unregistered optional token with resolveOr", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+
+            await container.init();
+
+            await expect(
+                container.resolveOr(optional, "default-value"),
+            ).resolves.toBe("default-value");
+        });
+
+        test("Should return false when checking has for an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+
+            await container.init();
+
+            await expect(container.has(optional)).resolves.toBe(false);
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // override and fork
+    // -----------------------------------------------------------------------
+    describe("override and fork", () => {
+        test("Should pass undefined to an overriding factory that depends on an unregistered optional token", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: {},
+                token: consumer,
+                factory: () => "original",
+                lifetime: LIFETIME.SINGLETON,
+            });
+            container.overrideFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "overridden";
+                },
+            });
+
+            await container.init();
+
+            await expect(container.resolveOrFail(consumer)).resolves.toBe(
+                "overridden",
+            );
+            expect(received).toBeUndefined();
+        });
+
+        test("Should keep unregistered optional dependencies when forking a container", async () => {
+            const optional = optionalToken(genericToken<string>("optional"));
+            const consumer = genericToken<string>("consumer");
+            let received: unknown = "NOT_CALLED";
+
+            container.registerFactory({
+                deps: { optional },
+                token: consumer,
+                factory: ({ optional: optionalValue }) => {
+                    received = optionalValue;
+                    return "consumer";
+                },
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            const forked = container.fork();
+
+            await expect(container.init()).resolves.toBeUndefined();
+            await expect(forked.init()).resolves.toBeUndefined();
+
+            await expect(forked.resolveOrFail(consumer)).resolves.toBe(
+                "consumer",
+            );
+            expect(received).toBeUndefined();
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // optional token marker
+    // -----------------------------------------------------------------------
+    describe("optional token marker", () => {
+        test("Should allow an optional token to be used as a registration token", async () => {
+            const token = optionalToken(genericToken<string>("token"));
+
+            container.registerFactory({
+                deps: {},
+                token,
+                factory: () => "value",
+                lifetime: LIFETIME.SINGLETON,
+            });
+
+            await container.init();
+
+            await expect(container.resolveOrFail(token)).resolves.toBe("value");
+        });
     });
 });

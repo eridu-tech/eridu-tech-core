@@ -9,12 +9,15 @@ import {
 import { INTERNAL_LIFETIME } from "@/di/implementations/eager/_shared.js";
 import {
     findAllCycles,
-    getMissingNodes as getMissingDependencies,
+    getMissingNodes,
     getInvalidEdges,
     visitedNodes,
 } from "@/di/implementations/eager/graph-algorithms.js";
 import { Graph } from "@/di/implementations/eager/graph.js";
-import { tokenToString } from "@/di/implementations/eager/utils.js";
+import {
+    isOptionalToken,
+    tokenToString,
+} from "@/di/implementations/eager/utils.js";
 import { UnexpectedError } from "@/utilities/errors.js";
 
 import type {
@@ -23,9 +26,9 @@ import type {
     FactoryRegistration,
     ServiceFactory,
     DepsTokens,
-    FactoryRegistrationOverride,
+    FactoryRegistrationBase,
     DepRecord,
-    EmptyDepRecord,
+    EmptyRecord,
 } from "@/di/contracts/_module-exports.js";
 import type {
     NodeProps,
@@ -153,6 +156,37 @@ export type GraphValidationStatus =
       };
 
 /**
+ * Settings used to construct a {@link GraphManager}.
+ * @internal
+ */
+export type GraphManagerSettings = {
+    /** The graph to manage. A new empty graph is created when omitted. */
+    graph?: Graph<NodeProps, EdgeProps>;
+    /** Tokens that have already been overridden. */
+    overrideSet?: Set<Node>;
+    /** Maximum number of invalid edges to include in validation errors. */
+    maxInvalidEdgeInError?: number;
+    /** Maximum number of cycles to include in validation errors. */
+    maxCyclesInError?: number;
+    /** Maximum number of undeclared dependencies to include in validation errors. */
+    maxUndeclaredDependenciesInError?: number;
+};
+
+/**
+ * Parameters for {@link GraphManager.depsToEdges}.
+ * @internal
+ */
+export type DepsToEdgesArgs<
+    TDeps extends DepRecord = EmptyRecord,
+    TRegisteredType = unknown,
+> = {
+    /** The token that owns the dependencies. */
+    token: DiToken<TRegisteredType>;
+    /** The dependency tokens to convert into graph edges. */
+    deps: DepsTokens<TDeps>;
+};
+
+/**
  * @internal
  */
 export class GraphManager {
@@ -162,13 +196,7 @@ export class GraphManager {
     private readonly maxCyclesInError?: number;
     private readonly maxUndeclaredDependenciesInError?: number;
 
-    constructor(args?: {
-        graph?: Graph<NodeProps, EdgeProps>;
-        overrideSet?: Set<Node>;
-        maxInvalidEdgeInError?: number;
-        maxCyclesInError?: number;
-        maxUndeclaredDependenciesInError?: number;
-    }) {
+    constructor(args?: GraphManagerSettings) {
         this.graph = args?.graph ?? new Graph<NodeProps, EdgeProps>();
         this.maxInvalidEdgeInError = args?.maxInvalidEdgeInError;
         this.maxCyclesInError = args?.maxCyclesInError;
@@ -192,16 +220,30 @@ export class GraphManager {
         return graphManagerCopy;
     }
 
-    validateGraph(): GraphValidationStatus {
-        const declaredNodes = this.nodes().filter((node) =>
-            this.hasNodeProperty(node),
-        );
-        const getSuccessor = (node: Node) => this.getSuccessorsOf(node);
+    /**
+     * All nodes that carry a registration property.
+     *
+     * A node without a property is only a placeholder created as the target of
+     * an edge to a dependency that was never registered; it is not a
+     * registration itself.
+     */
+    declaredNodes(): Array<Node> {
+        return this.nodes().filter((node) => this.hasNodeProperty(node));
+    }
 
-        const missing = getMissingDependencies({
-            getSuccessor,
+    private declaredSuccessorsOf(node: Node): Array<Node> {
+        return this.getSuccessorsOf(node).filter((successor) =>
+            this.hasNodeProperty(successor),
+        );
+    }
+
+    validateGraph(): GraphValidationStatus {
+        const declaredNodes = this.declaredNodes();
+
+        const missing = getMissingNodes({
+            getSuccessor: (node) => this.getSuccessorsOf(node),
             nodes: declaredNodes,
-        });
+        }).filter((item) => !isOptionalToken(item.missingDependency));
 
         if (missing.length !== 0) {
             return {
@@ -261,7 +303,7 @@ export class GraphManager {
         }
 
         const cycles = findAllCycles({
-            getSuccessor,
+            getSuccessor: (node) => this.getSuccessorsOf(node),
             nodes: declaredNodes,
         });
 
@@ -279,9 +321,9 @@ export class GraphManager {
     }
 
     private depsToEdges<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
-    >(args: { token: DiToken<TRegisteredType>; deps: DepsTokens<TDeps> }) {
+    >(args: DepsToEdgesArgs<TDeps, TRegisteredType>) {
         const keys = Object.keys(args.deps);
 
         const edges: Array<[Edge, EdgeProps]> = keys.map((key) => {
@@ -292,23 +334,21 @@ export class GraphManager {
                 );
             }
 
-            return [[args.token, diDependencyToken], { argIndex: key }];
+            return [[args.token, diDependencyToken], { arg: key }];
         });
 
         return edges;
     }
 
     registerFactory<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(settings: FactoryRegistration<TDeps, TRegisteredType>): void {
-        const factory = settings.factory;
-
         const edges = this.depsToEdges(settings);
 
         this.setNodeProperty(settings.token, {
             lifetime: settings.lifetime,
-            service: factory as ServiceFactory<DepRecord>,
+            service: settings.factory as ServiceFactory<DepRecord>,
         });
 
         edges.forEach(([edge, value]) => {
@@ -323,10 +363,10 @@ export class GraphManager {
     }
 
     overrideFactory<
-        TDeps extends DepRecord = EmptyDepRecord,
+        TDeps extends DepRecord = EmptyRecord,
         TRegisteredType = unknown,
     >(
-        settings: FactoryRegistrationOverride<TDeps, TRegisteredType>,
+        settings: FactoryRegistrationBase<TDeps, TRegisteredType>,
     ):
         | { success: true }
         | { success: false; error: CanNotOverrideServiceDiError } {
@@ -398,7 +438,7 @@ export class GraphManager {
             throw new UnexpectedError("Expected node to be transient");
         }
         const nodesVisited = visitedNodes({
-            getNeighbors: (node) => this.getSuccessorsOf(node),
+            getNeighbors: (node) => this.declaredSuccessorsOf(node),
             breakBranchSearch: (node) => {
                 return this.getLifespan(node) === INTERNAL_LIFETIME.SCOPED;
             },
@@ -421,7 +461,7 @@ export class GraphManager {
             throw new UnexpectedError("Expected node to be scoped");
         }
         const nodesVisited = visitedNodes({
-            getNeighbors: (node) => this.getSuccessorsOf(node),
+            getNeighbors: (node) => this.declaredSuccessorsOf(node),
             node: nodeId,
         });
         const dynamicNodeVisited = nodesVisited.filter((visited) =>
@@ -431,17 +471,11 @@ export class GraphManager {
     }
 
     dependencyOf(node: Node): Array<Node> {
-        return this.getSuccessorEdgesOf(node)
-            .map((edge) => ({
-                edge,
-                property: this.getEdgePropertyOrThrow(edge),
-            }))
-            .map((item) => item.edge)
-            .map(([_, successorNode]) => successorNode);
+        return this.declaredSuccessorsOf(node);
     }
 
-    getArgKey(edge: Edge): EdgeProps["argIndex"] {
-        return this.getEdgePropertyOrThrow(edge).argIndex;
+    getArgKey(edge: Edge): EdgeProps["arg"] {
+        return this.getEdgePropertyOrThrow(edge).arg;
     }
 
     isTransient(node: Node): boolean {

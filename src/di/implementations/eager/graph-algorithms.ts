@@ -6,6 +6,74 @@ import { UnexpectedError } from "@/utilities/_module-exports.js";
 import type { UndeclaredDependencyInfo } from "@/di/contracts/container.errors.js";
 
 /**
+ * Parameters for {@link eagerInitialization}.
+ * @internal
+ */
+export type EagerInitializationArgs<T> = {
+    /** All nodes to initialize. */
+    nodeIds: Array<T>;
+    /** Returns the dependencies (successors) of a node. */
+    getSuccessors: (nodeId: T) => Array<T>;
+    /** Called once all of a node's dependencies are ready. */
+    initNode: (nodeId: T) => Promise<void> | void;
+    /** Returns the nodes that depend on a node. */
+    getPredecessors: (nodeId: T) => Array<T>;
+};
+
+/**
+ * Parameters for {@link findEffectedNodes}.
+ * @internal
+ */
+export type FindEffectedNodesArgs<T> = {
+    /** Returns the predecessors (dependents) of a node. */
+    predecessorOf: (node: T) => Array<T>;
+    /** The node whose change triggers the traversal. */
+    startNodeId: T;
+};
+
+/**
+ * Parameters for {@link visitedNodes}.
+ * @internal
+ */
+export type VisitedNodesArgs<T> = {
+    /** The node to start visiting from. */
+    node: T;
+    /** Returns the neighbors of a node to visit next. */
+    getNeighbors: (node: T) => Array<T>;
+    /**
+     * Optional predicate that stops exploring a branch when it returns
+     * `true` for the current node.
+     *
+     * Sometimes only the first node in a branch is needed, not every visited
+     * node — for example when checking whether a transient depends on a scoped
+     * node, there is no need to find all dependencies of the scoped node.
+     */
+    breakBranchSearch?: (node: T) => boolean;
+};
+
+/**
+ * A set of nodes plus an accessor for a node's successors.
+ * @internal
+ */
+export type SuccessorLookupArgs<T> = {
+    /** Returns the successors (dependencies) of a node. */
+    getSuccessor: (node: T) => Array<T>;
+    /** All nodes of the graph. */
+    nodes: Array<T>;
+};
+
+/**
+ * Parameters for {@link getInvalidEdges}.
+ * @internal
+ */
+export type GetInvalidEdgesArgs<TEdge> = {
+    /** The edges to validate. */
+    edges: Array<TEdge>;
+    /** Predicate returning `true` for an invalid edge. */
+    edgeIsNotValid: (edge: TEdge) => boolean;
+};
+
+/**
  * Kahn's Algorithm for eager initialization.
  *
  * Resolves nodes in dependency order: a node's **successors** are its
@@ -20,12 +88,9 @@ import type { UndeclaredDependencyInfo } from "@/di/contracts/container.errors.j
  * @internal
  */
 
-export async function eagerInitialization<T>(args: {
-    nodeIds: Array<T>;
-    getSuccessors: (nodeId: T) => Array<T>;
-    initNode: (nodeId: T) => Promise<void> | void;
-    getPredecessors: (nodeId: T) => Array<T>;
-}): Promise<void> {
+export async function eagerInitialization<T>(
+    args: EagerInitializationArgs<T>,
+): Promise<void> {
     const { nodeIds, getSuccessors, initNode, getPredecessors } = args;
 
     const pending = new Map<T, number>();
@@ -91,10 +156,7 @@ export async function eagerInitialization<T>(args: {
  * @returns The starting node plus every node transitively affected by it.
  * @internal
  */
-export function findEffectedNodes<T>(args: {
-    predecessorOf: (node: T) => Array<T>;
-    startNodeId: T;
-}): Array<T> {
+export function findEffectedNodes<T>(args: FindEffectedNodesArgs<T>): Array<T> {
     const effectedNodes = new Set<T>([args.startNodeId]);
     const queue = [args.startNodeId];
 
@@ -132,13 +194,7 @@ export function findEffectedNodes<T>(args: {
  * @internal
  */
 // TODO better name
-export function visitedNodes<T>(args: {
-    node: T;
-    getNeighbors: (node: T) => Array<T>;
-    // sometimes only need first node in branch and not all visted
-    // for example if checking transient depends on scoped. No need find all dependcy of scoped.
-    breakBranchSearch?: (node: T) => boolean;
-}): Array<T> {
+export function visitedNodes<T>(args: VisitedNodesArgs<T>): Array<T> {
     const { node, getNeighbors } = args;
 
     const visited = new Set<T>();
@@ -179,10 +235,9 @@ export function visitedNodes<T>(args: {
  * @returns Every detected cycle, each as the path of nodes that forms it.
  * @internal
  */
-export function findAllCycles<TNode>(args: {
-    getSuccessor: (node: TNode) => Array<TNode>;
-    nodes: Array<TNode>;
-}): Array<Array<TNode>> {
+export function findAllCycles<TNode>(
+    args: SuccessorLookupArgs<TNode>,
+): Array<Array<TNode>> {
     const { getSuccessor, nodes } = args;
 
     const WHITE = 0;
@@ -268,10 +323,9 @@ export function findAllCycles<TNode>(args: {
  * declared nodes that depend on it.
  * @internal
  */
-export function getMissingNodes<T>(args: {
-    getSuccessor: (node: T) => Array<T>;
-    nodes: Array<T>;
-}): Array<UndeclaredDependencyInfo<T>> {
+export function getMissingNodes<T>(
+    args: SuccessorLookupArgs<T>,
+): Array<UndeclaredDependencyInfo<T>> {
     const { getSuccessor, nodes } = args;
     const missingDependenciesMap = new Map<T, Array<T>>();
 
@@ -282,8 +336,7 @@ export function getMissingNodes<T>(args: {
 
     for (const node of nodes) {
         const dependent = node;
-        for (const successor of getSuccessor(dependent)) {
-            const dependency = successor;
+        for (const dependency of getSuccessor(dependent)) {
             const isUndeclaredDependency = !allNodes.has(dependency);
             if (isUndeclaredDependency) {
                 const dependents = missingDependenciesMap.get(dependency) ?? [];
@@ -298,7 +351,7 @@ export function getMissingNodes<T>(args: {
             missingDependency,
             dependents,
         }),
-    ) satisfies Array<UndeclaredDependencyInfo<T>>;
+    );
 }
 
 /**
@@ -309,10 +362,9 @@ export function getMissingNodes<T>(args: {
  * @returns The edges that are considered invalid.
  * @internal
  */
-export function getInvalidEdges<TEdge>(args: {
-    edges: Array<TEdge>;
-    edgeIsNotValid: (edge: TEdge) => boolean;
-}): Array<TEdge> {
+export function getInvalidEdges<TEdge>(
+    args: GetInvalidEdgesArgs<TEdge>,
+): Array<TEdge> {
     const { edges, edgeIsNotValid } = args;
 
     const invalidEdges = edges.filter((edge) => edgeIsNotValid(edge));

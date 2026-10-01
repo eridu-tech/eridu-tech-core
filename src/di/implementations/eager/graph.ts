@@ -7,6 +7,29 @@ import { UnexpectedError } from "@/utilities/_module-exports.js";
 import type { Node, Edge } from "@/di/implementations/eager/_shared.js";
 
 /**
+ * A node paired with its property, or `null` when it has none.
+ * @internal
+ */
+export type NodePropEntry<TNodeProp> = [Node, TNodeProp | null];
+
+/**
+ * An edge paired with its property, or `null` when it has none.
+ * @internal
+ */
+export type EdgePropEntry<TEdgeProp> = [Edge, TEdgeProp | null];
+
+/**
+ * Settings used to construct a {@link Graph}.
+ * @internal
+ */
+export type GraphSettings<TNodeProp = unknown, TEdgeProp = unknown> = {
+    /** Nodes and their properties used to seed the graph. */
+    nodeProps?: Array<NodePropEntry<TNodeProp>>;
+    /** Edges and their properties used to seed the graph. */
+    edgeProps?: Array<EdgePropEntry<TEdgeProp>>;
+};
+
+/**
  * @internal
  */
 const edgeToString = (edge: Edge): string =>
@@ -21,10 +44,7 @@ export class Graph<TNodeProp = unknown, TEdgeProp = unknown> {
     private edgeProps = new Map<Node, Map<Node, TEdgeProp | null>>();
     private reversedEdges = new Map<Node, Set<Node>>();
 
-    constructor(args?: {
-        nodeProps?: Array<[Node, TNodeProp | null]>;
-        edgeProps?: Array<[Edge, TEdgeProp | null]>;
-    }) {
+    constructor(args?: GraphSettings<TNodeProp, TEdgeProp>) {
         const nodeProps = args?.nodeProps;
         const edgeProps = args?.edgeProps;
 
@@ -76,7 +96,7 @@ export class Graph<TNodeProp = unknown, TEdgeProp = unknown> {
         return new Graph({ edgeProps, nodeProps });
     }
 
-    private throwIfDuplicateNodesFound(props: Array<[Node, TNodeProp | null]>) {
+    private throwIfDuplicateNodesFound(props: Array<NodePropEntry<TNodeProp>>) {
         const nodeSet = new Set<Node>();
         const duplicates: Array<Node> = [];
 
@@ -97,7 +117,7 @@ export class Graph<TNodeProp = unknown, TEdgeProp = unknown> {
         }
     }
 
-    private throwIfDuplicateEdgeFound(props: Array<[Edge, TEdgeProp | null]>) {
+    private throwIfDuplicateEdgeFound(props: Array<EdgePropEntry<TEdgeProp>>) {
         const edgesMap = new Map<Node, Set<Node>>();
         const duplicates: Array<Edge> = [];
 
