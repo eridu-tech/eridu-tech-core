@@ -348,7 +348,7 @@ export class GraphManager {
 
         this.setNodeProperty(settings.token, {
             lifetime: settings.lifetime,
-            service: settings.factory as ServiceFactory<DepRecord>,
+            service: settings.factory as ServiceFactory,
         });
 
         edges.forEach(([edge, value]) => {
@@ -409,7 +409,7 @@ export class GraphManager {
 
         this.graph.setNodeProperty(settings.token, {
             lifetime: nodeProps.lifetime,
-            service: factory as ServiceFactory<DepRecord>,
+            service: factory as ServiceFactory,
         });
 
         this.overrideSet.add(settings.token);
