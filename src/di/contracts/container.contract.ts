@@ -150,6 +150,10 @@ export type DepsTokens<TDeps extends DepRecord = DepRecord> = {
     [K in keyof TDeps]: DiToken<TDeps[K]>;
 };
 
+/**
+ * IMPORT_PATH: `"eridu-tech/di/contracts"`
+ * @group Contracts
+ */
 export type FactoryRegistrationBase<
     TDeps extends DepRecord = DepRecord,
     TRegisteredType = unknown,
@@ -181,6 +185,10 @@ export type ServiceHooks<TRegisteredType = unknown> = {
     onDeInit?: Invocable<[registration: TRegisteredType], Promisable<void>>;
 };
 
+/**
+ * IMPORT_PATH: `"eridu-tech/di/contracts"`
+ * @group Contracts
+ */
 export type FactoryRegistrationSingleton<
     TDeps extends DepRecord = DepRecord,
     TRegisteredType = unknown,
@@ -302,7 +310,7 @@ export type IServiceRegisterBase = {
      * @throws {@link InvalidMethodCallDiError} When called after {@link IContainer.init}.
      * @throws {@link CanNotRegisterServiceDiError} When the alias token already has a registration.
      */
-    registerAlias<TRegisteredType>(
+    registerAlias<TRegisteredType = unknown>(
         settings: AliasRegistration<TRegisteredType>,
     ): void;
 };
