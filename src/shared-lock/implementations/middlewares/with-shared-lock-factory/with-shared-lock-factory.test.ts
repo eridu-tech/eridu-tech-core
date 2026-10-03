@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/no-op-shared-lock-adapter/_module-exports.js";
-import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module-exports.js";
+import {
+    SharedLockFactory,
+    SharedLockFactoryResolver,
+} from "@/shared-lock/implementations/derivables/_module-exports.js";
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import {
     SHARED_LOCK_WHEN,
@@ -13,8 +16,9 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import type { SharedLockFactoryCreateSettings } from "@/shared-lock/contracts/_module-exports.js";
 
 describe("function: withSharedLockFactory", () => {
-    const sharedLockFactory = new SharedLockFactory({
-        adapter: new NoOpSharedLockAdapter(),
+    const sharedLockFactoryResolver = new SharedLockFactoryResolver<"memory">({
+        adapters: { memory: new NoOpSharedLockAdapter() },
+        defaultAdapter: "memory",
     });
 
     beforeEach(() => {
@@ -24,9 +28,11 @@ describe("function: withSharedLockFactory", () => {
 
     describe("When writer:", () => {
         test("Should call SharedLockFactory.create method", async () => {
-            const spy = vi.spyOn(sharedLockFactory, "create");
+            const spy = vi.spyOn(SharedLockFactory.prototype, "create");
 
-            const withSharedLock = withSharedLockFactory(sharedLockFactory);
+            const withSharedLock = withSharedLockFactory(
+                sharedLockFactoryResolver,
+            );
 
             async function fn(_value: string): Promise<void> {}
             const argValue = "value";
@@ -51,7 +57,9 @@ describe("function: withSharedLockFactory", () => {
         test("Should call SharedLock.run method", async () => {
             const spy = vi.spyOn(SharedLock.prototype, "runWriterOrFail");
 
-            const withSharedLock = withSharedLockFactory(sharedLockFactory);
+            const withSharedLock = withSharedLockFactory(
+                sharedLockFactoryResolver,
+            );
 
             async function fn(_value: string): Promise<void> {}
             const argValue = "value";
@@ -70,9 +78,11 @@ describe("function: withSharedLockFactory", () => {
     });
     describe("When reader:", () => {
         test("Should call SharedLockFactory.create method", async () => {
-            const spy = vi.spyOn(sharedLockFactory, "create");
+            const spy = vi.spyOn(SharedLockFactory.prototype, "create");
 
-            const withSharedLock = withSharedLockFactory(sharedLockFactory);
+            const withSharedLock = withSharedLockFactory(
+                sharedLockFactoryResolver,
+            );
 
             async function fn(_value: string): Promise<void> {}
             const argValue = "value";
@@ -97,7 +107,9 @@ describe("function: withSharedLockFactory", () => {
         test("Should call SharedLock.run method", async () => {
             const spy = vi.spyOn(SharedLock.prototype, "runReaderOrFail");
 
-            const withSharedLock = withSharedLockFactory(sharedLockFactory);
+            const withSharedLock = withSharedLockFactory(
+                sharedLockFactoryResolver,
+            );
 
             async function fn(_value: string): Promise<void> {}
             const argValue = "value";
@@ -115,9 +127,9 @@ describe("function: withSharedLockFactory", () => {
         });
     });
     test("Should derive the key from multiple wrapped function arguments", async () => {
-        const spy = vi.spyOn(sharedLockFactory, "create");
+        const spy = vi.spyOn(SharedLockFactory.prototype, "create");
 
-        const withSharedLock = withSharedLockFactory(sharedLockFactory);
+        const withSharedLock = withSharedLockFactory(sharedLockFactoryResolver);
 
         async function fn(_userId: string, _postId: string): Promise<void> {}
         await use(
@@ -132,7 +144,7 @@ describe("function: withSharedLockFactory", () => {
         expect(spy).toHaveBeenCalledWith("user:u1:post:p2", expect.anything());
     });
     test("Should pass through the wrapped function's arguments and return value", async () => {
-        const withSharedLock = withSharedLockFactory(sharedLockFactory);
+        const withSharedLock = withSharedLockFactory(sharedLockFactoryResolver);
 
         function fn(a: string, b: string): Promise<string> {
             return Promise.resolve(`${a}-${b}`);
@@ -148,5 +160,22 @@ describe("function: withSharedLockFactory", () => {
         );
 
         expect(await wrapped("2", "3")).toBe("2-3");
+    });
+    test("Should select the adapter passed to use", async () => {
+        const spy = vi.spyOn(sharedLockFactoryResolver, "use");
+
+        const withSharedLock = withSharedLockFactory(sharedLockFactoryResolver);
+
+        async function fn(_value: string): Promise<void> {}
+        await use(
+            fn,
+            withSharedLock.use("memory")({
+                key: ([value]) => value,
+                limit: 4,
+                when: SHARED_LOCK_WHEN.WRITER,
+            }),
+        )("value");
+
+        expect(spy).toHaveBeenCalledWith("memory");
     });
 });
