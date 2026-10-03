@@ -12,6 +12,28 @@ import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
+ * Minimal resolver contract required by {@link withLockFactory}.
+ *
+ * A narrowed form of `ILockFactoryResolver`: `use()` only has to return a
+ * factory that exposes `create`.
+ *
+ * @typeParam TAdapters - Union type of the registered adapter names.
+ *
+ * IMPORT_PATH: `"eridu-tech/lock/middlewares"`
+ * @group Middlewares
+ */
+export type CreateLockResolver<TAdapters extends string = string> = {
+    /**
+     * Selects the lock factory used to create locks.
+     *
+     * @param adapterName - The adapter to use. Defaults to the resolver's
+     * default adapter.
+     * @returns The resolved factory, limited to `create`.
+     */
+    use(adapterName?: TAdapters): ILockFactory;
+};
+
+/**
  * Settings for the distributed-lock middleware.
  *
  * @typeParam TParameters - Tuple type of the wrapped function's parameters.
@@ -51,32 +73,81 @@ export type WithLockSettings<
 };
 
 /**
+ * A middleware factory that wraps the wrapped function in a distributed lock.
+ *
+ * Produced by {@link withLockFactory}; the lock key comes from the `key`
+ * setting.
+ *
+ * @typeParam TParameters - Tuple type of the wrapped function's parameters.
+ * @typeParam TReturn - Return type of the wrapped function.
+ *
+ * IMPORT_PATH: `"eridu-tech/lock/middlewares"`
+ * @group Middlewares
+ */
+export type WithLock = <TParameters extends Array<unknown>, TReturn>(
+    settings: WithLockSettings<TParameters>,
+) => MiddlewareFn<TParameters, Promise<TReturn>>;
+
+/**
+ * Resolver-facing API returned by {@link withLockFactory}.
+ *
+ * Calling `use()` returns a {@link WithLock} bound to the selected adapter.
+ *
+ * @typeParam TAdapters - Union type of the registered adapter names.
+ *
+ * IMPORT_PATH: `"eridu-tech/lock/middlewares"`
+ * @group Middlewares
+ */
+export type WithLockResolver<TAdapters extends string = string> = {
+    /**
+     * Selects the adapter the returned middleware factory uses.
+     *
+     * @param adapter - The adapter to use. Defaults to the resolver's default
+     * adapter.
+     * @returns A {@link WithLock} bound to the selected adapter.
+     */
+    use(adapter?: TAdapters): WithLock;
+};
+
+/**
  * Creates a middleware factory that wraps function calls with a distributed
  * lock.
  *
  * Before executing the wrapped function a lock is acquired on the derived key.
  * If another process already holds the lock the call waits (or fails
- * immediately for non-blocking locks) until the lock is released.
+ * immediately for non-blocking locks) until the lock is released. Calling the
+ * returned function uses the resolver's default adapter, while `use()` selects
+ * a specific one.
  *
- * @param lockFactory - The lock factory to use.
- * @returns A function that accepts {@link WithLockSettings} and returns a
- *          middleware.
+ * @typeParam TAdapters - Union type of the registered adapter names.
+ * @param lockFactoryResolver - The resolver used to select the lock factory.
+ * @returns A {@link WithLock} that is also a {@link WithLockResolver}.
  *
  * IMPORT_PATH: `"eridu-tech/lock/middlewares"`
  * @group Middlewares
  */
-export function withLockFactory(lockFactory: ILockFactory) {
-    return <TParameters extends Array<unknown>, TReturn>(
-        settings: WithLockSettings<TParameters>,
-    ): MiddlewareFn<TParameters, Promise<TReturn>> => {
-        const { key, lockId = () => v4(), ...rest } = settings;
-        return ({ next, args }) => {
-            return lockFactory
-                .create(callInvocable(key, args), {
-                    ...rest,
-                    lockId: callInvocable(lockId, args),
-                })
-                .runOrFail(next);
+export function withLockFactory<TAdapters extends string = string>(
+    lockFactoryResolver: CreateLockResolver<TAdapters>,
+): WithLock & WithLockResolver<TAdapters> {
+    const withLockResolver: WithLockResolver<TAdapters>["use"] = function use(
+        adapter?: TAdapters,
+    ): WithLock {
+        return (settings) => {
+            const { key, lockId = () => v4(), ...rest } = settings;
+            return ({ next, args }) => {
+                return lockFactoryResolver
+                    .use(adapter)
+                    .create(callInvocable(key, args), {
+                        ...rest,
+                        lockId: callInvocable(lockId, args),
+                    })
+                    .runOrFail(next);
+            };
         };
     };
+
+    const middleware = withLockResolver() as WithLock &
+        WithLockResolver<TAdapters>;
+    middleware.use = withLockResolver;
+    return middleware;
 }

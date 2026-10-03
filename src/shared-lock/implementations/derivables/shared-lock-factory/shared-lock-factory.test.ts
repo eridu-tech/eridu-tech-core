@@ -10,7 +10,10 @@ import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 import { KyselySharedLockAdapter } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
 import { MemorySharedLockAdapter } from "@/shared-lock/implementations/adapters/memory-shared-lock-adapter/_module-exports.js";
 import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module-exports.js";
-import { sharedLockFactoryTestSuite } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
+import {
+    sharedLockFactorySerdeTestSuite,
+    sharedLockFactoryTestSuite,
+} from "@/shared-lock/implementations/test-utilities/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
@@ -21,20 +24,30 @@ import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapt
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: SharedLockFactory", () => {
+    function createSharedLockFactory() {
+        const serde = new Serde(new SuperJsonSerdeAdapter());
+        const sharedLockFactory = new SharedLockFactory({
+            serde,
+            adapter: new MemorySharedLockAdapter(),
+        });
+        return { sharedLockFactory, serde };
+    }
+
     sharedLockFactoryTestSuite({
-        createSharedLockFactory: () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
-            const sharedLockFactory = new SharedLockFactory({
-                serde,
-                adapter: new MemorySharedLockAdapter(),
-            });
-            return { sharedLockFactory, serde };
-        },
+        createSharedLockFactory,
         beforeEach,
         describe,
         expect,
         test,
         retry: 10,
+    });
+
+    sharedLockFactorySerdeTestSuite({
+        createSharedLockFactory,
+        beforeEach,
+        describe,
+        expect,
+        test,
     });
 
     function createTrxCtx(

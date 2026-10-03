@@ -133,11 +133,15 @@ export class SemaphoreFactoryResolver<
         if (adapterName === undefined) {
             throw new DefaultAdapterNotDefinedError(
                 SemaphoreFactoryResolver.name,
+                Object.keys(this.settings.adapters),
             );
         }
         const adapter = this.settings.adapters[adapterName];
         if (adapter === undefined) {
-            throw new UnregisteredAdapterError(adapterName);
+            throw new UnregisteredAdapterError(
+                adapterName,
+                Object.keys(this.settings.adapters),
+            );
         }
         return new SemaphoreFactory({
             ...this.settings,
