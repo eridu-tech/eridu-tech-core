@@ -1,6 +1,6 @@
 ---
 sidebar_position: 9
-sidebar_label: DI container integration
+sidebar_label: DI integration
 pagination_label: CircuitBreaker DI container integration
 tags:
     - CircuitBreaker
@@ -12,7 +12,7 @@ keywords:
     - Dependency injection
 ---
 
-# DI Container Integration
+# DI Integration
 
 The `circuitBreakerFactoryResolverDiFactory` function creates an [`ICircuitBreakerFactoryResolver`](../circuit_breaker_factory_resolver/index.md) whose underlying resolver is resolved from a [DI container](../../../foundation/di/index.md).
 

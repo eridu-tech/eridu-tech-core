@@ -1,6 +1,6 @@
 ---
 sidebar_position: 9
-sidebar_label: DI container
+sidebar_label: DI integration
 pagination_label: RateLimiter DI container integration
 tags:
     - RateLimiter
@@ -12,7 +12,7 @@ keywords:
     - Dependency injection
 ---
 
-# DI Container Integration
+# DI Integration
 
 The `rateLimiterFactoryResolverDiFactory` function creates an [`IRateLimiterFactoryResolver`](../rate_limiter_factory_resolver/index.md) whose underlying resolver is resolved from a [DI container](../../../foundation/di/index.md).
 

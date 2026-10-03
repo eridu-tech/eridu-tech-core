@@ -1,6 +1,6 @@
 ---
 sidebar_position: 6
-sidebar_label: DI container
+sidebar_label: DI integration
 pagination_label: FileStorage DI container integration
 tags:
     - FileStorage
@@ -12,7 +12,7 @@ keywords:
     - Dependency injection
 ---
 
-# DI Container Integration
+# DI Integration
 
 The `fileStorageResolverDiFactory` function creates an [`IFileStorageResolver`](../file_storage_resolver/index.md) whose underlying resolver is resolved from a [DI container](../../../foundation/di/index.md).
 

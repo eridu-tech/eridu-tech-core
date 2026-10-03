@@ -1,6 +1,6 @@
 ---
 sidebar_position: 7
-sidebar_label: DI container
+sidebar_label: DI integration
 pagination_label: Lock DI container integration
 tags:
     - Lock
@@ -12,7 +12,7 @@ keywords:
     - Dependency injection
 ---
 
-# DI Container Integration
+# DI Integration
 
 The `lockFactoryResolverDiFactory` function creates an [`ILockFactoryResolver`](../lock_factory_resolver/index.md) whose underlying resolver is resolved from a [DI container](../../../foundation/di/index.md).
 

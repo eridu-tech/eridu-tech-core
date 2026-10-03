@@ -1,6 +1,6 @@
 ---
 sidebar_position: 7
-sidebar_label: DI container
+sidebar_label: DI integration
 pagination_label: SharedLock DI container integration
 tags:
     - SharedLock
@@ -12,7 +12,7 @@ keywords:
     - Dependency injection
 ---
 
-# DI Container Integration
+# DI Integration
 
 The `sharedLockFactoryResolverDiFactory` function creates an [`ISharedLockFactoryResolver`](../shared_lock_factory_resolver/index.md) whose underlying resolver is resolved from a [DI container](../../../foundation/di/index.md).
 

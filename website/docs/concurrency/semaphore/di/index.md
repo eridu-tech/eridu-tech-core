@@ -1,6 +1,6 @@
 ---
 sidebar_position: 7
-sidebar_label: DI container
+sidebar_label: DI integration
 pagination_label: Semaphore DI container integration
 tags:
     - Semaphore
@@ -12,7 +12,7 @@ keywords:
     - Dependency injection
 ---
 
-# DI Container Integration
+# DI Integration
 
 The `semaphoreFactoryResolverDiFactory` function creates an [`ISemaphoreFactoryResolver`](../semaphore_factory_resolver/index.md) whose underlying resolver is resolved from a [DI container](../../../foundation/di/index.md).
 

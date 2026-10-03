@@ -1,6 +1,6 @@
 ---
 sidebar_position: 7
-sidebar_label: DI container
+sidebar_label: DI integration
 pagination_label: Cache DI container integration
 tags:
     - Cache
@@ -12,7 +12,7 @@ keywords:
     - Dependency injection
 ---
 
-# DI Container Integration
+# DI Integration
 
 The `cacheResolverDiFactory` function creates an [`ICacheResolver`](../cache_resolver/index.md) whose underlying resolver is resolved from a [DI container](../../../foundation/di/index.md).
 
