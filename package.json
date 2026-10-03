@@ -95,6 +95,10 @@
             "types": "./dist/cache/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/cache/implementations/derivables/_module-exports.js"
         },
+        "./cache/di": {
+            "types": "./dist/cache/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/cache/implementations/derivables/di/_module-exports.js"
+        },
         "./cache/middlewares": {
             "types": "./dist/cache/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/cache/implementations/middlewares/_module-exports.js"
