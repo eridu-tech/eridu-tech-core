@@ -151,6 +151,10 @@
             "types": "./dist/circuit-breaker/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/circuit-breaker/implementations/derivables/_module-exports.js"
         },
+        "./circuit-breaker/di": {
+            "types": "./dist/circuit-breaker/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/circuit-breaker/implementations/derivables/di/_module-exports.js"
+        },
         "./circuit-breaker/middlewares": {
             "types": "./dist/circuit-breaker/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/circuit-breaker/implementations/middlewares/_module-exports.js"
