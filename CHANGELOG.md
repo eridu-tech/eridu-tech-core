@@ -1,5 +1,420 @@
 # @daiso-tech/core
 
+## 0.68.0
+
+### Minor Changes
+
+- 5d29bd7: Added dependency-injection aware factory resolver helpers for the cache, circuit breaker, file storage, lock, rate limiter, semaphore and shared lock modules. Each helper takes a container and the token its resolver is registered under, and returns a proxy that delegates to that resolver once `IContainer.init()` has run, so a resolver can be pulled from the container instead of being constructed by hand.
+
+    ```ts
+    import { Container } from "eridu-tech/di";
+    import { CacheResolver } from "eridu-tech/cache";
+    import { cacheResolverDiFactory } from "eridu-tech/cache/di";
+    import { NoOpCacheAdapter } from "eridu-tech/cache/no-op-cache-adapter";
+    import { ExecutionContext } from "eridu-tech/execution-context";
+    import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+
+    const executionContext = new ExecutionContext(
+        new AlsExecutionContextAdapter(),
+    );
+    const container = new Container({ executionContext });
+
+    const cacheResolver = new CacheResolver({
+        adapters: { memory: new NoOpCacheAdapter() },
+        defaultAdapter: "memory",
+    });
+    container.registerValue({ token: CacheResolver, value: cacheResolver });
+
+    // Create the proxy before init(), then use it after init() has run.
+    const cache = cacheResolverDiFactory(container, CacheResolver);
+
+    await container.init();
+
+    await cache.put("key", "value");
+    await cache.use("memory").get("key");
+    ```
+
+    - `eridu-tech/cache/di` exports `cacheResolverDiFactory(container, cacheResolverToken)`, returning an `ICacheResolver & ICache` proxy.
+    - `eridu-tech/circuit-breaker/di` exports `circuitBreakerFactoryResolverDiFactory(container, circuitBreakerFactoryResolverToken)`, returning an `ICircuitBreakerFactoryResolver & ICircuitBreakerFactory` proxy.
+    - `eridu-tech/file-storage/di` exports `fileStorageResolverDiFactory(container, fileStorageResolverToken)`, returning an `IFileStorageResolver & IFileStorage` proxy.
+    - `eridu-tech/lock/di` exports `lockFactoryResolverDiFactory(container, lockFactoryResolverToken)`, returning an `ILockFactoryResolver & ILockFactory` proxy.
+    - `eridu-tech/rate-limiter/di` exports `rateLimiterFactoryResolverDiFactory(container, rateLimiterFactoryResolverToken)`, returning an `IRateLimiterFactoryResolver & IRateLimiterFactory` proxy.
+    - `eridu-tech/semaphore/di` exports `semaphoreFactoryResolverDiFactory(container, semaphoreFactoryResolverToken)`, returning an `ISemaphoreFactoryResolver & ISemaphoreFactory` proxy.
+    - `eridu-tech/shared-lock/di` exports `sharedLockFactoryResolverDiFactory(container, sharedLockFactoryResolverToken)`, returning an `ISharedLockFactoryResolver & ISharedLockFactory` proxy.
+
+    ### Details
+    - The token is resolved once during `container.init()`, so the helper must be created before `init()` is awaited. Until then, `use()` and the delegated operations throw.
+    - The token must be registered; otherwise `container.init()` throws `CanNotResolveServiceDiError`.
+    - The returned proxy implements both the resolver interface and the operations interface of its module, so it can be used directly without calling `use()`: operations run against the resolver's default adapter, while `use(adapterName)` selects a specific one.
+    - Every helper is typed with a `TAdapters` generic that defaults to `string`, so the registered adapter names can be narrowed at the call site.
+
+- f769c1d: Added token aliases to the DI container, so an existing service can be resolved through additional tokens.
+
+    ```ts
+    import { Container } from "eridu-tech/di";
+    import { genericToken } from "eridu-tech/di/contracts";
+    import { ExecutionContext } from "eridu-tech/execution-context";
+    import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+
+    const executionContext = new ExecutionContext(
+        new AlsExecutionContextAdapter(),
+    );
+    const container = new Container({ executionContext });
+
+    const IDATABASE = genericToken<IDatabase>("Database service");
+    const DATABASE_ALIAS = genericToken<IDatabase>(
+        "Alias for the database service",
+    );
+
+    container.registerAlias({
+        target: IDATABASE,
+        alias: DATABASE_ALIAS,
+    });
+    ```
+
+    - `container.registerAlias({ target, alias })` registers `alias` as another token for the service registered under `target`, so resolving either token returns the same instance.
+    - `eridu-tech/di/contracts` exports the `AliasRegistration<TRegisteredType>` type used by the new method.
+    - An alias is registered as a `Singleton` service that depends on its target, so the target must be a singleton (a value registered with `registerValue()` qualifies).
+
+- 126c0e4: Reworked the DI container contracts: dependencies can be marked as optional, registrations can run their own lifecycle hooks, and container-wide hooks can now declare the dependencies they need as tokens.
+
+    ```ts
+    import { Container } from "eridu-tech/di";
+    import {
+        genericToken,
+        optionalToken,
+        LIFETIME,
+    } from "eridu-tech/di/contracts";
+    import { ExecutionContext } from "eridu-tech/execution-context";
+    import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+
+    const CONFIG = genericToken<Config>("CONFIG");
+    const CACHE = genericToken<Cache>("CACHE");
+
+    const container = new Container({
+        executionContext: new ExecutionContext(
+            new AlsExecutionContextAdapter(),
+        ),
+    });
+
+    // Container-wide hooks can declare the tokens they need; the container resolves
+    // them before the listener runs.
+    container.onInit({ config: CONFIG }, ({ config }) => config.warmUp());
+    container.onDeInit({ config: CONFIG }, ({ config }) => config.dispose());
+
+    container.registerFactory({
+        token: CONFIG,
+        // CACHE is optional: when it is never registered the factory receives
+        // `undefined` instead of the graph failing validation.
+        deps: { cache: optionalToken(CACHE) },
+        factory: ({ cache }) => loadConfig(cache),
+        lifetime: LIFETIME.SINGLETON,
+        // Per-registration hooks receive the resolved service instance.
+        onInit: (config) => config.warmUp(),
+    });
+
+    await container.init();
+    await container.deInit();
+    ```
+
+    ## Added
+    - **Optional dependencies.** `optionalToken(token)` creates an optional variant of a token. The variant is a distinct token, so the original stays a required dependency elsewhere: one service can require a dependency while another only optionally depends on it. An optional dependency that was never registered is dropped from the graph, so `container.init()` succeeds and the factory receives `undefined` for it (typed as `TRegisteredType | undefined`). Registered optional dependencies behave exactly like required ones, including lifetime/edge and cycle validation.
+    - **Per-registration lifecycle hooks.** `FactoryRegistration` and `ValueRegistration` accept `onInit` / `onDeInit`, which receive the resolved service instance. `onInit` runs during `container.init()` once the service is available, and `onDeInit` runs during `container.deInit()`. Hooks are only available on singleton registrations.
+    - **Declarative container hook listeners.** `container.onInit(...)` and `container.onDeInit(...)` now accept a dependency record of `DiToken`s next to the listener — `container.onInit({ config: CONFIG }, ({ config }) => ...)` — so the container resolves those tokens first and passes them to the listener. The record supports required and `optionalToken` dependencies. `container.onInit(listener)` / `container.onDeInit(listener)` register a listener that needs no dependencies. Hook execution is otherwise unchanged: registration order, `onInit` during `container.init()` and `onDeInit` during `container.deInit()`, no registration after `container.init()` or inside a run scope, a rejecting `onInit` leaves the container terminated, and `onDeInit` runs every hook even if one rejects.
+    - Added the `ContainerListener<TDeps>` and `EmptyListener` types to `eridu-tech/di/contracts`.
+    - Added the `ServiceHooks<TRegisteredType>`, `FactoryRegistrationBase<TDeps, TRegisteredType>`, `FactoryRegistrationSingleton<TDeps, TRegisteredType>`, and `FactoryRegistrationNoneSingleton<TDeps, TRegisteredType>` types to `eridu-tech/di/contracts`. `FactoryRegistration` is now a union of the singleton variant (which carries the hooks) and the non-singleton variant.
+    - Renamed the `EmptyDepRecord` type to `EmptyRecord`.
+
+    ## Breaking changes
+    - Renamed the container-wide hooks: `IContainerHooks.onContainerInit()` and `onContainerDeInit()` are now `onInit()` and `onDeInit()`, and their listeners receive the resolved dependencies instead of the container's service resolver. `IContainerHooks` also moved off `IServiceRegister` and onto `IContainer`, so the hooks are registered on the container itself.
+    - The `DiHook` type is no longer exported from `eridu-tech/di/contracts`; hook listeners are typed by `ContainerListener<TDeps>` and `EmptyListener`.
+    - Removed the `FactoryRegistrationOverride` type. `container.overrideFactory()` now takes `FactoryRegistrationBase`, the dependency-injection settings shared by every factory registration.
+    - Renamed the exported `EmptyDepRecord` type to `EmptyRecord`, so imports of the old name no longer resolve.
+    - Removed the service-provider registration API (`IServiceProviderRegister`, `ServiceProviderFn`, `IServiceProvider`, `ServiceProvider`, and `IServiceRegister.registerProvider`) as part of dropping the `providers` module; see the `removed-providers-module` changeset for the migration.
+
+    ## Migration
+
+    ### Container-wide hooks
+
+    Declare the tokens the hook needs instead of resolving them from the container.
+
+    **Before:**
+
+    ```ts
+    container.onContainerInit(async (resolver) => {
+        const config = await resolver.resolveOrFail(CONFIG);
+        config.warmUp();
+    });
+
+    container.onContainerDeInit(async (resolver) => {
+        const config = await resolver.resolveOrFail(CONFIG);
+        config.dispose();
+    });
+    ```
+
+    **After:**
+
+    ```ts
+    container.onInit({ config: CONFIG }, ({ config }) => {
+        config.warmUp();
+    });
+
+    container.onDeInit({ config: CONFIG }, ({ config }) => {
+        config.dispose();
+    });
+    ```
+
+    ### Per-registration hooks
+
+    Move hooks that belong to a single service onto its registration.
+
+    **Before:**
+
+    ```ts
+    container.registerFactory({
+        token: CONFIG,
+        deps: {},
+        factory: () => createConfig(),
+        lifetime: LIFETIME.SINGLETON,
+    });
+
+    container.onContainerInit(async (resolver) => {
+        const config = await resolver.resolveOrFail(CONFIG);
+        config.warmUp();
+    });
+
+    container.onContainerDeInit(async (resolver) => {
+        const config = await resolver.resolveOrFail(CONFIG);
+        config.dispose();
+    });
+    ```
+
+    **After:**
+
+    ```ts
+    container.registerFactory({
+        token: CONFIG,
+        deps: {},
+        factory: () => createConfig(),
+        lifetime: LIFETIME.SINGLETON,
+        onInit: (config) => {
+            config.warmUp();
+        },
+        onDeInit: (config) => {
+            config.dispose();
+        },
+    });
+    ```
+
+- 3b638b4: Extracted the serde conformance tests out of the lock, semaphore, shared lock and file storage test suites into dedicated serde test-suite functions, so the serde behaviour can be exercised on its own or alongside the existing suite.
+
+    ```ts
+    import { beforeEach, describe, expect, test } from "vitest";
+    import { LockFactory } from "eridu-tech/lock";
+    import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
+    import {
+        lockFactorySerdeTestSuite,
+        lockFactoryTestSuite,
+    } from "eridu-tech/lock/test-utilities";
+    import { Serde } from "eridu-tech/serde";
+    import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+
+    describe("class: MyLockFactory", () => {
+        const createLockFactory = () => {
+            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const lockFactory = new LockFactory({
+                serde,
+                adapter: new MemoryLockAdapter(),
+            });
+            return { lockFactory, serde };
+        };
+
+        lockFactoryTestSuite({
+            createLockFactory,
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
+
+        lockFactorySerdeTestSuite({
+            createLockFactory,
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
+    });
+    ```
+
+    - `eridu-tech/lock/test-utilities` exports `lockFactorySerdeTestSuite` and `LockFactorySerdeTestSuiteSettings`.
+    - `eridu-tech/semaphore/test-utilities` exports `semaphoreFactorySerdeTestSuite` and `SemaphoreFactorySerdeTestSuiteSettings`.
+    - `eridu-tech/shared-lock/test-utilities` exports `sharedLockFactorySerdeTestSuite` and `SharedLockFactorySerdeTestSuiteSettings`.
+    - `eridu-tech/file-storage/test-utilities` exports `fileStorageSerdeTestSuite` and `FileStorageSerdeTestSuiteSettings`.
+
+    Each new function accepts the vitest `expect` / `test` / `describe` / `beforeEach` APIs plus the matching `create<Name>` callback, which returns the created instance together with the `serde` it was built with. It registers tests that serialize and deserialize the instance through that `serde` and assert its state afterwards.
+
+    ### Breaking changes
+    - `lockFactoryTestSuite`, `semaphoreFactoryTestSuite`, `sharedLockFactoryTestSuite` and `fileStorageTestSuite` no longer register the serde tests.
+    - The `excludeSerdeTests` setting was removed from those four test suites.
+
+    ### Migration
+
+    Call the matching serde test-suite next to the existing one, passing the same `create<Name>` callback, so the previous coverage is preserved (see the example above). Remove the `excludeSerdeTests` setting; omit the serde test-suite instead to skip those tests.
+
+- 3521df2: The lock, shared-lock, semaphore, rate-limiter and circuit-breaker middlewares now take a factory resolver instead of a single factory, and expose a `use(adapterName)` method for selecting a specific adapter. This mirrors `withCacheFactory`, so the value can be passed straight from the matching `eridu-tech/*/di` helper or constructed with the `*FactoryResolver` class.
+
+    ```ts
+    import { withLockFactory } from "eridu-tech/lock/middlewares";
+    import { LockFactoryResolver } from "eridu-tech/lock";
+    import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
+
+    const lockFactoryResolver = new LockFactoryResolver({
+        adapters: { memory: new MemoryLockAdapter() },
+        defaultAdapter: "memory",
+    });
+
+    const withLock = withLockFactory(lockFactoryResolver);
+
+    // Uses the default adapter.
+    await use(processJob, withLock({ key: ([jobId]) => `job:${jobId}` }))("1");
+
+    // Uses the explicit adapter.
+    await use(
+        processJob,
+        withLock.use("memory")({ key: ([jobId]) => `job:${jobId}` }),
+    )("1");
+    ```
+
+    - `withLockFactory`, `withSharedLockFactory`, `withSemaphoreFactory`, `withRateLimiterFactory` and `withCircuitBreakerFactory` now accept an `I<Name>FactoryResolver` and return a callable that is also a resolver. Calling the result uses the resolver's default adapter; `use(adapterName)` selects a specific one.
+    - `eridu-tech/lock/middlewares` exports `CreateLockResolver`, `WithLock` and `WithLockResolver`.
+    - `eridu-tech/shared-lock/middlewares` exports `CreateSharedLockResolver`, `WithSharedLock` and `WithSharedLockResolver`.
+    - `eridu-tech/semaphore/middlewares` exports `CreateSemaphoreResolver`, `WithSemaphore` and `WithSemaphoreResolver`.
+    - `eridu-tech/rate-limiter/middlewares` exports `CreateRateLimiterResolver`, `WithRateLimiter` and `WithRateLimiterResolver`.
+    - `eridu-tech/circuit-breaker/middlewares` exports `CreateCircuitBreakerResolver`, `WithCircuitBreaker` and `WithCircuitBreakerResolver`.
+
+    ### Breaking changes
+    - The five middleware factories no longer accept a bare factory. Passing a `LockFactory`, `SharedLockFactory`, `SemaphoreFactory`, `RateLimiterFactory` or `CircuitBreakerFactory` no longer compiles; pass the matching resolver instead.
+
+    ### Migration
+
+    **Before:**
+
+    ```ts
+    const lockFactory = new LockFactory({ adapter: new MemoryLockAdapter() });
+    const withLock = withLockFactory(lockFactory);
+    ```
+
+    **After:**
+
+    ```ts
+    const lockFactoryResolver = new LockFactoryResolver({
+        adapters: { memory: new MemoryLockAdapter() },
+        defaultAdapter: "memory",
+    });
+    const withLock = withLockFactory(lockFactoryResolver);
+    ```
+
+- c7aa991: Removed the dependency-injection aware middleware registrars and their `eridu-tech/*/middlewares/di` package exports.
+
+    The registrars resolved a middleware's dependency from an `IContainer` and returned the same middleware the matching factory produces. The same result is available by resolving the dependency from the container and passing it to the factory, so the DI-specific copies were redundant.
+
+    - Removed the `eridu-tech/cache/middlewares/di` entry point (`registerWithCache`, `registerWithInvalidation`).
+    - Removed the `eridu-tech/circuit-breaker/middlewares/di` entry point (`registerWithCircuitBreaker`).
+    - Removed the `eridu-tech/event-bus/middlewares/di` entry point (`registerWithDispatchBefore`, `registerWithDispatchAfter`, `registerWithDispatchOnError`).
+    - Removed the `eridu-tech/lock/middlewares/di` entry point (`registerWithLock`).
+    - Removed the `eridu-tech/rate-limiter/middlewares/di` entry point (`registerWithRateLimiter`).
+    - Removed the `eridu-tech/semaphore/middlewares/di` entry point (`registerWithSemaphore`).
+    - Removed the `eridu-tech/shared-lock/middlewares/di` entry point (`registerWithSharedLock`).
+    - Removed the `eridu-tech/transaction-context/middlewares/di` entry point (`registerWithTransaction`, `registerWithAfterCommit`).
+
+    ### Breaking changes
+    - The `eridu-tech/*/middlewares/di` package exports no longer resolve.
+
+    ### Migration
+
+    Resolve the dependency from the container and pass it to the matching middleware factory. The `eridu-tech/*/di` resolver helpers return a proxy that delegates to the container once `IContainer.init()` has run, so the helper can be created before `init()` and used after it.
+
+    **Before:**
+
+    ```ts
+    import { registerWithLock } from "eridu-tech/lock/middlewares/di";
+
+    const withLock = registerWithLock(container, LOCK_FACTORY);
+    ```
+
+    **After:**
+
+    ```ts
+    import { lockFactoryResolverDiFactory } from "eridu-tech/lock/di";
+    import { withLockFactory } from "eridu-tech/lock/middlewares";
+
+    const lockFactory = lockFactoryResolverDiFactory(container, LOCK_FACTORY);
+    const withLock = withLockFactory(lockFactory);
+    ```
+
+    The resolver proxy reads from the container once during `IContainer.init()`.
+
+- 668b9fe: Removed the `providers` module and its `eridu-tech/providers/*` package exports.
+
+    The module bundled dependency-injection aware service providers for the MongoDB, MySQL, PostgreSQL, Redis and SQLite clients, plus the Kysely providers layered on top of them. The container service-provider pattern they were built on turned out to be insufficient and too constrained to scale: it was not flexible enough to describe how applications actually wire their infrastructure, and it made the DI container glue code hard to maintain. The providers and the container API they relied on are gone.
+
+    - Removed the `eridu-tech/providers/mongodb-provider`, `eridu-tech/providers/mysql-provider`, `eridu-tech/providers/postgres-provider`, `eridu-tech/providers/redis-provider` and `eridu-tech/providers/sqlite-provider` entry points, along with their `mongodbProvider` / `mysqlProvider` / `postgresProvider` / `redisProvider` / `sqliteProvider` functions, their `MONGODB_CLIENT` / `MYSQL_CLIENT` / `POSTGRES_CLIENT` / `REDIS_CLIENT` / `SQLITE_CLIENT` tokens and their settings types.
+    - Removed the `eridu-tech/providers/kysely-mysql-provider`, `eridu-tech/providers/kysely-postgres-provider` and `eridu-tech/providers/kysely-sqlite-provider` entry points, along with their `kyselyMysqlProvider` / `kyselyPostgresProvider` / `kyselySqliteProvider` functions, their `KYSELY_MYSQL` / `KYSELY_POSTGRES` / `KYSELY_SQLITE` tokens and their settings types.
+
+    ### Breaking changes
+    - Removed the container service-provider registration API: `Container.registerProvider`, `IServiceRegister.registerProvider`, `ServiceProviderFn`, `IServiceProvider` and `IServiceProviderRegister`.
+    - Removed every `eridu-tech/providers/*` package export listed above, so imports from the `providers` module no longer resolve.
+
+    ### Migration
+
+    Register the client yourself with `registerFactory` and move the work the provider used to do into the per-registration `onInit` / `onDeInit` hooks:
+
+    **Before:**
+
+    ```ts
+    import { Container } from "eridu-tech/di";
+    import {
+        sqliteProvider,
+        SQLITE_CLIENT,
+    } from "eridu-tech/providers/sqlite-provider";
+
+    const container = new Container({ executionContext });
+
+    container.registerProvider(sqliteProvider({ filename: ":memory:" }));
+
+    await container.init();
+    await container.deInit();
+    ```
+
+    **After:**
+
+    ```ts
+    import Sqlite, { type Database } from "better-sqlite3";
+    import { Container } from "eridu-tech/di";
+    import { genericToken, LIFETIME } from "eridu-tech/di/contracts";
+
+    const SQLITE_CLIENT = genericToken<Database>("SQLITE_CLIENT");
+
+    const container = new Container({ executionContext });
+
+    container.registerFactory({
+        token: SQLITE_CLIENT,
+        deps: {},
+        factory: () => new Sqlite(":memory:"),
+        lifetime: LIFETIME.SINGLETON,
+        onInit: (client) => {
+            client.pragma("journal_mode = WAL");
+        },
+        onDeInit: (client) => {
+            client.close();
+        },
+    });
+
+    await container.init();
+    await container.deInit();
+    ```
+
 ## 0.67.0
 
 ### Minor Changes
