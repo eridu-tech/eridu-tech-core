@@ -359,6 +359,10 @@
             "types": "./dist/lock/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/lock/implementations/derivables/_module-exports.js"
         },
+        "./lock/di": {
+            "types": "./dist/lock/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/lock/implementations/derivables/di/_module-exports.js"
+        },
         "./lock/middlewares": {
             "types": "./dist/lock/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/lock/implementations/middlewares/_module-exports.js"
