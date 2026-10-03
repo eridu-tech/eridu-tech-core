@@ -6,10 +6,13 @@ import { circuitBreakerFactoryResolverDiFactory } from "@/circuit-breaker/implem
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
 import type { Mock } from "vitest";
 
 import type {
+    ICircuitBreaker,
     ICircuitBreakerAdapter,
     ICircuitBreakerFactory,
     ICircuitBreakerFactoryResolver,
@@ -21,10 +24,13 @@ describe("function: circuitBreakerFactoryResolverDiFactory", () => {
         ICircuitBreakerFactory;
     let getState1: Mock<ICircuitBreakerAdapter["getState"]>;
     let getState2: Mock<ICircuitBreakerAdapter["getState"]>;
+    let serde: Serde<string>;
 
     beforeEach(async () => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
+
+        serde = new Serde(new SuperJsonSerdeAdapter());
 
         const executionContext = new ExecutionContext(
             new AlsExecutionContextAdapter(),
@@ -46,6 +52,7 @@ describe("function: circuitBreakerFactoryResolverDiFactory", () => {
                     adapter2,
                 },
                 defaultAdapter: "adapter1",
+                serde,
             });
         container.registerValue({
             token: CircuitBreakerFactoryResolver,
@@ -86,5 +93,42 @@ describe("function: circuitBreakerFactoryResolverDiFactory", () => {
 
         expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
         expect(getState1).not.toHaveBeenCalled();
+    });
+
+    describe("Serde tests:", () => {
+        test("Should serialize and deserialize a circuit breaker created with the default adapter", async () => {
+            const key = "a";
+            const circuitBreaker = circuitBreakerFactory.create(key);
+
+            const deserializedCircuitBreaker =
+                serde.deserialize<ICircuitBreaker>(
+                    serde.serialize(circuitBreaker),
+                );
+
+            await deserializedCircuitBreaker.getState();
+
+            const args: Parameters<ICircuitBreakerAdapter["getState"]> = [key];
+
+            expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
+            expect(getState2).not.toHaveBeenCalled();
+        });
+        test("Should serialize and deserialize a circuit breaker created with a specific adapter", async () => {
+            const key = "a";
+            const circuitBreaker = circuitBreakerFactory
+                .use("adapter2")
+                .create(key);
+
+            const deserializedCircuitBreaker =
+                serde.deserialize<ICircuitBreaker>(
+                    serde.serialize(circuitBreaker),
+                );
+
+            await deserializedCircuitBreaker.getState();
+
+            const args: Parameters<ICircuitBreakerAdapter["getState"]> = [key];
+
+            expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
+            expect(getState1).not.toHaveBeenCalled();
+        });
     });
 });

@@ -6,10 +6,13 @@ import { ExecutionContext } from "@/execution-context/implementations/derivables
 import { NoOpRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/no-op-rate-limiter-adapter/no-op-rate-limiter-adapter.js";
 import { RateLimiterFactoryResolver } from "@/rate-limiter/implementations/derivables/_module-exports.js";
 import { rateLimiterFactoryResolverDiFactory } from "@/rate-limiter/implementations/derivables/di/rate-limiter-factory-resolver-di-factory/rate-limiter-factory-resolver-di-factory.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
 import type { Mock } from "vitest";
 
 import type {
+    IRateLimiter,
     IRateLimiterAdapter,
     IRateLimiterFactory,
     IRateLimiterFactoryResolver,
@@ -21,10 +24,13 @@ describe("function: rateLimiterFactoryResolverDiFactory", () => {
         IRateLimiterFactory;
     let getState1: Mock<IRateLimiterAdapter["getState"]>;
     let getState2: Mock<IRateLimiterAdapter["getState"]>;
+    let serde: Serde<string>;
 
     beforeEach(async () => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
+
+        serde = new Serde(new SuperJsonSerdeAdapter());
 
         const executionContext = new ExecutionContext(
             new AlsExecutionContextAdapter(),
@@ -46,6 +52,7 @@ describe("function: rateLimiterFactoryResolverDiFactory", () => {
                     adapter2,
                 },
                 defaultAdapter: "adapter1",
+                serde,
             });
         container.registerValue({
             token: RateLimiterFactoryResolver,
@@ -91,5 +98,40 @@ describe("function: rateLimiterFactoryResolverDiFactory", () => {
 
         expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
         expect(getState1).not.toHaveBeenCalled();
+    });
+
+    describe("Serde tests:", () => {
+        test("Should serialize and deserialize a rate limiter created with the default adapter", async () => {
+            const key = "a";
+            const rateLimiter = rateLimiterFactory.create(key, { limit: 2 });
+
+            const deserializedRateLimiter = serde.deserialize<IRateLimiter>(
+                serde.serialize(rateLimiter),
+            );
+
+            await deserializedRateLimiter.getState();
+
+            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
+
+            expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
+            expect(getState2).not.toHaveBeenCalled();
+        });
+        test("Should serialize and deserialize a rate limiter created with a specific adapter", async () => {
+            const key = "a";
+            const rateLimiter = rateLimiterFactory
+                .use("adapter2")
+                .create(key, { limit: 2 });
+
+            const deserializedRateLimiter = serde.deserialize<IRateLimiter>(
+                serde.serialize(rateLimiter),
+            );
+
+            await deserializedRateLimiter.getState();
+
+            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
+
+            expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
+            expect(getState1).not.toHaveBeenCalled();
+        });
     });
 });
