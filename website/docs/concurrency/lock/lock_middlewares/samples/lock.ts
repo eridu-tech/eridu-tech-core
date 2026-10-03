@@ -1,6 +1,10 @@
-import { LockFactory } from "eridu-tech/lock";
+import { LockFactoryResolver } from "eridu-tech/lock";
 import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
 
-export const lockFactory = new LockFactory({
-    adapter: new MemoryLockAdapter(),
+export const lockFactoryResolver = new LockFactoryResolver({
+    adapters: {
+        storage1: new MemoryLockAdapter(),
+        storage2: new MemoryLockAdapter(),
+    },
+    defaultAdapter: "storage1",
 });

@@ -9,17 +9,15 @@ container.registerFactory({
     lifetime: LIFETIME.SINGLETON,
 });
 
-container.onContainerInit(async (resolver) => {
+container.onInit({ db: Database }, async ({ db }) => {
     // Runs when container.init() is called
-    // Use the resolver to resolve services after all registrations are complete
-    const db = await resolver.resolveOrFail(Database);
+    // The container resolves the tokens passed as deps before the hook runs
     await db.connect();
     console.log("Container initialized");
 });
 
-container.onContainerDeInit(async (resolver) => {
+container.onDeInit({ db: Database }, async ({ db }) => {
     // Runs when container.deInit() is called
-    const db = await resolver.resolveOrFail(Database);
     await db.disconnect();
     console.log("Container deinitialized");
 });
