@@ -8,7 +8,10 @@ import { ExecutionContext } from "@/execution-context/implementations/derivables
 import { KyselyLockAdapter } from "@/lock/implementations/adapters/kysely-lock-adapter/_module-exports.js";
 import { MemoryLockAdapter } from "@/lock/implementations/adapters/memory-lock-adapter/_module-exports.js";
 import { LockFactory } from "@/lock/implementations/derivables/_module-exports.js";
-import { lockFactoryTestSuite } from "@/lock/implementations/test-utilities/_module-exports.js";
+import {
+    lockFactorySerdeTestSuite,
+    lockFactoryTestSuite,
+} from "@/lock/implementations/test-utilities/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
@@ -21,18 +24,28 @@ import type { KyselyLockTables } from "@/lock/implementations/adapters/kysely-lo
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: LockFactory", () => {
+    function createLockFactory() {
+        const serde = new Serde(new SuperJsonSerdeAdapter());
+        const lockFactory = new LockFactory({
+            serde,
+            adapter: new MemoryLockAdapter(),
+        });
+        return {
+            lockFactory,
+            serde,
+        };
+    }
+
     lockFactoryTestSuite({
-        createLockFactory: () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
-            const lockFactory = new LockFactory({
-                serde,
-                adapter: new MemoryLockAdapter(),
-            });
-            return {
-                lockFactory,
-                serde,
-            };
-        },
+        createLockFactory,
+        beforeEach,
+        describe,
+        expect,
+        test,
+    });
+
+    lockFactorySerdeTestSuite({
+        createLockFactory,
         beforeEach,
         describe,
         expect,
