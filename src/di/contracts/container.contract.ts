@@ -603,6 +603,27 @@ export type IContainerFork = {
     fork(): IContainer;
 };
 
+export type ContainerListener<TDeps extends DepRecord = DepRecord> = Invocable<
+    [deps: TDeps],
+    Promisable<void>
+>;
+
+export type EmptyListener = Invocable<[], Promisable<void>>;
+
+export type IContainerHooks = {
+    onInit<TDeps extends DepRecord>(
+        deps: DepsTokens<TDeps>,
+        listener: ContainerListener<TDeps>,
+    ): void;
+    onInit(listener: EmptyListener): void;
+
+    onDeInit<TDeps extends DepRecord>(
+        deps: DepsTokens<TDeps>,
+        listener: ContainerListener<TDeps>,
+    ): void;
+    onDeInit(listener: EmptyListener): void;
+};
+
 /**
  * The top-level DI container interface. Combines initialization, scope
  * management, registration, resolution, overriding, and forking into a
@@ -616,6 +637,7 @@ export type IContainerFork = {
  */
 export type IContainer = IInitizable &
     IDeinitizable &
+    IContainerHooks &
     IContainerScope &
     IContainerFork &
     IServiceRegister &
