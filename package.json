@@ -479,6 +479,10 @@
             "types": "./dist/semaphore/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/semaphore/implementations/derivables/_module-exports.js"
         },
+        "./semaphore/di": {
+            "types": "./dist/semaphore/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/semaphore/implementations/derivables/di/_module-exports.js"
+        },
         "./semaphore/middlewares": {
             "types": "./dist/semaphore/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/semaphore/implementations/middlewares/_module-exports.js"
