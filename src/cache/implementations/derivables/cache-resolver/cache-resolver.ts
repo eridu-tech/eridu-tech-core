@@ -156,11 +156,17 @@ export class CacheResolver<
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ICache<TType> {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(CacheResolver.name);
+            throw new DefaultAdapterNotDefinedError(
+                CacheResolver.name,
+                Object.keys(this.settings.adapters),
+            );
         }
         const adapter = this.settings.adapters[adapterName];
         if (adapter === undefined) {
-            throw new UnregisteredAdapterError(adapterName);
+            throw new UnregisteredAdapterError(
+                adapterName,
+                Object.keys(this.settings.adapters),
+            );
         }
         return new Cache({
             ...this.settings,

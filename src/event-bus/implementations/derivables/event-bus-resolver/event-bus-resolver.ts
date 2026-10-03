@@ -162,11 +162,17 @@ export class EventBusResolver<
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): IEventBus<TEventMap> {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(EventBusResolver.name);
+            throw new DefaultAdapterNotDefinedError(
+                EventBusResolver.name,
+                Object.keys(this.settings.adapters),
+            );
         }
         const adapter = this.settings.adapters[adapterName];
         if (adapter === undefined) {
-            throw new UnregisteredAdapterError(adapterName);
+            throw new UnregisteredAdapterError(
+                adapterName,
+                Object.keys(this.settings.adapters),
+            );
         }
         return new EventBus<TEventMap>({
             ...this.settings,
