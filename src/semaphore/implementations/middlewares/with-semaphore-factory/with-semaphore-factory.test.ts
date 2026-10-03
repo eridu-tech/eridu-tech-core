@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op-semaphore-adapter/_module-exports.js";
-import { SemaphoreFactory } from "@/semaphore/implementations/derivables/_module-exports.js";
+import {
+    SemaphoreFactory,
+    SemaphoreFactoryResolver,
+} from "@/semaphore/implementations/derivables/_module-exports.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { withSemaphoreFactory } from "@/semaphore/implementations/middlewares/with-semaphore-factory/with-semaphore-factory.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
@@ -10,8 +13,9 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import type { SemaphoreFactoryCreateSettings } from "@/semaphore/contracts/_module-exports.js";
 
 describe("function: withSemaphoreFactory", () => {
-    const semaphoreFactory = new SemaphoreFactory({
-        adapter: new NoOpSemaphoreAdapter(),
+    const semaphoreFactoryResolver = new SemaphoreFactoryResolver<"memory">({
+        adapters: { memory: new NoOpSemaphoreAdapter() },
+        defaultAdapter: "memory",
     });
 
     beforeEach(() => {
@@ -20,9 +24,9 @@ describe("function: withSemaphoreFactory", () => {
     });
 
     test("Should call SemaphoreFactory.create method", async () => {
-        const spy = vi.spyOn(semaphoreFactory, "create");
+        const spy = vi.spyOn(SemaphoreFactory.prototype, "create");
 
-        const withSemaphore = withSemaphoreFactory(semaphoreFactory);
+        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
 
         async function fn(_value: string): Promise<void> {}
         const argValue = "value";
@@ -46,7 +50,7 @@ describe("function: withSemaphoreFactory", () => {
     test("Should call Semaphore.run method", async () => {
         const spy = vi.spyOn(Semaphore.prototype, "runOrFail");
 
-        const withSemaphore = withSemaphoreFactory(semaphoreFactory);
+        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
 
         async function fn(_value: string): Promise<void> {}
         const argValue = "value";
@@ -62,9 +66,9 @@ describe("function: withSemaphoreFactory", () => {
         expect(spy).toHaveBeenCalledOnce();
     });
     test("Should derive the key from multiple wrapped function arguments", async () => {
-        const spy = vi.spyOn(semaphoreFactory, "create");
+        const spy = vi.spyOn(SemaphoreFactory.prototype, "create");
 
-        const withSemaphore = withSemaphoreFactory(semaphoreFactory);
+        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
 
         async function fn(_userId: string, _postId: string): Promise<void> {}
         await use(
@@ -78,7 +82,7 @@ describe("function: withSemaphoreFactory", () => {
         expect(spy).toHaveBeenCalledWith("user:u1:post:p2", expect.anything());
     });
     test("Should pass through the wrapped function's arguments and return value", async () => {
-        const withSemaphore = withSemaphoreFactory(semaphoreFactory);
+        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
 
         function fn(a: string, b: string): Promise<string> {
             return Promise.resolve(`${a}-${b}`);
@@ -93,5 +97,21 @@ describe("function: withSemaphoreFactory", () => {
         );
 
         expect(await wrapped("2", "3")).toBe("2-3");
+    });
+    test("Should select the adapter passed to use", async () => {
+        const spy = vi.spyOn(semaphoreFactoryResolver, "use");
+
+        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
+
+        async function fn(_value: string): Promise<void> {}
+        await use(
+            fn,
+            withSemaphore.use("memory")({
+                key: ([value]) => value,
+                limit: 4,
+            }),
+        )("value");
+
+        expect(spy).toHaveBeenCalledWith("memory");
     });
 });

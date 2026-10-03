@@ -139,11 +139,17 @@ export class LockFactoryResolver<
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ILockFactory {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(LockFactoryResolver.name);
+            throw new DefaultAdapterNotDefinedError(
+                LockFactoryResolver.name,
+                Object.keys(this.settings.adapters),
+            );
         }
         const adapter = this.settings.adapters[adapterName];
         if (adapter === undefined) {
-            throw new UnregisteredAdapterError(adapterName);
+            throw new UnregisteredAdapterError(
+                adapterName,
+                Object.keys(this.settings.adapters),
+            );
         }
         return new LockFactory({
             ...this.settings,

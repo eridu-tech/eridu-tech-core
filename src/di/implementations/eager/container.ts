@@ -19,9 +19,14 @@ import {
 } from "@/di/implementations/eager/registry-manager.js";
 import {
     createFunctionCache,
+    isOptionalToken,
     tokenToString,
 } from "@/di/implementations/eager/utils.js";
-import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
+import {
+    callInvocable,
+    isInvocable,
+    UnexpectedError,
+} from "@/utilities/_module-exports.js";
 
 import type {
     DiToken,
@@ -37,6 +42,9 @@ import type {
     Lifetime,
     ServiceHooks,
     FactoryRegistrationBase,
+    DepsTokens,
+    ContainerListener,
+    EmptyListener,
 } from "@/di/contracts/_module-exports.js";
 import type { CanNotResolveServiceDiErrorCreateData } from "@/di/contracts/container.errors.js";
 import type { Node } from "@/di/implementations/eager/_shared.js";
@@ -453,18 +461,106 @@ export class Container implements IContainer {
         }
     }
 
-    private onContainerInit(handler: DiHook): void {
-        this.throwIfContainerAlreadyInitialized(this.onContainerInit.name);
-        this.throwIfInsideRunScope(this.onContainerInit.name);
+    private async resolveContainerHookDeps(
+        container: IServiceResolver,
+        deps: DepsTokens,
+    ): Promise<DepRecord> {
+        const resolvedEntries = await Promise.all(
+            Object.entries(deps).map<Promise<[string, unknown] | null>>(
+                async ([key, value]) => {
+                    const resolved = await container.resolve(value);
+                    if (isOptionalToken(value)) {
+                        return [key, resolved ?? undefined];
+                    }
+
+                    if (resolved === null) {
+                        return null;
+                    }
+                    return [key, resolved];
+                },
+            ),
+        );
+        return Object.fromEntries(
+            resolvedEntries.filter((resolved) => resolved !== null),
+        );
+    }
+
+    private basicOnInit(handler: DiHook): void {
+        this.throwIfContainerAlreadyInitialized(this.basicOnInit.name);
+        this.throwIfInsideRunScope(this.basicOnInit.name);
 
         this.initHandlers.push(handler);
     }
 
-    private onContainerDeInit(handler: DiHook): void {
-        this.throwIfContainerAlreadyInitialized(this.onContainerDeInit.name);
-        this.throwIfInsideRunScope(this.onContainerDeInit.name);
+    private depsOnInit(deps: DepsTokens, listener: ContainerListener): void {
+        this.basicOnInit(async (container) => {
+            const resolvedDeps = await this.resolveContainerHookDeps(
+                container,
+                deps,
+            );
+            await callInvocable(listener, resolvedDeps);
+        });
+    }
+
+    onInit<TDeps extends DepRecord>(
+        deps: DepsTokens<TDeps>,
+        listener: ContainerListener<TDeps>,
+    ): void;
+    onInit(listener: EmptyListener): void;
+    onInit(
+        depsOrListener: DepsTokens | EmptyListener,
+        listener?: ContainerListener,
+    ): void {
+        if (isInvocable(depsOrListener)) {
+            this.depsOnInit({}, depsOrListener);
+            return;
+        }
+        if (!isInvocable(depsOrListener) && listener !== undefined) {
+            this.depsOnInit(depsOrListener, listener);
+            return;
+        }
+        throw new UnexpectedError(
+            "The onInit method expects a listener, or a deps record together with a listener.",
+        );
+    }
+
+    private basicOnDeInit(handler: DiHook): void {
+        this.throwIfContainerAlreadyInitialized(this.basicOnDeInit.name);
+        this.throwIfInsideRunScope(this.basicOnDeInit.name);
 
         this.deInitHandlers.push(handler);
+    }
+
+    private depOnDeInit(deps: DepsTokens, listener: ContainerListener): void {
+        this.basicOnDeInit(async (container) => {
+            const resolvedDeps = await this.resolveContainerHookDeps(
+                container,
+                deps,
+            );
+            await callInvocable(listener, resolvedDeps);
+        });
+    }
+
+    onDeInit<TDeps extends DepRecord>(
+        deps: DepsTokens<TDeps>,
+        listener: ContainerListener<TDeps>,
+    ): void;
+    onDeInit(listener: EmptyListener): void;
+    onDeInit(
+        depsOrListener: DepsTokens | EmptyListener,
+        listener?: ContainerListener,
+    ): void {
+        if (isInvocable(depsOrListener)) {
+            this.depOnDeInit({}, depsOrListener);
+            return;
+        }
+        if (!isInvocable(depsOrListener) && listener !== undefined) {
+            this.depOnDeInit(depsOrListener, listener);
+            return;
+        }
+        throw new UnexpectedError(
+            "The onDeInit method expects a listener, or a deps record together with a listener.",
+        );
     }
 
     private createDynamicServiceRegister(): IDynamicServiceRegister {
@@ -611,22 +707,20 @@ export class Container implements IContainer {
         }
 
         if (settings.onInit !== undefined) {
-            this.onContainerInit(async (resolver) => {
-                const service = await resolver.resolveOrFail(settings.token);
+            this.onInit({ service: settings.token }, async ({ service }) => {
                 if (settings.onInit === undefined) {
                     return;
                 }
-                callInvocable(settings.onInit, service);
+                await callInvocable(settings.onInit, service);
             });
         }
 
         if (settings.onDeInit !== undefined) {
-            this.onContainerDeInit(async (resolver) => {
-                const service = await resolver.resolveOrFail(settings.token);
+            this.onDeInit({ service: settings.token }, async ({ service }) => {
                 if (settings.onDeInit === undefined) {
                     return;
                 }
-                callInvocable(settings.onDeInit, service);
+                await callInvocable(settings.onDeInit, service);
             });
         }
     }
@@ -1029,10 +1123,10 @@ export class Container implements IContainer {
 
         const forked = new Container(this.settings);
         this.initHandlers.forEach((hook) => {
-            forked.onContainerInit(hook);
+            forked.basicOnInit(hook);
         });
         this.deInitHandlers.forEach((hook) => {
-            forked.onContainerDeInit(hook);
+            forked.basicOnDeInit(hook);
         });
         forked.graphManager = this.graphManager.copy();
         return forked;

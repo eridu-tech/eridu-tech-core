@@ -44,6 +44,7 @@ describe("class: RateLimiterFactory", () => {
     let rateLimiterFactory: IRateLimiterFactory;
     beforeEach(() => {
         vi.resetAllMocks();
+        vi.clearAllMocks();
         rateLimiterFactory = new RateLimiterFactory({
             adapter,
         });

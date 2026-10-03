@@ -1,10 +1,13 @@
 /* eslint-disable no-shadow */
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 
 import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js";
 import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js";
 import { FileStorage } from "@/file-storage/implementations/derivables/file-storage/file-storage.js";
-import { fileStorageTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
+import {
+    fileStorageSerdeTestSuite,
+    fileStorageTestSuite,
+} from "@/file-storage/implementations/test-utilities/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
@@ -21,30 +24,37 @@ import type {
 } from "@/file-storage/contracts/_module-exports.js";
 
 describe("class: FileStorage", () => {
+    function createFileStorage() {
+        const serde = new Serde(new SuperJsonSerdeAdapter());
+        const fileStorage = new FileStorage({
+            serde,
+            adapter: new SignedFileStorageAdapter({
+                adapter: new MemoryFileStorageAdapter(),
+                urlAdapter: {},
+            }),
+        });
+        return {
+            fileStorage,
+            serde,
+        };
+    }
+
     fileStorageTestSuite({
-        createFileStorage: () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
-            const fileStorage = new FileStorage({
-                serde,
-                adapter: new SignedFileStorageAdapter({
-                    adapter: new MemoryFileStorageAdapter(),
-                    urlAdapter: {},
-                }),
-            });
-            return {
-                fileStorage,
-                serde,
-            };
-        },
+        createFileStorage,
         beforeEach,
         describe,
         expect,
         test,
     });
 
-    beforeEach(() => {
-        vi.resetAllMocks();
+    fileStorageSerdeTestSuite({
+        createFileStorage,
+        beforeEach,
+        describe,
+        expect,
+        test,
     });
+
     describe("Serde tests:", () => {
         test("Should differentiate between different adapters", async () => {
             const serde = new Serde(new SuperJsonSerdeAdapter());

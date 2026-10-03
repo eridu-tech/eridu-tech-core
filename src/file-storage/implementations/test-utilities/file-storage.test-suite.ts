@@ -16,7 +16,6 @@ import type { beforeEach, ExpectStatic, SuiteAPI, TestAPI } from "vitest";
 
 import type {
     FileMetadata,
-    IFile,
     IFileStorage,
 } from "@/file-storage/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
@@ -35,11 +34,6 @@ export type FileStorageTestSuiteSettings = {
         fileStorage: IFileStorage;
         serde: ISerde;
     }>;
-
-    /**
-     * @default false
-     */
-    excludeSerdeTests?: boolean;
 };
 
 /**
@@ -57,15 +51,11 @@ export function fileStorageTestSuite(
         createFileStorage,
         describe,
         beforeEach: beforeEach_,
-        excludeSerdeTests = false,
     } = settings;
     let fileStorage: IFileStorage;
-    let serde: ISerde;
     beforeEach_(async () => {
-        const { fileStorage: fileStorage_, serde: serde_ } =
-            await createFileStorage();
+        const { fileStorage: fileStorage_ } = await createFileStorage();
         fileStorage = fileStorage_;
-        serde = serde_;
     });
 
     describe("IFileStorage tests:", () => {
@@ -2502,69 +2492,6 @@ export function fileStorageTestSuite(
                     ];
                     expect(results).toEqual([null, null, null, null]);
                 });
-            });
-        });
-        describe.skipIf(excludeSerdeTests)("Serde tests:", () => {
-            test("Should allow get data from a deserialized file instance", async () => {
-                const file = fileStorage.create("a.txt");
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await file.add({ data });
-                const deserializedFile = serde.deserialize<IFile>(
-                    serde.serialize(file),
-                );
-
-                const retrievedData = await deserializedFile.getBytes();
-
-                expect(retrievedData).toEqual(data);
-            });
-            test("Should allow update data on a deserialized file instance", async () => {
-                const file = fileStorage.create("a.txt");
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await file.add({ data });
-                const deserializedFile = serde.deserialize<IFile>(
-                    serde.serialize(file),
-                );
-
-                const newData = new Uint8Array(
-                    Buffer.from("NEW_CONTENT", "utf8"),
-                );
-                await deserializedFile.update({
-                    data: newData,
-                });
-                const retrievedData = await deserializedFile.getBytes();
-
-                expect(retrievedData).toEqual(newData);
-            });
-            test("Should allow put data on a deserialized file instance", async () => {
-                const file = fileStorage.create("a.txt");
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await file.add({ data });
-                const deserializedFile = serde.deserialize<IFile>(
-                    serde.serialize(file),
-                );
-
-                const newData = new Uint8Array(
-                    Buffer.from("NEW_CONTENT", "utf8"),
-                );
-                await deserializedFile.put({
-                    data: newData,
-                });
-                const retrievedData = await deserializedFile.getBytes();
-
-                expect(retrievedData).toEqual(newData);
-            });
-            test("Should allow remove data on a deserialized file instance", async () => {
-                const file = fileStorage.create("a.txt");
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await file.add({ data });
-                const deserializedFile = serde.deserialize<IFile>(
-                    serde.serialize(file),
-                );
-
-                await deserializedFile.remove();
-                const retrievedData = await deserializedFile.getBytes();
-
-                expect(retrievedData).toBeNull();
             });
         });
     });

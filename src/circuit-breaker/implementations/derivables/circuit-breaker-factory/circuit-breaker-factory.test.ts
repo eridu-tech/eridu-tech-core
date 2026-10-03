@@ -50,6 +50,7 @@ describe("class: CircuitBreakerFactory", () => {
     const slowCallTime = TimeSpan.fromMilliseconds(50);
     beforeEach(() => {
         vi.resetAllMocks();
+        vi.clearAllMocks();
         circuitBreakerFactory = new CircuitBreakerFactory({
             adapter,
             serde: new Serde(new SuperJsonSerdeAdapter()),
