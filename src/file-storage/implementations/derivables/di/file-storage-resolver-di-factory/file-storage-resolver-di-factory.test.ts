@@ -3,9 +3,14 @@
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js";
 import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/no-op-file-storage-adapter.js";
+import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js";
 import { FileStorageResolver } from "@/file-storage/implementations/derivables/_module-exports.js";
 import { fileStorageResolverDiFactory } from "@/file-storage/implementations/derivables/di/file-storage-resolver-di-factory/file-storage-resolver-di-factory.js";
+import { fileStorageSerdeTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
 import type { Mock } from "vitest";
 
@@ -83,5 +88,48 @@ describe("function: fileStorageResolverDiFactory", () => {
 
         expect(exists2).toHaveBeenCalledExactlyOnceWith(...args);
         expect(exists1).not.toHaveBeenCalled();
+    });
+
+    fileStorageSerdeTestSuite({
+        createFileStorage: async () => {
+            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const container = new Container({
+                executionContext,
+            });
+            const fileStorageResolver = new FileStorageResolver<Adapters>({
+                adapters: {
+                    adapter1: new SignedFileStorageAdapter({
+                        adapter: new MemoryFileStorageAdapter(),
+                        urlAdapter: {},
+                    }),
+                    adapter2: new SignedFileStorageAdapter({
+                        adapter: new MemoryFileStorageAdapter(),
+                        urlAdapter: {},
+                    }),
+                },
+                defaultAdapter: "adapter1",
+                serde,
+            });
+            container.registerValue({
+                token: FileStorageResolver,
+                value: fileStorageResolver,
+            });
+            const fileStorage_ = fileStorageResolverDiFactory<Adapters>(
+                container,
+                FileStorageResolver,
+            );
+            await container.init();
+            return {
+                fileStorage: fileStorage_,
+                serde,
+            };
+        },
+        beforeEach,
+        describe,
+        expect,
+        test,
     });
 });

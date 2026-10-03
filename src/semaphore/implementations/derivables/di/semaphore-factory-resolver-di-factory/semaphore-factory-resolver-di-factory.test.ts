@@ -3,9 +3,13 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { MemorySemaphoreAdapter } from "@/semaphore/implementations/adapters/memory-semaphore-adapter/_module-exports.js";
 import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op-semaphore-adapter/no-op-semaphore-adapter.js";
 import { SemaphoreFactoryResolver } from "@/semaphore/implementations/derivables/_module-exports.js";
 import { semaphoreFactoryResolverDiFactory } from "@/semaphore/implementations/derivables/di/semaphore-factory-resolver-di-factory/semaphore-factory-resolver-di-factory.js";
+import { semaphoreFactorySerdeTestSuite } from "@/semaphore/implementations/test-utilities/_module-exports.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
 import type { Mock } from "vitest";
 
@@ -121,5 +125,44 @@ describe("function: semaphoreFactoryResolverDiFactory", () => {
 
         expect(acquire2).toHaveBeenCalledExactlyOnceWith(...args);
         expect(acquire1).not.toHaveBeenCalled();
+    });
+
+    semaphoreFactorySerdeTestSuite({
+        createSemaphoreFactory: async () => {
+            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const container = new Container({
+                executionContext,
+            });
+            const semaphoreFactoryResolver =
+                new SemaphoreFactoryResolver<Adapters>({
+                    adapters: {
+                        adapter1: new MemorySemaphoreAdapter(),
+                        adapter2: new MemorySemaphoreAdapter(),
+                    },
+                    defaultAdapter: "adapter1",
+                    serde,
+                });
+            container.registerValue({
+                token: SemaphoreFactoryResolver,
+                value: semaphoreFactoryResolver,
+            });
+            const semaphoreFactory_ =
+                semaphoreFactoryResolverDiFactory<Adapters>(
+                    container,
+                    SemaphoreFactoryResolver,
+                );
+            await container.init();
+            return {
+                semaphoreFactory: semaphoreFactory_,
+                serde,
+            };
+        },
+        beforeEach,
+        describe,
+        expect,
+        test,
     });
 });

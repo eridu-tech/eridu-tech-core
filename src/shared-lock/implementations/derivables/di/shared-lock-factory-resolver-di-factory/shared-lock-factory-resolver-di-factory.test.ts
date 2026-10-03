@@ -3,9 +3,13 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { MemorySharedLockAdapter } from "@/shared-lock/implementations/adapters/memory-shared-lock-adapter/_module-exports.js";
 import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/no-op-shared-lock-adapter/no-op-shared-lock-adapter.js";
 import { SharedLockFactoryResolver } from "@/shared-lock/implementations/derivables/_module-exports.js";
 import { sharedLockFactoryResolverDiFactory } from "@/shared-lock/implementations/derivables/di/shared-lock-factory-resolver-di-factory/shared-lock-factory-resolver-di-factory.js";
+import { sharedLockFactorySerdeTestSuite } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
 
 import type { Mock } from "vitest";
 
@@ -111,5 +115,44 @@ describe("function: sharedLockFactoryResolverDiFactory", () => {
 
         expect(acquireWriter2).toHaveBeenCalledExactlyOnceWith(...args);
         expect(acquireWriter1).not.toHaveBeenCalled();
+    });
+
+    sharedLockFactorySerdeTestSuite({
+        createSharedLockFactory: async () => {
+            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const container = new Container({
+                executionContext,
+            });
+            const sharedLockFactoryResolver =
+                new SharedLockFactoryResolver<Adapters>({
+                    adapters: {
+                        adapter1: new MemorySharedLockAdapter(),
+                        adapter2: new MemorySharedLockAdapter(),
+                    },
+                    defaultAdapter: "adapter1",
+                    serde,
+                });
+            container.registerValue({
+                token: SharedLockFactoryResolver,
+                value: sharedLockFactoryResolver,
+            });
+            const sharedLockFactory_ =
+                sharedLockFactoryResolverDiFactory<Adapters>(
+                    container,
+                    SharedLockFactoryResolver,
+                );
+            await container.init();
+            return {
+                sharedLockFactory: sharedLockFactory_,
+                serde,
+            };
+        },
+        beforeEach,
+        describe,
+        expect,
+        test,
     });
 });

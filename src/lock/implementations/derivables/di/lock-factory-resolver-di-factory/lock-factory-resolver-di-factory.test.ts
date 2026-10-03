@@ -3,9 +3,13 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { MemoryLockAdapter } from "@/lock/implementations/adapters/memory-lock-adapter/_module-exports.js";
 import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adapter/no-op-lock-adapter.js";
 import { LockFactoryResolver } from "@/lock/implementations/derivables/_module-exports.js";
 import { lockFactoryResolverDiFactory } from "@/lock/implementations/derivables/di/lock-factory-resolver-di-factory/lock-factory-resolver-di-factory.js";
+import { lockFactorySerdeTestSuite } from "@/lock/implementations/test-utilities/_module-exports.js";
+import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
 import type { Mock } from "vitest";
 
@@ -92,5 +96,42 @@ describe("function: lockFactoryResolverDiFactory", () => {
 
         expect(acquire2).toHaveBeenCalledExactlyOnceWith(...args);
         expect(acquire1).not.toHaveBeenCalled();
+    });
+
+    lockFactorySerdeTestSuite({
+        createLockFactory: async () => {
+            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const container = new Container({
+                executionContext,
+            });
+            const lockFactoryResolver = new LockFactoryResolver<Adapters>({
+                adapters: {
+                    adapter1: new MemoryLockAdapter(),
+                    adapter2: new MemoryLockAdapter(),
+                },
+                defaultAdapter: "adapter1",
+                serde,
+            });
+            container.registerValue({
+                token: LockFactoryResolver,
+                value: lockFactoryResolver,
+            });
+            const lockFactory_ = lockFactoryResolverDiFactory<Adapters>(
+                container,
+                LockFactoryResolver,
+            );
+            await container.init();
+            return {
+                lockFactory: lockFactory_,
+                serde,
+            };
+        },
+        beforeEach,
+        describe,
+        expect,
+        test,
     });
 });
