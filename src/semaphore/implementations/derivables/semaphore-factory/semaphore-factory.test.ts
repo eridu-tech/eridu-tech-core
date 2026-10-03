@@ -8,7 +8,10 @@ import { ExecutionContext } from "@/execution-context/implementations/derivables
 import { KyselySemaphoreAdapter } from "@/semaphore/implementations/adapters/kysely-semaphore-adapter/_module-exports.js";
 import { MemorySemaphoreAdapter } from "@/semaphore/implementations/adapters/memory-semaphore-adapter/_module-exports.js";
 import { SemaphoreFactory } from "@/semaphore/implementations/derivables/_module-exports.js";
-import { semaphoreFactoryTestSuite } from "@/semaphore/implementations/test-utilities/_module-exports.js";
+import {
+    semaphoreFactorySerdeTestSuite,
+    semaphoreFactoryTestSuite,
+} from "@/semaphore/implementations/test-utilities/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
@@ -21,18 +24,28 @@ import type { KyselySemaphoreTables } from "@/semaphore/implementations/adapters
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: SemaphoreFactory", () => {
+    function createSemaphoreFactory() {
+        const serde = new Serde(new SuperJsonSerdeAdapter());
+        const semaphoreFactory = new SemaphoreFactory({
+            serde,
+            adapter: new MemorySemaphoreAdapter(),
+        });
+        return {
+            semaphoreFactory,
+            serde,
+        };
+    }
+
     semaphoreFactoryTestSuite({
-        createSemaphoreFactory: () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
-            const semaphoreFactory = new SemaphoreFactory({
-                serde,
-                adapter: new MemorySemaphoreAdapter(),
-            });
-            return {
-                semaphoreFactory,
-                serde,
-            };
-        },
+        createSemaphoreFactory,
+        beforeEach,
+        describe,
+        expect,
+        test,
+    });
+
+    semaphoreFactorySerdeTestSuite({
+        createSemaphoreFactory,
         beforeEach,
         describe,
         expect,
