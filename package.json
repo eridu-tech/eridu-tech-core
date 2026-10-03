@@ -551,6 +551,10 @@
             "types": "./dist/shared-lock/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/shared-lock/implementations/derivables/_module-exports.js"
         },
+        "./shared-lock/di": {
+            "types": "./dist/shared-lock/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/shared-lock/implementations/derivables/di/_module-exports.js"
+        },
         "./shared-lock/middlewares": {
             "types": "./dist/shared-lock/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/shared-lock/implementations/middlewares/_module-exports.js"
