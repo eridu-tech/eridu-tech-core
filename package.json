@@ -415,6 +415,10 @@
             "types": "./dist/rate-limiter/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/rate-limiter/implementations/derivables/_module-exports.js"
         },
+        "./rate-limiter/di": {
+            "types": "./dist/rate-limiter/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/rate-limiter/implementations/derivables/di/_module-exports.js"
+        },
         "./rate-limiter/middlewares": {
             "types": "./dist/rate-limiter/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/rate-limiter/implementations/middlewares/_module-exports.js"
