@@ -1,5 +1,47 @@
 # @daiso-tech/core
 
+## 0.69.0
+
+### Minor Changes
+
+- 1fae1d7: Added a dependency-injection aware controller binder to the `eridu-tech/http-router/di` entrypoint.
+
+    `bindHttpFactory(container)` returns a binder that turns a controller method into an `HttpHandlerFn`. The binder takes the controller's token and the name of one of its handler methods, resolves the controller from the container for each request, and invokes the bound method:
+
+    ```ts
+    import { bindHttpFactory } from "eridu-tech/http-router/di";
+    import type { HttpHandlerFn } from "eridu-tech/http-router/contracts";
+
+    class UsersController {
+        getUser: HttpHandlerFn = ({ text }) => text("Hi from UsersController");
+    }
+
+    const bindHttp = bindHttpFactory(container);
+
+    router.endpoint({
+        method: "GET",
+        url: "/users/:id",
+        handler: bindHttp(UsersController, "getUser"),
+    });
+    ```
+
+    - `eridu-tech/http-router/di` exports `bindHttpFactory`.
+    - The binder resolves the controller with `container.resolveOrFail` on every request, so the controller's lifetime follows its container registration.
+    - The resulting handler throws `UnexpectedError` when the bound member is not invocable.
+
+- 1fae1d7: Removed the request-scoping HTTP middleware and the `REQUEST` token from the `eridu-tech/http-router/di` entrypoint.
+
+    `registerRequest(container)` declared the `REQUEST` token as a dynamic token and returned an `HttpMiddlewareFn` that ran the rest of the request inside `container.run()`, with the incoming `IHttpReq` registered under `REQUEST`. It was removed because it will be rewritten using the new DI module component. `registerRequest`, the `REQUEST` token and their tests are removed.
+
+    ### Breaking changes
+    - `eridu-tech/http-router/di` no longer exports `registerRequest`.
+    - `eridu-tech/http-router/di` no longer exports the `REQUEST` token (`DiToken<IHttpReq>`).
+    - Registering the middleware with `router.use(registerRequest(container))` or resolving `REQUEST` from the container no longer compiles.
+
+    ### Migration
+
+    The request-scoping middleware is planned to be reintroduced, rewritten using the new DI module component. Until then, no replacement is available.
+
 ## 0.68.0
 
 ### Minor Changes
