@@ -34,9 +34,15 @@ Declare handler methods as **arrow function properties** so `this` stays bound t
 
 ## Initial configuration
 
-Register the controller in the container, then create the binder with `bindHttpFactory`:
+Set up the container, the router, and the binder created with `bindHttpFactory`:
 
-```ts file=./samples/bind-http-factory.ts
+```ts file=./samples/container.ts
+
+```
+
+Then define the controller and register it in the container:
+
+```ts file=./samples/users-controller.ts
 
 ```
 
@@ -47,14 +53,6 @@ Register the controller in the container, then create the binder with `bindHttpF
 Pass `bindHttp(Controller, "methodName")` wherever a handler is accepted:
 
 ```ts file=./samples/bind-http-factory-endpoint.ts
-
-```
-
-### Controllers with dependencies
-
-Because the controller is resolved from the container on every request, it can depend on any other service registered in the container:
-
-```ts file=./samples/bind-http-factory-with-dependencies.ts
 
 ```
 
