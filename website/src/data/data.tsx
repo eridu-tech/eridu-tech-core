@@ -1247,17 +1247,6 @@ export const PERFECT_FOR = {
             </>
         ),
     } satisfies WhoIsThisForItem,
-    ADAPTER_FIRST_ARCHITECTURES: {
-        name: "Adapter-first architectures:",
-        title: <>Adapter-first architectures:</>,
-        description: (
-            <>
-                Switch between Redis, PostgreSQL, SQLite, MongoDB, S3, local
-                storage, in-memory implementations, or your own adapters without
-                coupling business logic to a specific vendor.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
 };
 
 export const NOT_IDEAL_FOR = {
@@ -1268,19 +1257,6 @@ export const NOT_IDEAL_FOR = {
             <>
                 eridu-tech is focused on server-side and fullstack applications
                 rather than browser-only applications.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
-    FULLY_OPINIONATED_MONOLITHIC_STACK: {
-        name: "Applications looking for a fully opinionated monolithic stack:",
-        title: (
-            <>Applications looking for a fully opinionated monolithic stack:</>
-        ),
-        description: (
-            <>
-                Eridu is designed to be embedded and composed rather than to
-                take complete ownership of your application&apos;s routing,
-                rendering, deployment, or frontend architecture.
             </>
         ),
     } satisfies WhoIsThisForItem,
@@ -1308,17 +1284,6 @@ export const NOT_IDEAL_FOR = {
             </>
         ),
     } satisfies WhoIsThisForItem,
-    VERY_SMALL_SCRIPTS: {
-        name: "Very small scripts:",
-        title: <>Very small scripts:</>,
-        description: (
-            <>
-                If you only need a single Redis call, file upload, or cache
-                operation, introducing a framework-level abstraction may be
-                unnecessary.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
     APPLICATIONS_REQUIRING_PROVIDER_SPECIFIC_CAPABILITIES: {
         name: "Applications requiring provider-specific capabilities:",
         title: <>Applications requiring provider-specific capabilities:</>,
@@ -1328,6 +1293,17 @@ export const NOT_IDEAL_FOR = {
                 particular database, cloud platform, or infrastructure provider.
                 In those cases, using the provider&apos;s native SDK directly
                 may be more appropriate.
+            </>
+        ),
+    } satisfies WhoIsThisForItem,
+    VERY_SMALL_SCRIPTS: {
+        name: "Very small scripts:",
+        title: <>Very small scripts:</>,
+        description: (
+            <>
+                If you only need a single Redis call, file upload, or cache
+                operation, introducing a framework-level abstraction may be
+                unnecessary.
             </>
         ),
     } satisfies WhoIsThisForItem,
