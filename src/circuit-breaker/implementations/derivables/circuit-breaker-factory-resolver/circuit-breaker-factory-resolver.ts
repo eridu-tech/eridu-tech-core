@@ -57,32 +57,6 @@ export type CircuitBreakerFactoryResolverSettings<TAdapters extends string> =
 export class CircuitBreakerFactoryResolver<
     TAdapters extends string,
 > implements ICircuitBreakerFactoryResolver<TAdapters> {
-    /**
-     * @example
-     * ```ts
-     * import { CircuitBreakerFactoryResolver } from "eridu-tech/circuit-breaker";
-     * import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storate-adapter";
-     * import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
-     * import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-circuit-breaker-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const circuitBreakerFactoryResolver = new CircuitBreakerFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new DatabaseCircuitBreakerAdapter({
-     *       adapter: new MemoryCircuitBreakerStorageAdapter()
-     *     }),
-     *     redis: new RedisCircuitBreakerAdapter({
-     *       database: new Redis("YOUR_REDIS_CONNECTION")
-     *     }),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     * ```
-     */
     constructor(
         private readonly settings: CircuitBreakerFactoryResolverSettings<TAdapters>,
     ) {}
@@ -123,48 +97,6 @@ export class CircuitBreakerFactoryResolver<
         });
     }
 
-    /**
-     * @example
-     * ```ts
-     * import { CircuitBreakerFactoryResolver } from "eridu-tech/circuit-breaker";
-     * import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storate-adapter";
-     * import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
-     * import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-circuit-breaker-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const circuitBreakerFactoryResolver = new CircuitBreakerFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new DatabaseCircuitBreakerAdapter({
-     *       adapter: new MemoryCircuitBreakerStorageAdapter()
-     *     }),
-     *     redis: new RedisCircuitBreakerAdapter({
-     *       database: new Redis("YOUR_REDIS_CONNECTION")
-     *     }),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     *
-     * // Will apply circuit breaker logic the default adapter which is MemoryCircuitBreakerStorageAdapter
-     * await circuitBreakerFactoryResolver
-     *   .use()
-     *   .create("a")
-     *   .runOrFail(async () => {
-     *     // ... code to apply circuit breaker logic
-     *   });
-     *
-     * // Will apply circuit breaker logic using the RedisCircuitBreakerAdapter
-     * await circuitBreakerFactoryResolver
-     *   .use("redis")
-     *   .create("a")
-     *   .runOrFail(async () => {
-     *     // ... code to apply circuit breaker logic
-     *   });
-     * ```
-     */
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ICircuitBreakerFactory {

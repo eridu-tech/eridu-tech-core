@@ -78,35 +78,6 @@ export class Cache<TType = unknown> implements ICache<TType> {
     private readonly adapter: ICacheAdapter<TType>;
     private readonly defaultTtl: TimeSpan | null;
 
-    /**
-     *
-     * @example
-     * ```ts
-     * import { KyselyCacheAdapter } from "eridu-tech/cache/kysely-cache-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import Sqlite from "better-sqlite3";
-     * import { Cache } from "eridu-tech/cache";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const database = new Sqlite("local.db");
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const cacheAdapter = new KyselyCacheAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database,
-     *     }),
-     *   }),
-     *   serde,
-     * });
-     * // You need initialize the adapter once before using it.
-     * await cacheAdapter.init();
-     *
-     * const cache = new Cache({
-     *   adapter: cacheAdapter,
-     * });
-     * ```
-     */
     constructor(settings: CacheSettings<TType>) {
         const {
             adapter,

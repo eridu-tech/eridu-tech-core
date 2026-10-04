@@ -60,32 +60,6 @@ export type SemaphoreFactorySerdeTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/semaphore/test-utilities"`
  * @group Utilities
- * @example
- * ```ts
- * import { beforeEach, describe, expect, test } from "vitest";
- * import { MemorySemaphoreAdapter } from "eridu-tech/semaphore/memory-semaphore-adapter";
- * import { SemaphoreFactory } from "eridu-tech/semaphore";
- * import { semaphoreFactorySerdeTestSuite } from "eridu-tech/semaphore/test-utilities";
- * import { Serde } from "eridu-tech/serde";
- * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
- *
- * describe("class: MySemaphoreFactory", () => {
- *     semaphoreFactorySerdeTestSuite({
- *         createSemaphoreFactory: () => {
- *             const serde = new Serde(new SuperJsonSerdeAdapter());
- *             const semaphoreFactory = new SemaphoreFactory({
- *                 serde,
- *                 adapter: new MemorySemaphoreAdapter(),
- *             });
- *             return { semaphoreFactory, serde };
- *         },
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function semaphoreFactorySerdeTestSuite(
     settings: SemaphoreFactorySerdeTestSuiteSettings,

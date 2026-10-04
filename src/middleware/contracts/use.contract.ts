@@ -18,13 +18,6 @@ import type {
  * @typeParam TParameters - Type of arguments passed through the middleware chain
  * @typeParam TReturn - Type of value returned from the function
  *
- * @example
- * ```ts
- * // In middleware
- * next() // Continue with original args
- * next([newArg1, newArg2]) // Continue with modified args
- * ```
- *
  * @see {@link MiddlewareArgs | `MiddlewareArgs`}
  * @see {@link MiddlewareFn | `MiddlewareFn`}
  *
@@ -43,16 +36,6 @@ export type NextFn<
  *
  * @typeParam TParameters - Type of arguments passed to the function
  * @typeParam TReturn - Type of value returned from the function
- *
- * @example
- * ```ts
- * const loggingMiddleware: MiddlewareFn = ({ args, next }) => {
- *   console.log('Before:', args);
- *   const result = next(args);
- *   console.log('After:', result);
- *   return result;
- * };
- * ```
  *
  * @see {@link NextFn | `NextFn`}
  * @see {@link MiddlewareFn | `MiddlewareFn`}
@@ -89,18 +72,6 @@ export type MiddlewareArgs<
  *
  * @typeParam TParameters - Type of arguments passed to the function
  * @typeParam TReturn - Type of value returned from the function
- *
- * @example
- * ```ts
- * class LoggingMiddleware implements IMiddlewareObject {
- *   priority = 10;
- *
- *   invoke({ args, next }: MiddlewareArgs) {
- *     console.log('Executing with:', args);
- *     return next(args);
- *   }
- * }
- * ```
  *
  * @see {@link MiddlewareFn | `MiddlewareFn`}
  * @see {@link Middleware | `Middleware`}
@@ -149,16 +120,6 @@ export type MiddlewareFn<
  * @typeParam TReturn - Type of value returned from the function
  * @param middleware - A function conforming to {@link MiddlewareFn}.
  * @returns The same handler, typed as {@link MiddlewareFn}.
- *
- * @example
- * ```ts
- * const loggingMiddleware = defineMiddleware(({ args, next, context }) => {
- *     console.log('Before:', args);
- *     const result = next(args);
- *     console.log('After:', result);
- *     return result;
- * });
- * ```
  *
  * IMPORT_PATH: `eridu-tech/middleware/contracts`
  * @group Contracts
@@ -217,25 +178,6 @@ export type Middleware<
  * @param middlewares - One or more middleware to apply, executed in priority order
  *
  * @returns A new invocable function that applies the middleware chain
- *
- * @example
- * ```ts
- * function main(use: Use): void {
- *   // Apply a single middleware
- *   const logged = use(fetchData, loggingMiddleware);
- *
- *   // Apply multiple middlewares (executed in priority order)
- *   const enhanced = use(fetchData, [
- *     { priority: 0, invoke: authMiddleware },
- *     { priority: 10, invoke: cacheMiddleware },
- *     { priority: 20, invoke: loggingMiddleware }
- *   ]);
- *
- *   // Call the wrapped function
- *   const result = logged(arg1, arg2);
- * }
- *
- * ```
  *
  * @see {@link UseFactorySettings | `UseFactorySettings`}
  * @see {@link Middleware | `Middleware`}

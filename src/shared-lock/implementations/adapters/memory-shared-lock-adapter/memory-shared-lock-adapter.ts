@@ -53,20 +53,7 @@ export class MemorySharedLockAdapter
     implements ISharedLockAdapter, IDeinitizable, IPrunable
 {
     /**
-     *  @example
-     * ```ts
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     *
-     * const sharedLockAdapter = new MemorySharedLockAdapter();
-     * ```
      * You can also provide an `Map`.
-     * @example
-     * ```ts
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     *
-     * const map = new Map<string, any>();
-     * const sharedLockAdapter = new MemorySharedLockAdapter(map);
-     * ```
      */
     constructor(
         private readonly map = new Map<string, MemorySharedLockData>(),

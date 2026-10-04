@@ -74,26 +74,6 @@ export class MongodbRateLimiterStorageAdapter<TType>
     private readonly collection: Collection<MongodbRateLimiterDocument>;
     private readonly serde: ISerde<string>;
 
-    /**
-     * @example
-     * ```ts
-     * import { MongodbRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/mongodb-rate-limiter-storage-adapter";
-     * import { MongoClient } from "mongodb";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     *
-     * const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
-     * const database = client.db("database");
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const rateLimiterStorageAdapter = new MongodbRateLimiterStorageAdapter({
-     *   client,
-     *   database,
-     *   serde
-     * });
-     * // You need initialize the adapter once before using it.
-     * await rateLimiterStorageAdapter.init()
-     * ```
-     */
     constructor(settings: MongodbRateLimiterStorageAdapterSettings) {
         const {
             collectionName = "rateLimiter",

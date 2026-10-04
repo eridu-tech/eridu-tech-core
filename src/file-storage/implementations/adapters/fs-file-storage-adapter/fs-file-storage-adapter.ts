@@ -66,20 +66,6 @@ export class FsFileStorageAdapter
     private readonly codec: ICodec<string, string>;
     private readonly location: string;
 
-    /**
-     * @example
-     * ```ts
-     * import { Base64Codec } from "eridu-tech/codex/base-64-codec";
-     * import { FsFileStorageAdapter } from "eridu-tech/file-storage/fs-file-storage-adapter";
-     *
-     * const fileStorageAdapter = new FsFileStorageAdapter({
-     *   // Both settings are optional
-     *   location: new URL("./uploads", import.meta.url).toString(),
-     *   // By default base64 is used for encoding and decoding the filenames,
-     *   codec: new Base64Codec()
-     * });
-     * ```
-     */
     constructor(settings: FsFileStorageAdapterSettings = {}) {
         const {
             codec = new Base64Codec(),

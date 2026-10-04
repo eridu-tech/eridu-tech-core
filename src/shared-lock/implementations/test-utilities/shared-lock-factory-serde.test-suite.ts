@@ -62,32 +62,6 @@ export type SharedLockFactorySerdeTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/shared-lock/test-utilities"`
  * @group Utilities
- * @example
- * ```ts
- * import { beforeEach, describe, expect, test } from "vitest";
- * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
- * import { SharedLockFactory } from "eridu-tech/shared-lock";
- * import { sharedLockFactorySerdeTestSuite } from "eridu-tech/shared-lock/test-utilities";
- * import { Serde } from "eridu-tech/serde";
- * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
- *
- * describe("class: MySharedLockFactory", () => {
- *     sharedLockFactorySerdeTestSuite({
- *         createSharedLockFactory: () => {
- *             const serde = new Serde(new SuperJsonSerdeAdapter());
- *             const sharedLockFactory = new SharedLockFactory({
- *                 serde,
- *                 adapter: new MemorySharedLockAdapter(),
- *             });
- *             return { sharedLockFactory, serde };
- *         },
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function sharedLockFactorySerdeTestSuite(
     settings: SharedLockFactorySerdeTestSuiteSettings,

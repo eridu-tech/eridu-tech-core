@@ -59,32 +59,6 @@ export type LockFactorySerdeTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/lock/test-utilities"`
  * @group Utilities
- * @example
- * ```ts
- * import { beforeEach, describe, expect, test } from "vitest";
- * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
- * import { LockFactory } from "eridu-tech/lock";
- * import { lockFactorySerdeTestSuite } from "eridu-tech/lock/test-utilities";
- * import { Serde } from "eridu-tech/serde";
- * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
- *
- * describe("class: MyLockFactory", () => {
- *     lockFactorySerdeTestSuite({
- *         createLockFactory: () => {
- *             const serde = new Serde(new SuperJsonSerdeAdapter());
- *             const lockFactory = new LockFactory({
- *                 serde,
- *                 adapter: new MemoryLockAdapter(),
- *             });
- *             return { lockFactory, serde };
- *         },
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function lockFactorySerdeTestSuite(
     settings: LockFactorySerdeTestSuiteSettings,

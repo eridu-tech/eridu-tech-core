@@ -53,27 +53,6 @@ export type LockFactoryResolverSettings<TAdapters extends string> =
 export class LockFactoryResolver<
     TAdapters extends string,
 > implements ILockFactoryResolver<TAdapters> {
-    /**
-     * @example
-     * ```ts
-     * import { LockFactoryResolver } from "eridu-tech/lock";
-     * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
-     * import { RedisLockAdapter } from "eridu-tech/lock/redis-lock-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const lockFactoryResolver = new LockFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemoryLockAdapter(),
-     *     redis: new RedisLockAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     * ```
-     */
     constructor(
         private readonly settings: LockFactoryResolverSettings<TAdapters>,
     ) {}
@@ -101,40 +80,6 @@ export class LockFactoryResolver<
         });
     }
 
-    /**
-     * @example
-     * ```ts
-     * import { LockFactoryResolver } from "eridu-tech/lock";
-     * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
-     * import { RedisLockAdapter } from "eridu-tech/lock/redis-lock-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { TimeSpan } from "eridu-tech/time-span";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const lockFactoryResolver = new LockFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemoryLockAdapter(),
-     *     redis: new RedisLockAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     *
-     * // Will acquire key using the default adapter which is MemoryLockAdapter
-     * await lockFactoryResolver
-     *   .use()
-     *   .create("a")
-     *   .acquire();
-     *
-     * // Will acquire key using the redis adapter
-     * await lockFactoryResolver
-     *   .use("redis")
-     *   .create("a")
-     *   .acquire();
-     * ```
-     */
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ILockFactory {

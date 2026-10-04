@@ -53,27 +53,6 @@ export type SharedLockFactoryResolverSettings<TAdapters extends string> =
 export class SharedLockFactoryResolver<
     TAdapters extends string,
 > implements ISharedLockFactoryResolver<TAdapters> {
-    /**
-     * @example
-     * ```ts
-     * import { SharedLockFactoryResolver } from "eridu-tech/shared-lock";
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     * import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const lockProviderFactory = new SharedLockFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemorySharedLockAdapter(),
-     *     redis: new RedisSharedLockAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     * ```
-     */
     constructor(
         private readonly settings: SharedLockFactoryResolverSettings<TAdapters>,
     ) {}
@@ -103,40 +82,6 @@ export class SharedLockFactoryResolver<
         });
     }
 
-    /**
-     * @example
-     * ```ts
-     * import { SharedLockFactoryResolver } from "eridu-tech/shared-lock";
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     * import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { TimeSpan } from "eridu-tech/time-span";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const lockProviderFactory = new SharedLockFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemorySharedLockAdapter(),
-     *     redis: new RedisSharedLockAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     *
-     * // Will acquire key using the default adapter which is MemorySharedLockAdapter
-     * await lockProviderFactory
-     *   .use()
-     *   .create("a")
-     *   .acquireWriter();
-     *
-     * // Will acquire key using the redis adapter
-     * await lockProviderFactory
-     *   .use("redis")
-     *   .create("a")
-     *   .acquireWriter();
-     * ```
-     */
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ISharedLockFactory {

@@ -57,34 +57,6 @@ export class EventBusResolver<
     TAdapters extends string = string,
     TEventMap extends BaseEventMap = BaseEventMap,
 > implements IEventBusResolver<TAdapters, TEventMap> {
-    /**
-     * @example
-     * ```ts
-     * import { type IEventBusAdapter, BaseEvent } from "eridu-tech/event-bus/contracts";
-     * import { EventBusResolver } from "eridu-tech/event-bus";
-     * import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-adapter";
-     * import { RedisPubSubEventBusAdapter } from "eridu-tech/event-bus/redis-pub-sub-event-bus-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import { Redis } from "ioredis";
-     *
-     * type Store = Partial<Record<string, IEventBusAdapter>>;
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const store: Store = {};
-     * const eventBusResolver = new EventBusResolver({
-     *   adapters: {
-     *     memory: new MemoryEventBusAdapter(),
-     *     redis: new RedisPubSubEventBusAdapter({
-     *       serde,
-     *       dispatcherClient: new Redis("YOUR_REDIS_CONNECTION_STRING"),
-     *       listenerClient: new Redis("YOUR_REDIS_CONNECTION_STRING"),
-     *     }),
-     *   },
-     *   defaultAdapter: "memory"
-     * });
-     * ```
-     */
     constructor(
         private readonly settings: EventBusResolverSettings<
             TAdapters,
@@ -113,51 +85,6 @@ export class EventBusResolver<
         });
     }
 
-    /**
-     * @example
-     * ```ts
-     * import { type IEventBusAdapter, BaseEvent } from "eridu-tech/event-bus/contracts";
-     * import { EventBusResolver } from "eridu-tech/event-bus";
-     * import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-adapter";
-     * import { RedisPubSubEventBusAdapter } from "eridu-tech/event-bus/redis-pub-sub-event-bus-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const eventBusResolver = new EventBusResolver({
-     *   adapters: {
-     *     memory: new MemoryEventBusAdapter(),
-     *     redis: new RedisPubSubEventBusAdapter({
-     *       serde,
-     *       dispatcherClient: new Redis("YOUR_REDIS_CONNECTION_STRING"),
-     *       listenerClient: new Redis("YOUR_REDIS_CONNECTION_STRING"),
-     *     }),
-     *   },
-     *   defaultAdapter: "memory"
-     * });
-     *
-     * type AddEvent = {
-     *   a: number;
-     *   b: number;
-     * };
-     * type EventMap = {
-     *   add: AddEvent;
-     * };
-     *
-     * // Will dispatch AddEvent using the default adapter which is MemoryEventBusAdapter
-     * await eventBusResolver
-     *   .setEventMapType<EventMap>()
-     *   .use()
-     *   .dispatch("add", { a: 1, b: 2 });
-     *
-     * // Will dispatch AddEvent using the redis adapter
-     * await eventBusResolver
-     *   .setEventMapType<EventMap>()
-     *   .use("redis")
-     *   .dispatch("add", { a: 1, b: 2 });
-     * ```
-     */
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): IEventBus<TEventMap> {

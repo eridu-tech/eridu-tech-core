@@ -109,27 +109,6 @@ export class IterableCollection<
 
     /**
      * The `concat` static method is a convenient utility for easily concatenating multiple {@link Iterable | `Iterable`}.
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * class MyIterable implements Iterable<number> {
-     *   *[Symbol.iterator](): Iterator<number> {
-     *     yield 1;
-     *     yield 2;
-     *     yield 3;
-     *   }
-     * }
-     *
-     * const collection = IterableCollection.concat([
-     *   new MyIterable(),
-     *   new Set([1, 2, 3]),
-     *   new Map([["a", 1], ["b", 2]]),
-     *   ["a", "b", "c"]
-     * ]);
-     * collection.toArray();
-     * // [1, 2, 3, 1, 2, 3, ["a", 1], ["b", 2], "a", "b", "c"]
-     * ```
      */
     static concat<TValue>(
         iterables: IterableValue<IterableValue<TValue>>,
@@ -141,41 +120,6 @@ export class IterableCollection<
 
     /**
      * The `difference` static method is used to compute the difference between two {@link Iterable | `Iterable`} instances. By default, the equality check is performed on each item.
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = IterableCollection.difference(
-     *   [1, 2, 2, 3, 4, 5],
-     *   [2, 4, 6, 8]
-     * );
-     * collection.toArray();
-     * // [1, 3, 5]
-     * ```
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = IterableCollection.difference(
-     *   [
-     *     { name: "iPhone 6", brand: "Apple", type: "phone" },
-     *     { name: "iPhone 5", brand: "Apple", type: "phone" },
-     *     { name: "Apple Watch", brand: "Apple", type: "watch" },
-     *     { name: "Galaxy S6", brand: "Samsung", type: "phone" },
-     *     { name: "Galaxy Gear", brand: "Samsung", type: "watch" },
-     *   ],
-     *   [
-     *     { name: "Apple Watch", brand: "Apple", type: "watch" },
-     *   ],
-     *   (product) => product.type
-     * );
-     * collection.toArray();
-     * // [
-     * //   { name: "iPhone 6", brand: "Apple", type: "phone" },
-     * //   { name: "iPhone 5", brand: "Apple", type: "phone" },
-     * //   { name: "Galaxy S6", brand: "Samsung", type: "phone" },
-     * // ]
-     * ```
      */
     static difference<TValue, TSelect>(
         iterableA: IterableValue<TValue>,
@@ -191,30 +135,6 @@ export class IterableCollection<
     /**
      * The `zip` static method merges together the values of `iterableA` with the values of the `iterableB` at their corresponding index.
      * The returned collection has size of the shortest collection.
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = IterableCollection.zip(["Chair", "Desk"], [100, 200]);
-     * collection.toArray();
-     * // [["Chair", 100], ["Desk", 200]]
-     * ```
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = IterableCollection.zip(["Chair", "Desk", "Couch"], [100, 200]);
-     * collection.toArray();
-     * // [["Chair", 100], ["Desk", 200]]
-     * ```
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = IterableCollection.zip(["Chair", "Desk"], [100, 200, 300]);
-     * collection.toArray();
-     * // [["Chair", 100], ["Desk", 200]]
-     * ```
      */
     static zip<TValueA, TValueB>(
         iterableA: IterableValue<TValueA>,
@@ -237,51 +157,14 @@ export class IterableCollection<
      * The `constructor` takes an {@link Iterable | `Iterable`}.
      *
      * Works with `Array`.
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = new IterableCollection([1, 2, 3, 4]);
-     * ```
      *
      * Works with `String`.
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = new IterableCollection("ABCDE");
-     * ```
      *
      * Works with `Set`.
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = new IterableCollection(new Set([1, 2, 2 4]));
-     * ```
      *
      * Works with `Map`.
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = new IterableCollection(new Map([["a", 1], ["b", 2]]));
-     * ```
      *
      * Works with any `Iterable`.
-     * @example
-     * ```ts
-     * import { IterableCollection } from "eridu-tech/collection";
-     *
-     * class MyIterable implements Iterable<number> {
-     *   *[Symbol.iterator](): Iterator<number> {
-     *     yield 1;
-     *     yield 2;
-     *     yield 3;
-     *   }
-     * }
-     * const collection = new IterableCollection(new MyIterable());
-     * ```
      */
     constructor(iterable: IterableValue<TInput>) {
         this.iterable = resolveIterableValue(iterable);

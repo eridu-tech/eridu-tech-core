@@ -114,33 +114,6 @@ export class SharedLockFactory implements ISharedLockFactory {
     private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serdeTransformerName: string;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselySharedLockAdapter } from "eridu-tech/shared-lock/kysely-shared-lock-adapter";
-     * import { SharedLockFactory } from "eridu-tech/shared-lock";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const sharedLockAdapter = new KyselySharedLockAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
-     *     }),
-     *   });
-     * });
-     * // You need initialize the adapter once before using it.
-     * await sharedLockAdapter.init();
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter())
-     * const lockFactory = new SharedLockFactory({
-     *   serde,
-     *   adapter: sharedLockAdapter,
-     * });
-     * ```
-     */
     constructor(settings: SharedLockFactorySettings) {
         const {
             defaultTtl = TimeSpan.fromMinutes(5),
@@ -173,24 +146,6 @@ export class SharedLockFactory implements ISharedLockFactory {
         }
     }
 
-    /**
-     * @example
-     * ```ts
-     * import { SharedLockFactory } from "eridu-tech/shared-lock";
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     * import { Namespace } from "eridu-tech/namespace";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     *
-     * const lockFactory = new SharedLockFactory({
-     *   adapter: new MemorySharedLockAdapter(),
-     *   namespace: new Namespace("shared_lock"),
-     *   serde: new Serde(new SuperJsonSerdeAdapter())
-     * });
-     *
-     * const sharedLock = lockFactory.create("a");
-     * ```
-     */
     create(
         key: string,
         settings: SharedLockFactoryCreateSettings,

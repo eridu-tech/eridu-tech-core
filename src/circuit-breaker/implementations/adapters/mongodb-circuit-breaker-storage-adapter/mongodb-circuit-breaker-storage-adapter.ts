@@ -76,26 +76,6 @@ export class MongodbCircuitBreakerStorageAdapter<TType = unknown>
     private readonly transactionContext: ITransactionContext<Db, ClientSession>;
     private readonly serde: ISerde<string>;
 
-    /**
-     * @example
-     * ```ts
-     * import { MongodbCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/mongodb-circuit-breaker-storage-adapter";
-     * import { MongoClient } from "mongodb";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     *
-     * const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
-     * const database = client.db("database");
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const circuitBreakerStorageAdapter = new MongodbCircuitBreakerStorageAdapter({
-     *   client,
-     *   database,
-     *   serde
-     * });
-     * // You need initialize the adapter once before using it.
-     * await circuitBreakerStorageAdapter.init()
-     * ```
-     */
     constructor(settings: MongodbCircuitBreakerStorageAdapterSettings) {
         const {
             collectionName = "circuitBreaker",

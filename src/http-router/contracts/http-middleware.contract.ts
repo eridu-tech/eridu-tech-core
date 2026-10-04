@@ -75,11 +75,6 @@ export type HttpMiddleware = HttpMiddlewareFn | IHttpMiddlewareObject;
  * @param middleware - The middleware registration configuration object.
  * @returns The same middleware registration configuration object with inferred types.
  *
- * @example
- * ```typescript
- * defineHttpMiddleware(async ({ req, next }) => { ... });
- * ```
- *
  * IMPORT_PATH: `"eridu-tech/http-router/contracts"`
  * @group Contracts
  */

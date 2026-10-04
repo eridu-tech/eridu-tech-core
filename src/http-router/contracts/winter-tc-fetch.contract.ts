@@ -81,16 +81,6 @@ export type WinterTcMiddleware =
  * @param handler - A function conforming to {@link WinterTcMiddlewareFn}.
  * @returns The same handler, typed as {@link WinterTcMiddlewareFn}.
  *
- * @example
- * ```ts
- * const loggerMiddleware = defineWinterTcMiddleware(async (request, next) => {
- *     console.log(`${request.method} ${request.url}`);
- *     const response = await next(request);
- *     console.log(`${response.status}`);
- *     return response;
- * });
- * ```
- *
  * IMPORT_PATH: `"eridu-tech/http-router/contracts"`
  * @group Contracts
  */

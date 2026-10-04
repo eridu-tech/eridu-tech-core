@@ -15,11 +15,6 @@ import type { Invocable, Promisable } from "@/utilities/_module-exports.js";
  *
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  *
- * @example
- * ```ts
- * const hook: BeforeHook<[name: string]> = ([name]) => [name.trim()];
- * ```
- *
  * @see {@link withBeforeHook | `withBeforeHook`}
  *
  * IMPORT_PATH: `eridu-tech/middleware`
@@ -40,14 +35,6 @@ export type BeforeHook<TParameters extends Array<unknown> = Array<unknown>> =
  * @param callback - Hook invoked with the arguments before execution
  * @param detach - When `true`, the hook runs without being awaited and cannot change the arguments. Defaults to `false`
  * @returns Middleware function that applies the before hook
- *
- * @example
- * ```ts
- * const createUser = use(
- *   saveUser,
- *   withBeforeHook<[name: string], User>(([name]) => [name.trim()]),
- * );
- * ```
  *
  * @see {@link BeforeHook | `BeforeHook`}
  *
