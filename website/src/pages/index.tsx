@@ -513,6 +513,21 @@ function CodeTabsSection() {
                         <span>{tab.description}</span>
                     </div>
                 </div>
+                <div className="daiso-code-tabs-actions">
+                    <Link
+                        className="button button--primary button--lg"
+                        to="./docs/getting_started"
+                    >
+                        Get started{" "}
+                        <ArrowRight
+                            size="1rem"
+                            style={{
+                                marginLeft: "0.4rem",
+                                verticalAlign: "middle",
+                            }}
+                        />
+                    </Link>
+                </div>
             </div>
         </section>
     );
