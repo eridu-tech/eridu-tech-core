@@ -3,7 +3,6 @@ import type {
     ComponentItemProps,
     WhoIsThisForItem,
     CodeFile,
-    CodeExample,
     ComparisonItem,
 } from "./types.js";
 import {
@@ -41,6 +40,8 @@ import {
     Image,
     Activity,
     SquareFunction,
+    Wrench,
+    BatteryFull,
 } from "lucide-react";
 
 export const INSTALL_CMD = "npm install eridu-tech";
@@ -48,6 +49,17 @@ export const INSTALL_CMD = "npm install eridu-tech";
 // ─── External Links ────────────────────────────────────────────
 // Single source of truth for external URLs referenced across the site.
 export const GITHUB_REPO_URL = "https://github.com/daiso-tech/daiso-core";
+
+// ─── Landing Page Copy ─────────────────────────────────────────
+export const HERO_TITLE = "The composable TypeScript framework";
+
+export const HERO_SUBTITLE = (
+    <>
+        Think shadcn, but for your backend. Embed Eridu into Next.js, TanStack
+        Start, Nuxt, or any fullstack framework and compose only the backend
+        capabilities your application needs.
+    </>
+);
 
 // ─── Components Record ──────────────────────────────────────────
 // Single source of truth for every component, keyed by name.
@@ -1070,51 +1082,70 @@ export const UPCOMING_ITEMS: ComponentItemProps[] = [
 // ─── Homepage Data ─────────────────────────────────────────────
 
 export const FEATURE_ITEMS = {
+    EMBEDDABLE_BY_DESIGN: {
+        name: "Embeddable by design",
+        icon: <Box size="1.5rem" strokeWidth={1.5} />,
+        title: <>Embeddable by design</>,
+        description: (
+            <>
+                Use Eridu inside the framework you already know. Embed it into
+                Next.js, TanStack Start, Nuxt, or other fullstack frameworks
+                without taking over your application&apos;s routing, rendering,
+                or deployment model.
+            </>
+        ),
+    } satisfies FeatureItemProps,
+    COMPOSE_ONLY_WHAT_YOU_NEED: {
+        name: "Compose only what you need",
+        icon: <Plug size="1.5rem" strokeWidth={1.5} />,
+        title: <>Compose only what you need</>,
+        description: (
+            <>
+                Eridu is built from independent, composable capabilities. Add
+                HTTP routing, dependency injection, cache, storage, events,
+                queues, CLI, serialization, transactions, and more as your
+                application needs them, without adopting an all-or-nothing
+                framework runtime.
+            </>
+        ),
+    } satisfies FeatureItemProps,
+    OWN_AND_CUSTOMIZE_YOUR_CODE: {
+        name: "Own and customize your code",
+        icon: <Wrench size="1.5rem" strokeWidth={1.5} />,
+        title: <>Own and customize your code</>,
+        description: (
+            <>
+                Inspired by the shadcn approach, Eridu is designed to let you
+                build with code you control. Scaffold the capabilities you need
+                into your application, customize them freely, and extend them
+                without being locked into opaque framework internals.
+            </>
+        ),
+    } satisfies FeatureItemProps,
     SWITCH_INFRASTRUCTURE_WITHOUT_REWRITING_BUSINESS_LOGIC: {
         name: "Switch infrastructure without rewriting business logic",
         icon: <Zap size="1.5rem" strokeWidth={1.5} />,
         title: <>Switch infrastructure without rewriting business logic</>,
         description: (
             <>
-                The adapter pattern keeps your code decoupled from vendors. Use
-                Redis today, Postgres tomorrow, no refactoring required.
-            </>
-        ),
-    } satisfies FeatureItemProps,
-    COMPOSABLE_AND_EXTENDABLE: {
-        name: "Composable and extendable",
-        icon: <Plug size="1.5rem" strokeWidth={1.5} />,
-        title: <>Composable and extendable</>,
-        description: (
-            <>
-                Agnostic AOP-style middlewares and adapter plugins let you
-                extend your own code or existing adapters with additional
-                behavior that isn&apos;t included by default, keeping every
-                component composable and extendable. Predefined plugins and
-                middlewares are included out of the box.
+                Adapters keep your application decoupled from infrastructure
+                vendors. Use Redis today and switch to another implementation
+                tomorrow without rewriting the business logic built on top of
+                it.
             </>
         ),
     } satisfies FeatureItemProps,
     UNIFIED_FOUNDATION: {
-        name: "Unified foundation",
+        name: "One unified foundation",
         icon: <Layers size="1.5rem" strokeWidth={1.5} />,
-        title: <>Unified foundation</>,
+        title: <>One unified foundation</>,
         description: (
             <>
-                Every component is built on a single shared foundation, reusing
-                common abstractions like Serde, Execution Context, and the AOP
-                middleware system, so they work together seamlessly.
-            </>
-        ),
-    } satisfies FeatureItemProps,
-    BRING_YOUR_OWN_FRAMEWORK: {
-        name: "Bring your own framework",
-        icon: <Plug size="1.5rem" strokeWidth={1.5} />,
-        title: <>Bring your own framework</>,
-        description: (
-            <>
-                No DI container required. Plug directly into Express, NestJS,
-                AdonisJS, Next.js, Nuxt, or TanStack Start, it just works.
+                Every Eridu capability is built on the same underlying
+                abstractions and conventions. Shared primitives such as
+                dependency injection, serialization, execution context,
+                transaction context, and AOP-style middleware make the
+                components work together consistently.
             </>
         ),
     } satisfies FeatureItemProps,
@@ -1124,70 +1155,83 @@ export const FEATURE_ITEMS = {
         title: <>Small runtime footprint</>,
         description: (
             <>
-                Every component is built from scratch in a modular way, keeping
-                the runtime minimal with no framework or component baggage. Only
-                the client libraries and drivers (Redis, Postgres, MongoDB, and
-                more) are optional peer dependencies, installed when you need
-                them.
+                Because capabilities are independently composable, you
+                don&apos;t need to carry an entire framework runtime when you
+                only use a few parts of Eridu. Optional drivers and integrations
+                are added only when your application actually needs them.
             </>
         ),
     } satisfies FeatureItemProps,
-    BATTERY_INCLUDED: {
-        name: "Battery included",
-        icon: <Zap size="1.5rem" strokeWidth={1.5} />,
-        title: <>Battery included</>,
+    BATTERIES_INCLUDED: {
+        name: "Batteries included",
+        icon: <BatteryFull size="1.5rem" strokeWidth={1.5} />,
+        title: <>Batteries included</>,
         description: (
             <>
-                eridu-tech aims to be battery included, shipping a broad set of
-                ready-to-use components and integrations out of the box so you
-                can start building without wiring different libraries everything
-                yourself.
+                Eridu provides a broad set of production-ready capabilities and
+                integrations so you don&apos;t have to assemble your backend
+                infrastructure from unrelated libraries. Start with a cohesive
+                foundation and add more as your application grows.
             </>
         ),
     } satisfies FeatureItemProps,
 };
 
 export const PERFECT_FOR = {
-    BACKEND_APPLICATIONS: {
-        name: "Backend applications:",
-        title: <>Backend applications:</>,
+    FULLSTACK_TYPESCRIPT_APPLICATIONS: {
+        name: "Fullstack TypeScript applications:",
+        title: <>Fullstack TypeScript applications:</>,
         description: (
             <>
-                Build REST APIs, background workers, CLIs, and backend other
-                services using reusable, composable components.
+                Build complete applications with a frontend and backend in the
+                same project, while using Eridu for DI, HTTP, cache, storage,
+                events, queues, CLI, transactions, serialization, and other
+                backend capabilities.
             </>
         ),
     } satisfies WhoIsThisForItem,
-    FRAMEWORK_AGNOSTIC_PROJECTS: {
-        name: "Framework-agnostic projects:",
-        title: <>Framework-agnostic projects:</>,
+    DEVELOPERS_WHO_WANT_FRAMEWORK_FLEXIBILITY: {
+        name: "Developers who want framework flexibility:",
+        title: <>Developers who want framework flexibility:</>,
         description: (
             <>
-                Works with Express, Fastify, Hono, Next.js, Nuxt, SvelteKit,
-                Cloudflare Workers, Bun, Deno, Node.js, and any runtime
-                supporting the standard winter tc Fetch api.
+                Use Eridu without being locked into a specific frontend or
+                fullstack framework. Its boundaries are designed to integrate
+                with different routers, runtimes, and execution environments.
             </>
         ),
     } satisfies WhoIsThisForItem,
-    ADAPTER_FIRST_ARCHITECTURES: {
-        name: "Adapter-first architectures:",
-        title: <>Adapter-first architectures:</>,
+    COMPOSABLE_ARCHITECTURES: {
+        name: "Composable architectures:",
+        title: <>Composable architectures:</>,
         description: (
             <>
-                Switch between Redis, PostgreSQL, SQLite, MongoDB, S3, local
-                storage, in-memory implementations, or your own adapters without
-                changing business logic.
+                Add only the capabilities your application needs and combine
+                them into a single coherent foundation instead of adopting an
+                all-or-nothing backend stack.
             </>
         ),
     } satisfies WhoIsThisForItem,
-    DISTRIBUTED_SYSTEMS: {
-        name: "Distributed systems:",
-        title: <>Distributed systems:</>,
+    FRAMEWORK_STYLE_DEVELOPMENT_WITHOUT_FRAMEWORK_LOCK_IN: {
+        name: "Framework-style development without framework lock-in:",
+        title: <>Framework-style development without framework lock-in:</>,
         description: (
             <>
-                Use distributed locks, semaphores, shared locks, circuit
-                breakers, rate limiters, caches, and event buses that work
-                across multiple processes and machines.
+                Get conventions for controllers, DI, routing, middleware,
+                validation, events, queues, scheduling, and infrastructure
+                adapters while keeping ownership of your application code and
+                composition.
+            </>
+        ),
+    } satisfies WhoIsThisForItem,
+    SHADCN_STYLE_OWNERSHIP: {
+        name: "Shadcn-style ownership:",
+        title: <>Shadcn-style ownership:</>,
+        description: (
+            <>
+                Scaffold capabilities into your project, customize them to fit
+                your application, and extend the generated code instead of
+                depending on opaque framework internals.
             </>
         ),
     } satisfies WhoIsThisForItem,
@@ -1196,87 +1240,35 @@ export const PERFECT_FOR = {
         title: <>Modular monoliths:</>,
         description: (
             <>
-                Share the same abstractions, middleware, and adapters across a
-                single deployable application. Some components can be used in
-                microservices, but the library is primarily designed for modular
-                monolith architectures.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
-    LIBRARY_AND_FRAMEWORK_AUTHORS: {
-        name: "Library and framework authors:",
-        title: <>Library and framework authors:</>,
-        description: (
-            <>
-                Build reusable backend libraries on stable interfaces instead of
-                coupling to specific vendors or infrastructure.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
-    TESTING_AND_LOCAL_DEVELOPMENT: {
-        name: "Testing and local development:",
-        title: <>Testing and local development:</>,
-        description: (
-            <>
-                Use in-memory adapters for fast, deterministic tests, then swap
-                to production infrastructure with configuration only.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
-    PORTABLE_BACKEND_CODE: {
-        name: "Portable backend code:",
-        title: <>Portable backend code:</>,
-        description: (
-            <>
-                Write infrastructure-independent code that can move between
-                cloud providers, databases, storage providers, and runtimes with
-                minimal changes.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
-    ADOPTING_INDIVIDUAL_COMPONENTS: {
-        name: "Adopting individual components:",
-        title: <>Adopting individual components:</>,
-        description: (
-            <>
-                Use specific components without being forced to adopt the entire
-                library or a DI container, each component works standalone.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
-    INCREMENTAL_ADOPTION: {
-        name: "Incremental adoption:",
-        title: <>Incremental adoption:</>,
-        description: (
-            <>
-                Start with a single component and gradually adopt more as your
-                project grows.
+                Build multiple application domains and vertical slices on top of
+                a shared DI container and infrastructure foundation while
+                keeping modules independently composable.
             </>
         ),
     } satisfies WhoIsThisForItem,
 };
 
 export const NOT_IDEAL_FOR = {
-    MICROSERVICES: {
-        name: "Microservices:",
-        title: <>Microservices:</>,
-        description: (
-            <>
-                The library is designed for modular monoliths where components
-                share the same process and runtime. While some components (like
-                distributed locks, circuit breakers, and event buses) work
-                across processes, the broader adapter model and shared
-                abstractions are not optimized for microservice architectures.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
     FRONTEND_ONLY_APPLICATIONS: {
         name: "Frontend-only applications:",
         title: <>Frontend-only applications:</>,
         description: (
             <>
-                eridu-tech is designed for backend and server-side development,
-                not browser applications.
+                eridu-tech is focused on server-side and fullstack applications
+                rather than browser-only applications.
+            </>
+        ),
+    } satisfies WhoIsThisForItem,
+    MICROSERVICES_AS_PRIMARY_ARCHITECTURE: {
+        name: "Microservices as the primary architecture:",
+        title: <>Microservices as the primary architecture:</>,
+        description: (
+            <>
+                Eridu is particularly well suited to modular monoliths and
+                cohesive applications where infrastructure and domain modules
+                can share a runtime and common abstractions. Individual Eridu
+                capabilities can still be used in distributed systems and
+                services.
             </>
         ),
     } satisfies WhoIsThisForItem,
@@ -1286,8 +1278,20 @@ export const NOT_IDEAL_FOR = {
         description: (
             <>
                 If your application intentionally depends on provider-specific
-                features instead of abstractions, the adapter model may provide
-                little benefit.
+                APIs and features, Eridu&apos;s abstraction and adapter model
+                may provide little benefit.
+            </>
+        ),
+    } satisfies WhoIsThisForItem,
+    APPLICATIONS_REQUIRING_PROVIDER_SPECIFIC_CAPABILITIES: {
+        name: "Applications requiring provider-specific capabilities:",
+        title: <>Applications requiring provider-specific capabilities:</>,
+        description: (
+            <>
+                Generic abstractions may not expose every feature of a
+                particular database, cloud platform, or infrastructure provider.
+                In those cases, using the provider&apos;s native SDK directly
+                may be more appropriate.
             </>
         ),
     } satisfies WhoIsThisForItem,
@@ -1297,29 +1301,19 @@ export const NOT_IDEAL_FOR = {
         description: (
             <>
                 If you only need a single Redis call, file upload, or cache
-                operation, the abstraction layer may be unnecessary overhead.
+                operation, introducing a framework-level abstraction may be
+                unnecessary.
             </>
         ),
     } satisfies WhoIsThisForItem,
-    APPLICATIONS_REQUIRING_PROVIDER_SPECIFIC_CAPABILITIES: {
-        name: "Applications requiring provider-specific capabilities:",
-        title: <>Applications requiring provider-specific capabilities:</>,
+    PURE_JAVASCRIPT_PROJECTS_PRIORITIZING_MINIMAL_ABSTRACTION: {
+        name: "Pure JavaScript projects prioritizing minimal abstraction:",
+        title: <>Pure JavaScript projects prioritizing minimal abstraction:</>,
         description: (
             <>
-                Features unique to a particular database, cache, or cloud
-                service may require using that provider&apos;s native SDK
-                directly instead of a generic abstraction.
-            </>
-        ),
-    } satisfies WhoIsThisForItem,
-    PURE_JAVASCRIPT_PROJECTS_PRIORITIZING_SIMPLICITY: {
-        name: "Pure JavaScript projects prioritizing simplicity:",
-        title: <>Pure JavaScript projects prioritizing simplicity:</>,
-        description: (
-            <>
-                While usable from JavaScript, the library is designed around
-                TypeScript&apos;s type system, generics, and inference for the
-                best developer experience.
+                eridu-tech is designed primarily for TypeScript and makes
+                extensive use of its type system, generics, and inference for
+                the best developer experience.
             </>
         ),
     } satisfies WhoIsThisForItem,
@@ -1562,202 +1556,9 @@ const env = accessor.getOr("NODE_ENV", "DEV");`,
     } satisfies CodeFile,
 };
 
-export const CODE_EXAMPLES = {
-    SERDE: {
-        name: "Serde",
-        label: <>Serde</>,
-        heading: <>Serialize anything. Restore everything.</>,
-        description: (
-            <>
-                The Serde component provides a unified serialization and
-                deserialization engine with fully type-safe schemas. It supports
-                custom serializers for any type and includes a built-in
-                SuperJSON adapter that handles Date, Map, Set, and BigInt out of
-                the box. Serde is used internally across LockFactory, Cache,
-                EventBus, and other components.
-            </>
-        ),
-        codeBlockDescription: (
-            <>
-                This example shows how a single Serde instance is shared across
-                LockFactory and Cache. Acquire a lock, store it in the cache,
-                and retrieve it, serialization and deserialization happen
-                automatically.
-            </>
-        ),
-        bullets: [
-            <>Shared serialization engine used throughout Eridu-tech</>,
-            <>Powers LockFactory, Cache, EventBus, and more</>,
-            <>
-                Built-in SuperJSON adapter, Date, Map, Set & BigInt out of the
-                box
-            </>,
-            <>Register custom serializers for your own types</>,
-        ],
-        files: [
-            CODE_FILES.MAIN,
-            CODE_FILES.LOCK_FACTORY,
-            CODE_FILES.CACHE,
-            CODE_FILES.SERDE,
-        ],
-    } satisfies CodeExample,
-    EXECUTION_CONTEXT: {
-        name: "ExecutionContext",
-        label: <>ExecutionContext</>,
-        heading: <>Propagate context across async boundaries.</>,
-        description: (
-            <>
-                The ExecutionContext component propagates any kind of async
-                context across execution boundaries. Most components use it to
-                become implicitly execution-context-aware, allowing them to
-                automatically share the same transaction and other contextual
-                state.
-            </>
-        ),
-        codeBlockDescription: (
-            <>
-                This example shows how ExecutionContext propagates
-                request-scoped state (request ID, user info) across async
-                boundaries with AsyncLocalStorage, and how to test the same
-                logic with a NoOp adapter, no runtime context required.
-            </>
-        ),
-        bullets: [
-            <>Type-safe context tokens</>,
-            <>Async context propagation</>,
-            <>No manual parameter passing</>,
-        ],
-        files: [CODE_FILES.EXECUTION_CONTEXT],
-    } satisfies CodeExample,
-    MIDDLEWARE: {
-        name: "Middleware",
-        label: <>Middleware</>,
-        heading: <>AOP-style middleware. Compose behavior. Keep logic clean.</>,
-        description: (
-            <>
-                The Middleware component provides a composable AOP-style
-                middleware pipeline with before/after hooks, error handling, and
-                context propagation. It supports wrapping standalone functions
-                with use(), enhancing class methods with enhance(), and
-                packaging reusable middleware into plugins with withPlugin().
-                Built-in middlewares include retry, timeout, fallback, and more.
-            </>
-        ),
-        codeBlockDescription: (
-            <>
-                This example demonstrates three approaches to AOP middleware:
-                wrap a standalone function with use(), enhance a class method
-                with enhance(), and package reusable middleware into plugins
-                with withPlugin().
-            </>
-        ),
-        bullets: [
-            <>AOP with before/after hooks around any function</>,
-            <>Built-in retry, timeout, fallback middlewares and so many more</>,
-            <>
-                Function wrapping with use(), class enhancement with enhance(),
-                plugin system with withPlugin()
-            </>,
-            <>
-                Built-in prefixing plugins for majority of components and so
-                many more
-            </>,
-        ],
-        files: [CODE_FILES.MIDDLEWARE, CODE_FILES.ENHANCE, CODE_FILES.PLUGIN],
-    } satisfies CodeExample,
-    HTTP_ROUTER: {
-        name: "HttpRouter",
-        label: <>HttpRouter</>,
-        heading: <>Define routes. Stay framework-agnostic.</>,
-        description: (
-            <>
-                The HttpRouter component provides a framework-agnostic HTTP
-                routing layer with type-safe endpoint definitions,
-                standard-schema validation, and middleware support. It works
-                with any Winter TC compatible runtime or adapter and can be used
-                across Express, Fastify, Hono, Next.js, Nuxt, SvelteKit, and
-                more.
-            </>
-        ),
-        codeBlockDescription: (
-            <>
-                This example defines a typed POST endpoint with Zod request
-                validation and exports it as a SvelteKit server route handler,
-                all with a framework-agnostic HTTP router.
-            </>
-        ),
-        bullets: [
-            <>Type-safe route definitions with standard-schema validation</>,
-            <>
-                Works with Next.js App Router, Nuxt, SvelteKit, and any winter
-                tc compatible runtime or adapter
-            </>,
-            <>Build on top of Hono.js Router adapters</>,
-            <>Middleware chains & route groups</>,
-        ],
-        files: [CODE_FILES.APP_API_USERS_ROUTE],
-    } satisfies CodeExample,
-    ENV_ACCESSOR: {
-        name: "EnvAccessor",
-        label: <>EnvAccessor</>,
-        heading: <>Type-safe environment variables. From any source.</>,
-        description: (
-            <>
-                The EnvAccessor component provides easy type-safe access to
-                environment variables. It supports multiple sync and async
-                sources (process.env, secrets managers), schema validation, and
-                convenient access patterns.
-            </>
-        ),
-        codeBlockDescription: (
-            <>
-                This example combines process.env with an async AWS Secrets
-                Manager source, later sources override earlier keys, and
-                validates the result with a Zod schema.
-            </>
-        ),
-        bullets: [
-            <>Type-safe reads with full autocompletion</>,
-            <>Multiple sources, process.env and async secret providers</>,
-            <>Optional Zod schema validation</>,
-            <>
-                get() returns null on missing fields; getOr() falls back to a
-                default
-            </>,
-        ],
-        files: [CODE_FILES.ENV_ACCESSOR],
-    } satisfies CodeExample,
-    CONFIG_ACCESSOR: {
-        name: "ConfigAccessor",
-        label: <>ConfigAccessor</>,
-        heading: <>Read config safely. Stay type-safe.</>,
-        description: (
-            <>
-                The ConfigAccessor component provides standardized type-safe
-                access to domain configuration variables. It supports optional
-                schema validation, useful for dynamic configurations like
-                per-tenant settings.
-            </>
-        ),
-        codeBlockDescription: (
-            <>
-                This example defines a typed config schema with Zod, then reads
-                nested values with full autocompletion, get() returns null on
-                missing paths, getOr() falls back to a default.
-            </>
-        ),
-        bullets: [
-            <>Type-safe reads with full autocompletion</>,
-            <>Nested objects and arrays up to 2 levels deep</>,
-            <>Optional Zod schema validation</>,
-            <>
-                get() returns null on missing paths; getOr() falls back to a
-                default
-            </>,
-        ],
-        files: [CODE_FILES.CONFIG_ACCESSOR],
-    } satisfies CodeExample,
-};
+// ─── Landing page: component code tabs ──────────────────────────
+// Tab metadata and the verbatim raw sample imports live in home-tabs.ts.
+export { COMPONENT_CODE_TABS } from "./home-tabs.js";
 
 // ─── Framework Comparison ─────────────────────────────────────
 
@@ -1765,109 +1566,104 @@ export const COMPARISONS = {
     NESTJS: {
         name: "NestJS",
         heading:
-            "A full framework with built-in DI vs a library that fits your needs.",
+            "An application-owning backend framework vs an embeddable, composable framework.",
         instead: [
-            "Opinionated framework with its own DI, decorators, and modules.",
-            "Conventions wholesale: DI central, most primitives only work inside NestJS.",
-            "NodeJS runtime only.",
-            "Can't embed in a full-stack framework or host as one server.",
-            "Not adapted for edge runtimes.",
-            "Request-scoped only, no custom scopes.",
-            "Wraps existing libs, BullMQ, cache-manager, class-validator, class-transformer, etc.",
-            "Geared toward microservices and monoliths.",
-            "No execution context flowing through all components.",
-            "No shared serialization engine across components.",
-            "No built-in transaction context.",
+            "Built around a Nest application and module graph with controllers, providers, and dependency injection.",
+            "Decorators and framework modules are central to the application model.",
+            "The primary composition model is a Nest application, with Nest owning the backend runtime and application lifecycle.",
+            "Application code follows Nest's module and framework conventions.",
+            "Infrastructure is commonly integrated through Nest-specific modules and providers.",
+            "Designed for backend applications including monoliths and microservices.",
+            "Framework abstractions remain part of the application architecture.",
         ],
         eriduTech: [
-            "A library, not a framework, DI optional, no decorators, plain classes.",
-            "Same cache/lock/event bus in any framework, no lock-in.",
-            "Runs anywhere Winter TC runs, Node, Bun, Deno, edge.",
-            "Edge-adaptable via the adapter pattern.",
-            "Embeds in any full-stack framework, host as one server.",
-            "Scope-agnostic, request, custom, or no scope.",
-            "Own primitives with pluggable adapters, in-memory adapters for testing.",
-            "Built for modular monoliths, swap infrastructure without rewriting logic.",
-            "Execution context flowing through all components.",
-            "Shared serialization engine (Serde) across components.",
-            "Transaction context shared across all components.",
+            "Embeddable backend framework that can live inside Next.js, TanStack Start, Nuxt, and other fullstack frameworks.",
+            "Plain TypeScript classes and explicit composition, no decorators required.",
+            "Eridu provides the backend framework layer while the host framework can remain responsible for the frontend, and deployment.",
+            "Compose routers, controllers, services, DI, middleware, and infrastructure explicitly.",
+            "Own adapter-based primitives for cache, storage, locks, events, queues, and more.",
+            "Designed primarily for composable applications and modular monoliths.",
+            "Scaffold capabilities into your application and own the resulting source code, inspired by the shadcn approach.",
         ],
     } satisfies ComparisonItem,
+
     ADONISJS: {
         name: "AdonisJS",
         heading:
-            "A batteries-included full-stack framework vs composable primitives.",
+            "An application-centric full-stack framework vs an embeddable, composable backend framework.",
         instead: [
-            "Bundles routing, ORM (Lucid), auth, sessions, validation.",
-            "Prescribed folder structure and conventions.",
-            "NodeJS runtime only.",
-            "Can't embed in a full-stack framework or host as one server.",
-            "Not adapted for edge runtimes.",
-            "No execution context flowing through all components.",
-            "No shared serialization engine across components.",
-            "No built-in transaction context.",
+            "Provides an application runtime with IoC, routing, service providers, lifecycle management, and CLI tooling.",
+            "Application composition is organized around the AdonisJS application and its provider lifecycle.",
+            "Framework conventions define how services, routes, commands, and other application concerns are registered.",
+            "The framework owns the application lifecycle and coordinates HTTP and command execution.",
+            "AdonisJS provides an integrated framework ecosystem rather than a backend layer designed to sit inside another fullstack framework.",
+            "Packages extend the AdonisJS application through its provider and configuration model.",
         ],
         eriduTech: [
-            "No app framework, ORM, or auth, just infrastructure behind adapters.",
-            "Combine with any application layer, you bring the structure.",
-            "Runs anywhere Winter TC runs, Node, Bun, Deno, edge.",
-            "Embeds in any full-stack framework, host as one server.",
-            "Edge-adaptable via the adapter pattern.",
-            "Execution context flowing through all components.",
-            "Shared serialization engine (Serde) across components.",
-            "Transaction context shared across all components.",
+            "Embeds into an existing fullstack framework instead of requiring Eridu to own the entire application.",
+            "Compose DI, routers, controllers, middleware, services, and infrastructure around the host framework.",
+            "No prescribed application structure; organize your code around your own domains and vertical slices.",
+            "HTTP, CLI, events, queues, and scheduled work all follow the same router/controller/DI binding and registration api.",
+            "Use Eridu's capabilities independently while sharing common execution context, serialization, middleware, and transaction abstractions.",
+            "Scaffold the capabilities you need into your project and customize the source instead of depending on an opaque application runtime.",
         ],
     } satisfies ComparisonItem,
+
     TRPC_ORPC: {
-        name: "TRPC / ORPC",
-        heading:
-            "End-to-end typed APIs vs the server-side infrastructure behind them.",
+        name: "tRPC / oRPC",
+        heading: "Typed RPC transport vs an embeddable backend framework.",
         instead: [
-            "End-to-end type safety between client and server.",
-            "Define procedures once, call from the client with full inference, no codegen.",
-            "Excellent for type-safe full-stack APIs at the client-server boundary.",
-            "No built-in battery included backend infrastructure",
+            "Focused on typed RPC between callers and server-side procedures.",
+            "Excellent for sharing TypeScript types across the client-server boundary.",
+            "Procedures and middleware form the primary application programming model.",
+            "Provides transport-level composition rather than a complete backend application foundation.",
         ],
         eriduTech: [
-            "Not an RPC framework, not a tRPC or ORPC replacement.",
-            "Backend infrastructure behind pluggable adapters, caching, locks, rate limiting, scheduling, event buses.",
-            "Complementary, tRPC procedures can call services backed by eridu-tech.",
-            "Choose tRPC for typed transport; add eridu-tech for reusable server-side infra.",
+            "Provides the backend framework and infrastructure behind your RPC layer.",
+            "Use DI-managed services and controllers from tRPC or oRPC procedures.",
+            "Provides reusable backend capabilities such as cache, locks, rate limiting, events, queues, scheduling, transactions, and serialization.",
+            "Also provides HTTP and CLI application boundaries, not just client-server RPC.",
+            "Complementary rather than competitive: use tRPC or oRPC for typed RPC and Eridu for the backend application layer.",
         ],
     } satisfies ComparisonItem,
+
     FULLSTACK_FRAMEWORKS: {
         name: "Next.js, Nuxt, etc.",
-        heading: "Meta-frameworks for the web vs a framework-agnostic backend.",
+        heading:
+            "A web-focused fullstack framework vs an embeddable backend framework.",
         instead: [
-            "Excel at client rendering, SSR, routing, and a rich frontend ecosystem.",
-            "Ship their own server-side APIs and route handlers.",
-            "Often the best starting point for shipping a web app quickly.",
-            "Backend logic locked into the meta-framework.",
-            "No built-in battery included backend infrastructure",
+            "Provide frontend application architecture together with routing, rendering, and server-side capabilities.",
+            "Define their own server routes, server functions, middleware, and application boundaries.",
+            "Excellent starting points for building and deploying fullstack web applications.",
+            "Their backend APIs are designed around the conventions of the host framework.",
+            "Backend infrastructure often needs to be assembled from additional libraries and application-specific code.",
         ],
         eriduTech: [
-            "Not a web or frontend framework, not a replacement for Next.js or Nuxt.",
-            "Complements them, route handlers and server actions can use cache, locks, queues, and schedulers.",
-            "Same backend logic moves between a meta-framework and a standalone API service or worker.",
-            "Add eridu-tech for portable, testable server-side infra.",
+            "Does not replace the frontend framework; it embeds into it as the backend framework layer.",
+            "Host frameworks can own frontend routing, rendering, and deployment while Eridu owns backend composition.",
+            "Connect host routes, server functions, or virtual routes to Eridu's DI-managed controllers and services.",
+            "Provides a consistent backend programming model across HTTP, CLI, events, queues, and scheduled work.",
+            "Portable backend capabilities can move between a fullstack application, standalone server, worker, or other supported host.",
         ],
     } satisfies ComparisonItem,
+
     COMPOSING_YOUR_OWN_STACK: {
         name: "Composing your own stack",
-        heading: "Hand-picked libraries vs a consistent, integrated layer.",
+        heading:
+            "Hand-picked libraries vs a consistent, composable framework you can own.",
         instead: [
-            "Maximum control and minimal dependencies, pick exactly the libraries you want.",
-            "Simpler and lighter for small, focused use cases.",
-            "Better when you need one or two primitives or rely on provider-specific features.",
-            "No shared conventions, you wire libraries together yourself.",
-            "Locked into what you picked, adding more means more glue code.",
+            "Maximum freedom: choose individual libraries and infrastructure for every concern.",
+            "Ideal when you only need one or two focused primitives or provider-specific features.",
+            "You control every dependency and abstraction boundary.",
+            "There is no shared application model between the libraries you choose.",
+            "As the stack grows, you are responsible for connecting lifecycle, DI, context, middleware, errors, and infrastructure conventions.",
         ],
         eriduTech: [
-            "Consistent, integrated layer, shared patterns and common adapter interfaces.",
-            "Heavier than a single raw library, but ships in-memory adapters for testing without Docker.",
-            "Trade-off: an abstraction layer, raw libraries win for a single Redis call or a tiny script.",
-            "No glue code, components interoperate through a shared serde and execution context.",
-            "Adopt incrementally, start with one component and add more as the project grows.",
+            "Compose multiple backend capabilities within one consistent framework model.",
+            "Get shared conventions for DI, controllers, routers, middleware, execution context, serialization, and infrastructure.",
+            "Keep the flexibility of adapters and explicit composition without wiring every subsystem together yourself.",
+            "Scaffold the framework capabilities into your application and own, modify, and extend the source.",
+            "Adopt incrementally: start with what you need and add capabilities as the application grows.",
         ],
     } satisfies ComparisonItem,
 };
