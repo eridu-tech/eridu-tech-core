@@ -237,10 +237,11 @@ function FeatureSection({ items }: { items: FeatureItemProps[] }) {
                 <div className="margin-bottom--xl">
                     <h2 className="daiso-section-title">Why eridu-tech?</h2>
                     <p className="daiso-section-subtitle">
-                        Designed from the ground up for real-world backend
-                        challenges — vendor-agnostic, composable and extendable,
-                        built on a unified foundation, and compatible with your
-                        framework of choice.
+                        An embeddable, composable TypeScript framework designed
+                        for modern fullstack applications. Eridu gives you the
+                        backend primitives and application infrastructure you
+                        need while letting your existing frontend framework
+                        remain in control.
                     </p>
                 </div>
                 <div className="row">
@@ -262,8 +263,10 @@ function WhoIsThisFor() {
                 <div className="margin-bottom--xl">
                     <h2 className="daiso-section-title">Who is this for?</h2>
                     <p className="daiso-section-subtitle">
-                        eridu-tech is built for backend and fullstack TypeScript
-                        developers who value flexibility and testability.
+                        eridu-tech is built primarily for fullstack and backend
+                        TypeScript developers who want a composable backend
+                        framework that can live inside the fullstack framework
+                        they already use.
                     </p>
                 </div>
                 <div
@@ -340,7 +343,7 @@ function ComponentSection() {
                     <p className="daiso-section-subtitle">
                         A growing collection of officially maintained
                         components. Every component ships with multiple built-in
-                        adapters — swap infrastructure without changing a single
+                        adapters: swap infrastructure without changing a single
                         line of business logic.
                     </p>
                 </div>
@@ -473,7 +476,7 @@ function UpcomingSection() {
                         🔮 Upcoming Components
                     </h2>
                     <p className="daiso-section-subtitle">
-                        Components currently in design or development — not yet
+                        Components currently in design or development, not yet
                         available in any release.
                     </p>
                 </div>
