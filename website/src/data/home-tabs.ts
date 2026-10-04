@@ -30,7 +30,7 @@ export const COMPONENT_CODE_TABS = [
     {
         label: "AOP",
         description:
-            "Cross-cutting concerns are layered on as middleware instead of sprinkled through your code. This plugin caches reads and invalidates them on writes by enhancing the service's methods, so the service itself stays untouched.",
+            "AOP (Aspect Oriented Programming) Cross-cutting concerns are layered on as middleware instead of sprinkled through your code. This plugin caches reads and invalidates them on writes by enhancing the service's methods, so the service itself stays untouched.",
         code: aopSample.trim(),
     },
     {
