@@ -11,7 +11,6 @@ import {
     FEATURE_ITEMS,
     PERFECT_FOR,
     NOT_IDEAL_FOR,
-    CODE_EXAMPLES,
     COMPONENT_CODE_TABS,
     COMPARISONS,
     INSTALL_CMD,
@@ -27,8 +26,6 @@ import { type ReactNode, useState, useCallback } from "react";
 import Link from "@docusaurus/Link";
 import Layout from "@theme/Layout";
 import CodeBlock from "@theme/CodeBlock";
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
 import { COMPONENT_COUNT } from "../../utilities/package-json-data.js";
 
 function InstallCommand() {
@@ -88,145 +85,6 @@ function StatsBar() {
                 </div>
             </div>
         </div>
-    );
-}
-
-function CodeShowcaseActions() {
-    return (
-        <div className="daiso-showcase-actions">
-            <InstallCommand />
-            <div className="daiso-showcase-ctas">
-                <Link
-                    className="button button--secondary button--lg"
-                    to="./docs/getting_started"
-                >
-                    Get started{" "}
-                    <ArrowRight
-                        size="1rem"
-                        style={{
-                            marginLeft: "0.4rem",
-                            verticalAlign: "middle",
-                        }}
-                    />
-                </Link>
-                <Link
-                    className="button button--outline button--secondary button--lg"
-                    href={GITHUB_REPO_URL}
-                >
-                    View on GitHub
-                </Link>
-            </div>
-        </div>
-    );
-}
-
-function CodeShowcase() {
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [fading, setFading] = useState(false);
-    const codeExamples = Object.values(CODE_EXAMPLES);
-
-    const goTo = useCallback(
-        (index: number) => {
-            if (index === activeIndex) return;
-            setFading(true);
-            setTimeout(() => {
-                setActiveIndex(index);
-                setFading(false);
-            }, 180);
-        },
-        [activeIndex],
-    );
-
-    return (
-        <section className="padding-vert--xl">
-            <div className="container">
-                <div className="daiso-section-header daiso-section-header--split">
-                    <h2 className="daiso-section-title">Unified foundation</h2>
-                    <div className="daiso-segmented-control">
-                        {codeExamples.map((ex, i) => (
-                            <button
-                                key={i}
-                                className={`daiso-segmented-option${i === activeIndex ? " daiso-segmented-option--active" : ""}`}
-                                onClick={() => goTo(i)}
-                            >
-                                {ex.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col col--5 daiso-showcase-text-col">
-                        <div
-                            className={`daiso-carousel-text${fading ? " daiso-carousel-text--fading" : ""}`}
-                        >
-                            <h3
-                                className="daiso-section-subtitle"
-                                style={{
-                                    textAlign: "left",
-                                    fontWeight: 700,
-                                    color: "var(--ifm-color-emphasis-900)",
-                                    fontSize: "1.25rem",
-                                }}
-                            >
-                                {codeExamples[activeIndex].heading}
-                            </h3>
-                            <p
-                                className="daiso-section-subtitle"
-                                style={{
-                                    margin: "0 0 1.25rem",
-                                    textAlign: "left",
-                                }}
-                            >
-                                {codeExamples[activeIndex].description}
-                            </p>
-                            <ul className="daiso-check-list">
-                                {codeExamples[activeIndex].bullets.map(
-                                    (b, i) => (
-                                        <li key={i}>
-                                            <Check
-                                                size="1rem"
-                                                strokeWidth={2.5}
-                                            />{" "}
-                                            {b}
-                                        </li>
-                                    ),
-                                )}
-                            </ul>
-                        </div>
-
-                        <CodeShowcaseActions />
-                    </div>
-                    <div className="col col--7 daiso-showcase-code-col">
-                        {codeExamples[activeIndex].codeBlockDescription && (
-                            <p className="daiso-carousel-description">
-                                {codeExamples[activeIndex].codeBlockDescription}
-                            </p>
-                        )}
-                        <div className="daiso-carousel">
-                            <div
-                                className={`daiso-carousel-body${fading ? " daiso-carousel-body--fading" : ""}`}
-                            >
-                                <Tabs key={activeIndex}>
-                                    {codeExamples[activeIndex].files.map(
-                                        (file, i) => (
-                                            <TabItem
-                                                key={i}
-                                                value={file.name}
-                                                label={file.name}
-                                            >
-                                                <CodeBlock language="typescript">
-                                                    {file.code}
-                                                </CodeBlock>
-                                            </TabItem>
-                                        ),
-                                    )}
-                                </Tabs>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
     );
 }
 
@@ -672,7 +530,6 @@ export default function Home(): ReactNode {
                 <CodeTabsSection />
                 <StatsBar />
                 <FeatureSection items={Object.values(FEATURE_ITEMS)} />
-                <CodeShowcase />
                 <WhoIsThisFor />
                 <ComponentSection />
                 <UpcomingSection />
