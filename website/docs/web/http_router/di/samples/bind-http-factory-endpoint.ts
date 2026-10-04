@@ -1,4 +1,5 @@
-import { UsersController, bindHttp, router } from "./bind-http-factory.js";
+import { bindHttp, router } from "./container.js";
+import { UsersController } from "./users-controller.js";
 
 router.endpoint({
     url: "/users/:id",
