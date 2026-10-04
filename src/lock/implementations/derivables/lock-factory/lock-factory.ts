@@ -114,33 +114,6 @@ export class LockFactory implements ILockFactory {
     private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serdeTransformerName: string;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselyLockAdapter } from "eridu-tech/lock/kysely-lock-adapter";
-     * import { LockFactory } from "eridu-tech/lock";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const lockAdapter = new KyselyLockAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
-     *     }),
-     *   });
-     * });
-     * // You need initialize the adapter once before using it.
-     * await lockAdapter.init();
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter())
-     * const lockFactory = new LockFactory({
-     *   serde,
-     *   adapter: lockAdapter,
-     * });
-     * ```
-     */
     constructor(settings: LockFactorySettings) {
         const {
             defaultTtl = TimeSpan.fromMinutes(5),
@@ -173,24 +146,6 @@ export class LockFactory implements ILockFactory {
         }
     }
 
-    /**
-     * @example
-     * ```ts
-     * import { LockFactory } from "eridu-tech/lock";
-     * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
-     * import { Namespace } from "eridu-tech/namespace";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     *
-     * const lockFactory = new LockFactory({
-     *   adapter: new MemoryLockAdapter(),
-     *   namespace: new Namespace("lock"),
-     *   serde: new Serde(new SuperJsonSerdeAdapter())
-     * });
-     *
-     * const lock = lockFactory.create("a");
-     * ```
-     */
     create(key: string, settings: LockFactoryCreateSettings = {}): ILock {
         const {
             ttl = this.defaultTtl,

@@ -75,21 +75,6 @@ export class MongodbLockAdapter
     private readonly trxCtx: ITransactionContext<Db, ClientSession>;
     private readonly collection: Collection<MongodbLockEntryDocument>;
 
-    /**
-     * @example
-     * ```ts
-     * import { MongodbLockAdapter } from "eridu-tech/lock/mongodb-lock-adapter";
-     * import { MongoClient } from "mongodb";
-     *
-     * const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
-     * const database = client.db("database");
-     * const lockAdapter = new MongodbLockAdapter({
-     *   database
-     * });
-     * // You need initialize the adapter once before using it.
-     * await lockAdapter.init()
-     * ```
-     */
     constructor(settings: MongodbLockAdapterSettings) {
         const {
             collectionName = "lock",

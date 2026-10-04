@@ -140,37 +140,6 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
     private readonly enableAsyncTracking: boolean;
     private readonly waitUntil: WaitUntil;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselyCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/kysely-circuit-breaker-storage-adapter";
-     * import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const circuitBreakerStorageAdapter = new KyselyCircuitBreakerStorageAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
-     *     }),
-     *   }),
-     *   serde
-     * });
-     * // You need initialize the adapter once before using it.
-     * await circuitBreakerStorageAdapter.init();
-     *
-     * const circuitBreakerAdapter = new DatabaseCircuitBreakerAdapter({
-     *   adapter: circuitBreakerStorageAdapter
-     * });
-     *
-     * const circuitBreakerFactory = new CircuitBreakerFactory({
-     *   adapter: circuitBreakerAdapter
-     * })
-     * ```
-     */
     constructor(settings: CircuitBreakerFactorySettings) {
         const {
             enableAsyncTracking = false,

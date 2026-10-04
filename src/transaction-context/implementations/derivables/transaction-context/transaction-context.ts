@@ -116,14 +116,6 @@ export class TransactionContext<
      * @param client - The base client exposed by the created context.
      * @returns A non-transactional {@link ITransactionContext} wrapping `client`.
      *
-     * @example
-     * ```ts
-     * const transactionContext = TransactionContext.noOp(client);
-     *
-     * // Runs directly, without a transaction:
-     * await transactionContext.run(() => createUser("1"));
-     * ```
-     *
      * @see {@link TransactionContext | `TransactionContext`}
      */
     static noOp<TClient_, TTransactionClient_ = TClient_>(

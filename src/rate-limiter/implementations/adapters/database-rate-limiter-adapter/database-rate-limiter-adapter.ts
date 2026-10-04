@@ -63,18 +63,6 @@ export class DatabaseRateLimiterAdapter<
     private readonly rateLimiterStorage: RateLimiterStorage<TMetrics>;
     private readonly rateLimiterStateManager: RateLimiterStateManager<TMetrics>;
 
-    /**
-     * @example
-     * ```ts
-     * import { DatabaseRateLimiterAdapter } from "eridu-tech/rate-limiter/database-rate-limiter-adapter";
-     * import { MemoryRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter";
-     *
-     * const rateLimiterStorageAdapter = new MemoryRateLimiterStorageAdapter();
-     * const rateLimiterAdapter = new DatabaseRateLimiterAdapter({
-     *   adapter: rateLimiterStorageAdapter
-     * });
-     * ```
-     */
     constructor(settings: DatabaseRateLimiterAdapterSettings) {
         const {
             adapter,

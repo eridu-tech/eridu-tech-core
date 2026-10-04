@@ -32,36 +32,6 @@ export type FileStorageSerdeTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/file-storage/test-utilities"`
  * @group TestUtilities
- * @example
- * ```ts
- * import { beforeEach, describe, expect, test } from "vitest";
- * import { MemoryFileStorageAdapter } from "eridu-tech/file-storage/memory-file-storage-adapter";
- * import { SignedFileStorageAdapter } from "eridu-tech/file-storage/signed-file-storage-adapter";
- * import { FileStorage } from "eridu-tech/file-storage";
- * import { fileStorageSerdeTestSuite } from "eridu-tech/file-storage/test-utilities";
- * import { Serde } from "eridu-tech/serde";
- * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
- *
- * describe("class: MyFileStorage", () => {
- *     fileStorageSerdeTestSuite({
- *         createFileStorage: () => {
- *             const serde = new Serde(new SuperJsonSerdeAdapter());
- *             const fileStorage = new FileStorage({
- *                 serde,
- *                 adapter: new SignedFileStorageAdapter({
- *                     adapter: new MemoryFileStorageAdapter(),
- *                     urlAdapter: {},
- *                 }),
- *             });
- *             return { fileStorage, serde };
- *         },
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function fileStorageSerdeTestSuite(
     settings: FileStorageSerdeTestSuiteSettings,

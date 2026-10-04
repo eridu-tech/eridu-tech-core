@@ -88,36 +88,6 @@ export class AsyncIterableCollection<
 > implements IAsyncCollection<TInput> {
     /**
      * The `concat` static method is a convenient utility for easily concatenating multiple {@link Iterable | `Iterable`} or {@link AsyncIterable | `AsyncIterable`}.
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * class MyAsyncIterable implements AsyncIterable<number> {
-     *   async *[Symbol.iterator](): Iterator<number> {
-     *     yield "a";
-     *     yield "b";
-     *     yield "c";
-     *   }
-     * }
-     *
-     * class MyIterable implements Iterable<number> {
-     *   *[Symbol.iterator](): Iterator<number> {
-     *     yield 1;
-     *     yield 2;
-     *     yield 3;
-     *   }
-     * }
-     *
-     * const collection = AsyncIterableCollection.concat([
-     *   new MyAsyncIterable(),
-     *   new MyIterable(),
-     *   new Set([1, 2, 3]),
-     *   new Map([["a", 1], ["b", 2]]),
-     *   ["a", "b", "c"]
-     * ]);
-     * await collection.toArray();
-     * // ["a", "b", "c", 1, 2, 3, 1, 2, 3, ["a", 1], ["b", 2], "a", "b", "c"]
-     * ```
      */
     static concat<TValue>(
         iterables: AsyncIterableValue<AsyncIterableValue<TValue>>,
@@ -127,41 +97,6 @@ export class AsyncIterableCollection<
 
     /**
      * The `difference` static method is used to compute the difference between two {@link Iterable | `Iterable`} instances. By default, the equality check is performed on each item.
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = AsyncIterableCollection.difference(
-     *   [1, 2, 2, 3, 4, 5],
-     *   [2, 4, 6, 8]
-     * );
-     * await collection.toArray();
-     * // [1, 3, 5]
-     * ```
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = AsyncIterableCollection.difference(
-     *   [
-     *     { name: "iPhone 6", brand: "Apple", type: "phone" },
-     *     { name: "iPhone 5", brand: "Apple", type: "phone" },
-     *     { name: "Apple Watch", brand: "Apple", type: "watch" },
-     *     { name: "Galaxy S6", brand: "Samsung", type: "phone" },
-     *     { name: "Galaxy Gear", brand: "Samsung", type: "watch" },
-     *   ],
-     *   [
-     *     { name: "Apple Watch", brand: "Apple", type: "watch" },
-     *   ],
-     *   (product) => product.type
-     * );
-     * await collection.toArray();
-     * // [
-     * //   { name: "iPhone 6", brand: "Apple", type: "phone" },
-     * //   { name: "iPhone 5", brand: "Apple", type: "phone" },
-     * //   { name: "Galaxy S6", brand: "Samsung", type: "phone" },
-     * // ]
-     * ```
      */
     static difference<TValue, TSelect>(
         iterableA: AsyncIterableValue<TValue>,
@@ -177,30 +112,6 @@ export class AsyncIterableCollection<
     /**
      * The `zip` static method merges together the values of `iterableA` with the values of the `iterableB` at their corresponding index.
      * The returned collection has size of the shortest collection.
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = AsyncIterableCollection.zip(["Chair", "Desk"], [100, 200]);
-     * await collection.toArray();
-     * // [["Chair", 100], ["Desk", 200]]
-     * ```
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = AsyncIterableCollection.zip(["Chair", "Desk", "Couch"], [100, 200]);
-     * await collection.toArray();
-     * // [["Chair", 100], ["Desk", 200]]
-     * ```
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = AsyncIterableCollection.zip(["Chair", "Desk"], [100, 200, 300]);
-     * await collection.toArray();
-     * // [["Chair", 100], ["Desk", 200]]
-     * ```
      */
     static zip<TValueA, TValueB>(
         iterableA: AsyncIterableValue<TValueA>,
@@ -223,66 +134,16 @@ export class AsyncIterableCollection<
      * The `constructor` takes an {@link Iterable | `Iterable`} or {@link AsyncIterable | `AsyncIterable`}.
      *
      * Works with `Array`.
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = new AsyncIterableCollection([1, 2, 3, 4]);
-     * ```
      *
      * Works with `String`.
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = new AsyncIterableCollection("ABCDE");
-     * ```
      *
      * Works with `Set`.
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = new AsyncIterableCollection(new Set([1, 2, 2 4]));
-     * ```
      *
      * Works with `Map`.
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * const collection = new AsyncIterableCollection(new Map([["a", 1], ["b", 2]]));
-     * ```
      *
      * Works with any `Iterable`.
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * class MyIterable implements Iterable<number> {
-     *   *[Symbol.iterator](): Iterator<number> {
-     *     yield 1;
-     *     yield 2;
-     *     yield 3;
-     *   }
-     * }
-     * const collection = new AsyncIterableCollection(new MyIterable());
-     * ```
      *
      * Works with any `AsyncIterable`.
-     * @example
-     * ```ts
-     * import { AsyncIterableCollection } from "eridu-tech/collection";
-     *
-     * class MyIterable implements AsyncIterable<number> {
-     *   async *[Symbol.iterator](): Iterator<number> {
-     *     yield 1;
-     *     yield 2;
-     *     yield 3;
-     *   }
-     * }
-     * const collection = new AsyncIterableCollection(new MyIterable());
-     * ```
      */
     constructor(iterable: AsyncIterableValue<TInput> = []) {
         this.iterable = resolveAsyncIterableValue(iterable);

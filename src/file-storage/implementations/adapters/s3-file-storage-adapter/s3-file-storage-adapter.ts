@@ -162,24 +162,6 @@ export class S3FileStorageAdapter
     private readonly enableAccurateRemoveMany: boolean;
     private readonly publicUrlGenerator: S3FilePublicUrlGenerator;
 
-    /**
-     * @example
-     * ```ts
-     * import { S3Client } from "@aws-sdk/client-s3"
-     * import { S3FileStorageAdapter } from "eridu-tech/file-storage/s3-file-storage-adapter";
-     *
-     * const s3FileStorageAdapter = new S3FileStorageAdapter({
-     *   client: new S3Client({
-     *     credentials: {
-     *       accessKeyId: 'AWS_ACCESS_KEY_ID',
-     *       secretAccessKey: 'AWS_SECRET_ACCESS_KEY',
-     *     },
-     *     region: "AWS_REGION",
-     *   }),
-     *   bucket: "files"
-     * });
-     * ```
-     */
     constructor(settings: S3FileStorageAdapterSettings) {
         const {
             client,

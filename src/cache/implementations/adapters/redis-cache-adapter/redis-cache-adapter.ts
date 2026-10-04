@@ -75,22 +75,6 @@ export class RedisCacheAdapter<
     private readonly serde: ISerde<string>;
     private readonly database: Redis;
 
-    /**
-     * @example
-     * ```ts
-     * import { RedisCacheAdapter } from "eridu-tech/cache/redis-cache-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import { Redis } from "ioredis";
-     *
-     * const database = new Redis("YOUR_REDIS_CONNECTION_STRING");
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const cacheAdapter = new RedisCacheAdapter({
-     *   database,
-     *   serde,
-     * });
-     * ```
-     */
     constructor(settings: RedisCacheAdapterSettings) {
         const { database, serde } = settings;
         this.database = database;

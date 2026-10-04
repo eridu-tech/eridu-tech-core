@@ -93,21 +93,6 @@ export type HttpRouterSettings = {
      * ```ts
      * "/"
      * ```
-     *
-     * @example
-     * ```ts
-     * const router = new HttpRouter({
-     *   router: defaultHttpRouterAdapter(),
-     *   baseUrl: "/api",
-     * });
-     *
-     * router.endpoint({
-     *   url: "/users",
-     *   method: ["GET"],
-     *   handler: async ({ json }) => json({ users: [] }),
-     * });
-     * // This endpoint now responds to GET /api/users
-     * ```
      */
     baseUrl?: string;
 };
@@ -143,25 +128,6 @@ export function defaultHttpRouterAdapter(): Router<RouterEntry> {
  * integrated directly into frameworks that support the fetch API, such as:
  * Next.js, Nuxt, SvelteKit, AnalogJS, TanStack Start, SolidStart, and Hono's
  * runtime adapters (Node.js, Bun, Deno, AWS lambda, Azure Functions, Google Cloud Run etc.).
- *
- * @example
- * ```typescript
- * import { z } from "zod";
- *
- * const router = new HttpRouter();
- *
- * router.endpoint({
- *   url: "/users/:id",
- *   method: "GET",
- *   handler: async ({ req }) => {
- *     const { id } = req.params();
- *     return HttpRes.json({ id });
- *   },
- *   validation: {
- *     params: z.object({ id: z.string() }),
- *   },
- * });
- * ```
  *
  * IMPORT_PATH: `"eridu-tech/http-router"`
  * @group Implementations
@@ -254,23 +220,6 @@ export class HttpRouter implements IHttpRouter {
      * @param winterTcHandler - A Winter TC handler function conforming to
      *   `WinterTcRequestHandler` (`(request: Request) => Promise<Response>`).
      * @returns An `HttpHandlerFn` suitable for use in `router.endpoint()`.
-     *
-     * @example
-     * ```typescript
-     * const winterHandler: WinterTcRequestHandler = async (request) => {
-     *   const url = new URL(request.url);
-     *   if (url.pathname === "/health") {
-     *     return new Response("OK", { status: 200 });
-     *   }
-     *   return fetch(request);
-     * };
-     *
-     * router.endpoint({
-     *   url: "/proxy/*",
-     *   method: ["GET"],
-     *   handler: HttpRouter.fromWinterTcHandler(winterHandler),
-     * });
-     * ```
      */
     static fromWinterTcHandler(
         winterTcHandler: WinterTcRequestHandler,

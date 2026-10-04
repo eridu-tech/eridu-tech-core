@@ -15,11 +15,6 @@ import type { Invocable } from "@/utilities/_module-exports.js";
  *
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  *
- * @example
- * ```ts
- * const hook: BeforeHookSync<[name: string]> = ([name]) => [name.trim()];
- * ```
- *
  * @see {@link withBeforeHookSync | `withBeforeHookSync`}
  * @see {@link BeforeHook | `BeforeHook`}
  *
@@ -44,14 +39,6 @@ export type BeforeHookSync<
  * @typeParam TReturn - Return type of the wrapped function
  * @param callback - Synchronous hook invoked with the arguments before execution
  * @returns Middleware function that applies the before hook
- *
- * @example
- * ```ts
- * const createUser = use(
- *   saveUser,
- *   withBeforeHookSync<[name: string], User>(([name]) => [name.trim()]),
- * );
- * ```
  *
  * @see {@link BeforeHookSync | `BeforeHookSync`}
  * @see {@link withBeforeHook | `withBeforeHook`}

@@ -17,11 +17,6 @@ import type { Invocable } from "@/utilities/_module-exports.js";
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  * @typeParam TReturn - Return type of the wrapped function
  *
- * @example
- * ```ts
- * const hook: AfterHookSync<[id: string], User> = ([id], user) => ({ ...user, id });
- * ```
- *
  * @see {@link withAfterHookSync | `withAfterHookSync`}
  * @see {@link AfterHook | `AfterHook`}
  *
@@ -47,17 +42,6 @@ export type AfterHookSync<
  * @typeParam TReturn - Return type of the wrapped function
  * @param callback - Synchronous hook invoked with the arguments and result after execution
  * @returns Middleware function that applies the after hook
- *
- * @example
- * ```ts
- * const createUser = use(
- *   saveUser,
- *   withAfterHookSync<[name: string], User>(([name], user) => ({
- *     ...user,
- *     name,
- *   })),
- * );
- * ```
  *
  * @see {@link AfterHookSync | `AfterHookSync`}
  * @see {@link withAfterHook | `withAfterHook`}

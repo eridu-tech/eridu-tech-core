@@ -194,16 +194,6 @@ export type SerializedClass = {
 export class Serde<
     TSerializedValue,
 > implements IFlexibleSerde<TSerializedValue> {
-    /**
-     * @example
-     * ```ts
-     * import type { IFlexibleSerde } from "eridu-tech/serde/contracts";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     *
-     * const serde: IFlexibleSerde = new Serde(new SuperJsonSerdeAdapter());
-     * ```
-     */
     // eslint-disable-next-line sonarjs/cognitive-complexity, sonarjs/cyclomatic-complexity
     constructor(
         private readonly serdeAdapter: IFlexibleSerdeAdapter<TSerializedValue>,
@@ -301,110 +291,14 @@ export class Serde<
         }
     }
 
-    /**
-     * @example
-     * ```ts
-     * import type { IFlexibleSerde } from "eridu-tech/serde/contracts";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     *
-     * const serde: IFlexibleSerde = new Serde(new SuperJsonSerdeAdapter());
-     *
-     * const value = { a: 1, b: 2 };
-     * const serializedValue = serde.serialize(value);
-     *
-     * // Will print out { a: 1, b: 2} as json string, this because of the SuperJsonSerdeAdapter
-     * console.log(serializedValue);
-     * ```
-     */
     serialize<TValue>(value: TValue): TSerializedValue {
         return this.serdeAdapter.serialize(value);
     }
 
-    /**
-     * @example
-     * ```ts
-     * import type { IFlexibleSerde } from "eridu-tech/serde/contracts";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     *
-     * const serde: IFlexibleSerde = new Serde(new SuperJsonSerdeAdapter());
-     *
-     * const value = { a: 1, b: 2 };
-     * const deserializedValue = serde.deserialize(serde.serialize(value));
-     *
-     * // Will print out { a: 1, b: 2}
-     * console.log(deserializedValue);
-     *
-     * // Will print false
-     * console.log(value === deserializedValue);
-     * ```
-     */
     deserialize<TValue>(serializedValue: TSerializedValue): TValue {
         return this.serdeAdapter.deserialize(serializedValue);
     }
 
-    /**
-     * @example
-     * ```ts
-     * import type { IFlexibleSerde, ISerializable } from "eridu-tech/serde/contracts";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     *
-     * const serde: IFlexibleSerde = new Serde(new SuperJsonSerdeAdapter());
-     *
-     * type ISerializedUser = {
-     *   name: string;
-     *   age: number
-     * };
-     *
-     * class User implements ISerializable<ISerializedUser> {
-     *   static deserialize(serializedUser: ISerializedUser): User {
-     *     return new User(serializedUser.name, serializedUser.age);
-     *   }
-     *
-     *   constructor(public readonly name: string, public readonly age: number) {}
-     *
-     *   serialize(): ISerializedUser {
-     *     return {
-     *       name: this.name,
-     *       age: this.age,
-     *     };
-     *   }
-     * }
-     *
-     * serde.registerCustom<User, ISerializedUser>({
-     *   name: User.name,
-     *   isApplicable: (value): value is User => {
-     *     return value instanceof User;
-     *   },
-     *   serialize: (value: User): ISerializedUser => {
-     *     return {
-     *       name: value.name,
-     *       age: value.age
-     *     };
-     *   },
-     *   deserialize: (value: ISerializedUser): User => {
-     *     return new User(value.name, value.age);
-     *   }
-     * });
-     *
-     * const user = new User("Carl", 30);
-     * const deserializedUser = serde.deserialize<User>(serde.serialize(user));
-     *
-     * // Will print "Carl"
-     * console.log(deserializedUser.name);
-     *
-     * // Will print 30
-     * console.log(deserializedUser.age);
-     *
-     * // Will print true
-     * console.log(deserializedUser instanceof User);
-     *
-     * // Will print false
-     * console.log(user === deserializedUser);
-     * ```
-     */
     registerCustom<
         TCustomDeserialized,
         TCustomSerialized extends SerializedValueBase,

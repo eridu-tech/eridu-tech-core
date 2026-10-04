@@ -34,13 +34,6 @@ export class MemoryCacheAdapter<TType = unknown>
 {
     /**
      * You can provide an optional {@link Map | `Map`}, that will be used for storing the data.
-     * @example
-     * ```ts
-     * import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
-     *
-     * const map = new Map<string, any>();
-     * const cacheAdapter = new MemoryCacheAdapter(map);
-     * ```
      */
     constructor(
         private readonly map: Map<

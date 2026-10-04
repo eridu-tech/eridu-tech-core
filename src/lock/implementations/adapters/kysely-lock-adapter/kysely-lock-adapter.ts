@@ -71,36 +71,6 @@ export class KyselyLockAdapter
     >;
     private readonly isMysql: boolean;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselyLockAdapter } from "eridu-tech/lock/kysely-lock-adapter";
-     * import { contextToken } from "eridu-tech/execution-context/contracts";
-     * import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
-     * import { ExecutionContext } from "eridu-tech/execution-context";
-     * import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
-     * import { TransactionContext } from "eridu-tech/transaction-context";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const transactionContext = new TransactionContext({
-     *   token: contextToken("kysely"),
-     *   executionContext: new ExecutionContext(new AlsExecutionContextAdapter()),
-     *   adapter: new KyselyTransactionAdapter({
-     *     database: new Kysely({
-     *       dialect: new SqliteDialect({
-     *         database: new Sqlite("local.db"),
-     *       }),
-     *     }),
-     *   }),
-     * });
-     * const lockAdapter = new KyselyLockAdapter({
-     *   transactionContext,
-     * });
-     * // You need initialize the adapter once before using it.
-     * await lockAdapter.init();
-     * ```
-     */
     constructor(settings: KyselyLockAdapterSettings) {
         const { transactionContext } = settings;
         this.transactionContext = transactionContext;

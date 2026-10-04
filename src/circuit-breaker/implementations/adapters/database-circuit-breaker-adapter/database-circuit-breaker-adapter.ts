@@ -64,18 +64,6 @@ export class DatabaseCircuitBreakerAdapter<
     private readonly circuitBreakerStorage: CircuitBreakerStorage<TMetrics>;
     private readonly circuitBreakerStateManager: CircuitBreakerStateManager<TMetrics>;
 
-    /**
-     * @example
-     * ```ts
-     * import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
-     * import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storage-adapter";
-     *
-     * const circuitBreakerStorageAdapter = new MemoryCircuitBreakerStorageAdapter();
-     * const circuitBreakerAdapter = new DatabaseCircuitBreakerAdapter({
-     *   adapter: circuitBreakerStorageAdapter
-     * });
-     * ```
-     */
     constructor(settings: DatabaseCircuitBreakerAdapterSettings) {
         const {
             adapter,

@@ -115,33 +115,6 @@ export class SemaphoreFactory implements ISemaphoreFactory {
     private readonly serdeTransformerName: string;
     private readonly createSlotId: Invocable<[], string>;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselySemaphoreAdapter } from "eridu-tech/semaphore/kysely-semaphore-adapter";
-     * import { SemaphoreFactory } from "eridu-tech/semaphore";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const semaphoreAdapter = new KyselySemaphoreAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
-     *     }),
-     *   });
-     * });
-     * // You need initialize the adapter once before using it.
-     * await semaphoreAdapter.init();
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter())
-     * const lockProvider = new SemaphoreFactory({
-     *   serde,
-     *   adapter: semaphoreAdapter,
-     * });
-     * ```
-     */
     constructor(settings: SemaphoreFactorySettings) {
         const {
             createSlotId = () => v4(),

@@ -52,27 +52,6 @@ export type SemaphoreFactoryResolverSettings<TAdapters extends string> =
 export class SemaphoreFactoryResolver<
     TAdapters extends string,
 > implements ISemaphoreFactoryResolver<TAdapters> {
-    /**
-     * @example
-     * ```ts
-     * import { SemaphoreFactoryResolver } from "eridu-tech/semaphore";
-     * import { MemorySemaphoreAdapter } from "eridu-tech/semaphore/memory-semaphore-adapter";
-     * import { RedisSemaphoreAdapter } from "eridu-tech/semaphore/redis-semaphore-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const semaphoreFactoryResolver = new SemaphoreFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemorySemaphoreAdapter(),
-     *     redis: new RedisSemaphoreAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     * ```
-     */
     constructor(
         private readonly settings: SemaphoreFactoryResolverSettings<TAdapters>,
     ) {}
@@ -93,40 +72,6 @@ export class SemaphoreFactoryResolver<
         });
     }
 
-    /**
-     * @example
-     * ```ts
-     * import { SemaphoreFactoryResolver } from "eridu-tech/semaphore";
-     * import { MemorySemaphoreAdapter } from "eridu-tech/semaphore/memory-semaphore-adapter";
-     * import { RedisSemaphoreAdapter } from "eridu-tech/semaphore/redis-semaphore-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { TimeSpan } from "eridu-tech/time-span";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const semaphoreFactoryResolver = new SemaphoreFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemorySemaphoreAdapter(),
-     *     redis: new RedisSemaphoreAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     *
-     * // Will acquire key using the default adapter which is MemorySemaphoreAdapter
-     * await semaphoreFactoryResolver
-     *   .use()
-     *   .create("a")
-     *   .acquire();
-     *
-     * // Will acquire key using the redis adapter
-     * await semaphoreFactoryResolver
-     *   .use("redis")
-     *   .create("a")
-     *   .acquire();
-     * ```
-     */
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ISemaphoreFactory {

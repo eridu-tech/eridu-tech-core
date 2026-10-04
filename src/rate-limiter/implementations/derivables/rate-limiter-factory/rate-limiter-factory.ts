@@ -105,37 +105,6 @@ export class RateLimiterFactory implements IRateLimiterFactory {
     private readonly serdeTransformerName: string;
     private readonly waitUntil: WaitUntil;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselyRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter";
-     * import { DatabaseRateLimiterAdapter } from "eridu-tech/rate-limiter/database-rate-limiter-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const rateLimiterStorageAdapter = new KyselyRateLimiterStorageAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
-     *     }),
-     *   }),
-     *   serde
-     * });
-     * // You need initialize the adapter once before using it.
-     * await rateLimiterStorageAdapter.init();
-     *
-     * const rateLimiterAdapter = new DatabaseRateLimiterAdapter({
-     *   adapter: rateLimiterStorageAdapter
-     * });
-     *
-     * const rateLimiterFactory = new RateLimiterFactory({
-     *   adapter: rateLimiterAdapter
-     * })
-     * ```
-     */
     constructor(settings: RateLimiterFactorySettings) {
         const {
             adapter,

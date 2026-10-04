@@ -98,22 +98,6 @@ export class FileStorage implements IFileStorage {
     private readonly defaultCacheControl: string | null;
     private readonly defaultContentLanguage: string | null;
 
-    /**
-     * @example
-     * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import { FileStorag } from "eridu-tech/file-storage";
-     * import { FsFileStorageAdapter } from "eridu-tech/file-storage/fs-file-storage-adapter";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const fileStorageAdapter = new FsFileStorageAdapter();
-     * const fileStorage = new FileStorage({
-     *   serde,
-     *   adapter: fileStorageAdapter,
-     * })
-     * ```
-     */
     constructor(settings: FileStorageSettings) {
         const {
             adapter,

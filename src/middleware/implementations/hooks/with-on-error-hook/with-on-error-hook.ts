@@ -15,13 +15,6 @@ import type { Invocable, Promisable } from "@/utilities/_module-exports.js";
  *
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  *
- * @example
- * ```ts
- * const hook: OnErrorHook<[name: string]> = ([name], error) => {
- *   console.error(`Failed to save ${name}`, error);
- * };
- * ```
- *
  * @see {@link withOnError | `withOnError`}
  *
  * IMPORT_PATH: `eridu-tech/middleware`
@@ -41,16 +34,6 @@ export type OnErrorHook<TParameters extends Array<unknown> = Array<unknown>> =
  * @param callback - Hook invoked with the arguments and the thrown error
  * @param detach - When `true`, the hook runs without being awaited. Defaults to `false`
  * @returns Middleware function that applies the error hook
- *
- * @example
- * ```ts
- * const createUser = use(
- *   saveUser,
- *   withOnError<[name: string], User>(([name], error) => {
- *     logger.error(`Failed to save ${name}`, error);
- *   }),
- * );
- * ```
  *
  * @see {@link OnErrorHook | `OnErrorHook`}
  *

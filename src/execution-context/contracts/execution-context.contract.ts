@@ -69,12 +69,6 @@ export type ContextToken<TValue> = GenericToken<TValue> | ClassToken<TValue>;
  * @param id - Unique identifier string for the token (recommend using a descriptive name or UUID)
  * @returns A new contextToken with the specified value type. Note: each call creates a
  * distinct token, so the token must be created once and exported for reuse.
- *
- * @example
- * import { contextToken } from "eridu-tech/execution-context/contracts";
- *
- * const userToken = contextToken<User>("user");
- * const requestIdToken = contextToken<string>("requestId");
  */
 export function contextToken<TValue>(id: string): ContextToken<TValue> {
     return {

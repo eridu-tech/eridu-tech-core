@@ -50,26 +50,6 @@ export type FileStorageResolverSettings<TAdapters extends string = string> =
 export class FileStorageResolver<
     TAdapters extends string = string,
 > implements IFileStorageResolver<TAdapters> {
-    /**
-     * @example
-     * ```ts
-     * import { FileStorageResolver } from "eridu-tech/file-storage";
-     * import { FsFileStorageAdapter } from "eridu-tech/file-storage/fs-file-storage-adapter";
-     * import { MemoryFileStorageAdapter } from "eridu-tech/file-storage/memory-file-storage-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const fileStorageResolver = new FileStorageResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemoryFileStorageAdapter(),
-     *     fs: new FsFileStorageAdapter(),
-     *   },
-     *   defaultAdapter: "memory"
-     * })
-     * ```
-     */
     constructor(
         private readonly settings: FileStorageResolverSettings<TAdapters>,
     ) {}

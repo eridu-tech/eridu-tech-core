@@ -33,14 +33,6 @@ export type MemoryRateLimiterData<TType = unknown> = {
 export class MemoryRateLimiterStorageAdapter<TType>
     implements IRateLimiterStorageAdapter<TType>, IDeinitizable, IPrunable
 {
-    /**
-     * @example
-     * ```ts
-     * import { MemoryRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter";
-     *
-     * const rateLimiterStorageAdapter = new MemoryRateLimiterStorageAdapter();
-     * ```
-     */
     constructor(
         private readonly map = new Map<string, MemoryRateLimiterData<TType>>(),
     ) {}

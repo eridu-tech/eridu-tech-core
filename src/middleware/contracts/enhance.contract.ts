@@ -79,31 +79,6 @@ export type InferReturn<TValue> =
  *
  * @returns `void` — the object is mutated directly
  *
- * @example
- * ```ts
- * // 2. Define a class with a method to enhance
- * class UserService {
- *   async getUser(id: string): Promise<{ name: string }> {
- *     console.log(`Fetching user ${id}...`);
- *     return { name: "Alice" };
- *   }
- * }
- *
- * function main(enhance: Enhance): void {
- *   // 4. Enhance the method — mutates the instance in-place
- *   const service = new UserService();
- *   enhance(service, "getUser", [loggingMiddleware, cacheMiddleware]);
- *
- *   // 5. Call as usual — middleware runs automatically
- *   await service.getUser("123");
- *   // Logs:
- *   //   getUser called with: ["123"]
- *   //   Fetching user 123...
- *   //   getUser returned: { name: "Alice" }
- * }
- *
- * ```
- *
  * @see {@link Use | `Use`} — creates a new wrapped function without mutation
  * @see {@link Middleware | `Middleware`} — the middleware type
  * @see {@link enhanceFactory | `enhanceFactory`} — factory to create an `Enhance` function

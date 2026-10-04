@@ -62,37 +62,6 @@ const backoffPolicySettings: Required<ConstantBackoffSettingsEnum> = {
 /**
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/test-utilities"`
  * @group TestUtilities
- *
- * @example
- * ```ts
- * import { beforeEach, describe, expect, test } from "vitest";
- * import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
- * import { ConsecutiveBreaker } from "eridu-tech/circuit-breaker/policies";
- * import { consecutiveBreakerTestSuite } from "eridu-tech/circuit-breaker/test-utilities";
- * import { constantBackoff } from "eridu-tech/backoff-policies";
- * import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storage-adapter";
- *
- * describe("consecutive-breaker class: DatabaseCircuitBreakerAdapter", () => {
- *     consecutiveBreakerTestSuite({
- *         createAdapter: () => {
- *             const adapter = new DatabaseCircuitBreakerAdapter({
- *                 adapter: new MemoryCircuitBreakerStorageAdapter(),
- *                 backoffPolicy: constantBackoff(
- *                     consecutiveBreakerTestSuite.backoffPolicySettings,
- *                 ),
- *                 circuitBreakerPolicy: new ConsecutiveBreaker(
- *                     consecutiveBreakerTestSuite.circuitBreakerPolicySettings,
- *                 ),
- *             });
- *             return adapter;
- *         },
- *         beforeEach,
- *         describe,
- *         expect,
- *         test,
- *     });
- * });
- * ```
  */
 export function consecutiveBreakerTestSuite(
     settings: ConsecutiveBreakerTestSuiteSettings,

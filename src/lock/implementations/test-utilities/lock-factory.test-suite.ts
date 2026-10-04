@@ -66,36 +66,6 @@ export type LockFactoryTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/lock/test-utilities"`
  * @group Utilities
- * @example
- * ```ts
- * import { describe, expect, test, beforeEach } from "vitest";
- * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
- * import { LockFactory } from "eridu-tech/lock";
- * import { EventBus } from "eridu-tech/event-bus";
- * import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-adapter";
- * import { lockFactoryTestSuite } from "eridu-tech/lock/test-utilities";
- * import { Serde } from "eridu-tech/serde";
- * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
- * import type { ILockData } from "eridu-tech/lock/contracts";
- *
- * describe("class: LockFactory", () => {
- *     lockFactoryTestSuite({
- *         createLockFactory: () => {
- *             const serde = new Serde(new SuperJsonSerdeAdapter());
- *             const lockFactory = new LockFactory({
- *                 serde,
- *                 adapter: new MemoryLockAdapter(),
- *             });
- *             return { lockFactory, serde };
- *         },
- *         beforeEach,
- *         describe,
- *         expect,
- *         test,
- *         serde,
- *     });
- * });
- * ```
  */
 export function lockFactoryTestSuite(
     settings: LockFactoryTestSuiteSettings,

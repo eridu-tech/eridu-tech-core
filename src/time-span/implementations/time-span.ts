@@ -139,12 +139,6 @@ export class TimeSpan implements ITimeSpan, IComparable<ITimeSpan> {
     /**
      * Create a `TimeSpan` from `string`
      *
-     * @example
-     * ```ts
-     * // Will be 5000 milliseconds.
-     * TimeSpan.fromStr("5s").toMilliseconds()
-     * ```
-     *
      * Under the hood, this method leverages [@lukeed/ms](https://www.npmjs.com/package/@lukeed/ms) package to convert various time formats into milliseconds.
      * Refer to its documentation for a complete list of supported time formats and units.
      */

@@ -28,26 +28,6 @@ export type CircuitBreakerStorageAdapterTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/test-utilities"`
  * @group TestUtilities
- * @example
- * ```ts
- * import { afterEach, beforeEach, describe, expect, test } from "vitest";
- * import { circuitBreakerStorageAdapterTestSuite } from "eridu-tech/circuit-breaker/test-utilities";
- * import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storage-adapter";
- * import { TimeSpan } from "eridu-tech/time-span";
- * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
- * import { Serde } from "eridu-tech/serde";
- *
- * describe("class: MemoryCircuitBreakerStorageAdapter", () => {
- *     circuitBreakerStorageAdapterTestSuite({
- *         createAdapter: () =>
- *             new MemoryCircuitBreakerStorageAdapter(),
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function circuitBreakerStorageAdapterTestSuite(
     settings: CircuitBreakerStorageAdapterTestSuiteSettings,

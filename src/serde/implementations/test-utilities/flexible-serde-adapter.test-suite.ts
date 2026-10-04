@@ -26,20 +26,6 @@ export type FlexibleSerdeAdapterSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/serde/test-utilities"`
  * @group TestUtilities
- * @example
- * ```ts
- * import { describe, expect, test } from "vitest";
- * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
- * import { flexibleSerdeAdapterTestSuite } from "eridu-tech/serde/test-utilities";
- *
- * describe("class: SuperJsonSerdeAdapter", () => {
- *     flexibleSerdeAdapterTestSuite({
- *         createAdapter: () => new SuperJsonSerdeAdapter(),
- *         expect,
- *         test,
- *     });
- * });
- * ```
  */
 export function flexibleSerdeAdapterTestSuite(
     settings: FlexibleSerdeAdapterSuiteSettings,
