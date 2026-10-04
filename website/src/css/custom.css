@@ -71,35 +71,87 @@ html[data-theme='dark'] {
    ================================================================ */
 
 .daiso-hero {
+  position: relative;
   background: linear-gradient(
     135deg,
     var(--daiso-hero-bg-start) 0%,
     var(--daiso-hero-bg-end) 100%
   );
-  padding: 3rem 0 2.5rem;
+  padding: 5.5rem 0;
   text-align: center;
   overflow: hidden;
 }
 
-.daiso-hero-badge {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 100px;
-  color: rgba(255, 255, 255, 0.92);
-  padding: 0.35rem 1.25rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.daiso-hero-pattern {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 255, 255, 0.18) 0%,
+      transparent 60%
+    ),
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 100% 100%, 3rem 3rem, 3rem 3rem;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
 }
 
-.daiso-hero-tagline {
-  max-width: 660px;
-  margin: 0.5rem auto 1.25rem !important;
-  opacity: 0.9;
-  font-size: 1.05rem !important;
-  line-height: 1.55;
+.daiso-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.daiso-hero-title {
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  margin-bottom: 0;
+}
+
+.daiso-hero-subtitle {
+  max-width: 44rem;
+  margin: 1.25rem auto 2.25rem;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Hero CTAs sit on the green gradient: solid white primary, glass outline */
+.daiso-hero .daiso-hero-ctas .button--primary {
+  background: #fff;
+  border-color: #fff;
+  color: var(--daiso-hero-bg-start);
+}
+
+.daiso-hero .daiso-hero-ctas .button--primary:hover,
+.daiso-hero .daiso-hero-ctas .button--primary:focus {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(255, 255, 255, 0.88);
+  color: var(--daiso-hero-bg-start);
+}
+
+.daiso-hero .daiso-hero-ctas .button--outline.button--secondary {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+}
+
+.daiso-hero .daiso-hero-ctas .button--outline.button--secondary:hover,
+.daiso-hero .daiso-hero-ctas .button--outline.button--secondary:focus,
+.daiso-hero
+  .daiso-hero-ctas
+  .button--outline.button--secondary[href*="github.com"]:hover,
+.daiso-hero
+  .daiso-hero-ctas
+  .button--outline.button--secondary[href*="github.com"]:focus {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: #fff !important;
+  color: #fff !important;
 }
 
 .daiso-install-command {
@@ -180,6 +232,90 @@ html[data-theme='dark'] .daiso-install-command {
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+/* ================================================================
+   COMPONENT CODE TABS (landing)
+   ================================================================ */
+
+.daiso-code-tabs-header {
+  max-width: 46rem;
+  margin-bottom: 2.5rem;
+}
+
+.daiso-code-tabs-header .daiso-section-subtitle {
+  margin-bottom: 0;
+}
+
+.daiso-code-tabs-panel {
+  background: var(--ifm-background-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+.daiso-code-tabs-bar {
+  display: flex;
+  overflow-x: auto;
+  background: var(--ifm-color-emphasis-100);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.daiso-code-tabs-tab {
+  flex: 1 0 auto;
+  padding: 0.9rem 1.5rem;
+  border: none;
+  border-right: 1px solid var(--ifm-color-emphasis-200);
+  background: transparent;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.daiso-code-tabs-tab:last-child {
+  border-right: none;
+}
+
+.daiso-code-tabs-tab:hover {
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-emphasis-900);
+}
+
+.daiso-code-tabs-tab--active,
+.daiso-code-tabs-tab--active:hover {
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.daiso-code-tabs-body {
+  padding: 1.5rem;
+}
+
+.daiso-code-tabs-body [class*="codeBlockContainer"] {
+  margin-bottom: 0 !important;
+  box-shadow: none;
+}
+
+.daiso-code-tabs-note {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.daiso-code-tabs-note svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--ifm-color-primary);
 }
 
 /* Code showcase: install command + CTAs aligned with the left column */
@@ -409,18 +545,6 @@ html[data-theme='dark'] .daiso-install-command {
   font-size: 1.05rem;
   opacity: 0.9;
   margin-bottom: 1.75rem;
-}
-
-/* Make hero title and tagline white in all themes */
-.daiso-hero .hero__title,
-.daiso-hero .daiso-hero-tagline {
-  color: #fff !important;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.10);
-}
-
-.daiso-hero .hero__title {
-  font-size: 2.6rem;
-  margin-bottom: 0.75rem;
 }
 
 /* GitHub outline button: native Infima outline on light backgrounds,
@@ -836,13 +960,27 @@ html[data-theme='dark'] .daiso-install-command {
 
   /* Hero */
   .daiso-hero {
-    padding: 2.5rem 0 2rem;
+    padding: 3.5rem 0;
   }
-  .daiso-hero .hero__title {
-    font-size: 1.9rem;
+  .daiso-hero-subtitle {
+    font-size: 1rem;
+    margin: 1rem auto 1.75rem;
   }
-  .daiso-hero-tagline {
-    font-size: 0.95rem !important;
+  .daiso-hero .daiso-hero-ctas .button {
+    width: 100%;
+  }
+
+  /* Component code tabs */
+  .daiso-code-tabs-body {
+    padding: 1rem;
+  }
+  .daiso-code-tabs-tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+  .daiso-code-tabs-note {
+    padding: 0.85rem 1rem;
+    font-size: 0.9rem;
   }
 
   /* Stats bar */

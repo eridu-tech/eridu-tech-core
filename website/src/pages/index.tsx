@@ -1,4 +1,6 @@
 import {
+    HERO_TITLE,
+    HERO_SUBTITLE,
     UPCOMING_ITEMS,
     FOUNDATION_EXISTING_ITEMS,
     STORAGE_EXISTING_ITEMS,
@@ -10,6 +12,7 @@ import {
     PERFECT_FOR,
     NOT_IDEAL_FOR,
     CODE_EXAMPLES,
+    COMPONENT_CODE_TABS,
     COMPARISONS,
     INSTALL_CMD,
     GITHUB_REPO_URL,
@@ -18,7 +21,7 @@ import type { FeatureItemProps } from "../data/types.js";
 import { AvailableCategory } from "../roadmap/components/AvailableCategory.js";
 import { PlannedCardGrid } from "../roadmap/components/PlannedCardGrid.js";
 import { FeatureItem } from "../components/FeatureItem.js";
-import { ArrowRight, Copy, Check, Star } from "lucide-react";
+import { ArrowRight, Copy, Check, Lightbulb, Star } from "lucide-react";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import { type ReactNode, useState, useCallback } from "react";
 import Link from "@docusaurus/Link";
@@ -568,21 +571,89 @@ function FrameworkComparison() {
     );
 }
 
-// --- Header ---
+// --- Header (hero) ---
 function Header() {
-    const { siteConfig } = useDocusaurusContext();
     return (
-        <header className="daiso-hero hero hero--primary">
-            <div className="container">
-                <h1 className="hero__title">{siteConfig.title}</h1>
-                <p className="hero__subtitle daiso-hero-tagline">
-                    Cradle of Composable Backends
-                </p>
-                <p className="daiso-hero-badge margin-bottom--md">
-                    Backend foundation for TypeScript.
-                </p>
+        <header className="daiso-hero">
+            <div className="daiso-hero-pattern" aria-hidden="true" />
+            <div className="container daiso-hero-inner">
+                <h1 className="daiso-hero-title">{HERO_TITLE}</h1>
+                <p className="daiso-hero-subtitle">{HERO_SUBTITLE}</p>
+                <div className="daiso-hero-ctas">
+                    <Link
+                        className="button button--primary button--lg"
+                        to="./docs/getting_started"
+                    >
+                        Get started{" "}
+                        <ArrowRight
+                            size="1rem"
+                            style={{
+                                marginLeft: "0.4rem",
+                                verticalAlign: "middle",
+                            }}
+                        />
+                    </Link>
+                    <Link
+                        className="button button--outline button--secondary button--lg"
+                        href={GITHUB_REPO_URL}
+                    >
+                        View on GitHub
+                    </Link>
+                </div>
             </div>
         </header>
+    );
+}
+
+// --- Component code tabs ---
+
+function CodeTabsSection() {
+    const [activeIndex, setActiveIndex] = useState(0);
+    const tab = COMPONENT_CODE_TABS[activeIndex];
+
+    return (
+        <section className="daiso-code-tabs padding-vert--xl">
+            <div className="container">
+                <div className="daiso-code-tabs-header">
+                    <h2 className="daiso-section-title">
+                        Everything fits together
+                    </h2>
+                    <p className="daiso-section-subtitle">
+                        Expressive, type-safe building blocks that stay out of
+                        your way. See how routing, dependency injection,
+                        transactions, cache and serialization compose into a
+                        single foundation.
+                    </p>
+                </div>
+                <div className="daiso-code-tabs-panel">
+                    <div
+                        className="daiso-code-tabs-bar"
+                        role="tablist"
+                        aria-label="Component examples"
+                    >
+                        {COMPONENT_CODE_TABS.map((item, i) => (
+                            <button
+                                key={item.label}
+                                type="button"
+                                role="tab"
+                                aria-selected={i === activeIndex}
+                                className={`daiso-code-tabs-tab${i === activeIndex ? " daiso-code-tabs-tab--active" : ""}`}
+                                onClick={() => setActiveIndex(i)}
+                            >
+                                {item.label}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="daiso-code-tabs-body" role="tabpanel">
+                        <CodeBlock language="typescript">{tab.code}</CodeBlock>
+                    </div>
+                    <div className="daiso-code-tabs-note">
+                        <Lightbulb size="1.25rem" strokeWidth={2} />
+                        <span>{tab.description}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
     );
 }
 
@@ -595,6 +666,7 @@ export default function Home(): ReactNode {
         <Layout title={siteConfig.title} description={siteConfig.tagline}>
             <Header />
             <main>
+                <CodeTabsSection />
                 <StatsBar />
                 <FeatureSection items={Object.values(FEATURE_ITEMS)} />
                 <CodeShowcase />

@@ -49,6 +49,17 @@ export const INSTALL_CMD = "npm install eridu-tech";
 // Single source of truth for external URLs referenced across the site.
 export const GITHUB_REPO_URL = "https://github.com/daiso-tech/daiso-core";
 
+// ─── Landing Page Copy ─────────────────────────────────────────
+export const HERO_TITLE = "The composable TypeScript framework";
+
+export const HERO_SUBTITLE = (
+    <>
+        Think shadcn, but for your backend. Embed Eridu into Next.js, TanStack
+        Start, Nuxt, or any fullstack framework and compose only the backend
+        capabilities your application needs.
+    </>
+);
+
 // ─── Components Record ──────────────────────────────────────────
 // Single source of truth for every component, keyed by name.
 // Each curated list below references entries from this record.
@@ -1561,6 +1572,10 @@ const port = accessor.get("PORT");
 const env = accessor.getOr("NODE_ENV", "DEV");`,
     } satisfies CodeFile,
 };
+
+// ─── Landing page: component code tabs ──────────────────────────
+// Tab metadata and the verbatim raw sample imports live in home-tabs.ts.
+export { COMPONENT_CODE_TABS } from "./home-tabs.js";
 
 export const CODE_EXAMPLES = {
     SERDE: {
