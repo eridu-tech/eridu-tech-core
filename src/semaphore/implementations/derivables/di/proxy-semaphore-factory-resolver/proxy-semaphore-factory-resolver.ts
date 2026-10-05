@@ -14,9 +14,19 @@ import type {
 } from "@/semaphore/contracts/_module-exports.js";
 
 /**
- * @internal
+ * An {@link ISemaphoreFactoryResolver} and {@link ISemaphoreFactory} that resolve the
+ * underlying resolver from a dependency-injection container.
+ *
+ * The token is resolved once by {@link IContainer.init}, after which `use()` and
+ * `create()` delegate to the real resolver. Construct the instance before `init()`;
+ * calling `use()` or `create()` before `init()` is awaited throws.
+ *
+ * @template TAdapters - Union type of the registered adapter names.
+ *
+ * IMPORT_PATH: `"eridu-tech/semaphore/di"`
+ * @group Derivables
  */
-export class DiSemaphoreFactoryResolver<TAdapters extends string = string>
+export class ProxySemaphoreFactoryResolver<TAdapters extends string = string>
     implements ISemaphoreFactoryResolver<TAdapters>, ISemaphoreFactory
 {
     private resolver: ISemaphoreFactoryResolver<TAdapters> | null = null;
@@ -33,7 +43,7 @@ export class DiSemaphoreFactoryResolver<TAdapters extends string = string>
     private getResolver(): ISemaphoreFactoryResolver<TAdapters> {
         if (this.resolver === null) {
             throw new Error(
-                "DiSemaphoreFactoryResolver is not ready. Await ready() before use.",
+                "ProxySemaphoreFactoryResolver is not ready. Await IContainer.init() before use.",
             );
         }
         return this.resolver;

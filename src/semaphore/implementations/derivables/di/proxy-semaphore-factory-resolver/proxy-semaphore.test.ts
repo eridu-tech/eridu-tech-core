@@ -6,7 +6,7 @@ import { ExecutionContext } from "@/execution-context/implementations/derivables
 import { MemorySemaphoreAdapter } from "@/semaphore/implementations/adapters/memory-semaphore-adapter/_module-exports.js";
 import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op-semaphore-adapter/no-op-semaphore-adapter.js";
 import { SemaphoreFactoryResolver } from "@/semaphore/implementations/derivables/_module-exports.js";
-import { semaphoreFactoryResolverDiFactory } from "@/semaphore/implementations/derivables/di/semaphore-factory-resolver-di-factory/semaphore-factory-resolver-di-factory.js";
+import { ProxySemaphoreFactoryResolver } from "@/semaphore/implementations/derivables/di/proxy-semaphore-factory-resolver/proxy-semaphore-factory-resolver.js";
 import { semaphoreFactorySerdeTestSuite } from "@/semaphore/implementations/test-utilities/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
@@ -19,7 +19,7 @@ import type {
     ISemaphoreFactoryResolver,
 } from "@/semaphore/contracts/_module-exports.js";
 
-describe("function: semaphoreFactoryResolverDiFactory", () => {
+describe("class: ProxySemaphoreFactoryResolver", () => {
     type Adapters = "adapter1" | "adapter2";
     let semaphoreFactory: ISemaphoreFactoryResolver<Adapters> &
         ISemaphoreFactory;
@@ -56,7 +56,7 @@ describe("function: semaphoreFactoryResolverDiFactory", () => {
             token: SemaphoreFactoryResolver,
             value: semaphoreFactoryResolver,
         });
-        semaphoreFactory = semaphoreFactoryResolverDiFactory<Adapters>(
+        semaphoreFactory = new ProxySemaphoreFactoryResolver<Adapters>(
             container,
             SemaphoreFactoryResolver,
         );
@@ -150,7 +150,7 @@ describe("function: semaphoreFactoryResolverDiFactory", () => {
                 value: semaphoreFactoryResolver,
             });
             const semaphoreFactory_ =
-                semaphoreFactoryResolverDiFactory<Adapters>(
+                new ProxySemaphoreFactoryResolver<Adapters>(
                     container,
                     SemaphoreFactoryResolver,
                 );
