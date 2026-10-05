@@ -5,7 +5,7 @@ import { AlsExecutionContextAdapter } from "@/execution-context/implementations/
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { NoOpRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/no-op-rate-limiter-adapter/no-op-rate-limiter-adapter.js";
 import { RateLimiterFactoryResolver } from "@/rate-limiter/implementations/derivables/_module-exports.js";
-import { rateLimiterFactoryResolverDiFactory } from "@/rate-limiter/implementations/derivables/di/rate-limiter-factory-resolver-di-factory/rate-limiter-factory-resolver-di-factory.js";
+import { ProxyRateLimiterFactoryResolver } from "@/rate-limiter/implementations/derivables/di/proxy-rate-limiter-factory-resolver/proxy-rate-limiter-factory-resolver.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
@@ -18,7 +18,7 @@ import type {
     IRateLimiterFactoryResolver,
 } from "@/rate-limiter/contracts/_module-exports.js";
 
-describe("function: rateLimiterFactoryResolverDiFactory", () => {
+describe("class: ProxyRateLimiterFactoryResolver", () => {
     type Adapters = "adapter1" | "adapter2";
     let rateLimiterFactory: IRateLimiterFactoryResolver<Adapters> &
         IRateLimiterFactory;
@@ -58,7 +58,7 @@ describe("function: rateLimiterFactoryResolverDiFactory", () => {
             token: RateLimiterFactoryResolver,
             value: rateLimiterFactoryResolver,
         });
-        rateLimiterFactory = rateLimiterFactoryResolverDiFactory<Adapters>(
+        rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>(
             container,
             RateLimiterFactoryResolver,
         );
