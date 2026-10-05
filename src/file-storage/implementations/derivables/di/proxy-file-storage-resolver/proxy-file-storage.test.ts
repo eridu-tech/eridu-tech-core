@@ -7,7 +7,7 @@ import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapter
 import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/no-op-file-storage-adapter.js";
 import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js";
 import { FileStorageResolver } from "@/file-storage/implementations/derivables/_module-exports.js";
-import { fileStorageResolverDiFactory } from "@/file-storage/implementations/derivables/di/file-storage-resolver-di-factory/file-storage-resolver-di-factory.js";
+import { ProxyFileStorageResolver } from "@/file-storage/implementations/derivables/di/proxy-file-storage-resolver/proxy-file-storage-resolver.js";
 import { fileStorageSerdeTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
@@ -20,7 +20,7 @@ import type {
     ISignedFileStorageAdapter,
 } from "@/file-storage/contracts/_module-exports.js";
 
-describe("function: fileStorageResolverDiFactory", () => {
+describe("class: ProxyFileStorageResolver", () => {
     type Adapters = "adapter1" | "adapter2";
     let fileStorage: IFileStorageResolver<Adapters> & IFileStorage;
     let exists1: Mock<ISignedFileStorageAdapter["exists"]>;
@@ -54,7 +54,7 @@ describe("function: fileStorageResolverDiFactory", () => {
             token: FileStorageResolver,
             value: fileStorageResolver,
         });
-        fileStorage = fileStorageResolverDiFactory<Adapters>(
+        fileStorage = new ProxyFileStorageResolver<Adapters>(
             container,
             FileStorageResolver,
         );
@@ -117,7 +117,7 @@ describe("function: fileStorageResolverDiFactory", () => {
                 token: FileStorageResolver,
                 value: fileStorageResolver,
             });
-            const fileStorage_ = fileStorageResolverDiFactory<Adapters>(
+            const fileStorage_ = new ProxyFileStorageResolver<Adapters>(
                 container,
                 FileStorageResolver,
             );

@@ -13,9 +13,20 @@ import type {
 } from "@/file-storage/contracts/_module-exports.js";
 
 /**
- * @internal
+ * An {@link IFileStorageResolver} and {@link IFileStorage} that resolve the underlying
+ * resolver from a dependency-injection container.
+ *
+ * The token is resolved once by {@link IContainer.init}, after which `use()` and the
+ * file storage operations delegate to the real resolver. Construct the instance before
+ * `init()`; calling `use()` or a file storage operation before `init()` is awaited
+ * throws.
+ *
+ * @template TAdapters - Union type of the registered adapter names.
+ *
+ * IMPORT_PATH: `"eridu-tech/file-storage/di"`
+ * @group Derivables
  */
-export class DiFileStorageResolver<TAdapters extends string = string>
+export class ProxyFileStorageResolver<TAdapters extends string = string>
     implements IFileStorageResolver<TAdapters>, IFileStorage
 {
     private resolver: IFileStorageResolver<TAdapters> | null = null;
@@ -32,7 +43,7 @@ export class DiFileStorageResolver<TAdapters extends string = string>
     private getResolver(): IFileStorageResolver<TAdapters> {
         if (this.resolver === null) {
             throw new Error(
-                "DiFileStorageResolver is not ready. Await ready() before use.",
+                "ProxyFileStorageResolver is not ready. Await IContainer.init() before use.",
             );
         }
         return this.resolver;
