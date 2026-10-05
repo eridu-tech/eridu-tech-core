@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { NoOpCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/no-op-circuit-breaker-adapter/no-op-circuit-breaker-adapter.js";
 import { CircuitBreakerFactoryResolver } from "@/circuit-breaker/implementations/derivables/_module-exports.js";
-import { circuitBreakerFactoryResolverDiFactory } from "@/circuit-breaker/implementations/derivables/di/circuit-breaker-factory-resolver-di-factory/circuit-breaker-factory-resolver-di-factory.js";
+import { ProxyCircuitBreakerFactoryResolver } from "@/circuit-breaker/implementations/derivables/di/proxy-circuit-breaker-factory-resolver/proxy-circuit-breaker-factory-resolver.js";
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
@@ -18,7 +18,7 @@ import type {
     ICircuitBreakerFactoryResolver,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 
-describe("function: circuitBreakerFactoryResolverDiFactory", () => {
+describe("class: ProxyCircuitBreakerFactoryResolver", () => {
     type Adapters = "adapter1" | "adapter2";
     let circuitBreakerFactory: ICircuitBreakerFactoryResolver<Adapters> &
         ICircuitBreakerFactory;
@@ -59,7 +59,7 @@ describe("function: circuitBreakerFactoryResolverDiFactory", () => {
             value: circuitBreakerFactoryResolver,
         });
         circuitBreakerFactory =
-            circuitBreakerFactoryResolverDiFactory<Adapters>(
+            new ProxyCircuitBreakerFactoryResolver<Adapters>(
                 container,
                 CircuitBreakerFactoryResolver,
             );

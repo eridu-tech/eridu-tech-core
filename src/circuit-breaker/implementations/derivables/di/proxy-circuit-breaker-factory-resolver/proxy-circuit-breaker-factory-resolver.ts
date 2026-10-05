@@ -14,9 +14,21 @@ import type {
 } from "@/di/contracts/_module-exports.js";
 
 /**
- * @internal
+ * An {@link ICircuitBreakerFactoryResolver} and {@link ICircuitBreakerFactory} that
+ * resolve the underlying resolver from a dependency-injection container.
+ *
+ * The token is resolved once by {@link IContainer.init}, after which `use()` and
+ * `create()` delegate to the real resolver. Construct the instance before `init()`;
+ * calling `use()` or `create()` before `init()` is awaited throws.
+ *
+ * @template TAdapters - Union type of the registered adapter names.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/di"`
+ * @group Derivables
  */
-export class DiCircuitBreakerFactoryResolver<TAdapters extends string = string>
+export class ProxyCircuitBreakerFactoryResolver<
+    TAdapters extends string = string,
+>
     implements ICircuitBreakerFactoryResolver<TAdapters>, ICircuitBreakerFactory
 {
     private resolver: ICircuitBreakerFactoryResolver<TAdapters> | null = null;
@@ -33,7 +45,7 @@ export class DiCircuitBreakerFactoryResolver<TAdapters extends string = string>
     private getResolver(): ICircuitBreakerFactoryResolver<TAdapters> {
         if (this.resolver === null) {
             throw new Error(
-                "DiCircuitBreakerFactoryResolver is not ready. Await IContainer.init() before use.",
+                "ProxyCircuitBreakerFactoryResolver is not ready. Await IContainer.init() before use.",
             );
         }
         return this.resolver;
