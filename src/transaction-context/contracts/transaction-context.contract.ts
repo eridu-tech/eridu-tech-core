@@ -37,6 +37,45 @@ export type ITransactionConnection<TClient, TTransactionClient = TClient> = {
      * when a transaction is active, otherwise the base client.
      */
     readonly current: TClient | TTransactionClient;
+
+    /**
+     * Returns the active transaction-scoped client.
+     *
+     * Calling this method effectively opts the surrounding code into
+     * {@link TRANSACTION_PROPAGATION.MANDATORY | `MANDATORY`} transaction propagation: it
+     * assumes a transaction is already active and fails fast otherwise.
+     *
+     * @returns The active transaction-scoped client.
+     * @throws {MandatoryPropagationError} When no transaction is currently active.
+     */
+    getTransactionOrFail(): TTransactionClient;
+};
+
+/**
+ * Runs an invocable inside a transaction scope.
+ *
+ * IMPORT_PATH: `"eridu-tech/transaction-context/contracts"`
+ * @group Contracts
+ */
+export type ITransactionRunner = {
+    /**
+     * Runs the invocable with {@link TRANSACTION_PROPAGATION.REQUIRED | `REQUIRED`} propagation:
+     * reuses an active transaction, otherwise starts a new one.
+     *
+     * @returns A promise resolving with the invocable's result.
+     */
+    run<TValue = void>(asyncInvocable: AsyncLazy<TValue>): Promise<TValue>;
+
+    /**
+     * Runs the invocable with the given {@link TransactionPropagation} mode.
+     *
+     * @param propagation - How the run relates to an existing transaction.
+     * @returns A promise resolving with the invocable's result.
+     */
+    run<TValue = void>(
+        propagation: TransactionPropagation,
+        asyncInvocable: AsyncLazy<TValue>,
+    ): Promise<TValue>;
 };
 
 /**
@@ -52,19 +91,7 @@ export type ITransactionConnection<TClient, TTransactionClient = TClient> = {
 export type ITransactionContextBase<
     TClient = unknown,
     TTransactionClient = TClient,
-> = ITransactionConnection<TClient, TTransactionClient> & {
-    /**
-     * Returns the active transaction-scoped client.
-     *
-     * Calling this method effectively opts the surrounding code into
-     * {@link TRANSACTION_PROPAGATION.MANDATORY | `MANDATORY`} transaction propagation: it
-     * assumes a transaction is already active and fails fast otherwise.
-     *
-     * @returns The active transaction-scoped client.
-     * @throws {MandatoryPropagationError} When no transaction is currently active.
-     */
-    getTransactionOrFail(): TTransactionClient;
-};
+> = ITransactionConnection<TClient, TTransactionClient> & ITransactionRunner;
 
 /**
  * Settings for {@link ITransactionHooks.afterCommit | `afterCommit()`}.
@@ -148,9 +175,8 @@ export const TRANSACTION_PROPAGATION = {
 } as const;
 
 /**
- * A transaction propagation behavior: the union of the values of
- * {@link TRANSACTION_PROPAGATION}. Controls how {@link ITransactionContext.run | `run()`}
- * behaves in relation to an existing transaction.
+ * A propagation mode from {@link TRANSACTION_PROPAGATION} that controls how
+ * {@link ITransactionRunner.run | `run()`} relates to an existing transaction.
  *
  * IMPORT_PATH: `"eridu-tech/transaction-context/contracts"`
  * @group Contracts
@@ -172,33 +198,8 @@ export type ITransactionContext<
     TClient = unknown,
     TTransactionClient = TClient,
 > = ITransactionContextBase<TClient, TTransactionClient> &
-    ITransactionHooks & {
-        /**
-         * Runs the given invocable inside a transaction scope using
-         * {@link TRANSACTION_PROPAGATION.REQUIRED | `REQUIRED`} propagation: when a transaction is
-         * already active in this context it is reused, otherwise a new transaction is started.
-         *
-         * @typeParam TValue - The return type of the invocable. Defaults to `void`.
-         * @param asyncInvocable - The async invocable to run inside the transaction.
-         * @returns A promise that resolves with the invocable's result.
-         */
-        run<TValue = void>(asyncInvocable: AsyncLazy<TValue>): Promise<TValue>;
-
-        /**
-         * Runs the given invocable within the transaction context according to the given
-         * propagation mode.
-         *
-         * @typeParam TValue - The return type of the invocable. Defaults to `void`.
-         * @param propagation - How this run behaves in relation to an existing transaction; see
-         * {@link TRANSACTION_PROPAGATION}.
-         * @param asyncInvocable - The async invocable to run inside the transaction.
-         * @returns A promise that resolves with the invocable's result.
-         */
-        run<TValue = void>(
-            propagation: TransactionPropagation,
-            asyncInvocable: AsyncLazy<TValue>,
-        ): Promise<TValue>;
-    };
+    ITransactionRunner &
+    ITransactionHooks;
 
 /**
  * A value that is either a plain client or an {@link ITransactionContext}.
@@ -212,3 +213,24 @@ export type ITransactionContext<
  */
 export type TransactionAware<TClient, TTransactionClient = TClient> =
     TClient | ITransactionContext<TClient, TTransactionClient>;
+
+/**
+ * Resolves a registered transaction adapter by name into a usable transaction context.
+ *
+ * @typeParam TAdapters - Union of registered adapter names.
+ *
+ * IMPORT_PATH: `"eridu-tech/transaction-context/contracts"`
+ * @group Contracts
+ */
+export type ITransactionContextResolver<TAdapters extends string = string> = {
+    /**
+     * Returns the transaction context bound to the given adapter, falling back to the default
+     * adapter when `adapterName` is omitted.
+     *
+     * @param adapterName - Name of the adapter to use. Defaults to the configured default adapter.
+     * @returns The {@link ITransactionContextBase} bound to the resolved adapter.
+     * @throws {DefaultAdapterNotDefinedError} When no name is given and no default adapter is configured.
+     * @throws {UnregisteredAdapterError} When the given name is not registered.
+     */
+    use(adapterName?: TAdapters): ITransactionContextBase<any>;
+};

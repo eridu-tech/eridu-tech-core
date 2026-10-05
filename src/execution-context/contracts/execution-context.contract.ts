@@ -54,7 +54,8 @@ export type GenericToken<TValue> = {
  * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
  * @group Contracts
  */
-export type ContextToken<TValue> = GenericToken<TValue> | ClassToken<TValue>;
+export type ContextToken<TValue = unknown> =
+    GenericToken<TValue> | ClassToken<TValue>;
 
 /**
  * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
