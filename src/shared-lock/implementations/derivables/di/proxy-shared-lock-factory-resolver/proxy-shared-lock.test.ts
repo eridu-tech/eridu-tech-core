@@ -8,7 +8,7 @@ import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 import { MemorySharedLockAdapter } from "@/shared-lock/implementations/adapters/memory-shared-lock-adapter/_module-exports.js";
 import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/no-op-shared-lock-adapter/no-op-shared-lock-adapter.js";
 import { SharedLockFactoryResolver } from "@/shared-lock/implementations/derivables/_module-exports.js";
-import { sharedLockFactoryResolverDiFactory } from "@/shared-lock/implementations/derivables/di/shared-lock-factory-resolver-di-factory/shared-lock-factory-resolver-di-factory.js";
+import { ProxySharedLockFactoryResolver } from "@/shared-lock/implementations/derivables/di/proxy-shared-lock-factory-resolver/proxy-shared-lock-factory-resolver.js";
 import { sharedLockFactorySerdeTestSuite } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
 
 import type { Mock } from "vitest";
@@ -19,7 +19,7 @@ import type {
     ISharedLockFactoryResolver,
 } from "@/shared-lock/contracts/_module-exports.js";
 
-describe("function: sharedLockFactoryResolverDiFactory", () => {
+describe("class: ProxySharedLockFactoryResolver", () => {
     type Adapters = "adapter1" | "adapter2";
     let sharedLockFactory: ISharedLockFactoryResolver<Adapters> &
         ISharedLockFactory;
@@ -55,7 +55,7 @@ describe("function: sharedLockFactoryResolverDiFactory", () => {
             token: SharedLockFactoryResolver,
             value: sharedLockFactoryResolver,
         });
-        sharedLockFactory = sharedLockFactoryResolverDiFactory<Adapters>(
+        sharedLockFactory = new ProxySharedLockFactoryResolver<Adapters>(
             container,
             SharedLockFactoryResolver,
         );
@@ -140,7 +140,7 @@ describe("function: sharedLockFactoryResolverDiFactory", () => {
                 value: sharedLockFactoryResolver,
             });
             const sharedLockFactory_ =
-                sharedLockFactoryResolverDiFactory<Adapters>(
+                new ProxySharedLockFactoryResolver<Adapters>(
                     container,
                     SharedLockFactoryResolver,
                 );
