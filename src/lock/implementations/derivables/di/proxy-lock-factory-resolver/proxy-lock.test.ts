@@ -6,7 +6,7 @@ import { ExecutionContext } from "@/execution-context/implementations/derivables
 import { MemoryLockAdapter } from "@/lock/implementations/adapters/memory-lock-adapter/_module-exports.js";
 import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adapter/no-op-lock-adapter.js";
 import { LockFactoryResolver } from "@/lock/implementations/derivables/_module-exports.js";
-import { lockFactoryResolverDiFactory } from "@/lock/implementations/derivables/di/lock-factory-resolver-di-factory/lock-factory-resolver-di-factory.js";
+import { ProxyLockFactoryResolver } from "@/lock/implementations/derivables/di/proxy-lock-factory-resolver/proxy-lock-factory-resolver.js";
 import { lockFactorySerdeTestSuite } from "@/lock/implementations/test-utilities/_module-exports.js";
 import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
@@ -19,7 +19,7 @@ import type {
     ILockFactoryResolver,
 } from "@/lock/contracts/_module-exports.js";
 
-describe("function: lockFactoryResolverDiFactory", () => {
+describe("class: ProxyLockFactoryResolver", () => {
     type Adapters = "adapter1" | "adapter2";
     let lockFactory: ILockFactoryResolver<Adapters> & ILockFactory;
     let acquire1: Mock<ILockAdapter["acquire"]>;
@@ -53,7 +53,7 @@ describe("function: lockFactoryResolverDiFactory", () => {
             token: LockFactoryResolver,
             value: lockFactoryResolver,
         });
-        lockFactory = lockFactoryResolverDiFactory<Adapters>(
+        lockFactory = new ProxyLockFactoryResolver<Adapters>(
             container,
             LockFactoryResolver,
         );
@@ -119,7 +119,7 @@ describe("function: lockFactoryResolverDiFactory", () => {
                 token: LockFactoryResolver,
                 value: lockFactoryResolver,
             });
-            const lockFactory_ = lockFactoryResolverDiFactory<Adapters>(
+            const lockFactory_ = new ProxyLockFactoryResolver<Adapters>(
                 container,
                 LockFactoryResolver,
             );

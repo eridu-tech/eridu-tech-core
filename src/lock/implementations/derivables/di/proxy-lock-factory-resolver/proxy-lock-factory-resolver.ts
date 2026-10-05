@@ -14,9 +14,19 @@ import type {
 } from "@/lock/contracts/_module-exports.js";
 
 /**
- * @internal
+ * An {@link ILockFactoryResolver} and {@link ILockFactory} that resolve the underlying
+ * resolver from a dependency-injection container.
+ *
+ * The token is resolved once by {@link IContainer.init}, after which `use()` and
+ * `create()` delegate to the real resolver. Construct the instance before `init()`;
+ * calling `use()` or `create()` before `init()` is awaited throws.
+ *
+ * @template TAdapters - Union type of the registered adapter names.
+ *
+ * IMPORT_PATH: `"eridu-tech/lock/di"`
+ * @group Derivables
  */
-export class DiLockFactoryResolver<TAdapters extends string = string>
+export class ProxyLockFactoryResolver<TAdapters extends string = string>
     implements ILockFactoryResolver<TAdapters>, ILockFactory
 {
     private resolver: ILockFactoryResolver<TAdapters> | null = null;
@@ -33,7 +43,7 @@ export class DiLockFactoryResolver<TAdapters extends string = string>
     private getResolver(): ILockFactoryResolver<TAdapters> {
         if (this.resolver === null) {
             throw new Error(
-                "DiLockFactoryResolver is not ready. Await ready() before use.",
+                "ProxyLockFactoryResolver is not ready. Await IContainer.init() before use.",
             );
         }
         return this.resolver;
