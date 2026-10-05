@@ -1,1 +1,1 @@
-export * from "@/cache/implementations/derivables/di/cache-resolver-di-factory/_module.js";
+export * from "@/cache/implementations/derivables/di/proxy-cache-resolver/_module.js";

@@ -12,9 +12,23 @@ import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
 import type { AsyncLazyable } from "@/utilities/_module-exports.js";
 
 /**
- * @internal
+ * An {@link ICacheResolver} and {@link ICache} that resolve the underlying resolver
+ * from a dependency-injection container.
+ *
+ * The token is resolved once by {@link IContainer.init}, after which `use()` and the
+ * cache operations delegate to the real resolver. Construct the instance before
+ * `init()`; calling `use()` or a cache operation before `init()` is awaited throws.
+ *
+ * @template TAdapters - Union type of the registered adapter names.
+ * @template TType - The type of values cached.
+ *
+ * IMPORT_PATH: `"eridu-tech/cache/di"`
+ * @group Derivables
  */
-export class DiCacheResolver<TAdapters extends string = string, TType = unknown>
+export class ProxyCacheResolver<
+    TAdapters extends string = string,
+    TType = unknown,
+>
     implements ICache<TType>, ICacheResolver<TAdapters, TType>
 {
     private resolver: ICacheResolver<TAdapters, TType> | null = null;
@@ -31,7 +45,7 @@ export class DiCacheResolver<TAdapters extends string = string, TType = unknown>
     private getResolver(): ICacheResolver<TAdapters, TType> {
         if (this.resolver === null) {
             throw new Error(
-                "DiCacheResolver is not ready. Await IContainer.init() before use.",
+                "ProxyCacheResolver is not ready. Await IContainer.init() before use.",
             );
         }
         return this.resolver;
