@@ -1,6 +1,8 @@
 import {
     HERO_TITLE,
     HERO_SUBTITLE,
+    CODE_TABS_TITLE,
+    CODE_TABS_SUBTITLE,
     UPCOMING_ITEMS,
     FOUNDATION_EXISTING_ITEMS,
     STORAGE_EXISTING_ITEMS,
@@ -21,7 +23,6 @@ import { AvailableCategory } from "../roadmap/components/AvailableCategory.js";
 import { PlannedCardGrid } from "../roadmap/components/PlannedCardGrid.js";
 import { FeatureItem } from "../components/FeatureItem.js";
 import { ArrowRight, Copy, Check, Lightbulb, Star } from "lucide-react";
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import { type ReactNode, useState, useCallback } from "react";
 import Link from "@docusaurus/Link";
 import Layout from "@theme/Layout";
@@ -476,14 +477,9 @@ function CodeTabsSection() {
         <section className="daiso-code-tabs padding-vert--xl">
             <div className="container">
                 <div className="daiso-code-tabs-header">
-                    <h2 className="daiso-section-title">
-                        Everything fits together
-                    </h2>
+                    <h2 className="daiso-section-title">{CODE_TABS_TITLE}</h2>
                     <p className="daiso-section-subtitle">
-                        Expressive, type-safe building blocks that stay out of
-                        your way. See how routing, dependency injection,
-                        transactions, cache and serialization compose into a
-                        single foundation.
+                        {CODE_TABS_SUBTITLE}
                     </p>
                 </div>
                 <div className="daiso-code-tabs-panel">
@@ -536,10 +532,8 @@ function CodeTabsSection() {
 // --- Page ---
 
 export default function Home(): ReactNode {
-    const { siteConfig } = useDocusaurusContext();
-
     return (
-        <Layout title={siteConfig.title} description={siteConfig.tagline}>
+        <Layout title={HERO_TITLE} description={HERO_SUBTITLE}>
             <Header />
             <main>
                 <CodeTabsSection />

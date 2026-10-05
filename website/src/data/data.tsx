@@ -51,13 +51,17 @@ export const INSTALL_CMD = "npm install eridu-tech";
 export const GITHUB_REPO_URL = "https://github.com/daiso-tech/daiso-core";
 
 // ─── Landing Page Copy ─────────────────────────────────────────
-export const HERO_TITLE = "The composable TypeScript framework";
+export const HERO_TITLE = "The embeddable and composable TypeScript framework";
 
-export const HERO_SUBTITLE = (
+export const HERO_SUBTITLE =
+    "Think shadcn, but for your backend. Embed Eridu into Next.js, TanStack Start, Nuxt, or any fullstack framework and compose only the backend capabilities your application needs.";
+
+export const CODE_TABS_TITLE = "Everything fits together";
+
+export const CODE_TABS_SUBTITLE = (
     <>
-        Think shadcn, but for your backend. Embed Eridu into Next.js, TanStack
-        Start, Nuxt, or any fullstack framework and compose only the backend
-        capabilities your application needs.
+        See how routing, controllers, services, dependency injection, and
+        middleware compose into one application model
     </>
 );
 
@@ -1132,20 +1136,6 @@ export const FEATURE_ITEMS = {
                 vendors. Use Redis today and switch to another implementation
                 tomorrow without rewriting the business logic built on top of
                 it.
-            </>
-        ),
-    } satisfies FeatureItemProps,
-    UNIFIED_FOUNDATION: {
-        name: "One unified foundation",
-        icon: <Layers size="1.5rem" strokeWidth={1.5} />,
-        title: <>One unified foundation</>,
-        description: (
-            <>
-                Every Eridu capability is built on the same underlying
-                abstractions and conventions. Shared primitives such as
-                dependency injection, serialization, execution context,
-                transaction context, and AOP-style middleware make the
-                components work together consistently.
             </>
         ),
     } satisfies FeatureItemProps,
