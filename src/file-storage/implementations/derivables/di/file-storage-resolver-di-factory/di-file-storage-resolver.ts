@@ -2,7 +2,10 @@
  * @module FileStorage
  */
 
-import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type {
+    DiToken,
+    IContainerHooks,
+} from "@/di/contracts/_module-exports.js";
 import type {
     IFile,
     IFileStorage,
@@ -18,7 +21,7 @@ export class DiFileStorageResolver<TAdapters extends string = string>
     private resolver: IFileStorageResolver<TAdapters> | null = null;
 
     constructor(
-        container: IContainer,
+        container: Pick<IContainerHooks, "onInit">,
         resolverToken: DiToken<IFileStorageResolver<TAdapters>>,
     ) {
         container.onInit({ resolver: resolverToken }, (deps) => {

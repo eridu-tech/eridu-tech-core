@@ -4,7 +4,10 @@
 
 import type { ICacheResolver } from "@/cache/contracts/cache-resolver.contract.js";
 import type { ICache } from "@/cache/contracts/cache.contract.js";
-import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type {
+    DiToken,
+    IContainerHooks,
+} from "@/di/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
 import type { AsyncLazyable } from "@/utilities/_module-exports.js";
 
@@ -17,7 +20,7 @@ export class DiCacheResolver<TAdapters extends string = string, TType = unknown>
     private resolver: ICacheResolver<TAdapters, TType> | null = null;
 
     constructor(
-        container: IContainer,
+        container: Pick<IContainerHooks, "onInit">,
         resolverToken: DiToken<ICacheResolver<TAdapters, TType>>,
     ) {
         container.onInit({ resolver: resolverToken }, (deps) => {
