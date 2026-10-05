@@ -1,41 +1,41 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { TRANSACTION_PROPAGATION } from "@/transaction-context/contracts/_module-exports.js";
 import { NoOpTransactionAdapter } from "@/transaction-context/implementations/adapters/no-op-transaction-adapter/_module-exports.js";
+import { TransactionContextResolver } from "@/transaction-context/implementations/derivables/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/transaction-context/transaction-context.js";
 import { withTransactionFactory } from "@/transaction-context/implementations/middlewares/with-transaction-factory/with-transaction-factory.js";
 
-import type { ITransactionData } from "@/transaction-context/implementations/derivables/transaction-context/transaction-context.js";
-
 describe("function: withTransactionFactory", () => {
-    const transactionContext = new TransactionContext<null, null>({
-        token: contextToken<ITransactionData<null>>(""),
-        adapter: new NoOpTransactionAdapter<null, null>(null),
-        executionContext: new ExecutionContext(
-            new NoOpExecutionContextAdapter(),
-        ),
-    });
+    const transactionContextResolver = new TransactionContextResolver<"memory">(
+        {
+            adapters: { memory: new NoOpTransactionAdapter<null, null>(null) },
+            defaultAdapter: "memory",
+            executionContext: new ExecutionContext(
+                new NoOpExecutionContextAdapter(),
+            ),
+        },
+    );
 
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
     });
 
-    test("Should call transactionContext.run method", async () => {
-        const spy = vi.spyOn(transactionContext, "run");
+    test("Should run wrapped function with REQUIRED propagation by default", async () => {
+        const spy = vi.spyOn(TransactionContext.prototype, "run");
 
-        const withTransaction = withTransactionFactory(transactionContext);
+        const withTransaction = withTransactionFactory(
+            transactionContextResolver,
+        );
 
         function fn(_value: string): Promise<void> {
             return Promise.resolve();
         }
-        const argValue = "value";
-        await use(fn, withTransaction())(argValue);
+        await use(fn, withTransaction())("value");
 
         expect(spy).toHaveBeenCalledExactlyOnceWith(
             TRANSACTION_PROPAGATION.REQUIRED,
@@ -43,18 +43,17 @@ describe("function: withTransactionFactory", () => {
         );
     });
     test("Should use the configured propagation", async () => {
-        const spy = vi.spyOn(transactionContext, "run");
+        const spy = vi.spyOn(TransactionContext.prototype, "run");
 
-        const withTransaction = withTransactionFactory(transactionContext);
+        const withTransaction = withTransactionFactory(
+            transactionContextResolver,
+        );
 
-        function fn(_value: string): Promise<void> {
-            return Promise.resolve();
-        }
-        const argValue = "value";
+        async function fn(_value: string): Promise<void> {}
         await use(
             fn,
-            withTransaction(TRANSACTION_PROPAGATION.SUPPORTS),
-        )(argValue);
+            withTransaction({ propagation: TRANSACTION_PROPAGATION.SUPPORTS }),
+        )("value");
 
         expect(spy).toHaveBeenCalledExactlyOnceWith(
             TRANSACTION_PROPAGATION.SUPPORTS,
@@ -62,9 +61,10 @@ describe("function: withTransactionFactory", () => {
         );
     });
     test("Should invoke the wrapped function when the transaction context runs the invocable", async () => {
-        const spy = vi.spyOn(transactionContext, "run");
+        const withTransaction = withTransactionFactory(
+            transactionContextResolver,
+        );
 
-        const withTransaction = withTransactionFactory(transactionContext);
         let wasInvoked = false;
         function fn(_value: string): Promise<void> {
             wasInvoked = true;
@@ -74,10 +74,11 @@ describe("function: withTransactionFactory", () => {
         await use(fn, withTransaction())("value");
 
         expect(wasInvoked).toBe(true);
-        expect(spy).toHaveBeenCalledOnce();
     });
     test("Should pass through the wrapped function's arguments and return value", async () => {
-        const withTransaction = withTransactionFactory(transactionContext);
+        const withTransaction = withTransactionFactory(
+            transactionContextResolver,
+        );
 
         function fn(a: string, b: string): Promise<string> {
             return Promise.resolve(`${a}-${b}`);
@@ -86,5 +87,19 @@ describe("function: withTransactionFactory", () => {
         const wrapped = use(fn, withTransaction());
 
         expect(await wrapped("2", "3")).toBe("2-3");
+    });
+    test("Should select the adapter passed to use", async () => {
+        const spy = vi.spyOn(transactionContextResolver, "use");
+
+        const withTransaction = withTransactionFactory(
+            transactionContextResolver,
+        );
+
+        function fn(_value: string): Promise<void> {
+            return Promise.resolve();
+        }
+        await use(fn, withTransaction.use("memory")())("value");
+
+        expect(spy).toHaveBeenCalledWith("memory");
     });
 });
