@@ -1,1 +1,1 @@
-export * from "@/rate-limiter/implementations/derivables/di/rate-limiter-factory-resolver-di-factory/_module.js";
+export * from "@/rate-limiter/implementations/derivables/di/proxy-rate-limiter-factory-resolver/_module.js";
