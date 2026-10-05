@@ -2,7 +2,10 @@
  * @module SharedLock
  */
 
-import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type {
+    DiToken,
+    IContainerHooks,
+} from "@/di/contracts/_module-exports.js";
 import type {
     ISharedLock,
     ISharedLockFactory,
@@ -19,7 +22,7 @@ export class DiSharedLockFactoryResolver<TAdapters extends string = string>
     private resolver: ISharedLockFactoryResolver<TAdapters> | null = null;
 
     constructor(
-        container: IContainer,
+        container: Pick<IContainerHooks, "onInit">,
         resolverToken: DiToken<ISharedLockFactoryResolver<TAdapters>>,
     ) {
         container.onInit({ resolver: resolverToken }, (deps) => {

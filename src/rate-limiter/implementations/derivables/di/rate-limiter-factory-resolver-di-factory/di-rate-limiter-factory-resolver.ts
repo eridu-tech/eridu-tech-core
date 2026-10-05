@@ -2,7 +2,10 @@
  * @module RateLimiter
  */
 
-import type { DiToken, IContainer } from "@/di/contracts/_module-exports.js";
+import type {
+    DiToken,
+    IContainerHooks,
+} from "@/di/contracts/_module-exports.js";
 import type {
     IRateLimiter,
     IRateLimiterFactory,
@@ -19,7 +22,7 @@ export class DiRateLimiterFactoryResolver<TAdapters extends string = string>
     private resolver: IRateLimiterFactoryResolver<TAdapters> | null = null;
 
     constructor(
-        container: IContainer,
+        container: Pick<IContainerHooks, "onInit">,
         resolverToken: DiToken<IRateLimiterFactoryResolver<TAdapters>>,
     ) {
         container.onInit({ resolver: resolverToken }, (deps) => {
