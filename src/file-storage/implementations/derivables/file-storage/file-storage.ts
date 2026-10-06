@@ -6,7 +6,11 @@ import { FileSerdeTransformer } from "@/file-storage/implementations/derivables/
 import { File } from "@/file-storage/implementations/derivables/file-storage/file.js";
 import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
 import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
-import { CORE, resolveOneOrMore } from "@/utilities/_module-exports.js";
+import {
+    CORE,
+    resolveOneOrMore,
+    resolveSerdeTransformerName,
+} from "@/utilities/_module-exports.js";
 
 import type {
     IFile,
@@ -63,7 +67,12 @@ export type FileStorageSettingsBase = {
 
     /**
      * The serde transformer name used to identify file storage serializers and deserializers when there are adapters with the same name.
-     * @default ""
+     *
+     * The adapter's constructor name is appended to this value, or used on its own when omitted.
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
      */
     serdeTransformerName?: string;
 };
@@ -102,7 +111,7 @@ export class FileStorage implements IFileStorage {
         const {
             adapter,
             serde = new Serde(new NoOpSerdeAdapter()),
-            serdeTransformerName = "",
+            serdeTransformerName,
             defaultCacheControl = null,
             defaultContentDisposition = "inline",
             defaultContentEncoding = null,
@@ -115,7 +124,10 @@ export class FileStorage implements IFileStorage {
         this.defaultContentLanguage = defaultContentLanguage;
         this.adapter = adapter;
         this.serde = serde;
-        this.serdeTransformerName = serdeTransformerName;
+        this.serdeTransformerName = resolveSerdeTransformerName(
+            serdeTransformerName,
+            adapter,
+        );
         this.registerToSerde();
     }
 
