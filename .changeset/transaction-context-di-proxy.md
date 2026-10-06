@@ -4,7 +4,7 @@
 
 Added an `eridu-tech/transaction-context/di` entrypoint that exports the directly constructible `ProxyTransactionContextResolver` class.
 
-`ProxyTransactionContextResolver` implements `ITransactionContextResolver` and `ITransactionRunner`, and resolves the registered `TransactionContextResolver` from a dependency-injection container. The token is resolved once during `IContainer.init()`, after which `use()`, `run()`, and `afterCommit()` delegate to the real resolver.
+`ProxyTransactionContextResolver` implements `ITransactionContextResolver` and resolves the registered `TransactionContextResolver` from a dependency-injection container. The `resolverToken` is resolved through the container on every operation with `IServiceResolver.resolveOrFail`, so the proxy can be constructed at any point and every lifetime is supported: singleton and transient registrations can be used once `IContainer.init()` has been awaited, while scoped registrations are resolved per operation and must be used inside `IContainer.run()`.
 
 ```ts
 import { TransactionContextResolver } from "eridu-tech/transaction-context";
@@ -20,11 +20,10 @@ container.registerValue({
     value: transactionContextResolver,
 });
 
-// Create the proxy before container.init()
-const transactionContext = new ProxyTransactionContextResolver(
+const transactionContext = new ProxyTransactionContextResolver({
     container,
-    TransactionContextResolver,
-);
+    resolverToken: TransactionContextResolver,
+});
 
 await container.init();
 
@@ -33,7 +32,9 @@ await transactionContext.run(async () => {
 });
 ```
 
+`run()` and `afterCommit()` resolve the registered resolver and delegate to it. `use(adapterName?)` returns a lightweight `ITransactionRunner` whose `run()` resolves the registered resolver the first time it is invoked.
+
 ### Notes
 
+- Configure the proxy with a `ProxyTransactionContextResolverSettings` object (`container` and `resolverToken`).
 - Follows the same pattern as the other `Proxy*` classes exported from the `*/di` entrypoints (see `proxy-resolver-di-helpers`).
-- Construct the proxy before `IContainer.init()`; calling `use()`, `run()`, or `afterCommit()` before `init()` is awaited throws.

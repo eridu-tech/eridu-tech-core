@@ -52,4 +52,5 @@ const createUserOnPrimary = use(createUser, withTransaction.use("primary")());
 
 ### Notes
 
+- The `eridu-tech/transaction-context/di` entrypoint exports `ProxyTransactionContextResolver`, which wraps this resolver, resolves it lazily through the container, and supports every lifetime (see `transaction-context-di-proxy`).
 - `MultiTransactionHooks` (`transaction-context/implementations/derivables/multi-transaction-hooks`) is internal: it is marked `@internal`, is not exported from any public entrypoint, and is therefore excluded from the generated API documentation. It backs `TransactionContextResolver.afterCommit()` by forwarding a registered hook to every registered adapter that currently has an active transaction.
