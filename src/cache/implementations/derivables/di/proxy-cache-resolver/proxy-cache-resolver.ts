@@ -17,9 +17,18 @@ import type { AsyncLazyable, NoneFunc } from "@/utilities/_module-exports.js";
  * An {@link ICacheResolver} and {@link ICache} that resolve the underlying resolver
  * from a dependency-injection container.
  *
- * The token is resolved once by {@link IContainer.init}, after which `use()` and the
- * cache operations delegate to the real resolver. Construct the instance before
- * `init()`; calling `use()` or a cache operation before `init()` is awaited throws.
+ * The `resolverToken` is resolved through the container on every operation via
+ * {@link IServiceResolver.resolveOrFail}, and the operation is then delegated to the
+ * resolved {@link ICacheResolver}. Because resolution happens lazily, every
+ * {@link LIFETIME} is supported:
+ *
+ * - `SINGLETON` and `TRANSIENT` registrations can be used once
+ *   {@link IContainer.init} has been awaited.
+ * - `SCOPED` registrations are resolved per operation, so the proxy must be used
+ *   inside {@link IContainer.run}; resolving it outside of a scope throws.
+ *
+ * `use()` returns a lightweight {@link ICache} that performs the same per-operation
+ * resolution and forwards each cache method to the selected adapter.
  *
  * @template TAdapters - Union type of the registered adapter names.
  * @template TType - The type of values cached.
