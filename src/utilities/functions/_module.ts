@@ -19,5 +19,6 @@ export * from "@/utilities/functions/option.js";
 export * from "@/utilities/functions/resolve-async-iterable-value.js";
 export * from "@/utilities/functions/resolve-iterable-value.js";
 export * from "@/utilities/functions/resolve-one-or-more.js";
+export * from "@/utilities/functions/resolve-serde-transformer-name.js";
 export * from "@/utilities/functions/validate.js";
 export * from "@/utilities/functions/with-jitter.js";

@@ -105,10 +105,6 @@ export class SharedLock implements ISharedLock {
         return this.serdeTransformerName;
     }
 
-    internalGetAdapter(): ISharedLockAdapter {
-        return this.adapter;
-    }
-
     async runReaderOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue> {

@@ -14,6 +14,7 @@ import {
     CORE,
     isPositiveNbr,
     resolveOneOrMore,
+    resolveSerdeTransformerName,
 } from "@/utilities/_module-exports.js";
 
 import type {
@@ -47,7 +48,12 @@ export type SemaphoreFactorySettingsBase = {
 
     /**
      * The serde transformer name used to identify semaphore serializer and deserializer adapters when there are adapters with the same name.
-     * @default ""
+     *
+     * The adapter's constructor name is appended to this value, or used on its own when omitted.
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
      */
     serdeTransformerName?: string;
 
@@ -122,7 +128,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
             defaultRefreshTime = TimeSpan.fromMinutes(5),
             serde = new Serde(new NoOpSerdeAdapter()),
             adapter,
-            serdeTransformerName = "",
+            serdeTransformerName,
         } = settings;
 
         this.createSlotId = createSlotId;
@@ -130,7 +136,10 @@ export class SemaphoreFactory implements ISemaphoreFactory {
         this.defaultRefreshTime = TimeSpan.fromTimeSpan(defaultRefreshTime);
         this.defaultTtl =
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
-        this.serdeTransformerName = serdeTransformerName;
+        this.serdeTransformerName = resolveSerdeTransformerName(
+            serdeTransformerName,
+            adapter,
+        );
 
         this.adapter = adapter;
 

@@ -89,10 +89,6 @@ export class Lock implements ILock {
         return this.serdeTransformerName;
     }
 
-    internalGetAdapter(): ILockAdapter {
-        return this.adapter;
-    }
-
     async runOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue> {

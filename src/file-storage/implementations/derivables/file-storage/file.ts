@@ -93,10 +93,6 @@ export class File implements IFile {
         return this.serdeTransformerName;
     }
 
-    internalGetAdapter(): ISignedFileStorageAdapter {
-        return this.adapter;
-    }
-
     async getText(): Promise<string | null> {
         const bytes = await this.getBytes();
         if (bytes === null) {

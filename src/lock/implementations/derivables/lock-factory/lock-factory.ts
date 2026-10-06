@@ -12,6 +12,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     CORE,
     resolveOneOrMore,
+    resolveSerdeTransformerName,
     callInvocable,
 } from "@/utilities/_module-exports.js";
 
@@ -46,7 +47,12 @@ export type LockFactorySettingsBase = {
 
     /**
      * The registered serde transformer name used to identify lock serializer and deserializer adapters when there are adapters with the same name.
-     * @default ""
+     *
+     * The adapter's constructor name is appended to this value, or used on its own when omitted.
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
      */
     serdeTransformerName?: string;
 
@@ -121,7 +127,7 @@ export class LockFactory implements ILockFactory {
             createLockId = () => v4(),
             serde = new Serde(new NoOpSerdeAdapter()),
             adapter,
-            serdeTransformerName = "",
+            serdeTransformerName,
         } = settings;
 
         this.serde = serde;
@@ -129,7 +135,10 @@ export class LockFactory implements ILockFactory {
         this.creatLockId = createLockId;
         this.defaultTtl =
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
-        this.serdeTransformerName = serdeTransformerName;
+        this.serdeTransformerName = resolveSerdeTransformerName(
+            serdeTransformerName,
+            adapter,
+        );
 
         this.adapter = adapter;
         this.registerToSerde();

@@ -59,11 +59,7 @@ export class SemaphoreSerdeTransformer implements ISerdeTransformer<
             value.internalGetSerdeTransformerName() ===
             this.serdeTransformerName;
 
-        const isAdapterMatching =
-            getConstructorName(this.adapter) ===
-            getConstructorName(value.internalGetAdapter());
-
-        return isSerdTransformerNameMathcing && isAdapterMatching;
+        return isSerdTransformerNameMathcing;
     }
 
     deserialize(serializedValue: ISerializedSemaphore): Semaphore {

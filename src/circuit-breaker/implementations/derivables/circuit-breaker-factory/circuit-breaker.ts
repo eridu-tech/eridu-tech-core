@@ -101,10 +101,6 @@ export class CircuitBreaker implements ICircuitBreaker {
         return this.serdeTransformerName;
     }
 
-    internalGetAdapter(): ICircuitBreakerAdapter {
-        return this.adapter;
-    }
-
     get key(): string {
         return this.internalKey;
     }

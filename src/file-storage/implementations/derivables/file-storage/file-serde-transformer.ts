@@ -73,11 +73,7 @@ export class FileSerdeTransformer implements ISerdeTransformer<
             this.serdeTransformerName ===
             value.internalGetSerdeTransformerName();
 
-        const isAdapterMatching =
-            getConstructorName(this.adapter) ===
-            getConstructorName(value.internalGetAdapter());
-
-        return isSerdTransformerNameMathcing && isAdapterMatching;
+        return isSerdTransformerNameMathcing;
     }
 
     deserialize(serializedValue: ISerializedFile): File {

@@ -97,10 +97,6 @@ export class RateLimiter implements IRateLimiter {
         return this.serdeTransformerName;
     }
 
-    internalGetAdapter(): IRateLimiterAdapter {
-        return this.adapter;
-    }
-
     private toRateLimiterState(
         state: IRateLimiterAdapterState | null,
     ): RateLimiterState {
