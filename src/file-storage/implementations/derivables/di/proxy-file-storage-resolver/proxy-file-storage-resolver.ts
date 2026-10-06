@@ -2,9 +2,11 @@
  * @module FileStorage
  */
 
+import { ProxyFileStorage } from "@/file-storage/implementations/derivables/di/proxy-file-storage-resolver/proxy-file-storage.js";
+
 import type {
     DiToken,
-    IContainerHooks,
+    IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
 import type {
     IFile,
@@ -13,13 +15,36 @@ import type {
 } from "@/file-storage/contracts/_module-exports.js";
 
 /**
+ * Settings used to construct a {@link ProxyFileStorageResolver}.
+ *
+ * IMPORT_PATH: `"eridu-tech/file-storage/di"`
+ * @group Derivables
+ */
+export type ProxyFileStorageResolverSettings<
+    TAdapters extends string = string,
+> = {
+    container: Pick<IServiceResolver, "resolveOrFail">;
+    resolverToken: DiToken<IFileStorageResolver<TAdapters>>;
+};
+
+/**
  * An {@link IFileStorageResolver} and {@link IFileStorage} that resolve the underlying
  * resolver from a dependency-injection container.
  *
- * The token is resolved once by {@link IContainer.init}, after which `use()` and the
- * file storage operations delegate to the real resolver. Construct the instance before
- * `init()`; calling `use()` or a file storage operation before `init()` is awaited
- * throws.
+ * Construct the proxy with a {@link ProxyFileStorageResolverSettings}.
+ *
+ * The `resolverToken` is resolved through the container on every operation via
+ * {@link IServiceResolver.resolveOrFail}, and the operation is then delegated to the
+ * resolved {@link IFileStorageResolver}. Because resolution happens lazily, every
+ * `LIFETIME` is supported:
+ *
+ * - `SINGLETON` and `TRANSIENT` registrations can be used once
+ *   `IContainer.init()` has been awaited.
+ * - `SCOPED` registrations are resolved per operation, so the proxy must be used
+ *   inside `IContainer.run()`; resolving it outside of a scope throws.
+ *
+ * `use()` returns a lightweight {@link IFileStorage} whose files resolve the resolver
+ * when one of their operations is invoked.
  *
  * @template TAdapters - Union type of the registered adapter names.
  *
@@ -29,28 +54,20 @@ import type {
 export class ProxyFileStorageResolver<TAdapters extends string = string>
     implements IFileStorageResolver<TAdapters>, IFileStorage
 {
-    private resolver: IFileStorageResolver<TAdapters> | null = null;
+    private readonly container: Pick<IServiceResolver, "resolveOrFail">;
+    private readonly resolverToken: DiToken<IFileStorageResolver<TAdapters>>;
 
-    constructor(
-        container: Pick<IContainerHooks, "onInit">,
-        resolverToken: DiToken<IFileStorageResolver<TAdapters>>,
-    ) {
-        container.onInit({ resolver: resolverToken }, (deps) => {
-            this.resolver = deps.resolver;
-        });
-    }
-
-    private getResolver(): IFileStorageResolver<TAdapters> {
-        if (this.resolver === null) {
-            throw new Error(
-                "ProxyFileStorageResolver is not ready. Await IContainer.init() before use.",
-            );
-        }
-        return this.resolver;
+    constructor(settings: ProxyFileStorageResolverSettings<TAdapters>) {
+        this.container = settings.container;
+        this.resolverToken = settings.resolverToken;
     }
 
     use(adapterName?: TAdapters): IFileStorage {
-        return this.getResolver().use(adapterName);
+        return new ProxyFileStorage(
+            this.container,
+            this.resolverToken,
+            adapterName,
+        );
     }
 
     create(key: string): IFile {

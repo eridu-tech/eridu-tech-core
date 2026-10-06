@@ -2,6 +2,8 @@
  * @module CircuitBreaker
  */
 
+import { ProxyCircuitBreakerFactory } from "@/circuit-breaker/implementations/derivables/di/proxy-circuit-breaker-factory-resolver/proxy-circuit-breaker-factory.js";
+
 import type {
     CircuitBreakerFactoryCreateSettings,
     ICircuitBreaker,
@@ -10,16 +12,41 @@ import type {
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import type {
     DiToken,
-    IContainerHooks,
+    IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
+
+/**
+ * Settings used to construct a {@link ProxyCircuitBreakerFactoryResolver}.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/di"`
+ * @group Derivables
+ */
+export type ProxyCircuitBreakerFactoryResolverSettings<
+    TAdapters extends string = string,
+> = {
+    container: Pick<IServiceResolver, "resolveOrFail">;
+    resolverToken: DiToken<ICircuitBreakerFactoryResolver<TAdapters>>;
+};
 
 /**
  * An {@link ICircuitBreakerFactoryResolver} and {@link ICircuitBreakerFactory} that
  * resolve the underlying resolver from a dependency-injection container.
  *
- * The token is resolved once by {@link IContainer.init}, after which `use()` and
- * `create()` delegate to the real resolver. Construct the instance before `init()`;
- * calling `use()` or `create()` before `init()` is awaited throws.
+ * Construct the proxy with a
+ * {@link ProxyCircuitBreakerFactoryResolverSettings}.
+ *
+ * The `resolverToken` is resolved through the container on every operation via
+ * {@link IServiceResolver.resolveOrFail}, and the operation is then delegated to the
+ * resolved {@link ICircuitBreakerFactoryResolver}. Because resolution happens lazily,
+ * every `LIFETIME` is supported:
+ *
+ * - `SINGLETON` and `TRANSIENT` registrations can be used once
+ *   `IContainer.init()` has been awaited.
+ * - `SCOPED` registrations are resolved per operation, so the proxy must be used
+ *   inside `IContainer.run()`; resolving it outside of a scope throws.
+ *
+ * `use()` returns a lightweight {@link ICircuitBreakerFactory} whose circuit
+ * breakers resolve the resolver when one of their operations is invoked.
  *
  * @template TAdapters - Union type of the registered adapter names.
  *
@@ -31,28 +58,24 @@ export class ProxyCircuitBreakerFactoryResolver<
 >
     implements ICircuitBreakerFactoryResolver<TAdapters>, ICircuitBreakerFactory
 {
-    private resolver: ICircuitBreakerFactoryResolver<TAdapters> | null = null;
+    private readonly container: Pick<IServiceResolver, "resolveOrFail">;
+    private readonly resolverToken: DiToken<
+        ICircuitBreakerFactoryResolver<TAdapters>
+    >;
 
     constructor(
-        container: Pick<IContainerHooks, "onInit">,
-        resolverToken: DiToken<ICircuitBreakerFactoryResolver<TAdapters>>,
+        settings: ProxyCircuitBreakerFactoryResolverSettings<TAdapters>,
     ) {
-        container.onInit({ resolver: resolverToken }, (deps) => {
-            this.resolver = deps.resolver;
-        });
-    }
-
-    private getResolver(): ICircuitBreakerFactoryResolver<TAdapters> {
-        if (this.resolver === null) {
-            throw new Error(
-                "ProxyCircuitBreakerFactoryResolver is not ready. Await IContainer.init() before use.",
-            );
-        }
-        return this.resolver;
+        this.container = settings.container;
+        this.resolverToken = settings.resolverToken;
     }
 
     use(adapterName?: TAdapters): ICircuitBreakerFactory {
-        return this.getResolver().use(adapterName);
+        return new ProxyCircuitBreakerFactory(
+            this.container,
+            this.resolverToken,
+            adapterName,
+        );
     }
 
     create(

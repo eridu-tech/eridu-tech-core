@@ -14,18 +14,34 @@ import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
 import type { AsyncLazyable, NoneFunc } from "@/utilities/_module-exports.js";
 
 /**
+ * Settings used to construct a {@link ProxyCacheResolver}.
+ *
+ * IMPORT_PATH: `"eridu-tech/cache/di"`
+ * @group Derivables
+ */
+export type ProxyCacheResolverSettings<
+    TAdapters extends string = string,
+    TType = unknown,
+> = {
+    container: Pick<IServiceResolver, "resolveOrFail">;
+    resolverToken: DiToken<ICacheResolver<TAdapters, TType>>;
+};
+
+/**
  * An {@link ICacheResolver} and {@link ICache} that resolve the underlying resolver
  * from a dependency-injection container.
+ *
+ * Construct the proxy with a {@link ProxyCacheResolverSettings}.
  *
  * The `resolverToken` is resolved through the container on every operation via
  * {@link IServiceResolver.resolveOrFail}, and the operation is then delegated to the
  * resolved {@link ICacheResolver}. Because resolution happens lazily, every
- * {@link LIFETIME} is supported:
+ * `LIFETIME` is supported:
  *
  * - `SINGLETON` and `TRANSIENT` registrations can be used once
- *   {@link IContainer.init} has been awaited.
+ *   `IContainer.init()` has been awaited.
  * - `SCOPED` registrations are resolved per operation, so the proxy must be used
- *   inside {@link IContainer.run}; resolving it outside of a scope throws.
+ *   inside `IContainer.run()`; resolving it outside of a scope throws.
  *
  * `use()` returns a lightweight {@link ICache} that performs the same per-operation
  * resolution and forwards each cache method to the selected adapter.
@@ -42,12 +58,13 @@ export class ProxyCacheResolver<
 >
     implements ICache<TType>, ICacheResolver<TAdapters, TType>
 {
-    constructor(
-        private readonly container: Pick<IServiceResolver, "resolveOrFail">,
-        private readonly resolverToken: DiToken<
-            ICacheResolver<TAdapters, TType>
-        >,
-    ) {}
+    private readonly container: Pick<IServiceResolver, "resolveOrFail">;
+    private readonly resolverToken: DiToken<ICacheResolver<TAdapters, TType>>;
+
+    constructor(settings: ProxyCacheResolverSettings<TAdapters, TType>) {
+        this.container = settings.container;
+        this.resolverToken = settings.resolverToken;
+    }
 
     use(adapterName?: TAdapters): ICache<TType> {
         return new ProxyCache(this.container, this.resolverToken, adapterName);

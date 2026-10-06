@@ -2,9 +2,11 @@
  * @module TransactionContext
  */
 
+import { ProxyTransactionRunner } from "@/transaction-context/implementations/derivables/di/proxy-transaction-context-resolver/proxy-transaction-runner.js";
+
 import type {
     DiToken,
-    IContainerHooks,
+    IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
 import type {
     AfterCommitSettings,
@@ -15,12 +17,36 @@ import type {
 import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 /**
+ * Settings used to construct a {@link ProxyTransactionContextResolver}.
+ *
+ * IMPORT_PATH: `"eridu-tech/transaction-context/di"`
+ * @group Derivables
+ */
+export type ProxyTransactionContextResolverSettings<
+    TAdapters extends string = string,
+> = {
+    container: Pick<IServiceResolver, "resolveOrFail">;
+    resolverToken: DiToken<ITransactionContextResolver<TAdapters>>;
+};
+
+/**
  * An {@link ITransactionContextResolver} and {@link ITransactionRunner} that resolve the
  * underlying resolver from a dependency-injection container.
  *
- * The token is resolved once by {@link IContainer.init}, after which `use()`, `run()`,
- * and `afterCommit()` delegate to the real resolver. Construct the instance before
- * `init()`; calling any of them before `init()` is awaited throws.
+ * Construct the proxy with a {@link ProxyTransactionContextResolverSettings}.
+ *
+ * The `resolverToken` is resolved through the container on every operation via
+ * {@link IServiceResolver.resolveOrFail}, and the operation is then delegated to the
+ * resolved {@link ITransactionContextResolver}. Because resolution happens lazily, every
+ * `LIFETIME` is supported:
+ *
+ * - `SINGLETON` and `TRANSIENT` registrations can be used once
+ *   `IContainer.init()` has been awaited.
+ * - `SCOPED` registrations are resolved per operation, so the proxy must be used
+ *   inside `IContainer.run()`; resolving it outside of a scope throws.
+ *
+ * `use()` returns a lightweight {@link ITransactionRunner} that performs the same
+ * per-operation resolution.
  *
  * @template TAdapters - Union type of the registered adapter names.
  *
@@ -30,28 +56,22 @@ import type { AsyncLazy } from "@/utilities/_module-exports.js";
 export class ProxyTransactionContextResolver<
     TAdapters extends string = string,
 > implements ITransactionContextResolver<TAdapters> {
-    private resolver: ITransactionContextResolver<TAdapters> | null = null;
+    private readonly container: Pick<IServiceResolver, "resolveOrFail">;
+    private readonly resolverToken: DiToken<
+        ITransactionContextResolver<TAdapters>
+    >;
 
-    constructor(
-        container: Pick<IContainerHooks, "onInit">,
-        resolverToken: DiToken<ITransactionContextResolver<TAdapters>>,
-    ) {
-        container.onInit({ resolver: resolverToken }, (deps) => {
-            this.resolver = deps.resolver;
-        });
-    }
-
-    private getResolver(): ITransactionContextResolver<TAdapters> {
-        if (this.resolver === null) {
-            throw new Error(
-                "ProxyTransactionContextResolver is not ready. Await IContainer.init() before use.",
-            );
-        }
-        return this.resolver;
+    constructor(settings: ProxyTransactionContextResolverSettings<TAdapters>) {
+        this.container = settings.container;
+        this.resolverToken = settings.resolverToken;
     }
 
     use(adapterName?: TAdapters): ITransactionRunner {
-        return this.getResolver().use(adapterName);
+        return new ProxyTransactionRunner(
+            this.container,
+            this.resolverToken,
+            adapterName,
+        );
     }
 
     run<TValue = void>(asyncInvocable: AsyncLazy<TValue>): Promise<TValue>;
@@ -65,10 +85,12 @@ export class ProxyTransactionContextResolver<
         return this.use().run(propagation, asyncInvocable);
     }
 
-    afterCommit(
+    async afterCommit(
         asyncInvocable: AsyncLazy<void>,
         settings?: AfterCommitSettings,
     ): Promise<void> {
-        return this.getResolver().afterCommit(asyncInvocable, settings);
+        return (
+            await this.container.resolveOrFail(this.resolverToken)
+        ).afterCommit(asyncInvocable, settings);
     }
 }

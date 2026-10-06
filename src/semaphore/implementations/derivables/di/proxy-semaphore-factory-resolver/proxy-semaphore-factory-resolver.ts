@@ -2,9 +2,14 @@
  * @module Semaphore
  */
 
+import { v4 } from "uuid";
+
+import { ProxySemaphoreFactory } from "@/semaphore/implementations/derivables/di/proxy-semaphore-factory-resolver/proxy-semaphore-factory.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+
 import type {
     DiToken,
-    IContainerHooks,
+    IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
 import type {
     ISemaphore,
@@ -12,14 +17,43 @@ import type {
     ISemaphoreFactoryResolver,
     SemaphoreFactoryCreateSettings,
 } from "@/semaphore/contracts/_module-exports.js";
+import type { SemaphoreFactorySettingsBase } from "@/semaphore/implementations/derivables/_module-exports.js";
+
+/**
+ * Settings used to construct a {@link ProxySemaphoreFactoryResolver}.
+ *
+ * The optional `defaultTtl` and `createSlotId` settings mirror
+ * {@link SemaphoreFactorySettingsBase} and fall back to the same defaults as
+ * {@link SemaphoreFactory} when omitted.
+ *
+ * IMPORT_PATH: `"eridu-tech/semaphore/di"`
+ * @group Derivables
+ */
+export type ProxySemaphoreFactoryResolverSettings<
+    TAdapters extends string = string,
+> = Pick<SemaphoreFactorySettingsBase, "defaultTtl" | "createSlotId"> & {
+    container: Pick<IServiceResolver, "resolveOrFail">;
+    resolverToken: DiToken<ISemaphoreFactoryResolver<TAdapters>>;
+};
 
 /**
  * An {@link ISemaphoreFactoryResolver} and {@link ISemaphoreFactory} that resolve the
  * underlying resolver from a dependency-injection container.
  *
- * The token is resolved once by {@link IContainer.init}, after which `use()` and
- * `create()` delegate to the real resolver. Construct the instance before `init()`;
- * calling `use()` or `create()` before `init()` is awaited throws.
+ * Construct the proxy with a {@link ProxySemaphoreFactoryResolverSettings}.
+ *
+ * The `resolverToken` is resolved through the container on every operation via
+ * {@link IServiceResolver.resolveOrFail}, and the operation is then delegated to the
+ * resolved {@link ISemaphoreFactoryResolver}. Because resolution happens lazily, every
+ * `LIFETIME` is supported:
+ *
+ * - `SINGLETON` and `TRANSIENT` registrations can be used once
+ *   `IContainer.init()` has been awaited.
+ * - `SCOPED` registrations are resolved per operation, so the proxy must be used
+ *   inside `IContainer.run()`; resolving it outside of a scope throws.
+ *
+ * `use()` returns a lightweight {@link ISemaphoreFactory} whose semaphores resolve the
+ * resolver when one of their operations is invoked.
  *
  * @template TAdapters - Union type of the registered adapter names.
  *
@@ -29,28 +63,37 @@ import type {
 export class ProxySemaphoreFactoryResolver<TAdapters extends string = string>
     implements ISemaphoreFactoryResolver<TAdapters>, ISemaphoreFactory
 {
-    private resolver: ISemaphoreFactoryResolver<TAdapters> | null = null;
+    private readonly container: Pick<IServiceResolver, "resolveOrFail">;
+    private readonly resolverToken: DiToken<
+        ISemaphoreFactoryResolver<TAdapters>
+    >;
+    private readonly settings: Required<
+        Pick<SemaphoreFactorySettingsBase, "defaultTtl" | "createSlotId">
+    >;
 
-    constructor(
-        container: Pick<IContainerHooks, "onInit">,
-        resolverToken: DiToken<ISemaphoreFactoryResolver<TAdapters>>,
-    ) {
-        container.onInit({ resolver: resolverToken }, (deps) => {
-            this.resolver = deps.resolver;
-        });
-    }
+    constructor(settings: ProxySemaphoreFactoryResolverSettings) {
+        const {
+            container,
+            resolverToken,
+            createSlotId = () => v4(),
+            defaultTtl = TimeSpan.fromMinutes(5),
+        } = settings;
 
-    private getResolver(): ISemaphoreFactoryResolver<TAdapters> {
-        if (this.resolver === null) {
-            throw new Error(
-                "ProxySemaphoreFactoryResolver is not ready. Await IContainer.init() before use.",
-            );
-        }
-        return this.resolver;
+        this.container = container;
+        this.resolverToken = resolverToken;
+        this.settings = {
+            createSlotId,
+            defaultTtl,
+        };
     }
 
     use(adapterName?: TAdapters): ISemaphoreFactory {
-        return this.getResolver().use(adapterName);
+        return new ProxySemaphoreFactory(
+            this.container,
+            this.resolverToken,
+            adapterName,
+            this.settings,
+        );
     }
 
     create(key: string, settings: SemaphoreFactoryCreateSettings): ISemaphore {
