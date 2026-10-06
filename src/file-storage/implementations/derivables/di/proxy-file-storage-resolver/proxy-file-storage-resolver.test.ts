@@ -64,10 +64,10 @@ describe("class: ProxyFileStorageResolver", () => {
             deps: {},
             lifetime: settings.lifetime,
         });
-        const createdFileStorage = new ProxyFileStorageResolver<Adapters>(
-            createdContainer,
-            FileStorageResolver,
-        );
+        const createdFileStorage = new ProxyFileStorageResolver<Adapters>({
+            container: createdContainer,
+            resolverToken: FileStorageResolver,
+        });
         return {
             container: createdContainer,
             fileStorage: createdFileStorage,

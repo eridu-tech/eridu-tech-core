@@ -55,7 +55,10 @@ describe("class: ProxyCacheResolver", () => {
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
             });
-            cache = new ProxyCacheResolver<Adapters>(container, CacheResolver);
+            cache = new ProxyCacheResolver<Adapters>({
+                container,
+                resolverToken: CacheResolver,
+            });
 
             await container.init();
         });
@@ -120,7 +123,10 @@ describe("class: ProxyCacheResolver", () => {
                 deps: {},
                 lifetime: LIFETIME.TRANSIENT,
             });
-            cache = new ProxyCacheResolver<Adapters>(container, CacheResolver);
+            cache = new ProxyCacheResolver<Adapters>({
+                container,
+                resolverToken: CacheResolver,
+            });
 
             await container.init();
         });
@@ -185,7 +191,10 @@ describe("class: ProxyCacheResolver", () => {
                 deps: {},
                 lifetime: LIFETIME.SCOPED,
             });
-            cache = new ProxyCacheResolver<Adapters>(container, CacheResolver);
+            cache = new ProxyCacheResolver<Adapters>({
+                container,
+                resolverToken: CacheResolver,
+            });
 
             await container.init();
         });

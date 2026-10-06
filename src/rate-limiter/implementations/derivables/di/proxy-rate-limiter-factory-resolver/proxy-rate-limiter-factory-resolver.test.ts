@@ -63,10 +63,10 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
             });
-            rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>(
+            rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>({
                 container,
-                RateLimiterFactoryResolver,
-            );
+                resolverToken: RateLimiterFactoryResolver,
+            });
 
             await container.init();
         });
@@ -177,10 +177,10 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                 deps: {},
                 lifetime: LIFETIME.TRANSIENT,
             });
-            rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>(
+            rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>({
                 container,
-                RateLimiterFactoryResolver,
-            );
+                resolverToken: RateLimiterFactoryResolver,
+            });
 
             await container.init();
         });
@@ -291,10 +291,10 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                 deps: {},
                 lifetime: LIFETIME.SCOPED,
             });
-            rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>(
+            rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>({
                 container,
-                RateLimiterFactoryResolver,
-            );
+                resolverToken: RateLimiterFactoryResolver,
+            });
 
             await container.init();
         });

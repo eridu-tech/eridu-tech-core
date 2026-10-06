@@ -47,10 +47,10 @@ describe("class: ProxyTransactionContextResolver", () => {
             token: TransactionContextResolver,
             value: transactionContextResolver,
         });
-        transactionContext = new ProxyTransactionContextResolver<Adapters>(
+        transactionContext = new ProxyTransactionContextResolver<Adapters>({
             container,
-            TransactionContextResolver,
-        );
+            resolverToken: TransactionContextResolver,
+        });
 
         await container.init();
     });

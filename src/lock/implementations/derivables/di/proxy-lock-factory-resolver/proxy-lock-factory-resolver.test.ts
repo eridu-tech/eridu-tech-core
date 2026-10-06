@@ -63,10 +63,10 @@ describe("class: ProxyLockFactoryResolver", () => {
             deps: {},
             lifetime: settings.lifetime,
         });
-        const createdLockFactory = new ProxyLockFactoryResolver<Adapters>(
-            createdContainer,
-            LockFactoryResolver,
-        );
+        const createdLockFactory = new ProxyLockFactoryResolver<Adapters>({
+            container: createdContainer,
+            resolverToken: LockFactoryResolver,
+        });
         return {
             container: createdContainer,
             lockFactory: createdLockFactory,

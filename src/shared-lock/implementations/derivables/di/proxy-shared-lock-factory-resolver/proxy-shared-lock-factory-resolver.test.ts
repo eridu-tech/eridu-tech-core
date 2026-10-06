@@ -66,10 +66,10 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             lifetime: settings.lifetime,
         });
         const createdSharedLockFactory =
-            new ProxySharedLockFactoryResolver<Adapters>(
-                createdContainer,
-                SharedLockFactoryResolver,
-            );
+            new ProxySharedLockFactoryResolver<Adapters>({
+                container: createdContainer,
+                resolverToken: SharedLockFactoryResolver,
+            });
         return {
             container: createdContainer,
             sharedLockFactory: createdSharedLockFactory,

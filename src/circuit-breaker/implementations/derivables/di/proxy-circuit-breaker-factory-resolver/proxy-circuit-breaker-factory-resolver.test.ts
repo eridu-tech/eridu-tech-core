@@ -64,10 +64,10 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                 lifetime: LIFETIME.SINGLETON,
             });
             circuitBreakerFactory =
-                new ProxyCircuitBreakerFactoryResolver<Adapters>(
+                new ProxyCircuitBreakerFactoryResolver<Adapters>({
                     container,
-                    CircuitBreakerFactoryResolver,
-                );
+                    resolverToken: CircuitBreakerFactoryResolver,
+                });
 
             await container.init();
         });
@@ -177,10 +177,10 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                 lifetime: LIFETIME.TRANSIENT,
             });
             circuitBreakerFactory =
-                new ProxyCircuitBreakerFactoryResolver<Adapters>(
+                new ProxyCircuitBreakerFactoryResolver<Adapters>({
                     container,
-                    CircuitBreakerFactoryResolver,
-                );
+                    resolverToken: CircuitBreakerFactoryResolver,
+                });
 
             await container.init();
         });
@@ -290,10 +290,10 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                 lifetime: LIFETIME.SCOPED,
             });
             circuitBreakerFactory =
-                new ProxyCircuitBreakerFactoryResolver<Adapters>(
+                new ProxyCircuitBreakerFactoryResolver<Adapters>({
                     container,
-                    CircuitBreakerFactoryResolver,
-                );
+                    resolverToken: CircuitBreakerFactoryResolver,
+                });
 
             await container.init();
         });

@@ -66,10 +66,10 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             lifetime: settings.lifetime,
         });
         const createdSemaphoreFactory =
-            new ProxySemaphoreFactoryResolver<Adapters>(
-                createdContainer,
-                SemaphoreFactoryResolver,
-            );
+            new ProxySemaphoreFactoryResolver<Adapters>({
+                container: createdContainer,
+                resolverToken: SemaphoreFactoryResolver,
+            });
         return {
             container: createdContainer,
             semaphoreFactory: createdSemaphoreFactory,
