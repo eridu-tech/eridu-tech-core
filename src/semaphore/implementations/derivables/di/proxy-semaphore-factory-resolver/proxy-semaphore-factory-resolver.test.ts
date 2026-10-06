@@ -14,11 +14,13 @@ import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
 import type { Mock } from "vitest";
 
+import type { Lifetime } from "@/di/contracts/_module-exports.js";
 import type {
     ISemaphoreAdapter,
     ISemaphoreFactory,
     ISemaphoreFactoryResolver,
 } from "@/semaphore/contracts/_module-exports.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
 
 describe("class: ProxySemaphoreFactoryResolver", () => {
     type Adapters = "adapter1" | "adapter2";
@@ -28,17 +30,56 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
     let acquire1: Mock<ISemaphoreAdapter["acquire"]>;
     let acquire2: Mock<ISemaphoreAdapter["acquire"]>;
 
+    type SemaphoreFactoryContainerSettings = {
+        adapter1: ISemaphoreAdapter;
+        adapter2: ISemaphoreAdapter;
+        lifetime: Lifetime;
+        serde?: ISerdeRegister;
+    };
+
+    function createSemaphoreFactoryContainer(
+        settings: SemaphoreFactoryContainerSettings,
+    ): {
+        container: Container;
+        semaphoreFactory: ISemaphoreFactoryResolver<Adapters> &
+            ISemaphoreFactory;
+    } {
+        const executionContext = new ExecutionContext(
+            new AlsExecutionContextAdapter(),
+        );
+        const createdContainer = new Container({
+            executionContext,
+        });
+        createdContainer.registerFactory({
+            token: SemaphoreFactoryResolver,
+            factory: () => {
+                return new SemaphoreFactoryResolver<Adapters>({
+                    adapters: {
+                        adapter1: settings.adapter1,
+                        adapter2: settings.adapter2,
+                    },
+                    defaultAdapter: "adapter1",
+                    serde: settings.serde,
+                });
+            },
+            deps: {},
+            lifetime: settings.lifetime,
+        });
+        const createdSemaphoreFactory =
+            new ProxySemaphoreFactoryResolver<Adapters>(
+                createdContainer,
+                SemaphoreFactoryResolver,
+            );
+        return {
+            container: createdContainer,
+            semaphoreFactory: createdSemaphoreFactory,
+        };
+    }
+
     describe("LIFETIME.SINGLETON:", () => {
         beforeEach(async () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
 
             const adapter1 = new NoOpSemaphoreAdapter();
             acquire1 = vi.spyOn(adapter1, "acquire");
@@ -46,24 +87,13 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             const adapter2 = new NoOpSemaphoreAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
 
-            container.registerFactory({
-                token: SemaphoreFactoryResolver,
-                factory: () => {
-                    return new SemaphoreFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                deps: {},
+            const created = createSemaphoreFactoryContainer({
+                adapter1,
+                adapter2,
                 lifetime: LIFETIME.SINGLETON,
             });
-            semaphoreFactory = new ProxySemaphoreFactoryResolver<Adapters>(
-                container,
-                SemaphoreFactoryResolver,
-            );
+            container = created.container;
+            semaphoreFactory = created.semaphoreFactory;
 
             await container.init();
         });
@@ -134,37 +164,15 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
         semaphoreFactorySerdeTestSuite({
             createSemaphoreFactory: async () => {
                 const serde = new Serde(new SuperJsonSerdeAdapter());
-                const executionContext = new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                );
-                const serdeContainer = new Container({
-                    executionContext,
-                });
-                const semaphoreFactoryResolver =
-                    new SemaphoreFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1: new MemorySemaphoreAdapter(),
-                            adapter2: new MemorySemaphoreAdapter(),
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                serdeContainer.registerFactory({
-                    token: SemaphoreFactoryResolver,
-                    factory: () => {
-                        return semaphoreFactoryResolver;
-                    },
-                    deps: {},
+                const created = createSemaphoreFactoryContainer({
+                    adapter1: new MemorySemaphoreAdapter(),
+                    adapter2: new MemorySemaphoreAdapter(),
+                    serde,
                     lifetime: LIFETIME.SINGLETON,
                 });
-                const semaphoreFactory_ =
-                    new ProxySemaphoreFactoryResolver<Adapters>(
-                        serdeContainer,
-                        SemaphoreFactoryResolver,
-                    );
-                await serdeContainer.init();
+                await created.container.init();
                 return {
-                    semaphoreFactory: semaphoreFactory_,
+                    semaphoreFactory: created.semaphoreFactory,
                     serde,
                 };
             },
@@ -179,37 +187,19 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
-
             const adapter1 = new NoOpSemaphoreAdapter();
             acquire1 = vi.spyOn(adapter1, "acquire");
 
             const adapter2 = new NoOpSemaphoreAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
 
-            container.registerFactory({
-                token: SemaphoreFactoryResolver,
-                factory: () => {
-                    return new SemaphoreFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                deps: {},
+            const created = createSemaphoreFactoryContainer({
+                adapter1,
+                adapter2,
                 lifetime: LIFETIME.TRANSIENT,
             });
-            semaphoreFactory = new ProxySemaphoreFactoryResolver<Adapters>(
-                container,
-                SemaphoreFactoryResolver,
-            );
+            container = created.container;
+            semaphoreFactory = created.semaphoreFactory;
 
             await container.init();
         });
@@ -280,37 +270,15 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
         semaphoreFactorySerdeTestSuite({
             createSemaphoreFactory: async () => {
                 const serde = new Serde(new SuperJsonSerdeAdapter());
-                const executionContext = new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                );
-                const serdeContainer = new Container({
-                    executionContext,
-                });
-                const semaphoreFactoryResolver =
-                    new SemaphoreFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1: new MemorySemaphoreAdapter(),
-                            adapter2: new MemorySemaphoreAdapter(),
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                serdeContainer.registerFactory({
-                    token: SemaphoreFactoryResolver,
-                    factory: () => {
-                        return semaphoreFactoryResolver;
-                    },
-                    deps: {},
+                const created = createSemaphoreFactoryContainer({
+                    adapter1: new MemorySemaphoreAdapter(),
+                    adapter2: new MemorySemaphoreAdapter(),
+                    serde,
                     lifetime: LIFETIME.TRANSIENT,
                 });
-                const semaphoreFactory_ =
-                    new ProxySemaphoreFactoryResolver<Adapters>(
-                        serdeContainer,
-                        SemaphoreFactoryResolver,
-                    );
-                await serdeContainer.init();
+                await created.container.init();
                 return {
-                    semaphoreFactory: semaphoreFactory_,
+                    semaphoreFactory: created.semaphoreFactory,
                     serde,
                 };
             },
@@ -325,37 +293,19 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
-
             const adapter1 = new NoOpSemaphoreAdapter();
             acquire1 = vi.spyOn(adapter1, "acquire");
 
             const adapter2 = new NoOpSemaphoreAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
 
-            container.registerFactory({
-                token: SemaphoreFactoryResolver,
-                factory: () => {
-                    return new SemaphoreFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                deps: {},
+            const created = createSemaphoreFactoryContainer({
+                adapter1,
+                adapter2,
                 lifetime: LIFETIME.SCOPED,
             });
-            semaphoreFactory = new ProxySemaphoreFactoryResolver<Adapters>(
-                container,
-                SemaphoreFactoryResolver,
-            );
+            container = created.container;
+            semaphoreFactory = created.semaphoreFactory;
 
             await container.init();
         });
@@ -438,37 +388,15 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
         semaphoreFactorySerdeTestSuite({
             createSemaphoreFactory: async () => {
                 const serde = new Serde(new SuperJsonSerdeAdapter());
-                const executionContext = new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                );
-                const serdeContainer = new Container({
-                    executionContext,
-                });
-                const semaphoreFactoryResolver =
-                    new SemaphoreFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1: new MemorySemaphoreAdapter(),
-                            adapter2: new MemorySemaphoreAdapter(),
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                serdeContainer.registerFactory({
-                    token: SemaphoreFactoryResolver,
-                    factory: () => {
-                        return semaphoreFactoryResolver;
-                    },
-                    deps: {},
+                const created = createSemaphoreFactoryContainer({
+                    adapter1: new MemorySemaphoreAdapter(),
+                    adapter2: new MemorySemaphoreAdapter(),
+                    serde,
                     lifetime: LIFETIME.SCOPED,
                 });
-                const semaphoreFactory_ =
-                    new ProxySemaphoreFactoryResolver<Adapters>(
-                        serdeContainer,
-                        SemaphoreFactoryResolver,
-                    );
-                await serdeContainer.init();
+                await created.container.init();
                 return {
-                    semaphoreFactory: semaphoreFactory_,
+                    semaphoreFactory: created.semaphoreFactory,
                     serde,
                 };
             },

@@ -14,6 +14,8 @@ import { sharedLockFactorySerdeTestSuite } from "@/shared-lock/implementations/t
 
 import type { Mock } from "vitest";
 
+import type { Lifetime } from "@/di/contracts/_module-exports.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
 import type {
     ISharedLockAdapter,
     ISharedLockFactory,
@@ -28,17 +30,56 @@ describe("class: ProxySharedLockFactoryResolver", () => {
     let acquireWriter1: Mock<ISharedLockAdapter["acquireWriter"]>;
     let acquireWriter2: Mock<ISharedLockAdapter["acquireWriter"]>;
 
+    type SharedLockFactoryContainerSettings = {
+        adapter1: ISharedLockAdapter;
+        adapter2: ISharedLockAdapter;
+        lifetime: Lifetime;
+        serde?: ISerdeRegister;
+    };
+
+    function createSharedLockFactoryContainer(
+        settings: SharedLockFactoryContainerSettings,
+    ): {
+        container: Container;
+        sharedLockFactory: ISharedLockFactoryResolver<Adapters> &
+            ISharedLockFactory;
+    } {
+        const executionContext = new ExecutionContext(
+            new AlsExecutionContextAdapter(),
+        );
+        const createdContainer = new Container({
+            executionContext,
+        });
+        createdContainer.registerFactory({
+            token: SharedLockFactoryResolver,
+            factory: () => {
+                return new SharedLockFactoryResolver<Adapters>({
+                    adapters: {
+                        adapter1: settings.adapter1,
+                        adapter2: settings.adapter2,
+                    },
+                    defaultAdapter: "adapter1",
+                    serde: settings.serde,
+                });
+            },
+            deps: {},
+            lifetime: settings.lifetime,
+        });
+        const createdSharedLockFactory =
+            new ProxySharedLockFactoryResolver<Adapters>(
+                createdContainer,
+                SharedLockFactoryResolver,
+            );
+        return {
+            container: createdContainer,
+            sharedLockFactory: createdSharedLockFactory,
+        };
+    }
+
     describe("LIFETIME.SINGLETON:", () => {
         beforeEach(async () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
 
             const adapter1 = new NoOpSharedLockAdapter();
             acquireWriter1 = vi.spyOn(adapter1, "acquireWriter");
@@ -46,24 +87,13 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             const adapter2 = new NoOpSharedLockAdapter();
             acquireWriter2 = vi.spyOn(adapter2, "acquireWriter");
 
-            container.registerFactory({
-                token: SharedLockFactoryResolver,
-                factory: () => {
-                    return new SharedLockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                deps: {},
+            const created = createSharedLockFactoryContainer({
+                adapter1,
+                adapter2,
                 lifetime: LIFETIME.SINGLETON,
             });
-            sharedLockFactory = new ProxySharedLockFactoryResolver<Adapters>(
-                container,
-                SharedLockFactoryResolver,
-            );
+            container = created.container;
+            sharedLockFactory = created.sharedLockFactory;
 
             await container.init();
         });
@@ -125,37 +155,15 @@ describe("class: ProxySharedLockFactoryResolver", () => {
         sharedLockFactorySerdeTestSuite({
             createSharedLockFactory: async () => {
                 const serde = new Serde(new SuperJsonSerdeAdapter());
-                const executionContext = new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                );
-                const serdeContainer = new Container({
-                    executionContext,
-                });
-                const sharedLockFactoryResolver =
-                    new SharedLockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1: new MemorySharedLockAdapter(),
-                            adapter2: new MemorySharedLockAdapter(),
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                serdeContainer.registerFactory({
-                    token: SharedLockFactoryResolver,
-                    factory: () => {
-                        return sharedLockFactoryResolver;
-                    },
-                    deps: {},
+                const created = createSharedLockFactoryContainer({
+                    adapter1: new MemorySharedLockAdapter(),
+                    adapter2: new MemorySharedLockAdapter(),
+                    serde,
                     lifetime: LIFETIME.SINGLETON,
                 });
-                const sharedLockFactory_ =
-                    new ProxySharedLockFactoryResolver<Adapters>(
-                        serdeContainer,
-                        SharedLockFactoryResolver,
-                    );
-                await serdeContainer.init();
+                await created.container.init();
                 return {
-                    sharedLockFactory: sharedLockFactory_,
+                    sharedLockFactory: created.sharedLockFactory,
                     serde,
                 };
             },
@@ -170,37 +178,19 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
-
             const adapter1 = new NoOpSharedLockAdapter();
             acquireWriter1 = vi.spyOn(adapter1, "acquireWriter");
 
             const adapter2 = new NoOpSharedLockAdapter();
             acquireWriter2 = vi.spyOn(adapter2, "acquireWriter");
 
-            container.registerFactory({
-                token: SharedLockFactoryResolver,
-                factory: () => {
-                    return new SharedLockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                deps: {},
+            const created = createSharedLockFactoryContainer({
+                adapter1,
+                adapter2,
                 lifetime: LIFETIME.TRANSIENT,
             });
-            sharedLockFactory = new ProxySharedLockFactoryResolver<Adapters>(
-                container,
-                SharedLockFactoryResolver,
-            );
+            container = created.container;
+            sharedLockFactory = created.sharedLockFactory;
 
             await container.init();
         });
@@ -262,37 +252,15 @@ describe("class: ProxySharedLockFactoryResolver", () => {
         sharedLockFactorySerdeTestSuite({
             createSharedLockFactory: async () => {
                 const serde = new Serde(new SuperJsonSerdeAdapter());
-                const executionContext = new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                );
-                const serdeContainer = new Container({
-                    executionContext,
-                });
-                const sharedLockFactoryResolver =
-                    new SharedLockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1: new MemorySharedLockAdapter(),
-                            adapter2: new MemorySharedLockAdapter(),
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                serdeContainer.registerFactory({
-                    token: SharedLockFactoryResolver,
-                    factory: () => {
-                        return sharedLockFactoryResolver;
-                    },
-                    deps: {},
+                const created = createSharedLockFactoryContainer({
+                    adapter1: new MemorySharedLockAdapter(),
+                    adapter2: new MemorySharedLockAdapter(),
+                    serde,
                     lifetime: LIFETIME.TRANSIENT,
                 });
-                const sharedLockFactory_ =
-                    new ProxySharedLockFactoryResolver<Adapters>(
-                        serdeContainer,
-                        SharedLockFactoryResolver,
-                    );
-                await serdeContainer.init();
+                await created.container.init();
                 return {
-                    sharedLockFactory: sharedLockFactory_,
+                    sharedLockFactory: created.sharedLockFactory,
                     serde,
                 };
             },
@@ -307,37 +275,19 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
-
             const adapter1 = new NoOpSharedLockAdapter();
             acquireWriter1 = vi.spyOn(adapter1, "acquireWriter");
 
             const adapter2 = new NoOpSharedLockAdapter();
             acquireWriter2 = vi.spyOn(adapter2, "acquireWriter");
 
-            container.registerFactory({
-                token: SharedLockFactoryResolver,
-                factory: () => {
-                    return new SharedLockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                deps: {},
+            const created = createSharedLockFactoryContainer({
+                adapter1,
+                adapter2,
                 lifetime: LIFETIME.SCOPED,
             });
-            sharedLockFactory = new ProxySharedLockFactoryResolver<Adapters>(
-                container,
-                SharedLockFactoryResolver,
-            );
+            container = created.container;
+            sharedLockFactory = created.sharedLockFactory;
 
             await container.init();
         });
@@ -411,37 +361,15 @@ describe("class: ProxySharedLockFactoryResolver", () => {
         sharedLockFactorySerdeTestSuite({
             createSharedLockFactory: async () => {
                 const serde = new Serde(new SuperJsonSerdeAdapter());
-                const executionContext = new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                );
-                const serdeContainer = new Container({
-                    executionContext,
-                });
-                const sharedLockFactoryResolver =
-                    new SharedLockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1: new MemorySharedLockAdapter(),
-                            adapter2: new MemorySharedLockAdapter(),
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                serdeContainer.registerFactory({
-                    token: SharedLockFactoryResolver,
-                    factory: () => {
-                        return sharedLockFactoryResolver;
-                    },
-                    deps: {},
+                const created = createSharedLockFactoryContainer({
+                    adapter1: new MemorySharedLockAdapter(),
+                    adapter2: new MemorySharedLockAdapter(),
+                    serde,
                     lifetime: LIFETIME.SCOPED,
                 });
-                const sharedLockFactory_ =
-                    new ProxySharedLockFactoryResolver<Adapters>(
-                        serdeContainer,
-                        SharedLockFactoryResolver,
-                    );
-                await serdeContainer.init();
+                await created.container.init();
                 return {
-                    sharedLockFactory: sharedLockFactory_,
+                    sharedLockFactory: created.sharedLockFactory,
                     serde,
                 };
             },

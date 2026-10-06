@@ -14,11 +14,13 @@ import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
 
 import type { Mock } from "vitest";
 
+import type { Lifetime } from "@/di/contracts/_module-exports.js";
 import type {
     ILockAdapter,
     ILockFactory,
     ILockFactoryResolver,
 } from "@/lock/contracts/_module-exports.js";
+import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
 
 describe("class: ProxyLockFactoryResolver", () => {
     type Adapters = "adapter1" | "adapter2";
@@ -27,17 +29,54 @@ describe("class: ProxyLockFactoryResolver", () => {
     let acquire1: Mock<ILockAdapter["acquire"]>;
     let acquire2: Mock<ILockAdapter["acquire"]>;
 
+    type LockFactoryContainerSettings = {
+        adapter1: ILockAdapter;
+        adapter2: ILockAdapter;
+        lifetime: Lifetime;
+        serde?: ISerdeRegister;
+    };
+
+    function createLockFactoryContainer(
+        settings: LockFactoryContainerSettings,
+    ): {
+        container: Container;
+        lockFactory: ILockFactoryResolver<Adapters> & ILockFactory;
+    } {
+        const executionContext = new ExecutionContext(
+            new AlsExecutionContextAdapter(),
+        );
+        const createdContainer = new Container({
+            executionContext,
+        });
+        createdContainer.registerFactory({
+            token: LockFactoryResolver,
+            factory: () => {
+                return new LockFactoryResolver<Adapters>({
+                    adapters: {
+                        adapter1: settings.adapter1,
+                        adapter2: settings.adapter2,
+                    },
+                    defaultAdapter: "adapter1",
+                    serde: settings.serde,
+                });
+            },
+            deps: {},
+            lifetime: settings.lifetime,
+        });
+        const createdLockFactory = new ProxyLockFactoryResolver<Adapters>(
+            createdContainer,
+            LockFactoryResolver,
+        );
+        return {
+            container: createdContainer,
+            lockFactory: createdLockFactory,
+        };
+    }
+
     describe("LIFETIME.SINGLETON:", () => {
         beforeEach(async () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
 
             const adapter1 = new NoOpLockAdapter();
             acquire1 = vi.spyOn(adapter1, "acquire");
@@ -45,24 +84,13 @@ describe("class: ProxyLockFactoryResolver", () => {
             const adapter2 = new NoOpLockAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
 
-            container.registerFactory({
-                token: LockFactoryResolver,
-                factory: () => {
-                    return new LockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                deps: {},
+            const created = createLockFactoryContainer({
+                adapter1,
+                adapter2,
                 lifetime: LIFETIME.SINGLETON,
             });
-            lockFactory = new ProxyLockFactoryResolver<Adapters>(
-                container,
-                LockFactoryResolver,
-            );
+            container = created.container;
+            lockFactory = created.lockFactory;
 
             await container.init();
         });
@@ -119,35 +147,15 @@ describe("class: ProxyLockFactoryResolver", () => {
         lockFactorySerdeTestSuite({
             createLockFactory: async () => {
                 const serde = new Serde(new SuperJsonSerdeAdapter());
-                const executionContext = new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                );
-                const serdeContainer = new Container({
-                    executionContext,
-                });
-                const lockFactoryResolver = new LockFactoryResolver<Adapters>({
-                    adapters: {
-                        adapter1: new MemoryLockAdapter(),
-                        adapter2: new MemoryLockAdapter(),
-                    },
-                    defaultAdapter: "adapter1",
+                const created = createLockFactoryContainer({
+                    adapter1: new MemoryLockAdapter(),
+                    adapter2: new MemoryLockAdapter(),
                     serde,
-                });
-                serdeContainer.registerFactory({
-                    token: LockFactoryResolver,
-                    factory: () => {
-                        return lockFactoryResolver;
-                    },
-                    deps: {},
                     lifetime: LIFETIME.SINGLETON,
                 });
-                const lockFactory_ = new ProxyLockFactoryResolver<Adapters>(
-                    serdeContainer,
-                    LockFactoryResolver,
-                );
-                await serdeContainer.init();
+                await created.container.init();
                 return {
-                    lockFactory: lockFactory_,
+                    lockFactory: created.lockFactory,
                     serde,
                 };
             },
@@ -162,37 +170,19 @@ describe("class: ProxyLockFactoryResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
-
             const adapter1 = new NoOpLockAdapter();
             acquire1 = vi.spyOn(adapter1, "acquire");
 
             const adapter2 = new NoOpLockAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
 
-            container.registerFactory({
-                token: LockFactoryResolver,
-                factory: () => {
-                    return new LockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                deps: {},
+            const created = createLockFactoryContainer({
+                adapter1,
+                adapter2,
                 lifetime: LIFETIME.TRANSIENT,
             });
-            lockFactory = new ProxyLockFactoryResolver<Adapters>(
-                container,
-                LockFactoryResolver,
-            );
+            container = created.container;
+            lockFactory = created.lockFactory;
 
             await container.init();
         });
@@ -249,35 +239,15 @@ describe("class: ProxyLockFactoryResolver", () => {
         lockFactorySerdeTestSuite({
             createLockFactory: async () => {
                 const serde = new Serde(new SuperJsonSerdeAdapter());
-                const executionContext = new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                );
-                const serdeContainer = new Container({
-                    executionContext,
-                });
-                const lockFactoryResolver = new LockFactoryResolver<Adapters>({
-                    adapters: {
-                        adapter1: new MemoryLockAdapter(),
-                        adapter2: new MemoryLockAdapter(),
-                    },
-                    defaultAdapter: "adapter1",
+                const created = createLockFactoryContainer({
+                    adapter1: new MemoryLockAdapter(),
+                    adapter2: new MemoryLockAdapter(),
                     serde,
-                });
-                serdeContainer.registerFactory({
-                    token: LockFactoryResolver,
-                    factory: () => {
-                        return lockFactoryResolver;
-                    },
-                    deps: {},
                     lifetime: LIFETIME.TRANSIENT,
                 });
-                const lockFactory_ = new ProxyLockFactoryResolver<Adapters>(
-                    serdeContainer,
-                    LockFactoryResolver,
-                );
-                await serdeContainer.init();
+                await created.container.init();
                 return {
-                    lockFactory: lockFactory_,
+                    lockFactory: created.lockFactory,
                     serde,
                 };
             },
@@ -292,37 +262,19 @@ describe("class: ProxyLockFactoryResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
-
             const adapter1 = new NoOpLockAdapter();
             acquire1 = vi.spyOn(adapter1, "acquire");
 
             const adapter2 = new NoOpLockAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
 
-            container.registerFactory({
-                token: LockFactoryResolver,
-                factory: () => {
-                    return new LockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                deps: {},
+            const created = createLockFactoryContainer({
+                adapter1,
+                adapter2,
                 lifetime: LIFETIME.SCOPED,
             });
-            lockFactory = new ProxyLockFactoryResolver<Adapters>(
-                container,
-                LockFactoryResolver,
-            );
+            container = created.container;
+            lockFactory = created.lockFactory;
 
             await container.init();
         });
@@ -393,35 +345,15 @@ describe("class: ProxyLockFactoryResolver", () => {
         lockFactorySerdeTestSuite({
             createLockFactory: async () => {
                 const serde = new Serde(new SuperJsonSerdeAdapter());
-                const executionContext = new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                );
-                const serdeContainer = new Container({
-                    executionContext,
-                });
-                const lockFactoryResolver = new LockFactoryResolver<Adapters>({
-                    adapters: {
-                        adapter1: new MemoryLockAdapter(),
-                        adapter2: new MemoryLockAdapter(),
-                    },
-                    defaultAdapter: "adapter1",
+                const created = createLockFactoryContainer({
+                    adapter1: new MemoryLockAdapter(),
+                    adapter2: new MemoryLockAdapter(),
                     serde,
-                });
-                serdeContainer.registerFactory({
-                    token: LockFactoryResolver,
-                    factory: () => {
-                        return lockFactoryResolver;
-                    },
-                    deps: {},
                     lifetime: LIFETIME.SCOPED,
                 });
-                const lockFactory_ = new ProxyLockFactoryResolver<Adapters>(
-                    serdeContainer,
-                    LockFactoryResolver,
-                );
-                await serdeContainer.init();
+                await created.container.init();
                 return {
-                    lockFactory: lockFactory_,
+                    lockFactory: created.lockFactory,
                     serde,
                 };
             },
