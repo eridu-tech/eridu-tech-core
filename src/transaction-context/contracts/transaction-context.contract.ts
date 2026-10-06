@@ -215,22 +215,26 @@ export type TransactionAware<TClient, TTransactionClient = TClient> =
     TClient | ITransactionContext<TClient, TTransactionClient>;
 
 /**
- * Resolves a registered transaction adapter by name into a usable transaction context.
+ * Resolves a registered transaction adapter by name into an {@link ITransactionRunner}.
+ *
+ * Extends {@link ITransactionHooks}, so an `afterCommit()` hook can be registered directly on
+ * the resolver instead of on a resolved runner.
  *
  * @typeParam TAdapters - Union of registered adapter names.
  *
  * IMPORT_PATH: `"eridu-tech/transaction-context/contracts"`
  * @group Contracts
  */
-export type ITransactionContextResolver<TAdapters extends string = string> = {
-    /**
-     * Returns the transaction context bound to the given adapter, falling back to the default
-     * adapter when `adapterName` is omitted.
-     *
-     * @param adapterName - Name of the adapter to use. Defaults to the configured default adapter.
-     * @returns The {@link ITransactionContextBase} bound to the resolved adapter.
-     * @throws {DefaultAdapterNotDefinedError} When no name is given and no default adapter is configured.
-     * @throws {UnregisteredAdapterError} When the given name is not registered.
-     */
-    use(adapterName?: TAdapters): ITransactionContextBase<any>;
-};
+export type ITransactionContextResolver<TAdapters extends string = string> =
+    ITransactionHooks & {
+        /**
+         * Returns the transaction runner bound to the given adapter, falling back to the default
+         * adapter when `adapterName` is omitted.
+         *
+         * @param adapterName - Name of the adapter to use. Defaults to the configured default adapter.
+         * @returns The {@link ITransactionRunner} bound to the resolved adapter.
+         * @throws {DefaultAdapterNotDefinedError} When no name is given and no default adapter is configured.
+         * @throws {UnregisteredAdapterError} When the given name is not registered.
+         */
+        use(adapterName?: TAdapters): ITransactionRunner;
+    };

@@ -4,7 +4,7 @@
 
 Added `TransactionContextResolver` for dynamically selecting between registered transaction adapters.
 
-`TransactionContextResolver` registers named transaction adapters and resolves one into a usable transaction context through `use(adapterName?)`. It implements `ITransactionContextResolver` and `ITransactionHooks`, so the resolved context exposes `run()` while the resolver itself exposes `afterCommit()`.
+`TransactionContextResolver` registers named transaction adapters and resolves one into an `ITransactionRunner` through `use(adapterName?)`. Because `ITransactionContextResolver` extends `ITransactionHooks`, the returned runner exposes `run()` while the resolver itself exposes `afterCommit()`.
 
 ```ts
 import { TransactionContextResolver } from "eridu-tech/transaction-context";
@@ -20,7 +20,7 @@ await transactionContextResolver.use().run(async () => {
 });
 ```
 
-- `use(adapterName?)` resolves the named adapter, defaulting to `defaultAdapter`. It throws `DefaultAdapterNotDefinedError` when no name is given and no default is configured, and `UnregisteredAdapterError` for an unknown name.
+- `use(adapterName?)` resolves the named adapter to an `ITransactionRunner`, defaulting to `defaultAdapter`. It throws `DefaultAdapterNotDefinedError` when no name is given and no default is configured, and `UnregisteredAdapterError` for an unknown name.
 - `eridu-tech/transaction-context` exports `TransactionContextResolver` and `TransactionContextResolverSettings`, and `eridu-tech/transaction-context/contracts` exports the `ITransactionContextResolver` contract.
 
 Reworked the `withTransactionFactory` middleware to the same resolver-based pattern as the other middleware factories:

@@ -4,7 +4,7 @@
 
 Added an `eridu-tech/transaction-context/di` entrypoint that exports the directly constructible `ProxyTransactionContextResolver` class.
 
-`ProxyTransactionContextResolver` implements `ITransactionHooks` and `ITransactionRunner`, and resolves the registered `TransactionContextResolver` from a dependency-injection container. The token is resolved once during `IContainer.init()`, after which `use()`, `run()`, and `afterCommit()` delegate to the real resolver.
+`ProxyTransactionContextResolver` implements `ITransactionContextResolver` and `ITransactionRunner`, and resolves the registered `TransactionContextResolver` from a dependency-injection container. The token is resolved once during `IContainer.init()`, after which `use()`, `run()`, and `afterCommit()` delegate to the real resolver.
 
 ```ts
 import { TransactionContextResolver } from "eridu-tech/transaction-context";

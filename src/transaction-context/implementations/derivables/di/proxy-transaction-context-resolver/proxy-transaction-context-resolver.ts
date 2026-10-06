@@ -9,14 +9,13 @@ import type {
 import type {
     AfterCommitSettings,
     ITransactionContextResolver,
-    ITransactionHooks,
     ITransactionRunner,
     TransactionPropagation,
 } from "@/transaction-context/contracts/_module-exports.js";
 import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 /**
- * An {@link ITransactionHooks} and {@link ITransactionRunner} that resolve the
+ * An {@link ITransactionContextResolver} and {@link ITransactionRunner} that resolve the
  * underlying resolver from a dependency-injection container.
  *
  * The token is resolved once by {@link IContainer.init}, after which `use()`, `run()`,
@@ -28,26 +27,21 @@ import type { AsyncLazy } from "@/utilities/_module-exports.js";
  * IMPORT_PATH: `"eridu-tech/transaction-context/di"`
  * @group Derivables
  */
-export class ProxyTransactionContextResolver<TAdapters extends string = string>
-    implements ITransactionHooks, ITransactionRunner
-{
-    private resolver:
-        (ITransactionHooks & ITransactionContextResolver<TAdapters>) | null =
-        null;
+export class ProxyTransactionContextResolver<
+    TAdapters extends string = string,
+> implements ITransactionContextResolver<TAdapters> {
+    private resolver: ITransactionContextResolver<TAdapters> | null = null;
 
     constructor(
         container: Pick<IContainerHooks, "onInit">,
-        resolverToken: DiToken<
-            ITransactionHooks & ITransactionContextResolver<TAdapters>
-        >,
+        resolverToken: DiToken<ITransactionContextResolver<TAdapters>>,
     ) {
         container.onInit({ resolver: resolverToken }, (deps) => {
             this.resolver = deps.resolver;
         });
     }
 
-    private getResolver(): ITransactionHooks &
-        ITransactionContextResolver<TAdapters> {
+    private getResolver(): ITransactionContextResolver<TAdapters> {
         if (this.resolver === null) {
             throw new Error(
                 "ProxyTransactionContextResolver is not ready. Await IContainer.init() before use.",
