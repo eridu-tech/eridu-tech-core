@@ -10,6 +10,7 @@ import {
     CORE,
     defaultWaitUntil,
     resolveOneOrMore,
+    resolveSerdeTransformerName,
 } from "@/utilities/_module-exports.js";
 
 import type {
@@ -62,7 +63,12 @@ export type RateLimiterFactorySettingsBase = {
 
     /**
      * The serde transformer name used to identify rate-limiter serializers and deserializers when there are adapters with the same name.
-     * @default ""
+     *
+     * The adapter's constructor name is appended to this value, or used on its own when omitted.
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
      */
     serdeTransformerName?: string;
 
@@ -111,12 +117,15 @@ export class RateLimiterFactory implements IRateLimiterFactory {
             onlyError = false,
             defaultErrorPolicy = () => true,
             serde = new Serde(new NoOpSerdeAdapter()),
-            serdeTransformerName = "",
+            serdeTransformerName,
             waitUntil = defaultWaitUntil,
         } = settings;
 
         this.waitUntil = waitUntil;
-        this.serdeTransformerName = serdeTransformerName;
+        this.serdeTransformerName = resolveSerdeTransformerName(
+            serdeTransformerName,
+            adapter,
+        );
         this.adapter = adapter;
         this.onlyError = onlyError;
         this.defaultErrorPolicy = defaultErrorPolicy;
