@@ -59,11 +59,7 @@ export class SharedLockSerdeTransformer implements ISerdeTransformer<
             value.internalGetSerdeTransformerName() ===
             this.serdeTransformerName;
 
-        const isAdapterMatching =
-            getConstructorName(this.adapter) ===
-            getConstructorName(value.internalGetAdapter());
-
-        return isSerdTransformerNameMathcing && isAdapterMatching;
+        return isSerdTransformerNameMathcing;
     }
 
     deserialize(serializedValue: ISerializedSharedLock): SharedLock {
