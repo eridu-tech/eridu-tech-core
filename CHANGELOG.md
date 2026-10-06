@@ -1,5 +1,141 @@
 # @daiso-tech/core
 
+## 0.70.0
+
+### Minor Changes
+
+- 16846a8: Replaced the `*/di` resolver factory helpers with directly constructible `Proxy*` classes.
+
+    Most of these DI integration entrypoints previously exported a `*DiFactory(container, token)` function that returned an internal proxy instance. Those functions are removed, and the proxies are now public classes that you construct with `new`. `eridu-tech/transaction-context/di` is new in the same style, without a prior factory helper to replace.
+
+    | Entrypoint                          | Before                                           | After                                                      |
+    | ----------------------------------- | ------------------------------------------------ | ---------------------------------------------------------- |
+    | `eridu-tech/cache/di`               | `cacheResolverDiFactory(container, token)`       | `new ProxyCacheResolver(container, token)`                 |
+    | `eridu-tech/circuit-breaker/di`     | `circuitBreakerFactoryResolverDiFactory(...)`    | `new ProxyCircuitBreakerFactoryResolver(container, token)` |
+    | `eridu-tech/file-storage/di`        | `fileStorageResolverDiFactory(container, token)` | `new ProxyFileStorageResolver(container, token)`           |
+    | `eridu-tech/lock/di`                | `lockFactoryResolverDiFactory(container, token)` | `new ProxyLockFactoryResolver(container, token)`           |
+    | `eridu-tech/rate-limiter/di`        | `rateLimiterFactoryResolverDiFactory(...)`       | `new ProxyRateLimiterFactoryResolver(container, token)`    |
+    | `eridu-tech/semaphore/di`           | `semaphoreFactoryResolverDiFactory(...)`         | `new ProxySemaphoreFactoryResolver(container, token)`      |
+    | `eridu-tech/shared-lock/di`         | `sharedLockFactoryResolverDiFactory(...)`        | `new ProxySharedLockFactoryResolver(container, token)`     |
+    | `eridu-tech/transaction-context/di` | —                                                | `new ProxyTransactionContextResolver(container, token)`    |
+
+    ```ts
+    import { CacheResolver } from "eridu-tech/cache";
+    import { ProxyCacheResolver } from "eridu-tech/cache/di";
+
+    const cacheResolver = new CacheResolver({
+        adapters: { memory: new NoOpCacheAdapter() },
+        defaultAdapter: "memory",
+    });
+    container.registerValue({ token: CacheResolver, value: cacheResolver });
+
+    // Create the proxy before container.init()
+    const cache = new ProxyCacheResolver(container, CacheResolver);
+
+    await container.init();
+
+    await cache.get("key"); // delegates to the resolved CacheResolver
+    ```
+
+    Behavior is unchanged for the replaced entrypoints: each `Proxy*` class implements its module's resolver and factory contracts, resolves the registered resolver once during `IContainer.init()`, and delegates `use()` and the factory methods (such as `create()`) to it. `ProxyTransactionContextResolver` implements `ITransactionContextResolver` and `ITransactionRunner`, delegating `use()`, `run()`, and `afterCommit()`. Construct either instance before `init()`; calling a method before `init()` is awaited throws.
+
+    ### Breaking changes
+    - The `*DiFactory` functions are removed from every `*/di` entrypoint that had one and are replaced by the exported `Proxy*` classes.
+    - `new Proxy*(container, token)` takes the same arguments in the same order as the removed factory, so each call site migrates with a one-line change.
+    - The proxy classes are no longer marked `@internal`; they are documented and exported under their new `Proxy*` names.
+
+    ### Notes
+    - The "not ready" error message now points at `IContainer.init()` instead of the previous (non-existent) `ready()` method.
+    - The historical CHANGELOG entries keep the old `*DiFactory` names.
+
+- eed533b: Added an `eridu-tech/transaction-context/di` entrypoint that exports the directly constructible `ProxyTransactionContextResolver` class.
+
+    `ProxyTransactionContextResolver` implements `ITransactionContextResolver` and `ITransactionRunner`, and resolves the registered `TransactionContextResolver` from a dependency-injection container. The token is resolved once during `IContainer.init()`, after which `use()`, `run()`, and `afterCommit()` delegate to the real resolver.
+
+    ```ts
+    import { TransactionContextResolver } from "eridu-tech/transaction-context";
+    import { ProxyTransactionContextResolver } from "eridu-tech/transaction-context/di";
+
+    const transactionContextResolver = new TransactionContextResolver({
+        adapters: { primary: adapter },
+        defaultAdapter: "primary",
+        executionContext,
+    });
+    container.registerValue({
+        token: TransactionContextResolver,
+        value: transactionContextResolver,
+    });
+
+    // Create the proxy before container.init()
+    const transactionContext = new ProxyTransactionContextResolver(
+        container,
+        TransactionContextResolver,
+    );
+
+    await container.init();
+
+    await transactionContext.run(async () => {
+        // delegates to the resolved TransactionContextResolver
+    });
+    ```
+
+    ### Notes
+    - Follows the same pattern as the other `Proxy*` classes exported from the `*/di` entrypoints (see `proxy-resolver-di-helpers`).
+    - Construct the proxy before `IContainer.init()`; calling `use()`, `run()`, or `afterCommit()` before `init()` is awaited throws.
+
+- 40afa5d: Added `TransactionContextResolver` for dynamically selecting between registered transaction adapters.
+
+    `TransactionContextResolver` registers named transaction adapters and resolves one into an `ITransactionRunner` through `use(adapterName?)`. Because `ITransactionContextResolver` extends `ITransactionHooks`, the returned runner exposes `run()` while the resolver itself exposes `afterCommit()`.
+
+    ```ts
+    import { TransactionContextResolver } from "eridu-tech/transaction-context";
+
+    const transactionContextResolver = new TransactionContextResolver({
+        adapters: { primary: adapter },
+        defaultAdapter: "primary",
+        executionContext,
+    });
+
+    await transactionContextResolver.use().run(async () => {
+        // ...
+    });
+    ```
+
+    - `use(adapterName?)` resolves the named adapter to an `ITransactionRunner`, defaulting to `defaultAdapter`. It throws `DefaultAdapterNotDefinedError` when no name is given and no default is configured, and `UnregisteredAdapterError` for an unknown name.
+    - `eridu-tech/transaction-context` exports `TransactionContextResolver` and `TransactionContextResolverSettings`, and `eridu-tech/transaction-context/contracts` exports the `ITransactionContextResolver` contract.
+
+    Reworked the `withTransactionFactory` middleware to the same resolver-based pattern as the other middleware factories:
+
+    - `withTransactionFactory(transactionContextResolver)` now takes a `RunTransactionResolver` (a narrowed form of `ITransactionContextResolver`) and returns a `WithTransaction` that is also a `WithTransactionResolver`.
+    - Calling the returned factory uses the resolver's default adapter; `withTransaction.use("adapter")` runs the wrapped function through a specific registered adapter.
+    - The propagation mode moved into a `WithTransactionSettings` object and still defaults to `TRANSACTION_PROPAGATION.REQUIRED`.
+    - `eridu-tech/transaction-context/middlewares` exports `RunTransactionResolver`, `WithTransaction`, `WithTransactionSettings` and `WithTransactionResolver`.
+
+    ```ts
+    import { withTransactionFactory } from "eridu-tech/transaction-context/middlewares";
+
+    const withTransaction = withTransactionFactory(transactionContextResolver);
+
+    const createUserInTransaction = use(createUser, withTransaction());
+
+    const createUserInExistingTransaction = use(
+        createUser,
+        withTransaction({ propagation: TRANSACTION_PROPAGATION.MANDATORY }),
+    );
+
+    const createUserOnPrimary = use(
+        createUser,
+        withTransaction.use("primary")(),
+    );
+    ```
+
+    ### Breaking changes
+    - `withTransactionFactory` now takes a transaction context resolver instead of a single transaction context, and returns a callable middleware factory with an additional `use(adapter?)` method.
+    - The propagation mode is passed in a settings object — `withTransaction({ propagation })` — instead of as the factory's positional argument. `withTransaction(TRANSACTION_PROPAGATION.MANDATORY)` no longer compiles.
+
+    ### Notes
+    - `MultiTransactionHooks` (`transaction-context/implementations/derivables/multi-transaction-hooks`) is internal: it is marked `@internal`, is not exported from any public entrypoint, and is therefore excluded from the generated API documentation. It backs `TransactionContextResolver.afterCommit()` by forwarding a registered hook to every registered adapter that currently has an active transaction.
+
 ## 0.69.0
 
 ### Minor Changes
