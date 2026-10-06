@@ -94,10 +94,6 @@ export class Semaphore implements ISemaphore {
         return this.serdeTransformerName;
     }
 
-    internalGetAdapter(): ISemaphoreAdapter {
-        return this.adapter;
-    }
-
     async runOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue> {
