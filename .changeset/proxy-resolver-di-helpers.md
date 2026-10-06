@@ -47,3 +47,4 @@ Behavior is unchanged for the replaced entrypoints: each `Proxy*` class implemen
 
 - The "not ready" error message now points at `IContainer.init()` instead of the previous (non-existent) `ready()` method.
 - The historical CHANGELOG entries keep the old `*DiFactory` names.
+- `ProxyCacheResolver` supports every lifetime: singleton and transient registrations are resolved during `IContainer.init()`, while scoped registrations are resolved lazily on each operation and must be used inside `IContainer.run()`.

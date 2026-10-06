@@ -2,14 +2,16 @@
  * @module Cache
  */
 
+import { ProxyCache } from "@/cache/implementations/derivables/di/proxy-cache-resolver/proxy-cache.js";
+
 import type { ICacheResolver } from "@/cache/contracts/cache-resolver.contract.js";
 import type { ICache } from "@/cache/contracts/cache.contract.js";
 import type {
     DiToken,
-    IContainerHooks,
+    IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
-import type { AsyncLazyable } from "@/utilities/_module-exports.js";
+import type { AsyncLazyable, NoneFunc } from "@/utilities/_module-exports.js";
 
 /**
  * An {@link ICacheResolver} and {@link ICache} that resolve the underlying resolver
@@ -31,28 +33,15 @@ export class ProxyCacheResolver<
 >
     implements ICache<TType>, ICacheResolver<TAdapters, TType>
 {
-    private resolver: ICacheResolver<TAdapters, TType> | null = null;
-
     constructor(
-        container: Pick<IContainerHooks, "onInit">,
-        resolverToken: DiToken<ICacheResolver<TAdapters, TType>>,
-    ) {
-        container.onInit({ resolver: resolverToken }, (deps) => {
-            this.resolver = deps.resolver;
-        });
-    }
-
-    private getResolver(): ICacheResolver<TAdapters, TType> {
-        if (this.resolver === null) {
-            throw new Error(
-                "ProxyCacheResolver is not ready. Await IContainer.init() before use.",
-            );
-        }
-        return this.resolver;
-    }
+        private readonly container: Pick<IServiceResolver, "resolveOrFail">,
+        private readonly resolverToken: DiToken<
+            ICacheResolver<TAdapters, TType>
+        >,
+    ) {}
 
     use(adapterName?: TAdapters): ICache<TType> {
-        return this.getResolver().use(adapterName);
+        return new ProxyCache(this.container, this.resolverToken, adapterName);
     }
 
     exists(key: string): Promise<boolean> {
@@ -73,9 +62,7 @@ export class ProxyCacheResolver<
 
     getOr(
         key: string,
-        defaultValue: AsyncLazyable<
-            Exclude<TType, (...args: Array<unknown>) => unknown>
-        >,
+        defaultValue: AsyncLazyable<NoneFunc<TType>>,
     ): Promise<TType> {
         return this.use().getOr(key, defaultValue);
     }
