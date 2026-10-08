@@ -33,5 +33,5 @@ export type IDeserializer<TSerializedValue = unknown> = {
      * @returns The deserialized runtime value
      * @throws {DeserializationSerdeError} If deserialization fails (invalid format, type mismatch, etc.)
      */
-    deserialize<TValue>(serializedValue: TSerializedValue): TValue;
+    deserialize<TValue>(serializedValue: TSerializedValue): Promise<TValue>;
 };
