@@ -4,8 +4,7 @@
 
 import { FileSerdeTransformer } from "@/file-storage/implementations/derivables/file-storage/file-serde-transformer.js";
 import { File } from "@/file-storage/implementations/derivables/file-storage/file.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import {
     CORE,
     resolveOneOrMore,
@@ -57,10 +56,9 @@ export type FileStorageSettingsBase = {
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link FileStorage | `FileStorage`} to register the file's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { NoOpSerdeAdapter } from "eridu-tech/serde/no-op-serde-adapter";
+     * import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
      *
-     * new Serde(new NoOpSerdeAdapter())
+     * new SuperJsonSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
@@ -110,7 +108,7 @@ export class FileStorage implements IFileStorage {
     constructor(settings: FileStorageSettings) {
         const {
             adapter,
-            serde = new Serde(new NoOpSerdeAdapter()),
+            serde = new SuperJsonSerde(),
             serdeTransformerName,
             defaultCacheControl = null,
             defaultContentDisposition = "inline",

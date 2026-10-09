@@ -10,8 +10,7 @@ import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapter
 import { FileStorageResolver } from "@/file-storage/implementations/derivables/_module-exports.js";
 import { ProxyFileStorageResolver } from "@/file-storage/implementations/derivables/di/proxy-file-storage-resolver/proxy-file-storage-resolver.js";
 import { fileStorageSerdeTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 
 import type { Mock } from "vitest";
 
@@ -126,7 +125,7 @@ describe("class: ProxyFileStorageResolver", () => {
 
         fileStorageSerdeTestSuite({
             createFileStorage: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createFileStorageContainer({
                     adapter1: new SignedFileStorageAdapter({
                         adapter: new MemoryFileStorageAdapter(),
@@ -203,7 +202,7 @@ describe("class: ProxyFileStorageResolver", () => {
 
         fileStorageSerdeTestSuite({
             createFileStorage: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createFileStorageContainer({
                     adapter1: new SignedFileStorageAdapter({
                         adapter: new MemoryFileStorageAdapter(),
@@ -292,7 +291,7 @@ describe("class: ProxyFileStorageResolver", () => {
 
         fileStorageSerdeTestSuite({
             createFileStorage: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createFileStorageContainer({
                     adapter1: new SignedFileStorageAdapter({
                         adapter: new MemoryFileStorageAdapter(),

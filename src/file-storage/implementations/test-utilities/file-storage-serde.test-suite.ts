@@ -59,8 +59,8 @@ export function fileStorageSerdeTestSuite(
             const file = fileStorage.create("a.txt");
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
             await file.add({ data });
-            const deserializedFile = serde.deserialize<IFile>(
-                serde.serialize(file),
+            const deserializedFile = await serde.deserialize<IFile>(
+                await serde.serialize(file),
             );
 
             const retrievedData = await deserializedFile.getBytes();
@@ -71,8 +71,8 @@ export function fileStorageSerdeTestSuite(
             const file = fileStorage.create("a.txt");
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
             await file.add({ data });
-            const deserializedFile = serde.deserialize<IFile>(
-                serde.serialize(file),
+            const deserializedFile = await serde.deserialize<IFile>(
+                await serde.serialize(file),
             );
 
             const newData = new Uint8Array(Buffer.from("NEW_CONTENT", "utf8"));
@@ -87,8 +87,8 @@ export function fileStorageSerdeTestSuite(
             const file = fileStorage.create("a.txt");
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
             await file.add({ data });
-            const deserializedFile = serde.deserialize<IFile>(
-                serde.serialize(file),
+            const deserializedFile = await serde.deserialize<IFile>(
+                await serde.serialize(file),
             );
 
             const newData = new Uint8Array(Buffer.from("NEW_CONTENT", "utf8"));
@@ -103,8 +103,8 @@ export function fileStorageSerdeTestSuite(
             const file = fileStorage.create("a.txt");
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
             await file.add({ data });
-            const deserializedFile = serde.deserialize<IFile>(
-                serde.serialize(file),
+            const deserializedFile = await serde.deserialize<IFile>(
+                await serde.serialize(file),
             );
 
             await deserializedFile.remove();
