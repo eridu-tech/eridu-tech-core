@@ -6,8 +6,7 @@ import { AlsExecutionContextAdapter } from "@/execution-context/implementations/
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { MongodbRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/mongodb-rate-limiter-storage-adapter/_module-exports.js";
 import { rateLimiterStorageAdapterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { startMongoReplicaSet } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/_module-exports.js";
@@ -56,7 +55,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             return adapter;
@@ -71,7 +70,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -85,7 +84,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             await adapter.deInit();
@@ -105,7 +104,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             await adapter.deInit();
@@ -118,7 +117,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
 
             const promise = adapter.deInit();
@@ -135,7 +134,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -165,7 +164,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "rateLimiter",
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -191,7 +190,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
                 transactionContext: trxCtx,
                 collectionName,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -218,7 +217,7 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             const adapter = new MongodbRateLimiterStorageAdapter({
                 transactionContext: trxCtx,
                 collectionName,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 

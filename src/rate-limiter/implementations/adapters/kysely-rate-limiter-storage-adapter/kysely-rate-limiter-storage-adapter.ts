@@ -58,7 +58,7 @@ async function find<TType>(
         return null;
     }
     return {
-        state: serde.deserialize(row.state),
+        state: await serde.deserialize(row.state),
         expiration: new Date(Number(row.expiration)),
     };
 }
@@ -81,7 +81,7 @@ class KyselyRateLimiterStorageAdapterTransaction<
 
     async upsert(key: string, state: TType, expiration: Date): Promise<void> {
         const expirationAsMs = expiration.getTime();
-        const serializedState = this.serde.serialize(state);
+        const serializedState = await this.serde.serialize(state);
         await this.kysely
             .insertInto("rateLimiter")
             .values({
