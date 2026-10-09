@@ -12,8 +12,7 @@ import {
     lockFactorySerdeTestSuite,
     lockFactoryTestSuite,
 } from "@/lock/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
@@ -25,7 +24,7 @@ import type { ITransactionContext } from "@/transaction-context/contracts/_modul
 
 describe("class: LockFactory", () => {
     function createLockFactory() {
-        const serde = new Serde(new SuperJsonSerdeAdapter());
+        const serde = new SuperJsonSerde();
         const lockFactory = new LockFactory({
             serde,
             adapter: new MemoryLockAdapter(),
@@ -71,7 +70,7 @@ describe("class: LockFactory", () => {
     }
     describe("Serde tests:", () => {
         test("Should differentiate between different adapters that have same namespace", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
 
@@ -93,15 +92,15 @@ describe("class: LockFactory", () => {
             });
 
             const lock2 = lockFactory2.create(key, { ttl });
-            const deserializeLock2 = serde.deserialize<ILock>(
-                serde.serialize(lock2),
+            const deserializeLock2 = await serde.deserialize<ILock>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquire();
 
             expect(result).toBe(true);
         });
         test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
 
@@ -120,8 +119,8 @@ describe("class: LockFactory", () => {
             });
 
             const lock2 = lockFactory2.create(key, { ttl });
-            const deserializeLock2 = serde.deserialize<ILock>(
-                serde.serialize(lock2),
+            const deserializeLock2 = await serde.deserialize<ILock>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquire();
 

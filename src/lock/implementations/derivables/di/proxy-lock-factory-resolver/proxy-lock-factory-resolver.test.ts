@@ -9,8 +9,7 @@ import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adap
 import { LockFactoryResolver } from "@/lock/implementations/derivables/_module-exports.js";
 import { ProxyLockFactoryResolver } from "@/lock/implementations/derivables/di/proxy-lock-factory-resolver/proxy-lock-factory-resolver.js";
 import { lockFactorySerdeTestSuite } from "@/lock/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 
 import type { Mock } from "vitest";
 
@@ -146,7 +145,7 @@ describe("class: ProxyLockFactoryResolver", () => {
 
         lockFactorySerdeTestSuite({
             createLockFactory: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createLockFactoryContainer({
                     adapter1: new MemoryLockAdapter(),
                     adapter2: new MemoryLockAdapter(),
@@ -238,7 +237,7 @@ describe("class: ProxyLockFactoryResolver", () => {
 
         lockFactorySerdeTestSuite({
             createLockFactory: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createLockFactoryContainer({
                     adapter1: new MemoryLockAdapter(),
                     adapter2: new MemoryLockAdapter(),
@@ -344,7 +343,7 @@ describe("class: ProxyLockFactoryResolver", () => {
 
         lockFactorySerdeTestSuite({
             createLockFactory: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createLockFactoryContainer({
                     adapter1: new MemoryLockAdapter(),
                     adapter2: new MemoryLockAdapter(),
