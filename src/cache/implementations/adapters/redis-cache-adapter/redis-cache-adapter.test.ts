@@ -4,8 +4,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { RedisCacheAdapter } from "@/cache/implementations/adapters/redis-cache-adapter/_module-exports.js";
 import { cacheAdapterTestSuite } from "@/cache/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
@@ -26,7 +25,7 @@ describe("class: RedisCacheAdapter", () => {
         createAdapter: () =>
             new RedisCacheAdapter({
                 database: client,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             }),
         test,
         beforeEach,
