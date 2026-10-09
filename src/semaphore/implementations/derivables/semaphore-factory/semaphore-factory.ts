@@ -6,8 +6,7 @@ import { v4 } from "uuid";
 
 import { SemaphoreSerdeTransformer } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore-serde-transformer.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     callInvocable,
@@ -38,10 +37,9 @@ export type SemaphoreFactorySettingsBase = {
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link SemaphoreFactory | `SemaphoreFactory`} to register the semaphore's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { NoOpSerdeAdapter } from "eridu-tech/serde/no-op-serde-adapter";
+     * import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
      *
-     * new Serde(new NoOpSerdeAdapter())
+     * new SuperJsonSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
@@ -126,7 +124,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
             createSlotId = () => v4(),
             defaultTtl = TimeSpan.fromMinutes(5),
             defaultRefreshTime = TimeSpan.fromMinutes(5),
-            serde = new Serde(new NoOpSerdeAdapter()),
+            serde = new SuperJsonSerde(),
             adapter,
             serdeTransformerName,
         } = settings;

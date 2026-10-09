@@ -12,8 +12,7 @@ import {
     semaphoreFactorySerdeTestSuite,
     semaphoreFactoryTestSuite,
 } from "@/semaphore/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
@@ -25,7 +24,7 @@ import type { ITransactionContext } from "@/transaction-context/contracts/_modul
 
 describe("class: SemaphoreFactory", () => {
     function createSemaphoreFactory() {
-        const serde = new Serde(new SuperJsonSerdeAdapter());
+        const serde = new SuperJsonSerde();
         const semaphoreFactory = new SemaphoreFactory({
             serde,
             adapter: new MemorySemaphoreAdapter(),
@@ -71,7 +70,7 @@ describe("class: SemaphoreFactory", () => {
     }
     describe("Serde tests:", () => {
         test("Should differentiate between different adapters", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
             const limit = 1;
@@ -94,15 +93,15 @@ describe("class: SemaphoreFactory", () => {
             });
 
             const lock2 = lockProvider2.create(key, { ttl, limit });
-            const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(lock2),
+            const deserializeSemaphore2 = await serde.deserialize<ISemaphore>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeSemaphore2.acquire();
 
             expect(result).toBe(true);
         });
         test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
             const limit = 1;
@@ -122,8 +121,8 @@ describe("class: SemaphoreFactory", () => {
             });
 
             const lock2 = lockProvider2.create(key, { ttl, limit });
-            const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(lock2),
+            const deserializeSemaphore2 = await serde.deserialize<ISemaphore>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeSemaphore2.acquire();
 

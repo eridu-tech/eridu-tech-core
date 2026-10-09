@@ -9,8 +9,7 @@ import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op
 import { SemaphoreFactoryResolver } from "@/semaphore/implementations/derivables/_module-exports.js";
 import { ProxySemaphoreFactoryResolver } from "@/semaphore/implementations/derivables/di/proxy-semaphore-factory-resolver/proxy-semaphore-factory-resolver.js";
 import { semaphoreFactorySerdeTestSuite } from "@/semaphore/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 
 import type { Mock } from "vitest";
 
@@ -163,7 +162,7 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
 
         semaphoreFactorySerdeTestSuite({
             createSemaphoreFactory: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createSemaphoreFactoryContainer({
                     adapter1: new MemorySemaphoreAdapter(),
                     adapter2: new MemorySemaphoreAdapter(),
@@ -269,7 +268,7 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
 
         semaphoreFactorySerdeTestSuite({
             createSemaphoreFactory: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createSemaphoreFactoryContainer({
                     adapter1: new MemorySemaphoreAdapter(),
                     adapter2: new MemorySemaphoreAdapter(),
@@ -387,7 +386,7 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
 
         semaphoreFactorySerdeTestSuite({
             createSemaphoreFactory: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createSemaphoreFactoryContainer({
                     adapter1: new MemorySemaphoreAdapter(),
                     adapter2: new MemorySemaphoreAdapter(),
