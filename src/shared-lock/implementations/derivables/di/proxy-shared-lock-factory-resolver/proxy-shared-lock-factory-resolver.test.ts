@@ -4,8 +4,7 @@ import { LIFETIME } from "@/di/contracts/_module-exports.js";
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { MemorySharedLockAdapter } from "@/shared-lock/implementations/adapters/memory-shared-lock-adapter/_module-exports.js";
 import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/no-op-shared-lock-adapter/no-op-shared-lock-adapter.js";
 import { SharedLockFactoryResolver } from "@/shared-lock/implementations/derivables/_module-exports.js";
@@ -154,7 +153,7 @@ describe("class: ProxySharedLockFactoryResolver", () => {
 
         sharedLockFactorySerdeTestSuite({
             createSharedLockFactory: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createSharedLockFactoryContainer({
                     adapter1: new MemorySharedLockAdapter(),
                     adapter2: new MemorySharedLockAdapter(),
@@ -251,7 +250,7 @@ describe("class: ProxySharedLockFactoryResolver", () => {
 
         sharedLockFactorySerdeTestSuite({
             createSharedLockFactory: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createSharedLockFactoryContainer({
                     adapter1: new MemorySharedLockAdapter(),
                     adapter2: new MemorySharedLockAdapter(),
@@ -360,7 +359,7 @@ describe("class: ProxySharedLockFactoryResolver", () => {
 
         sharedLockFactorySerdeTestSuite({
             createSharedLockFactory: async () => {
-                const serde = new Serde(new SuperJsonSerdeAdapter());
+                const serde = new SuperJsonSerde();
                 const created = createSharedLockFactoryContainer({
                     adapter1: new MemorySharedLockAdapter(),
                     adapter2: new MemorySharedLockAdapter(),
