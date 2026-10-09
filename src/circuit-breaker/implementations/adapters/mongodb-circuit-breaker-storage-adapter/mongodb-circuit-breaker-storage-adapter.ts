@@ -138,7 +138,7 @@ export class MongodbCircuitBreakerStorageAdapter<TType = unknown>
             },
             {
                 $set: {
-                    state: this.serde.serialize(state),
+                    state: await this.serde.serialize(state),
                 },
             },
             {

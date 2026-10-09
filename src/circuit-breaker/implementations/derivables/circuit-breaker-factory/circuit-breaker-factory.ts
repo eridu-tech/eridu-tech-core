@@ -5,8 +5,7 @@
 import { CIRCUIT_BREAKER_TRIGGER } from "@/circuit-breaker/contracts/_module-exports.js";
 import { CircuitBreakerSerdeTransformer } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-serde-transformer.js";
 import { CircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/serde.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     CORE,
@@ -81,10 +80,9 @@ export type CircuitBreakerFactorySettingsBase = {
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link CircuitBreakerFactory | `CircuitBreakerFactory`} to register the circuit breaker's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { NoOpSerdeAdapter } from "eridu-tech/serde/no-op-serde-adapter";
+     * import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
      *
-     * new Serde(new NoOpSerdeAdapter())
+     * new SuperJsonSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
@@ -153,7 +151,7 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
             defaultSlowCallTime = TimeSpan.fromSeconds(10),
             defaultTrigger = CIRCUIT_BREAKER_TRIGGER.BOTH,
             defaultErrorPolicy = () => true,
-            serde = new Serde(new NoOpSerdeAdapter()),
+            serde = new SuperJsonSerde(),
             serdeTransformerName,
             waitUntil = defaultWaitUntil,
         } = settings;

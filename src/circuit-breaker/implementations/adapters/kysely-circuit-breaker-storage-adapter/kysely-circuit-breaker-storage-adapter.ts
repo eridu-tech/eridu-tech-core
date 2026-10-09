@@ -74,7 +74,7 @@ async function find<TType>(
     if (row === undefined) {
         return null;
     }
-    return serde.deserialize<TType>(row.state);
+    return await serde.deserialize<TType>(row.state);
 }
 
 /**
@@ -94,7 +94,7 @@ class KyselyCircuitBreakerStorageAdapterTransaction<
     }
 
     async upsert(key: string, state: TType): Promise<void> {
-        const serializedState = this.serde.serialize(state);
+        const serializedState = await this.serde.serialize(state);
         await this.kysely
             .insertInto("circuitBreaker")
             .values({

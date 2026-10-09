@@ -10,8 +10,7 @@ import { DatabaseCircuitBreakerAdapter } from "@/circuit-breaker/implementations
 import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementations/adapters/memory-circuit-breaker-storage-adapter/_module-exports.js";
 import { CircuitBreakerFactory } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-factory.js";
 import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/serde.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { delay } from "@/utilities/_module-exports.js";
 
@@ -53,7 +52,7 @@ describe("class: CircuitBreakerFactory", () => {
         vi.clearAllMocks();
         circuitBreakerFactory = new CircuitBreakerFactory({
             adapter,
-            serde: new Serde(new SuperJsonSerdeAdapter()),
+            serde: new SuperJsonSerde(),
             defaultSlowCallTime: slowCallTime,
             enableAsyncTracking: false,
         });
@@ -573,7 +572,7 @@ describe("class: CircuitBreakerFactory", () => {
                 }
             }
 
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const circuitBreakerPolicy = new ConsecutiveBreaker({
                 failureThreshold: 1,
@@ -614,15 +613,15 @@ describe("class: CircuitBreakerFactory", () => {
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =
-                serde.deserialize<ICircuitBreaker>(
-                    serde.serialize(circuitBreaker2),
+                await serde.deserialize<ICircuitBreaker>(
+                    await serde.serialize(circuitBreaker2),
                 );
             const handler = vi.fn();
             await deserializedCircuitBreaker2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
         });
         test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const circuitBreakerPolicy = new ConsecutiveBreaker({
                 failureThreshold: 1,
@@ -663,8 +662,8 @@ describe("class: CircuitBreakerFactory", () => {
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =
-                serde.deserialize<ICircuitBreaker>(
-                    serde.serialize(circuitBreaker2),
+                await serde.deserialize<ICircuitBreaker>(
+                    await serde.serialize(circuitBreaker2),
                 );
             const handler = vi.fn();
             await deserializedCircuitBreaker2.runOrFail(handler);

@@ -7,8 +7,7 @@ import { LIFETIME } from "@/di/contracts/_module-exports.js";
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 
 import type { Mock } from "vitest";
 
@@ -18,6 +17,7 @@ import type {
     ICircuitBreakerFactory,
     ICircuitBreakerFactoryResolver,
 } from "@/circuit-breaker/contracts/_module-exports.js";
+import type { IFlexibleSerde } from "@/serde/contracts/_module-exports.js";
 
 describe("class: ProxyCircuitBreakerFactoryResolver", () => {
     type Adapters = "adapter1" | "adapter2";
@@ -26,14 +26,14 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
     let container: Container;
     let getState1: Mock<ICircuitBreakerAdapter["getState"]>;
     let getState2: Mock<ICircuitBreakerAdapter["getState"]>;
-    let serde: Serde<string>;
+    let serde: IFlexibleSerde<string>;
 
     describe("LIFETIME.SINGLETON:", () => {
         beforeEach(async () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            serde = new Serde(new SuperJsonSerdeAdapter());
+            serde = new SuperJsonSerde();
 
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
@@ -106,8 +106,8 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                 const circuitBreaker = circuitBreakerFactory.create(key);
 
                 const deserializedCircuitBreaker =
-                    serde.deserialize<ICircuitBreaker>(
-                        serde.serialize(circuitBreaker),
+                    await serde.deserialize<ICircuitBreaker>(
+                        await serde.serialize(circuitBreaker),
                     );
 
                 await deserializedCircuitBreaker.getState();
@@ -126,8 +126,8 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                     .create(key);
 
                 const deserializedCircuitBreaker =
-                    serde.deserialize<ICircuitBreaker>(
-                        serde.serialize(circuitBreaker),
+                    await serde.deserialize<ICircuitBreaker>(
+                        await serde.serialize(circuitBreaker),
                     );
 
                 await deserializedCircuitBreaker.getState();
@@ -146,7 +146,7 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            serde = new Serde(new SuperJsonSerdeAdapter());
+            serde = new SuperJsonSerde();
 
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
@@ -219,8 +219,8 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                 const circuitBreaker = circuitBreakerFactory.create(key);
 
                 const deserializedCircuitBreaker =
-                    serde.deserialize<ICircuitBreaker>(
-                        serde.serialize(circuitBreaker),
+                    await serde.deserialize<ICircuitBreaker>(
+                        await serde.serialize(circuitBreaker),
                     );
 
                 await deserializedCircuitBreaker.getState();
@@ -239,8 +239,8 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                     .create(key);
 
                 const deserializedCircuitBreaker =
-                    serde.deserialize<ICircuitBreaker>(
-                        serde.serialize(circuitBreaker),
+                    await serde.deserialize<ICircuitBreaker>(
+                        await serde.serialize(circuitBreaker),
                     );
 
                 await deserializedCircuitBreaker.getState();
@@ -259,7 +259,7 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            serde = new Serde(new SuperJsonSerdeAdapter());
+            serde = new SuperJsonSerde();
 
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
@@ -350,8 +350,8 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                 const circuitBreaker = circuitBreakerFactory.create(key);
 
                 const deserializedCircuitBreaker =
-                    serde.deserialize<ICircuitBreaker>(
-                        serde.serialize(circuitBreaker),
+                    await serde.deserialize<ICircuitBreaker>(
+                        await serde.serialize(circuitBreaker),
                     );
 
                 await deserializedCircuitBreaker.getState();
@@ -370,8 +370,8 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                     .create(key);
 
                 const deserializedCircuitBreaker =
-                    serde.deserialize<ICircuitBreaker>(
-                        serde.serialize(circuitBreaker),
+                    await serde.deserialize<ICircuitBreaker>(
+                        await serde.serialize(circuitBreaker),
                     );
 
                 await deserializedCircuitBreaker.getState();
