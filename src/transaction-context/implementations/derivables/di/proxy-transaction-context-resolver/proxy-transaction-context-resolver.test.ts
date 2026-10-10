@@ -43,6 +43,8 @@ describe("class: ProxyTransactionContextResolver", () => {
                 defaultAdapter: "adapter1",
                 executionContext,
             });
+        await transactionContextResolver.init();
+
         container.registerValue({
             token: TransactionContextResolver,
             value: transactionContextResolver,
