@@ -83,7 +83,7 @@ export class RateLimiterFactoryResolver<TAdapters extends string = string>
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): IRateLimiterFactory {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 RateLimiterFactoryResolver.name,
                 Object.keys(this.settings.adapters),
             );

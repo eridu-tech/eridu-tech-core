@@ -89,7 +89,7 @@ export class TransactionContextResolver<TAdapters extends string = string>
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ITransactionContextBase<any> {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 TransactionContextResolver.name,
                 Object.keys(this.settings.adapters),
             );

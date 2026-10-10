@@ -79,7 +79,7 @@ export class FileStorageResolver<TAdapters extends string = string>
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): IFileStorage {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 FileStorage.name,
                 Object.keys(this.settings.adapters),
             );

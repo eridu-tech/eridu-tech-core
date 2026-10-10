@@ -80,7 +80,7 @@ export class SemaphoreFactoryResolver<TAdapters extends string = string>
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ISemaphoreFactory {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 SemaphoreFactory.name,
                 Object.keys(this.settings.adapters),
             );

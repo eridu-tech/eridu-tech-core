@@ -89,7 +89,7 @@ export class EventBusResolver<
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): IEventBus<TEventMap> {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 EventBusResolver.name,
                 Object.keys(this.settings.adapters),
             );

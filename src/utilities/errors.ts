@@ -22,11 +22,25 @@ function availableAdaptersHint(availableAdapters: Array<string>): string {
  * @group Errors
  */
 export class DefaultAdapterNotDefinedError extends Error {
-    constructor(factoryName: string, availableAdapters: Array<string> = []) {
-        super(
+    static create(
+        factoryName: string,
+        availableAdapters: Array<string> = [],
+        cause?: unknown,
+    ): DefaultAdapterNotDefinedError {
+        return new DefaultAdapterNotDefinedError(
             `No default adapter is defined for "${factoryName}". Pass an adapter name to use(), or define a "defaultAdapter".` +
                 availableAdaptersHint(availableAdapters),
+            cause,
         );
+    }
+
+    /**
+     * Note: Do not instantiate `DefaultAdapterNotDefinedError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
         this.name = DefaultAdapterNotDefinedError.name;
     }
 }

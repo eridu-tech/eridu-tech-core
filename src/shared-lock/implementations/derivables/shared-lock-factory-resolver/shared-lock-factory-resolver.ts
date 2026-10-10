@@ -81,7 +81,7 @@ export class SharedLockFactoryResolver<TAdapters extends string = string>
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ISharedLockFactory {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 SharedLockFactory.name,
                 Object.keys(this.settings.adapters),
             );

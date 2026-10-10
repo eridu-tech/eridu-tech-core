@@ -80,7 +80,7 @@ export class CacheResolver<TAdapters extends string = string, TType = unknown>
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ICache<TType> {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 Cache.name,
                 Object.keys(this.settings.adapters),
             );

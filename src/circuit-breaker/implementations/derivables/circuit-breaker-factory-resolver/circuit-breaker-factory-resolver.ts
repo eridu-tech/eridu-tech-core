@@ -83,7 +83,7 @@ export class CircuitBreakerFactoryResolver<TAdapters extends string = string>
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ICircuitBreakerFactory {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 CircuitBreakerFactoryResolver.name,
                 Object.keys(this.settings.adapters),
             );

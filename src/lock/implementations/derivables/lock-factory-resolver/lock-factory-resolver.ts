@@ -78,7 +78,7 @@ export class LockFactoryResolver<TAdapters extends string = string>
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ILockFactory {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 LockFactory.name,
                 Object.keys(this.settings.adapters),
             );
