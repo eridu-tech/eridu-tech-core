@@ -2,7 +2,9 @@
  * @module Lock
  */
 
+import { LOCK_CLASS_TAG } from "@/lock/implementations/derivables/lock-factory/lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 import type {
     DiToken,
@@ -43,6 +45,18 @@ export class ProxyLock<TAdapters extends string = string> implements ILock {
                 .create(this.resourceKey, this.createSettings);
         }
         return this.lock;
+    }
+
+    internalClassTag(): symbol {
+        return LOCK_CLASS_TAG;
+    }
+
+    async internalSerializationId(): Promise<string> {
+        const lock = await this.getLock();
+        if (!isInternalSerdeIdentifiable(lock)) {
+            throw new Error("!!__MESSAGE__!!");
+        }
+        return await lock.internalSerializationId();
     }
 
     get key(): string {

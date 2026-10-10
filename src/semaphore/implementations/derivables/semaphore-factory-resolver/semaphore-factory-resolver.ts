@@ -13,7 +13,7 @@ import type {
     ISemaphoreAdapter,
 } from "@/semaphore/contracts/_module-exports.js";
 import type { SemaphoreFactorySettingsBase } from "@/semaphore/implementations/derivables/semaphore-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/semaphore"`
@@ -49,27 +49,33 @@ export type SemaphoreFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/semaphore"`
  * @group Derivables
  */
-export class SemaphoreFactoryResolver<
-    TAdapters extends string,
-> implements ISemaphoreFactoryResolver<TAdapters> {
+export class SemaphoreFactoryResolver<TAdapters extends string>
+    implements ISemaphoreFactoryResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: SemaphoreFactoryResolverSettings<TAdapters>,
     ) {}
 
-    setDefaultTtl(ttl: ITimeSpan | null): SemaphoreFactoryResolver<TAdapters> {
-        return new SemaphoreFactoryResolver({
-            ...this.settings,
-            defaultTtl: ttl,
-        });
-    }
+    private readonly factories = {} as Partial<
+        Record<TAdapters, SemaphoreFactory>
+    >;
 
-    setDefaultRefreshTime(
-        time: ITimeSpan,
-    ): SemaphoreFactoryResolver<TAdapters> {
-        return new SemaphoreFactoryResolver({
-            ...this.settings,
-            defaultRefreshTime: time,
-        });
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new SemaphoreFactory({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.factories[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
     use(
@@ -77,21 +83,17 @@ export class SemaphoreFactoryResolver<
     ): ISemaphoreFactory {
         if (adapterName === undefined) {
             throw new DefaultAdapterNotDefinedError(
-                SemaphoreFactoryResolver.name,
+                SemaphoreFactory.name,
                 Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
+        const factory = this.factories[adapterName];
+        if (factory === undefined) {
             throw new UnregisteredAdapterError(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
         }
-        return new SemaphoreFactory({
-            ...this.settings,
-            adapter,
-            serializationId: adapterName,
-        });
+        return factory;
     }
 }

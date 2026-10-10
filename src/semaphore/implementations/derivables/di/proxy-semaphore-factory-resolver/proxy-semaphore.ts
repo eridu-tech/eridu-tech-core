@@ -2,7 +2,9 @@
  * @module Semaphore
  */
 
+import { SEMAPHORE_CLASS_TAG } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 import type {
     DiToken,
@@ -45,6 +47,18 @@ export class ProxySemaphore<
                 .create(this.resourceKey, this.createSettings);
         }
         return this.semaphore;
+    }
+
+    internalClassTag(): symbol {
+        return SEMAPHORE_CLASS_TAG;
+    }
+
+    async internalSerializationId(): Promise<string> {
+        const semaphore = await this.getSemaphore();
+        if (!isInternalSerdeIdentifiable(semaphore)) {
+            throw new Error("!!__MESSAGE__!!");
+        }
+        return await semaphore.internalSerializationId();
     }
 
     get key(): string {

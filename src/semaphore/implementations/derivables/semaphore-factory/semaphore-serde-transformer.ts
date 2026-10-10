@@ -7,10 +7,7 @@ import {
     SEMAPHORE_CLASS_TAG,
 } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import {
-    getConstructorName,
-    isInternalSerdeIdentifiable,
-} from "@/utilities/_module-exports.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 import type {
     ISemaphore,
@@ -49,11 +46,7 @@ export class SemaphoreSerdeTransformer implements ISerdeTransformer<
     }
 
     get name(): OneOrMore<string> {
-        return [
-            "semaphore",
-            this.serializationId,
-            getConstructorName(this.adapter),
-        ].filter((str) => str !== "");
+        return ["semaphore", this.serializationId].filter((str) => str !== "");
     }
 
     async isApplicable(value: unknown): Promise<boolean> {

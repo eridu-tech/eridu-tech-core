@@ -23,12 +23,13 @@ import type { KyselyLockTables } from "@/lock/implementations/adapters/kysely-lo
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: LockFactory", () => {
-    function createLockFactory() {
+    async function createLockFactory() {
         const serde = new SuperJsonSerde();
         const lockFactory = new LockFactory({
             serde,
             adapter: new MemoryLockAdapter(),
         });
+        await lockFactory.init();
         return {
             lockFactory,
             serde,
@@ -79,7 +80,9 @@ describe("class: LockFactory", () => {
                 adapter: adapter1,
                 serde,
             });
+            await lockFactory1.init();
             const lock1 = lockFactory1.create(key, { ttl });
+
             await lock1.acquire();
 
             const adapter2 = new KyselyLockAdapter({
@@ -90,6 +93,7 @@ describe("class: LockFactory", () => {
                 adapter: adapter2,
                 serde,
             });
+            await lockFactory2.init();
 
             const lock2 = lockFactory2.create(key, { ttl });
             const deserializeLock2 = await serde.deserialize<ILock>(
@@ -109,7 +113,9 @@ describe("class: LockFactory", () => {
                 serializationId: "adapter1",
                 serde,
             });
+            await lockFactory1.init();
             const lock1 = lockFactory1.create(key, { ttl });
+
             await lock1.acquire();
 
             const lockFactory2 = new LockFactory({
@@ -117,8 +123,9 @@ describe("class: LockFactory", () => {
                 serializationId: "adapter2",
                 serde,
             });
-
+            await lockFactory2.init();
             const lock2 = lockFactory2.create(key, { ttl });
+
             const deserializeLock2 = await serde.deserialize<ILock>(
                 await serde.serialize(lock2),
             );

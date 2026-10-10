@@ -6,7 +6,7 @@ import { v4 } from "uuid";
 
 import { SemaphoreSerdeTransformer } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore-serde-transformer.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
-import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
+import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     callInvocable,
@@ -24,7 +24,11 @@ import type {
 } from "@/semaphore/contracts/_module-exports.js";
 import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { Invocable, OneOrMore } from "@/utilities/_module-exports.js";
+import type {
+    IInitizable,
+    Invocable,
+    OneOrMore,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `SemaphoreFactory` variants.
@@ -48,9 +52,9 @@ export type SemaphoreFactorySettingsBase = {
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link SemaphoreFactory | `SemaphoreFactory`} to register the semaphore's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
+     * import { NoOpSerde } from "eridu-tech/serde/no-op-serde";
      *
-     * new SuperJsonSerde()
+     * new NoOpSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
@@ -111,7 +115,7 @@ export type SemaphoreFactorySettings = SemaphoreFactorySettingsBase & {
  * IMPORT_PATH: `"eridu-tech/semaphore"`
  * @group Derivables
  */
-export class SemaphoreFactory implements ISemaphoreFactory {
+export class SemaphoreFactory implements ISemaphoreFactory, IInitizable {
     private readonly adapter: ISemaphoreAdapter;
     private readonly defaultTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
@@ -124,7 +128,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
             createSlotId = () => v4(),
             defaultTtl = TimeSpan.fromMinutes(5),
             defaultRefreshTime = TimeSpan.fromMinutes(5),
-            serde = new SuperJsonSerde(),
+            serde = new NoOpSerde(),
             adapter,
             serializationId,
         } = settings;
@@ -137,11 +141,9 @@ export class SemaphoreFactory implements ISemaphoreFactory {
         this.serializationId = resolveSerializationId(serializationId, adapter);
 
         this.adapter = adapter;
-
-        this.registerToSerde();
     }
 
-    private registerToSerde(): void {
+    async init(): Promise<void> {
         const transformer = new SemaphoreSerdeTransformer({
             adapter: this.adapter,
             defaultRefreshTime: this.defaultRefreshTime,
@@ -150,6 +152,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
+        return Promise.resolve();
     }
 
     create(key: string, settings: SemaphoreFactoryCreateSettings): ISemaphore {

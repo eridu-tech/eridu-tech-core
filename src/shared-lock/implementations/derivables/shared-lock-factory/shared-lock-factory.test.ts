@@ -23,12 +23,13 @@ import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapt
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: SharedLockFactory", () => {
-    function createSharedLockFactory() {
+    async function createSharedLockFactory() {
         const serde = new SuperJsonSerde();
         const sharedLockFactory = new SharedLockFactory({
             serde,
             adapter: new MemorySharedLockAdapter(),
         });
+        await sharedLockFactory.init();
         return { sharedLockFactory, serde };
     }
 
@@ -78,7 +79,9 @@ describe("class: SharedLockFactory", () => {
                 adapter: adapter1,
                 serde,
             });
+            await sharedLockFactory1.init();
             const lock1 = sharedLockFactory1.create(key, { ttl, limit });
+
             await lock1.acquireWriter();
 
             const adapter2 = new KyselySharedLockAdapter({
@@ -89,8 +92,9 @@ describe("class: SharedLockFactory", () => {
                 adapter: adapter2,
                 serde,
             });
-
+            await sharedLockFactory2.init();
             const lock2 = sharedLockFactory2.create(key, { ttl, limit });
+
             const deserializeLock2 = await serde.deserialize<ISharedLock>(
                 await serde.serialize(lock2),
             );
@@ -109,7 +113,9 @@ describe("class: SharedLockFactory", () => {
                 serializationId: "adapter1",
                 serde,
             });
+            await sharedLockFactory1.init();
             const lock1 = sharedLockFactory1.create(key, { ttl, limit });
+
             await lock1.acquireWriter();
 
             const sharedLockFactory2 = new SharedLockFactory({
@@ -117,8 +123,9 @@ describe("class: SharedLockFactory", () => {
                 serializationId: "adapter2",
                 serde,
             });
-
+            await sharedLockFactory2.init();
             const lock2 = sharedLockFactory2.create(key, { ttl, limit });
+
             const deserializeLock2 = await serde.deserialize<ISharedLock>(
                 await serde.serialize(lock2),
             );

@@ -7,10 +7,7 @@ import {
     LOCK_CLASS_TAG,
 } from "@/lock/implementations/derivables/lock-factory/lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import {
-    getConstructorName,
-    isInternalSerdeIdentifiable,
-} from "@/utilities/_module-exports.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 import type { ILock, ILockAdapter } from "@/lock/contracts/_module-exports.js";
 import type { ISerializedLock } from "@/lock/implementations/derivables/lock-factory/lock.js";
@@ -46,11 +43,7 @@ export class LockSerdeTransformer implements ISerdeTransformer<
     }
 
     get name(): OneOrMore<string> {
-        return [
-            "lock",
-            this.serializationId,
-            getConstructorName(this.adapter),
-        ].filter((str) => str !== "");
+        return ["lock", this.serializationId].filter((str) => str !== "");
     }
 
     async isApplicable(value: unknown): Promise<boolean> {

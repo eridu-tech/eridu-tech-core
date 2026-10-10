@@ -7,10 +7,7 @@ import {
     SharedLock,
 } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import {
-    getConstructorName,
-    isInternalSerdeIdentifiable,
-} from "@/utilities/_module-exports.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
 import type {
@@ -49,11 +46,9 @@ export class SharedLockSerdeTransformer implements ISerdeTransformer<
     }
 
     get name(): OneOrMore<string> {
-        return [
-            "shared-lock",
-            this.serializationId,
-            getConstructorName(this.adapter),
-        ].filter((str) => str !== "");
+        return ["shared-lock", this.serializationId].filter(
+            (str) => str !== "",
+        );
     }
 
     async isApplicable(value: unknown): Promise<boolean> {

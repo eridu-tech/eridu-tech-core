@@ -2,7 +2,9 @@
  * @module SharedLock
  */
 
+import { SHARED_LOCK_CLASS_TAG } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 import type {
     DiToken,
@@ -47,6 +49,18 @@ export class ProxySharedLock<
         return this.sharedLock;
     }
 
+    internalClassTag(): symbol {
+        return SHARED_LOCK_CLASS_TAG;
+    }
+
+    async internalSerializationId(): Promise<string> {
+        const sharedLock = await this.getSharedLock();
+        if (!isInternalSerdeIdentifiable(sharedLock)) {
+            throw new Error("!!__MESSAGE__!!");
+        }
+        return await sharedLock.internalSerializationId();
+    }
+
     get key(): string {
         return this.resourceKey;
     }
@@ -62,7 +76,7 @@ export class ProxySharedLock<
     }
 
     get limit(): number {
-        return this.limit;
+        return this.createSettings.limit;
     }
 
     async getState(): Promise<ISharedLockState> {

@@ -1,6 +1,7 @@
 /**
  * @module SharedLock
  */
+
 import { SharedLockFactory } from "@/shared-lock/implementations/derivables/shared-lock-factory/_module.js";
 import {
     DefaultAdapterNotDefinedError,
@@ -9,12 +10,11 @@ import {
 
 import type {
     ISharedLockFactoryResolver,
-    ISharedLockFactory,
     ISharedLockAdapter,
+    ISharedLockFactory,
 } from "@/shared-lock/contracts/_module-exports.js";
 import type { SharedLockFactorySettingsBase } from "@/shared-lock/implementations/derivables/shared-lock-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { Invocable } from "@/utilities/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
@@ -50,36 +50,33 @@ export type SharedLockFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
  * @group Derivables
  */
-export class SharedLockFactoryResolver<
-    TAdapters extends string,
-> implements ISharedLockFactoryResolver<TAdapters> {
+export class SharedLockFactoryResolver<TAdapters extends string>
+    implements ISharedLockFactoryResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: SharedLockFactoryResolverSettings<TAdapters>,
     ) {}
 
-    setCreateLockId(
-        createId: Invocable<[], string>,
-    ): SharedLockFactoryResolver<TAdapters> {
-        return new SharedLockFactoryResolver({
-            ...this.settings,
-            createLockId: createId,
-        });
-    }
+    private readonly factories = {} as Partial<
+        Record<TAdapters, SharedLockFactory>
+    >;
 
-    setDefaultTtl(ttl: ITimeSpan | null): SharedLockFactoryResolver<TAdapters> {
-        return new SharedLockFactoryResolver({
-            ...this.settings,
-            defaultTtl: ttl,
-        });
-    }
-
-    setDefaultRefreshTime(
-        time: ITimeSpan,
-    ): SharedLockFactoryResolver<TAdapters> {
-        return new SharedLockFactoryResolver({
-            ...this.settings,
-            defaultRefreshTime: time,
-        });
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new SharedLockFactory({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.factories[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
     use(
@@ -87,21 +84,17 @@ export class SharedLockFactoryResolver<
     ): ISharedLockFactory {
         if (adapterName === undefined) {
             throw new DefaultAdapterNotDefinedError(
-                SharedLockFactoryResolver.name,
+                SharedLockFactory.name,
                 Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
+        const factory = this.factories[adapterName];
+        if (factory === undefined) {
             throw new UnregisteredAdapterError(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
         }
-        return new SharedLockFactory({
-            ...this.settings,
-            adapter,
-            serializationId: adapterName,
-        });
+        return factory;
     }
 }

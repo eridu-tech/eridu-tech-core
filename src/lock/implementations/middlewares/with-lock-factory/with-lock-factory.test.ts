@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adapter/_module-exports.js";
 import {
@@ -18,6 +18,9 @@ describe("function: withLockFactory", () => {
         defaultAdapter: "memory",
     });
 
+    beforeAll(async () => {
+        await lockFactoryResolver.init();
+    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();

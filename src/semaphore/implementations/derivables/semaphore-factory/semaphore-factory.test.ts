@@ -23,12 +23,13 @@ import type { KyselySemaphoreTables } from "@/semaphore/implementations/adapters
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: SemaphoreFactory", () => {
-    function createSemaphoreFactory() {
+    async function createSemaphoreFactory() {
         const serde = new SuperJsonSerde();
         const semaphoreFactory = new SemaphoreFactory({
             serde,
             adapter: new MemorySemaphoreAdapter(),
         });
+        await semaphoreFactory.init();
         return {
             semaphoreFactory,
             serde,
@@ -80,7 +81,9 @@ describe("class: SemaphoreFactory", () => {
                 adapter: adapter1,
                 serde,
             });
+            await lockProvider1.init();
             const lock1 = lockProvider1.create(key, { ttl, limit });
+
             await lock1.acquire();
 
             const adapter2 = new KyselySemaphoreAdapter({
@@ -91,8 +94,9 @@ describe("class: SemaphoreFactory", () => {
                 adapter: adapter2,
                 serde,
             });
-
+            await lockProvider2.init();
             const lock2 = lockProvider2.create(key, { ttl, limit });
+
             const deserializeSemaphore2 = await serde.deserialize<ISemaphore>(
                 await serde.serialize(lock2),
             );
@@ -111,7 +115,9 @@ describe("class: SemaphoreFactory", () => {
                 serializationId: "adapter1",
                 serde,
             });
+            await lockProvider1.init();
             const lock1 = lockProvider1.create(key, { ttl, limit });
+
             await lock1.acquire();
 
             const lockProvider2 = new SemaphoreFactory({
@@ -119,8 +125,9 @@ describe("class: SemaphoreFactory", () => {
                 serializationId: "adapter2",
                 serde,
             });
-
+            await lockProvider2.init();
             const lock2 = lockProvider2.create(key, { ttl, limit });
+
             const deserializeSemaphore2 = await serde.deserialize<ISemaphore>(
                 await serde.serialize(lock2),
             );

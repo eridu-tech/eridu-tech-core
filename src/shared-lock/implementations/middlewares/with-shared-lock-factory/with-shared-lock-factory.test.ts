@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/no-op-shared-lock-adapter/_module-exports.js";
@@ -21,6 +21,9 @@ describe("function: withSharedLockFactory", () => {
         defaultAdapter: "memory",
     });
 
+    beforeAll(async () => {
+        await sharedLockFactoryResolver.init();
+    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();

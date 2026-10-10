@@ -13,8 +13,7 @@ import type {
     ILockAdapter,
 } from "@/lock/contracts/_module-exports.js";
 import type { LockFactorySettingsBase } from "@/lock/implementations/derivables/lock-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { Invocable } from "@/utilities/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/lock"`
@@ -50,34 +49,31 @@ export type LockFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/lock"`
  * @group Derivables
  */
-export class LockFactoryResolver<
-    TAdapters extends string,
-> implements ILockFactoryResolver<TAdapters> {
+export class LockFactoryResolver<TAdapters extends string>
+    implements ILockFactoryResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: LockFactoryResolverSettings<TAdapters>,
     ) {}
 
-    setCreateLockId(
-        createId: Invocable<[], string>,
-    ): LockFactoryResolver<TAdapters> {
-        return new LockFactoryResolver({
-            ...this.settings,
-            createLockId: createId,
-        });
-    }
+    private readonly factories = {} as Partial<Record<TAdapters, LockFactory>>;
 
-    setDefaultTtl(ttl: ITimeSpan | null): LockFactoryResolver<TAdapters> {
-        return new LockFactoryResolver({
-            ...this.settings,
-            defaultTtl: ttl,
-        });
-    }
-
-    setDefaultRefreshTime(time: ITimeSpan): LockFactoryResolver<TAdapters> {
-        return new LockFactoryResolver({
-            ...this.settings,
-            defaultRefreshTime: time,
-        });
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new LockFactory({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.factories[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
     use(
@@ -85,21 +81,17 @@ export class LockFactoryResolver<
     ): ILockFactory {
         if (adapterName === undefined) {
             throw new DefaultAdapterNotDefinedError(
-                LockFactoryResolver.name,
+                LockFactory.name,
                 Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
+        const factory = this.factories[adapterName];
+        if (factory === undefined) {
             throw new UnregisteredAdapterError(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
         }
-        return new LockFactory({
-            ...this.settings,
-            adapter,
-            serializationId: adapterName,
-        });
+        return factory;
     }
 }
