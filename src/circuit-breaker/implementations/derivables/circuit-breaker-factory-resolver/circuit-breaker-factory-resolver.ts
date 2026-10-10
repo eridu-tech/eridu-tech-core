@@ -12,13 +12,11 @@ import {
 
 import type {
     ICircuitBreakerFactoryResolver,
-    CircuitBreakerTrigger,
     ICircuitBreakerFactory,
     ICircuitBreakerAdapter,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import type { CircuitBreakerFactorySettingsBase } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { ErrorPolicy, WaitUntil } from "@/utilities/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
@@ -54,47 +52,33 @@ export type CircuitBreakerFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
  * @group Derivables
  */
-export class CircuitBreakerFactoryResolver<
-    TAdapters extends string,
-> implements ICircuitBreakerFactoryResolver<TAdapters> {
+export class CircuitBreakerFactoryResolver<TAdapters extends string>
+    implements ICircuitBreakerFactoryResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: CircuitBreakerFactoryResolverSettings<TAdapters>,
     ) {}
 
-    setDefaultSlowCallTime(
-        slowCallTime?: ITimeSpan,
-    ): CircuitBreakerFactoryResolver<TAdapters> {
-        return new CircuitBreakerFactoryResolver({
-            ...this.settings,
-            defaultSlowCallTime: slowCallTime,
-        });
-    }
+    private readonly factories = {} as Partial<
+        Record<TAdapters, CircuitBreakerFactory>
+    >;
 
-    setDefaultTrigger(
-        trigger?: CircuitBreakerTrigger,
-    ): CircuitBreakerFactoryResolver<TAdapters> {
-        return new CircuitBreakerFactoryResolver({
-            ...this.settings,
-            defaultTrigger: trigger,
-        });
-    }
-
-    setDefaultErrorPolicy(
-        defaultErrorPolicy: ErrorPolicy,
-    ): CircuitBreakerFactoryResolver<TAdapters> {
-        return new CircuitBreakerFactoryResolver({
-            ...this.settings,
-            defaultErrorPolicy,
-        });
-    }
-
-    setWaitUntil(
-        waitUntil: WaitUntil,
-    ): CircuitBreakerFactoryResolver<TAdapters> {
-        return new CircuitBreakerFactoryResolver({
-            ...this.settings,
-            waitUntil,
-        });
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new CircuitBreakerFactory({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.factories[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
     use(
@@ -106,17 +90,13 @@ export class CircuitBreakerFactoryResolver<
                 Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
+        const factory = this.factories[adapterName];
+        if (factory === undefined) {
             throw new UnregisteredAdapterError(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
         }
-        return new CircuitBreakerFactory({
-            ...this.settings,
-            adapter,
-            serializationId: adapterName,
-        });
+        return factory;
     }
 }

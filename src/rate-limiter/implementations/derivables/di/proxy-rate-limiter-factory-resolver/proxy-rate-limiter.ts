@@ -2,6 +2,9 @@
  * @module RateLimiter
  */
 
+import { RATE_LIMITER_CLASS_TAG } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+
 import type {
     DiToken,
     IServiceResolver,
@@ -42,6 +45,18 @@ export class ProxyRateLimiter<
                 .create(this.resourceKey, this.createSettings);
         }
         return this.rateLimiter;
+    }
+
+    internalClassTag(): symbol {
+        return RATE_LIMITER_CLASS_TAG;
+    }
+
+    async internalSerializationId(): Promise<string> {
+        const rateLimiter = await this.getRateLimiter();
+        if (!isInternalSerdeIdentifiable(rateLimiter)) {
+            throw new Error("!!__MESSAGE__!!");
+        }
+        return await rateLimiter.internalSerializationId();
     }
 
     get key(): string {

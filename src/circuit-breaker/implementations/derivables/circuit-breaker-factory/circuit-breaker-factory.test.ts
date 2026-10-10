@@ -17,7 +17,6 @@ import { delay } from "@/utilities/_module-exports.js";
 import type {
     CircuitBreakerStateTransition,
     ICircuitBreakerAdapter,
-    ICircuitBreakerFactory,
     CircuitBreakerState,
     ICircuitBreaker,
 } from "@/circuit-breaker/contracts/_module-exports.js";
@@ -45,9 +44,9 @@ describe("class: CircuitBreakerFactory", () => {
     };
     const KEY = "A";
 
-    let circuitBreakerFactory: ICircuitBreakerFactory;
+    let circuitBreakerFactory: CircuitBreakerFactory;
     const slowCallTime = TimeSpan.fromMilliseconds(50);
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.resetAllMocks();
         vi.clearAllMocks();
         circuitBreakerFactory = new CircuitBreakerFactory({
@@ -56,6 +55,7 @@ describe("class: CircuitBreakerFactory", () => {
             defaultSlowCallTime: slowCallTime,
             enableAsyncTracking: false,
         });
+        await circuitBreakerFactory.init();
     });
 
     class UnexpectedErrorA extends Error {}
@@ -589,7 +589,9 @@ describe("class: CircuitBreakerFactory", () => {
                 enableAsyncTracking: false,
                 serde,
             });
+            await circuitBreakerFactory1.init();
             const circuitBreaker1 = circuitBreakerFactory1.create(key);
+
             try {
                 await circuitBreaker1.runOrFail(() => {
                     return Promise.reject(
@@ -610,6 +612,7 @@ describe("class: CircuitBreakerFactory", () => {
                 enableAsyncTracking: false,
                 serde,
             });
+            await circuitBreakerFactory2.init();
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =
@@ -637,7 +640,9 @@ describe("class: CircuitBreakerFactory", () => {
                 serializationId: "adapter1",
                 serde,
             });
+            await circuitBreakerFactory1.init();
             const circuitBreaker1 = circuitBreakerFactory1.create(key);
+
             try {
                 await circuitBreaker1.runOrFail(() => {
                     return Promise.reject(
@@ -659,6 +664,7 @@ describe("class: CircuitBreakerFactory", () => {
                 serializationId: "adapter2",
                 serde,
             });
+            await circuitBreakerFactory2.init();
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =

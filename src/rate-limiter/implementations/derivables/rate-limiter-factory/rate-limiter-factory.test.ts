@@ -12,7 +12,6 @@ import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type {
-    IRateLimiterFactory,
     RateLimiterExpiredState,
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
@@ -40,13 +39,14 @@ describe("class: RateLimiterFactory", () => {
 
     class UnexpectedErrorA extends Error {}
 
-    let rateLimiterFactory: IRateLimiterFactory;
-    beforeEach(() => {
+    let rateLimiterFactory: RateLimiterFactory;
+    beforeEach(async () => {
         vi.resetAllMocks();
         vi.clearAllMocks();
         rateLimiterFactory = new RateLimiterFactory({
             adapter,
         });
+        await rateLimiterFactory.init();
     });
 
     describe("API tests:", () => {
@@ -449,9 +449,11 @@ describe("class: RateLimiterFactory", () => {
                 ),
                 serde,
             });
+            await rateLimiterFactory1.init();
             const rateLimiter1 = rateLimiterFactory1.create(key, {
                 limit: 1,
             });
+
             try {
                 await rateLimiter1.runOrFail(() => {
                     return Promise.reject(
@@ -471,6 +473,7 @@ describe("class: RateLimiterFactory", () => {
                 }),
                 serde,
             });
+            await rateLimiterFactory2.init();
             const rateLimiter2 = rateLimiterFactory2.create(key, {
                 limit: 1,
             });
@@ -498,9 +501,11 @@ describe("class: RateLimiterFactory", () => {
                 serializationId: "adapter1",
                 serde,
             });
+            await rateLimiterFactory1.init();
             const rateLimiter1 = rateLimiterFactory1.create(key, {
                 limit: 1,
             });
+
             try {
                 await rateLimiter1.runOrFail(() => {
                     return Promise.reject(
@@ -521,6 +526,7 @@ describe("class: RateLimiterFactory", () => {
                 serializationId: "adapter2",
                 serde,
             });
+            await rateLimiterFactory2.init();
             const rateLimiter2 = rateLimiterFactory2.create(key, {
                 limit: 1,
             });

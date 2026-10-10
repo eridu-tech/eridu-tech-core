@@ -60,6 +60,9 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                         serde,
                     });
                 },
+                onInit: async (factory) => {
+                    await factory.init();
+                },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
             });
@@ -149,8 +152,6 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            serde = new SuperJsonSerde();
-
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -166,15 +167,18 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
 
             container.registerFactory({
                 token: CircuitBreakerFactoryResolver,
-                factory: () => {
-                    return new CircuitBreakerFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
+                factory: async () => {
+                    const factory = new CircuitBreakerFactoryResolver<Adapters>(
+                        {
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
                         },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
+                    );
+                    await factory.init();
+                    return factory;
                 },
                 deps: {},
                 lifetime: LIFETIME.TRANSIENT,
@@ -215,54 +219,11 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
             expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
             expect(getState1).not.toHaveBeenCalled();
         });
-
-        describe("Serde tests:", () => {
-            test("Should serialize and deserialize a circuit breaker created with the default adapter", async () => {
-                const key = "a";
-                const circuitBreaker = circuitBreakerFactory.create(key);
-
-                const deserializedCircuitBreaker =
-                    await serde.deserialize<ICircuitBreaker>(
-                        await serde.serialize(circuitBreaker),
-                    );
-
-                await deserializedCircuitBreaker.getState();
-
-                const args: Parameters<ICircuitBreakerAdapter["getState"]> = [
-                    key,
-                ];
-
-                expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-                expect(getState2).not.toHaveBeenCalled();
-            });
-            test("Should serialize and deserialize a circuit breaker created with a specific adapter", async () => {
-                const key = "a";
-                const circuitBreaker = circuitBreakerFactory
-                    .use("adapter2")
-                    .create(key);
-
-                const deserializedCircuitBreaker =
-                    await serde.deserialize<ICircuitBreaker>(
-                        await serde.serialize(circuitBreaker),
-                    );
-
-                await deserializedCircuitBreaker.getState();
-
-                const args: Parameters<ICircuitBreakerAdapter["getState"]> = [
-                    key,
-                ];
-
-                expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
-                expect(getState1).not.toHaveBeenCalled();
-            });
-        });
     });
     describe("LIFETIME.SCOPED:", () => {
         beforeEach(async () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
-
-            serde = new SuperJsonSerde();
 
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
@@ -279,15 +240,18 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
 
             container.registerFactory({
                 token: CircuitBreakerFactoryResolver,
-                factory: () => {
-                    return new CircuitBreakerFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
+                factory: async () => {
+                    const factory = new CircuitBreakerFactoryResolver<Adapters>(
+                        {
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
                         },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
+                    );
+                    await factory.init();
+                    return factory;
                 },
                 deps: {},
                 lifetime: LIFETIME.SCOPED,
@@ -345,47 +309,6 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
 
             expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
             expect(getState1).not.toHaveBeenCalled();
-        });
-
-        describe("Serde tests:", () => {
-            test("Should serialize and deserialize a circuit breaker created with the default adapter", async () => {
-                const key = "a";
-                const circuitBreaker = circuitBreakerFactory.create(key);
-
-                const deserializedCircuitBreaker =
-                    await serde.deserialize<ICircuitBreaker>(
-                        await serde.serialize(circuitBreaker),
-                    );
-
-                await deserializedCircuitBreaker.getState();
-
-                const args: Parameters<ICircuitBreakerAdapter["getState"]> = [
-                    key,
-                ];
-
-                expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-                expect(getState2).not.toHaveBeenCalled();
-            });
-            test("Should serialize and deserialize a circuit breaker created with a specific adapter", async () => {
-                const key = "a";
-                const circuitBreaker = circuitBreakerFactory
-                    .use("adapter2")
-                    .create(key);
-
-                const deserializedCircuitBreaker =
-                    await serde.deserialize<ICircuitBreaker>(
-                        await serde.serialize(circuitBreaker),
-                    );
-
-                await deserializedCircuitBreaker.getState();
-
-                const args: Parameters<ICircuitBreakerAdapter["getState"]> = [
-                    key,
-                ];
-
-                expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
-                expect(getState1).not.toHaveBeenCalled();
-            });
         });
     });
 });

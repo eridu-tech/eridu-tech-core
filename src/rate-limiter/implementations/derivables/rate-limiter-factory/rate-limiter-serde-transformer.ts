@@ -6,10 +6,7 @@ import {
     RATE_LIMITER_CLASS_TAG,
     RateLimiter,
 } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
-import {
-    getConstructorName,
-    isInternalSerdeIdentifiable,
-} from "@/utilities/_module-exports.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 import type {
     IRateLimiter,
@@ -51,11 +48,9 @@ export class RateLimiterSerdeTransformer implements ISerdeTransformer<
     }
 
     get name(): OneOrMore<string> {
-        return [
-            "rateLimiter",
-            this.serializationId,
-            getConstructorName(this.adapter),
-        ].filter((str) => str !== "");
+        return ["rateLimiter", this.serializationId].filter(
+            (str) => str !== "",
+        );
     }
     async isApplicable(value: unknown): Promise<boolean> {
         if (!isInternalSerdeIdentifiable(value)) {

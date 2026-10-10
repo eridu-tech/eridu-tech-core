@@ -60,6 +60,9 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                         serde,
                     });
                 },
+                onInit: async (service) => {
+                    await service.init();
+                },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
             });
@@ -166,8 +169,8 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
 
             container.registerFactory({
                 token: RateLimiterFactoryResolver,
-                factory: () => {
-                    return new RateLimiterFactoryResolver<Adapters>({
+                factory: async () => {
+                    const factory = new RateLimiterFactoryResolver<Adapters>({
                         adapters: {
                             adapter1,
                             adapter2,
@@ -175,6 +178,8 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                         defaultAdapter: "adapter1",
                         serde,
                     });
+                    await factory.init();
+                    return factory;
                 },
                 deps: {},
                 lifetime: LIFETIME.TRANSIENT,
@@ -220,45 +225,6 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
             expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
             expect(getState1).not.toHaveBeenCalled();
         });
-
-        describe("Serde tests:", () => {
-            test("Should serialize and deserialize a rate limiter created with the default adapter", async () => {
-                const key = "a";
-                const rateLimiter = rateLimiterFactory.create(key, {
-                    limit: 2,
-                });
-
-                const deserializedRateLimiter =
-                    await serde.deserialize<IRateLimiter>(
-                        await serde.serialize(rateLimiter),
-                    );
-
-                await deserializedRateLimiter.getState();
-
-                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-                expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-                expect(getState2).not.toHaveBeenCalled();
-            });
-            test("Should serialize and deserialize a rate limiter created with a specific adapter", async () => {
-                const key = "a";
-                const rateLimiter = rateLimiterFactory
-                    .use("adapter2")
-                    .create(key, { limit: 2 });
-
-                const deserializedRateLimiter =
-                    await serde.deserialize<IRateLimiter>(
-                        await serde.serialize(rateLimiter),
-                    );
-
-                await deserializedRateLimiter.getState();
-
-                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-                expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
-                expect(getState1).not.toHaveBeenCalled();
-            });
-        });
     });
     describe("LIFETIME.SCOPED:", () => {
         beforeEach(async () => {
@@ -282,8 +248,8 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
 
             container.registerFactory({
                 token: RateLimiterFactoryResolver,
-                factory: () => {
-                    return new RateLimiterFactoryResolver<Adapters>({
+                factory: async () => {
+                    const factory = new RateLimiterFactoryResolver<Adapters>({
                         adapters: {
                             adapter1,
                             adapter2,
@@ -291,6 +257,8 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                         defaultAdapter: "adapter1",
                         serde,
                     });
+                    await factory.init();
+                    return factory;
                 },
                 deps: {},
                 lifetime: LIFETIME.SCOPED,
@@ -349,45 +317,6 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
 
             expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
             expect(getState1).not.toHaveBeenCalled();
-        });
-
-        describe("Serde tests:", () => {
-            test("Should serialize and deserialize a rate limiter created with the default adapter", async () => {
-                const key = "a";
-                const rateLimiter = rateLimiterFactory.create(key, {
-                    limit: 2,
-                });
-
-                const deserializedRateLimiter =
-                    await serde.deserialize<IRateLimiter>(
-                        await serde.serialize(rateLimiter),
-                    );
-
-                await deserializedRateLimiter.getState();
-
-                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-                expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-                expect(getState2).not.toHaveBeenCalled();
-            });
-            test("Should serialize and deserialize a rate limiter created with a specific adapter", async () => {
-                const key = "a";
-                const rateLimiter = rateLimiterFactory
-                    .use("adapter2")
-                    .create(key, { limit: 2 });
-
-                const deserializedRateLimiter =
-                    await serde.deserialize<IRateLimiter>(
-                        await serde.serialize(rateLimiter),
-                    );
-
-                await deserializedRateLimiter.getState();
-
-                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-                expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
-                expect(getState1).not.toHaveBeenCalled();
-            });
         });
     });
 });

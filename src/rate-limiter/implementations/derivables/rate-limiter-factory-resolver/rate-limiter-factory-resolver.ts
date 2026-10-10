@@ -16,7 +16,7 @@ import type {
     IRateLimiterAdapter,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { RateLimiterFactorySettingsBase } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/_module.js";
-import type { ErrorPolicy } from "@/utilities/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
@@ -52,27 +52,33 @@ export type RateLimiterFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
  * @group Derivables
  */
-export class RateLimiterFactoryResolver<
-    TAdapters extends string,
-> implements IRateLimiterFactoryResolver<TAdapters> {
+export class RateLimiterFactoryResolver<TAdapters extends string>
+    implements IRateLimiterFactoryResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: RateLimiterFactoryResolverSettings<TAdapters>,
     ) {}
 
-    setOnlyError(onlyError?: boolean): RateLimiterFactoryResolver<TAdapters> {
-        return new RateLimiterFactoryResolver({
-            ...this.settings,
-            onlyError,
-        });
-    }
+    private readonly factories = {} as Partial<
+        Record<TAdapters, RateLimiterFactory>
+    >;
 
-    setDefaultErrorPolicy(
-        errorPolicy: ErrorPolicy,
-    ): RateLimiterFactoryResolver<TAdapters> {
-        return new RateLimiterFactoryResolver({
-            ...this.settings,
-            defaultErrorPolicy: errorPolicy,
-        });
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new RateLimiterFactory({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.factories[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
     use(
@@ -84,17 +90,13 @@ export class RateLimiterFactoryResolver<
                 Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
+        const factory = this.factories[adapterName];
+        if (factory === undefined) {
             throw new UnregisteredAdapterError(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
         }
-        return new RateLimiterFactory({
-            ...this.settings,
-            adapter,
-            serializationId: adapterName,
-        });
+        return factory;
     }
 }

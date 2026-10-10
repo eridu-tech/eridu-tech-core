@@ -4,7 +4,7 @@
 
 import { RateLimiterSerdeTransformer } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter-serde-transformer.js";
 import { RateLimiter } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
-import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
+import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import {
     CORE,
     resolveOneOrMore,
@@ -18,7 +18,11 @@ import type {
     RateLimiterFactoryCreateSettings,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
-import type { ErrorPolicy, OneOrMore } from "@/utilities/_module-exports.js";
+import type {
+    ErrorPolicy,
+    IInitizable,
+    OneOrMore,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `RateLimiterFactory` variants.
@@ -58,9 +62,9 @@ export type RateLimiterFactorySettingsBase = {
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link RateLimiterFactory | `RateLimiterFactory`} to register the rate limiter's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
+     * import { NoOpSerde } from "eridu-tech/serde/no-op-serde";
      *
-     * new SuperJsonSerde()
+     * new NoOpSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
@@ -86,7 +90,7 @@ export type RateLimiterFactorySettings = RateLimiterFactorySettingsBase & {
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
  * @group Derivables
  */
-export class RateLimiterFactory implements IRateLimiterFactory {
+export class RateLimiterFactory implements IRateLimiterFactory, IInitizable {
     private readonly adapter: IRateLimiterAdapter;
     private readonly onlyError: boolean;
     private readonly defaultErrorPolicy: ErrorPolicy;
@@ -98,7 +102,7 @@ export class RateLimiterFactory implements IRateLimiterFactory {
             adapter,
             onlyError = false,
             defaultErrorPolicy = () => true,
-            serde = new SuperJsonSerde(),
+            serde = new NoOpSerde(),
             serializationId,
         } = settings;
 
@@ -107,10 +111,9 @@ export class RateLimiterFactory implements IRateLimiterFactory {
         this.onlyError = onlyError;
         this.defaultErrorPolicy = defaultErrorPolicy;
         this.serde = serde;
-        this.registerToSerde();
     }
 
-    private registerToSerde(): void {
+    async init(): Promise<void> {
         const transformer = new RateLimiterSerdeTransformer({
             adapter: this.adapter,
             onlyError: this.onlyError,
@@ -120,6 +123,7 @@ export class RateLimiterFactory implements IRateLimiterFactory {
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
+        return Promise.resolve();
     }
 
     create(
