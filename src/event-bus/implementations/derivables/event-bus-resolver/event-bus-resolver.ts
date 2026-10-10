@@ -96,7 +96,7 @@ export class EventBusResolver<
         }
         const adapter = this.settings.adapters[adapterName];
         if (adapter === undefined) {
-            throw new UnregisteredAdapterError(
+            throw UnregisteredAdapterError.create(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );

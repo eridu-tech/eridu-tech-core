@@ -268,7 +268,7 @@ export class HttpRouter implements IHttpRouter {
             return null;
         }
         if (endpointMatch[0].type === "middleware") {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Internal router error: unexpected middleware entry at endpoint position.",
             );
         }

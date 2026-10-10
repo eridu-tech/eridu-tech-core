@@ -87,7 +87,7 @@ export class CacheResolver<TAdapters extends string = string, TType = unknown>
         }
         const cache = this.factories[adapterName];
         if (cache === undefined) {
-            throw new UnregisteredAdapterError(
+            throw UnregisteredAdapterError.create(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );

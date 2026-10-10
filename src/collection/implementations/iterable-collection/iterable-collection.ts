@@ -399,16 +399,16 @@ export class IterableCollection<
         if (isEven) {
             const [a, b] = items;
             if (a === undefined) {
-                throw new UnexpectedError("Is in invalid state");
+                throw UnexpectedError.create("Is in invalid state");
             }
             if (b === undefined) {
-                throw new UnexpectedError("Is in invalid state");
+                throw UnexpectedError.create("Is in invalid state");
             }
             return ((a + b) / 2) as Extract<TInput, number>;
         }
         const [median] = items;
         if (median === undefined) {
-            throw new UnexpectedError("Is in invalid state");
+            throw UnexpectedError.create("Is in invalid state");
         }
         return median as Extract<TInput, number>;
     }

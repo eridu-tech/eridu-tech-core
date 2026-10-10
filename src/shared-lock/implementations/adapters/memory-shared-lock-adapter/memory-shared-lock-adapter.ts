@@ -68,7 +68,7 @@ export class MemorySharedLockAdapter
         }
         const { writerLock, readerSemaphore } = sharedLockEntry;
         if (readerSemaphore !== null && writerLock !== null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invalid ISharedLockAdapterState, expected either a reader semaphore or a writer lock to be defined, but not both.",
             );
         }
@@ -111,7 +111,7 @@ export class MemorySharedLockAdapter
         }
         const { writerLock, readerSemaphore } = sharedLock;
         if (readerSemaphore !== null && writerLock !== null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invalid ISharedLockAdapterState, expected either a reader semaphore or a writer lock to be defined, but not both.",
             );
         }

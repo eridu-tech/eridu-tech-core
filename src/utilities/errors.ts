@@ -52,11 +52,25 @@ export class DefaultAdapterNotDefinedError extends Error {
  * @group Errors
  */
 export class UnregisteredAdapterError extends Error {
-    constructor(adapterName: string, availableAdapters: Array<string> = []) {
-        super(
+    static create(
+        adapterName: string,
+        availableAdapters: Array<string> = [],
+        cause?: unknown,
+    ): UnregisteredAdapterError {
+        return new UnregisteredAdapterError(
             `Adapter "${adapterName}" is not registered.` +
                 availableAdaptersHint(availableAdapters),
+            cause,
         );
+    }
+
+    /**
+     * Note: Do not instantiate `UnregisteredAdapterError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
         this.name = UnregisteredAdapterError.name;
     }
 }
@@ -66,6 +80,15 @@ export class UnregisteredAdapterError extends Error {
  * @group Errors
  */
 export class UnexpectedError extends Error {
+    static create(message: string, cause?: unknown): UnexpectedError {
+        return new UnexpectedError(message, cause);
+    }
+
+    /**
+     * Note: Do not instantiate `UnexpectedError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
     constructor(message: string, cause?: unknown) {
         super(message, { cause });
         this.name = UnexpectedError.name;

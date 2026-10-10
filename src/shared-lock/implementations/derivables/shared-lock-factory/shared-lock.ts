@@ -358,7 +358,7 @@ export class SharedLock implements ISharedLock, InternalSerdeIdentifiable {
             return readerState.value;
         }
 
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             "Invalid ISharedLockAdapterState, expected either the reader field must be defined or the writer field must be defined, but not both.",
         );
     }

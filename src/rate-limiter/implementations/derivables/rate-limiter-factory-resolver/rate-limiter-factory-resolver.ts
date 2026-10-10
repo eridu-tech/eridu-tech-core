@@ -90,7 +90,7 @@ export class RateLimiterFactoryResolver<TAdapters extends string = string>
         }
         const factory = this.factories[adapterName];
         if (factory === undefined) {
-            throw new UnregisteredAdapterError(
+            throw UnregisteredAdapterError.create(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );

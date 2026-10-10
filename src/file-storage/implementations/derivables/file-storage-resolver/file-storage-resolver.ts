@@ -86,7 +86,7 @@ export class FileStorageResolver<TAdapters extends string = string>
         }
         const factory = this.storages[adapterName];
         if (factory === undefined) {
-            throw new UnregisteredAdapterError(
+            throw UnregisteredAdapterError.create(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );

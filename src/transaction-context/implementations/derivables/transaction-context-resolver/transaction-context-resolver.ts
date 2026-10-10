@@ -96,7 +96,7 @@ export class TransactionContextResolver<TAdapters extends string = string>
         }
         const adapter = this.settings.adapters[adapterName];
         if (adapter === undefined) {
-            throw new UnregisteredAdapterError(
+            throw UnregisteredAdapterError.create(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
@@ -104,7 +104,7 @@ export class TransactionContextResolver<TAdapters extends string = string>
 
         const token = this.tokens[adapterName];
         if (token === undefined) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Internal inconsistency: no context token was registered for adapter "${adapterName}". This is a bug and should be reported.`,
             );
         }

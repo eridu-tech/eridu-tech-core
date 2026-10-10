@@ -315,7 +315,7 @@ export class S3FileStorageAdapter
                 }),
             );
             if (response.Body === undefined) {
-                throw new UnexpectedError("response.Body is undefined");
+                throw UnexpectedError.create("response.Body is undefined");
             }
             return response.Body.transformToWebStream();
         } catch (error: unknown) {
@@ -333,7 +333,7 @@ export class S3FileStorageAdapter
                 }),
             );
             if (response.Body === undefined) {
-                throw new UnexpectedError("response.Body is undefined");
+                throw UnexpectedError.create("response.Body is undefined");
             }
             return await response.Body.transformToByteArray();
         } catch (error: unknown) {
@@ -351,18 +351,18 @@ export class S3FileStorageAdapter
                 }),
             );
             if (response.ETag === undefined) {
-                throw new UnexpectedError("response.ETag is undefined");
+                throw UnexpectedError.create("response.ETag is undefined");
             }
             if (response.ContentType === undefined) {
-                throw new UnexpectedError("response.ContentType is undefined");
+                throw UnexpectedError.create("response.ContentType is undefined");
             }
             if (response.ContentLength === undefined) {
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     "response.ContentLength is undefined",
                 );
             }
             if (response.LastModified === undefined) {
-                throw new UnexpectedError("response.LastModified is undefined");
+                throw UnexpectedError.create("response.LastModified is undefined");
             }
             return {
                 etag: response.ETag,

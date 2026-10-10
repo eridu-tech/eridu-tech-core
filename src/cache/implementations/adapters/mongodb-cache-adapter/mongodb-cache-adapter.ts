@@ -409,7 +409,7 @@ export class MongodbCacheAdapter<TType = unknown>
             },
         );
         if (!updateResult.acknowledged) {
-            throw new UnexpectedError("Mongodb update was not acknowledged");
+            throw UnexpectedError.create("Mongodb update was not acknowledged");
         }
         return updateResult.modifiedCount > 0;
     }
@@ -428,7 +428,7 @@ export class MongodbCacheAdapter<TType = unknown>
                 },
             );
             if (!updateResult.acknowledged) {
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     "Mongodb update was not acknowledged",
                 );
             }
@@ -451,7 +451,7 @@ export class MongodbCacheAdapter<TType = unknown>
             },
         );
         if (!deleteResult.acknowledged) {
-            throw new UnexpectedError("Mongodb deletion was not acknowledged");
+            throw UnexpectedError.create("Mongodb deletion was not acknowledged");
         }
         return deleteResult.deletedCount > 0;
     }
@@ -464,7 +464,7 @@ export class MongodbCacheAdapter<TType = unknown>
             },
         );
         if (!mongodbResult.acknowledged) {
-            throw new UnexpectedError("Mongodb deletion was not acknowledged");
+            throw UnexpectedError.create("Mongodb deletion was not acknowledged");
         }
     }
 
@@ -484,7 +484,7 @@ export class MongodbCacheAdapter<TType = unknown>
             },
         );
         if (!mongodbResult.acknowledged) {
-            throw new UnexpectedError("Mongodb deletion was not acknowledged");
+            throw UnexpectedError.create("Mongodb deletion was not acknowledged");
         }
     }
 }
