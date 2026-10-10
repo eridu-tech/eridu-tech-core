@@ -55,7 +55,7 @@ export class FileStorageResolver<TAdapters extends string = string>
         private readonly settings: FileStorageResolverSettings<TAdapters>,
     ) {}
 
-    private readonly factories = {} as Partial<Record<TAdapters, FileStorage>>;
+    private readonly storages = {} as Partial<Record<TAdapters, FileStorage>>;
 
     async init(): Promise<void> {
         const { adapters, ...rest } = this.settings;
@@ -70,7 +70,7 @@ export class FileStorageResolver<TAdapters extends string = string>
                 serializationId: adapterName,
             });
             await factory.init();
-            this.factories[adapterName] = factory;
+            this.storages[adapterName] = factory;
         }
         return Promise.resolve();
     }
@@ -84,7 +84,7 @@ export class FileStorageResolver<TAdapters extends string = string>
                 Object.keys(this.settings.adapters),
             );
         }
-        const factory = this.factories[adapterName];
+        const factory = this.storages[adapterName];
         if (factory === undefined) {
             throw new UnregisteredAdapterError(
                 adapterName,
