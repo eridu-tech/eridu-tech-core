@@ -5,8 +5,8 @@ import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js";
-import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/no-op-file-storage-adapter.js";
 import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js";
+import { NoOpFileUrlAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/no-op-file-url-adapter.js";
 import { FileStorageResolver } from "@/file-storage/implementations/derivables/_module-exports.js";
 import { ProxyFileStorageResolver } from "@/file-storage/implementations/derivables/di/proxy-file-storage-resolver/proxy-file-storage-resolver.js";
 import { fileStorageSerdeTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
@@ -14,13 +14,12 @@ import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module
 
 import type { Mock } from "vitest";
 
-import type { Lifetime } from "@/di/contracts/_module-exports.js";
 import type {
     IFileStorage,
     IFileStorageResolver,
     ISignedFileStorageAdapter,
 } from "@/file-storage/contracts/_module-exports.js";
-import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
+import type { IFlexibleSerde } from "@/serde/contracts/_module-exports.js";
 
 describe("class: ProxyFileStorageResolver", () => {
     type Adapters = "adapter1" | "adapter2";
@@ -28,69 +27,54 @@ describe("class: ProxyFileStorageResolver", () => {
     let container: Container;
     let exists1: Mock<ISignedFileStorageAdapter["exists"]>;
     let exists2: Mock<ISignedFileStorageAdapter["exists"]>;
-
-    type FileStorageContainerSettings = {
-        adapter1: ISignedFileStorageAdapter;
-        adapter2: ISignedFileStorageAdapter;
-        lifetime: Lifetime;
-        serde?: ISerdeRegister;
-    };
-
-    function createFileStorageContainer(
-        settings: FileStorageContainerSettings,
-    ): {
-        container: Container;
-        fileStorage: IFileStorageResolver<Adapters> & IFileStorage;
-    } {
-        const executionContext = new ExecutionContext(
-            new AlsExecutionContextAdapter(),
-        );
-        const createdContainer = new Container({
-            executionContext,
-        });
-        createdContainer.registerFactory({
-            token: FileStorageResolver,
-            factory: () => {
-                return new FileStorageResolver<Adapters>({
-                    adapters: {
-                        adapter1: settings.adapter1,
-                        adapter2: settings.adapter2,
-                    },
-                    defaultAdapter: "adapter1",
-                    serde: settings.serde,
-                });
-            },
-            deps: {},
-            lifetime: settings.lifetime,
-        });
-        const createdFileStorage = new ProxyFileStorageResolver<Adapters>({
-            container: createdContainer,
-            resolverToken: FileStorageResolver,
-        });
-        return {
-            container: createdContainer,
-            fileStorage: createdFileStorage,
-        };
-    }
+    let serde: IFlexibleSerde;
 
     describe("LIFETIME.SINGLETON:", () => {
         beforeEach(async () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            const adapter1 = new NoOpFileStorageAdapter();
+            const adapter1 = new MemoryFileStorageAdapter();
             exists1 = vi.spyOn(adapter1, "exists");
 
-            const adapter2 = new NoOpFileStorageAdapter();
+            const adapter2 = new MemoryFileStorageAdapter();
             exists2 = vi.spyOn(adapter2, "exists");
 
-            const created = createFileStorageContainer({
-                adapter1,
-                adapter2,
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            container = new Container({
+                executionContext,
+            });
+            serde = new SuperJsonSerde();
+            container.registerFactory({
+                token: FileStorageResolver,
+                factory: () => {
+                    return new FileStorageResolver<Adapters>({
+                        adapters: {
+                            adapter1: new SignedFileStorageAdapter({
+                                adapter: adapter1,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                            adapter2: new SignedFileStorageAdapter({
+                                adapter: adapter2,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                        },
+                        defaultAdapter: "adapter1",
+                        serde,
+                    });
+                },
+                onInit: async (factory) => {
+                    await factory.init();
+                },
+                deps: {},
                 lifetime: LIFETIME.SINGLETON,
             });
-            container = created.container;
-            fileStorage = created.fileStorage;
+            fileStorage = new ProxyFileStorageResolver<Adapters>({
+                container,
+                resolverToken: FileStorageResolver,
+            });
 
             await container.init();
         });
@@ -124,23 +108,9 @@ describe("class: ProxyFileStorageResolver", () => {
         });
 
         fileStorageSerdeTestSuite({
-            createFileStorage: async () => {
-                const serde = new SuperJsonSerde();
-                const created = createFileStorageContainer({
-                    adapter1: new SignedFileStorageAdapter({
-                        adapter: new MemoryFileStorageAdapter(),
-                        urlAdapter: {},
-                    }),
-                    adapter2: new SignedFileStorageAdapter({
-                        adapter: new MemoryFileStorageAdapter(),
-                        urlAdapter: {},
-                    }),
-                    serde,
-                    lifetime: LIFETIME.SINGLETON,
-                });
-                await created.container.init();
+            createFileStorage: () => {
                 return {
-                    fileStorage: created.fileStorage,
+                    fileStorage,
                     serde,
                 };
             },
@@ -155,19 +125,44 @@ describe("class: ProxyFileStorageResolver", () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            const adapter1 = new NoOpFileStorageAdapter();
+            const adapter1 = new MemoryFileStorageAdapter();
             exists1 = vi.spyOn(adapter1, "exists");
 
-            const adapter2 = new NoOpFileStorageAdapter();
+            const adapter2 = new MemoryFileStorageAdapter();
             exists2 = vi.spyOn(adapter2, "exists");
 
-            const created = createFileStorageContainer({
-                adapter1,
-                adapter2,
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            container = new Container({
+                executionContext,
+            });
+            container.registerFactory({
+                token: FileStorageResolver,
+                factory: async () => {
+                    const factory = new FileStorageResolver<Adapters>({
+                        adapters: {
+                            adapter1: new SignedFileStorageAdapter({
+                                adapter: adapter1,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                            adapter2: new SignedFileStorageAdapter({
+                                adapter: adapter2,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    await factory.init();
+                    return factory;
+                },
+                deps: {},
                 lifetime: LIFETIME.TRANSIENT,
             });
-            container = created.container;
-            fileStorage = created.fileStorage;
+            fileStorage = new ProxyFileStorageResolver<Adapters>({
+                container,
+                resolverToken: FileStorageResolver,
+            });
 
             await container.init();
         });
@@ -199,52 +194,50 @@ describe("class: ProxyFileStorageResolver", () => {
             expect(exists2).toHaveBeenCalledExactlyOnceWith(...args);
             expect(exists1).not.toHaveBeenCalled();
         });
-
-        fileStorageSerdeTestSuite({
-            createFileStorage: async () => {
-                const serde = new SuperJsonSerde();
-                const created = createFileStorageContainer({
-                    adapter1: new SignedFileStorageAdapter({
-                        adapter: new MemoryFileStorageAdapter(),
-                        urlAdapter: {},
-                    }),
-                    adapter2: new SignedFileStorageAdapter({
-                        adapter: new MemoryFileStorageAdapter(),
-                        urlAdapter: {},
-                    }),
-                    serde,
-                    lifetime: LIFETIME.TRANSIENT,
-                });
-                await created.container.init();
-                return {
-                    fileStorage: created.fileStorage,
-                    serde,
-                };
-            },
-            beforeEach,
-            describe,
-            expect,
-            test,
-        });
     });
     describe("LIFETIME.SCOPED:", () => {
         beforeEach(async () => {
             vi.restoreAllMocks();
             vi.clearAllMocks();
 
-            const adapter1 = new NoOpFileStorageAdapter();
+            const adapter1 = new MemoryFileStorageAdapter();
             exists1 = vi.spyOn(adapter1, "exists");
 
-            const adapter2 = new NoOpFileStorageAdapter();
+            const adapter2 = new MemoryFileStorageAdapter();
             exists2 = vi.spyOn(adapter2, "exists");
 
-            const created = createFileStorageContainer({
-                adapter1,
-                adapter2,
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            container = new Container({
+                executionContext,
+            });
+            container.registerFactory({
+                token: FileStorageResolver,
+                factory: async () => {
+                    const factory = new FileStorageResolver<Adapters>({
+                        adapters: {
+                            adapter1: new SignedFileStorageAdapter({
+                                adapter: adapter1,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                            adapter2: new SignedFileStorageAdapter({
+                                adapter: adapter2,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    await factory.init();
+                    return factory;
+                },
+                deps: {},
                 lifetime: LIFETIME.SCOPED,
             });
-            container = created.container;
-            fileStorage = created.fileStorage;
+            fileStorage = new ProxyFileStorageResolver<Adapters>({
+                container,
+                resolverToken: FileStorageResolver,
+            });
 
             await container.init();
         });
@@ -287,33 +280,6 @@ describe("class: ProxyFileStorageResolver", () => {
 
             expect(exists2).toHaveBeenCalledExactlyOnceWith(...args);
             expect(exists1).not.toHaveBeenCalled();
-        });
-
-        fileStorageSerdeTestSuite({
-            createFileStorage: async () => {
-                const serde = new SuperJsonSerde();
-                const created = createFileStorageContainer({
-                    adapter1: new SignedFileStorageAdapter({
-                        adapter: new MemoryFileStorageAdapter(),
-                        urlAdapter: {},
-                    }),
-                    adapter2: new SignedFileStorageAdapter({
-                        adapter: new MemoryFileStorageAdapter(),
-                        urlAdapter: {},
-                    }),
-                    serde,
-                    lifetime: LIFETIME.SCOPED,
-                });
-                await created.container.init();
-                return {
-                    fileStorage: created.fileStorage,
-                    serde,
-                };
-            },
-            beforeEach,
-            describe,
-            expect,
-            test,
         });
     });
 });

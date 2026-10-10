@@ -6,10 +6,7 @@ import {
     File,
     FILE_CLASS_TAG,
 } from "@/file-storage/implementations/derivables/file-storage/file.js";
-import {
-    getConstructorName,
-    isInternalSerdeIdentifiable,
-} from "@/utilities/_module-exports.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 import type {
     IFile,
@@ -64,11 +61,7 @@ export class FileSerdeTransformer implements ISerdeTransformer<
     }
 
     get name(): OneOrMore<string> {
-        return [
-            "file",
-            this.serializationId,
-            getConstructorName(this.adapter),
-        ].filter((str) => str !== "");
+        return ["file", this.serializationId].filter((str) => str !== "");
     }
 
     async isApplicable(value: unknown): Promise<boolean> {

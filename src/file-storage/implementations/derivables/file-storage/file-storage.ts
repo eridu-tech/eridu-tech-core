@@ -4,7 +4,7 @@
 
 import { FileSerdeTransformer } from "@/file-storage/implementations/derivables/file-storage/file-serde-transformer.js";
 import { File } from "@/file-storage/implementations/derivables/file-storage/file.js";
-import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
+import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import {
     CORE,
     resolveOneOrMore,
@@ -17,7 +17,7 @@ import type {
     ISignedFileStorageAdapter,
 } from "@/file-storage/contracts/_module-exports.js";
 import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
-import type { OneOrMore } from "@/utilities/_module-exports.js";
+import type { IInitizable, OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage"`
@@ -67,9 +67,9 @@ export type FileStorageSettingsBase = {
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link FileStorage | `FileStorage`} to register the file's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
+     * import { NoOpSerde } from "eridu-tech/serde/no-op-serde";
      *
-     * new SuperJsonSerde()
+     * new NoOpSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
@@ -96,7 +96,7 @@ export type FileStorageSettings = FileStorageSettingsBase & {
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */
-export class FileStorage implements IFileStorage {
+export class FileStorage implements IFileStorage, IInitizable {
     private readonly adapter: ISignedFileStorageAdapter;
     private readonly serde: OneOrMore<ISerdeRegister>;
     private readonly serializationId: string;
@@ -108,7 +108,7 @@ export class FileStorage implements IFileStorage {
     constructor(settings: FileStorageSettings) {
         const {
             adapter,
-            serde = new SuperJsonSerde(),
+            serde = new NoOpSerde(),
             serializationId,
             defaultCacheControl = null,
             defaultContentDisposition = "inline",
@@ -123,10 +123,9 @@ export class FileStorage implements IFileStorage {
         this.adapter = adapter;
         this.serde = serde;
         this.serializationId = resolveSerializationId(serializationId, adapter);
-        this.registerToSerde();
     }
 
-    private registerToSerde(): void {
+    async init(): Promise<void> {
         const transformer = new FileSerdeTransformer({
             defaultCacheControl: this.defaultCacheControl,
             defaultContentDisposition: this.defaultContentDisposition,
@@ -138,6 +137,7 @@ export class FileStorage implements IFileStorage {
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
+        return Promise.resolve();
     }
 
     create(key: string): IFile {

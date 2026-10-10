@@ -2,6 +2,9 @@
  * @module FileStorage
  */
 
+import { FILE_CLASS_TAG } from "@/file-storage/implementations/derivables/file-storage/file.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+
 import type {
     DiToken,
     IServiceResolver,
@@ -41,6 +44,18 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
                 .create(this.resourceKey);
         }
         return this.file;
+    }
+
+    internalClassTag(): symbol {
+        return FILE_CLASS_TAG;
+    }
+
+    async internalSerializationId(): Promise<string> {
+        const circuitBreaker = await this.getFile();
+        if (!isInternalSerdeIdentifiable(circuitBreaker)) {
+            throw new Error("!!__MESSAGE__!!");
+        }
+        return await circuitBreaker.internalSerializationId();
     }
 
     get key(): string {
