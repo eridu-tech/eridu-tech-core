@@ -507,6 +507,10 @@
             "types": "./dist/serde/implementations/super-json-serde/_module-exports.d.ts",
             "import": "./dist/serde/implementations/super-json-serde/_module-exports.js"
         },
+        "./serde/no-op-serde": {
+            "types": "./dist/serde/implementations/no-op-serde/_module-exports.d.ts",
+            "import": "./dist/serde/implementations/no-op-serde/_module-exports.js"
+        },
         "./shared-lock": {
             "types": "./dist/shared-lock/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/shared-lock/implementations/derivables/_module-exports.js"

@@ -1,3 +1,4 @@
+
 <p align="center">
 	<img src="https://img.shields.io/npm/v/eridu-tech" alt="npm version">
 	<img src="https://img.shields.io/npm/dy/eridu-tech" alt="NPM Downloads">

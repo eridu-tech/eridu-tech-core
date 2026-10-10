@@ -1,3 +1,7 @@
+/**
+ * @module Serde
+ */
+
 import SuperJson from "@eridu-tech/superjson";
 
 import {
@@ -13,7 +17,13 @@ import type {
 } from "@/serde/contracts/_module-exports.js";
 
 /**
- * @module Serde
+ * Serializes and deserializes values with @eridu-tech/superjson,
+ * the async-capable fork of SuperJSON.
+ *
+ * Supports standard structured data plus custom transformers for runtime-specific
+ * values that need stable serialization across boundaries.
+ *
+ * @group Serde
  */
 export class SuperJsonSerde implements IFlexibleSerde<string> {
     private readonly superJson = new SuperJson();
