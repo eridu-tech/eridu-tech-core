@@ -50,7 +50,7 @@ export type CircuitBreakerFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
  * @group Derivables
  */
-export class CircuitBreakerFactoryResolver<TAdapters extends string>
+export class CircuitBreakerFactoryResolver<TAdapters extends string = string>
     implements ICircuitBreakerFactoryResolver<TAdapters>, IInitizable
 {
     constructor(

@@ -50,7 +50,7 @@ export type RateLimiterFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
  * @group Derivables
  */
-export class RateLimiterFactoryResolver<TAdapters extends string>
+export class RateLimiterFactoryResolver<TAdapters extends string = string>
     implements IRateLimiterFactoryResolver<TAdapters>, IInitizable
 {
     constructor(

@@ -47,7 +47,7 @@ export type LockFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/lock"`
  * @group Derivables
  */
-export class LockFactoryResolver<TAdapters extends string>
+export class LockFactoryResolver<TAdapters extends string = string>
     implements ILockFactoryResolver<TAdapters>, IInitizable
 {
     constructor(

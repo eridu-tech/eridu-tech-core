@@ -48,7 +48,7 @@ export type SharedLockFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
  * @group Derivables
  */
-export class SharedLockFactoryResolver<TAdapters extends string>
+export class SharedLockFactoryResolver<TAdapters extends string = string>
     implements ISharedLockFactoryResolver<TAdapters>, IInitizable
 {
     constructor(

@@ -47,7 +47,7 @@ export type SemaphoreFactoryResolverSettings<TAdapters extends string> =
  * IMPORT_PATH: `"eridu-tech/semaphore"`
  * @group Derivables
  */
-export class SemaphoreFactoryResolver<TAdapters extends string>
+export class SemaphoreFactoryResolver<TAdapters extends string = string>
     implements ISemaphoreFactoryResolver<TAdapters>, IInitizable
 {
     constructor(

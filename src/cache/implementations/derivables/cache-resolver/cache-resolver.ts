@@ -14,6 +14,7 @@ import type {
     ICacheResolver,
 } from "@/cache/contracts/_module-exports.js";
 import type { CacheSettingsBase } from "@/cache/implementations/derivables/cache/_module.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/cache"`
@@ -50,10 +51,9 @@ export type CacheResolverSettings<
  * IMPORT_PATH: `"eridu-tech/cache"`
  * @group Derivables
  */
-export class CacheResolver<
-    TAdapters extends string = string,
-    TType = unknown,
-> implements ICacheResolver<TAdapters, TType> {
+export class CacheResolver<TAdapters extends string = string, TType = unknown>
+    implements ICacheResolver<TAdapters, TType>, IInitizable
+{
     constructor(
         private readonly settings: CacheResolverSettings<TAdapters, TType>,
     ) {}
