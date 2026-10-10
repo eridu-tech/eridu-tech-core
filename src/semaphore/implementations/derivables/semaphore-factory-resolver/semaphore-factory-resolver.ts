@@ -91,7 +91,7 @@ export class SemaphoreFactoryResolver<
         return new SemaphoreFactory({
             ...this.settings,
             adapter,
-            serdeTransformerName: adapterName,
+            serializationId: adapterName,
         });
     }
 }

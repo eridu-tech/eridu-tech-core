@@ -2,12 +2,21 @@
  * @module SharedLock
  */
 
-import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
+import {
+    SHARED_LOCK_CLASS_TAG,
+    SharedLock,
+} from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { getConstructorName } from "@/utilities/_module-exports.js";
+import {
+    getConstructorName,
+    isInternalSerdeIdentifiable,
+} from "@/utilities/_module-exports.js";
 
 import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
-import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports.js";
+import type {
+    ISharedLock,
+    ISharedLockAdapter,
+} from "@/shared-lock/contracts/_module-exports.js";
 import type { ISerializedSharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import type { OneOrMore } from "@/utilities/_module-exports.js";
 
@@ -17,24 +26,24 @@ import type { OneOrMore } from "@/utilities/_module-exports.js";
 export type SharedLockSerdeTransformerSettings = {
     adapter: ISharedLockAdapter;
     defaultRefreshTime: TimeSpan;
-    serdeTransformerName: string;
+    serializationId?: string;
 };
 
 /**
  * @internal
  */
 export class SharedLockSerdeTransformer implements ISerdeTransformer<
-    SharedLock,
+    ISharedLock,
     ISerializedSharedLock
 > {
     private readonly adapter: ISharedLockAdapter;
     private readonly defaultRefreshTime: TimeSpan;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
 
     constructor(settings: SharedLockSerdeTransformerSettings) {
-        const { adapter, defaultRefreshTime, serdeTransformerName } = settings;
+        const { adapter, defaultRefreshTime, serializationId } = settings;
 
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId ?? "";
         this.adapter = adapter;
         this.defaultRefreshTime = defaultRefreshTime;
     }
@@ -42,24 +51,23 @@ export class SharedLockSerdeTransformer implements ISerdeTransformer<
     get name(): OneOrMore<string> {
         return [
             "shared-lock",
-            this.serdeTransformerName,
+            this.serializationId,
             getConstructorName(this.adapter),
         ].filter((str) => str !== "");
     }
 
-    isApplicable(value: unknown): value is SharedLock {
-        const isSharedLock =
-            value instanceof SharedLock &&
-            getConstructorName(value) === SharedLock.name;
-        if (!isSharedLock) {
+    async isApplicable(value: unknown): Promise<boolean> {
+        if (!isInternalSerdeIdentifiable(value)) {
+            return false;
+        }
+        if (value.internalClassTag() !== SHARED_LOCK_CLASS_TAG) {
             return false;
         }
 
-        const isSerdTransformerNameMathcing =
-            value.internalGetSerdeTransformerName() ===
-            this.serdeTransformerName;
+        const isSerlizationIdMathcing =
+            this.serializationId === (await value.internalSerializationId());
 
-        return isSerdTransformerNameMathcing;
+        return isSerlizationIdMathcing;
     }
 
     deserialize(serializedValue: ISerializedSharedLock): SharedLock {
@@ -69,7 +77,7 @@ export class SharedLockSerdeTransformer implements ISerdeTransformer<
             adapter: this.adapter,
             key,
             limit,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
             ttl: ttlInMs === null ? null : TimeSpan.fromMilliseconds(ttlInMs),
             defaultRefreshTime: this.defaultRefreshTime,
         });

@@ -61,6 +61,10 @@ export class ProxySemaphore<
             : TimeSpan.fromTimeSpan(this.createSettings.ttl);
     }
 
+    get limit(): number {
+        return this.createSettings.limit;
+    }
+
     async getState(): Promise<ISemaphoreState> {
         return (await this.getSemaphore()).getState();
     }

@@ -19,7 +19,7 @@ import type {
     IRateLimiterPolicy,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { RateLimiterFactorySettingsBase } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/_module.js";
-import type { ErrorPolicy, WaitUntil } from "@/utilities/_module-exports.js";
+import type { ErrorPolicy } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
@@ -117,15 +117,6 @@ export class DatabaseRateLimiterFactoryResolver<
         return new DatabaseRateLimiterFactoryResolver({
             ...this.settings,
             rateLimiterPolicy,
-        });
-    }
-
-    setWaitUntil(
-        waitUntil: WaitUntil,
-    ): DatabaseRateLimiterFactoryResolver<TAdapters> {
-        return new DatabaseRateLimiterFactoryResolver({
-            ...this.settings,
-            waitUntil,
         });
     }
 

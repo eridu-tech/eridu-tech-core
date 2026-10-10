@@ -116,7 +116,7 @@ export class CircuitBreakerFactoryResolver<
         return new CircuitBreakerFactory({
             ...this.settings,
             adapter,
-            serdeTransformerName: adapterName,
+            serializationId: adapterName,
         });
     }
 }

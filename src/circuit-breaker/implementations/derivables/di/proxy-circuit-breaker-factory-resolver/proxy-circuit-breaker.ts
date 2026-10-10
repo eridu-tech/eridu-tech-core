@@ -2,6 +2,9 @@
  * @module CircuitBreaker
  */
 
+import { CIRCUIT_BREAKER_CLASS_TAG } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+
 import type {
     CircuitBreakerFactoryCreateSettings,
     CircuitBreakerState,
@@ -12,14 +15,17 @@ import type {
     DiToken,
     IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
-import type { AsyncLazy } from "@/utilities/_module-exports.js";
+import type {
+    AsyncLazy,
+    InternalSerdeIdentifiable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal
  */
-export class ProxyCircuitBreaker<
-    TAdapters extends string = string,
-> implements ICircuitBreaker {
+export class ProxyCircuitBreaker<TAdapters extends string = string>
+    implements ICircuitBreaker, InternalSerdeIdentifiable
+{
     private circuitBreaker: ICircuitBreaker | null = null;
 
     constructor(
@@ -43,6 +49,18 @@ export class ProxyCircuitBreaker<
                 .create(this.resourceKey, this.createSettings);
         }
         return this.circuitBreaker;
+    }
+
+    internalClassTag(): symbol {
+        return CIRCUIT_BREAKER_CLASS_TAG;
+    }
+
+    async internalSerializationId(): Promise<string> {
+        const circuitBreaker = await this.getCircuitBreaker();
+        if (!isInternalSerdeIdentifiable(circuitBreaker)) {
+            throw new Error("!!__MESSAGE__!!");
+        }
+        return await circuitBreaker.internalSerializationId();
     }
 
     get key(): string {

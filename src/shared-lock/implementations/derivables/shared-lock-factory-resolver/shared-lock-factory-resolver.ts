@@ -101,7 +101,7 @@ export class SharedLockFactoryResolver<
         return new SharedLockFactory({
             ...this.settings,
             adapter,
-            serdeTransformerName: adapterName,
+            serializationId: adapterName,
         });
     }
 }

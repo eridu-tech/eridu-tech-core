@@ -105,9 +105,12 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                 const key = "a";
                 const circuitBreaker = circuitBreakerFactory.create(key);
 
+                const serializedCircuitBreaker =
+                    await serde.serialize(circuitBreaker);
+
                 const deserializedCircuitBreaker =
                     await serde.deserialize<ICircuitBreaker>(
-                        await serde.serialize(circuitBreaker),
+                        serializedCircuitBreaker,
                     );
 
                 await deserializedCircuitBreaker.getState();

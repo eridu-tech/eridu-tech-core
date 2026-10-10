@@ -11,7 +11,7 @@ import {
     CORE,
     defaultWaitUntil,
     resolveOneOrMore,
-    resolveSerdeTransformerName,
+    resolveSerializationId,
 } from "@/utilities/_module-exports.js";
 
 import type {
@@ -88,15 +88,16 @@ export type CircuitBreakerFactorySettingsBase = {
     serde?: OneOrMore<ISerdeRegister>;
 
     /**
-     * The serde transformer name used to identify circuit-breaker serializers and deserializers when there are adapters with the same name.
+     * Optional prefix that scopes this circuit breaker's serde transformer name,
+     * keeping adapters that share a constructor name distinct.
      *
-     * The adapter's constructor name is appended to this value, or used on its own when omitted.
+     * The adapter's constructor name is appended to it, or used on its own when omitted.
      * @default
      * ```ts
      * getConstructorName(adapter)
      * ```
      */
-    serdeTransformerName?: string;
+    serializationId?: string;
 
     /**
      * You can pass the `waitUntil` function to handle background promises.
@@ -140,7 +141,7 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
     private readonly defaultTrigger: CircuitBreakerTrigger;
     private readonly defaultErrorPolicy: ErrorPolicy;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly enableAsyncTracking: boolean;
     private readonly waitUntil: WaitUntil;
 
@@ -152,7 +153,7 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
             defaultTrigger = CIRCUIT_BREAKER_TRIGGER.BOTH,
             defaultErrorPolicy = () => true,
             serde = new SuperJsonSerde(),
-            serdeTransformerName,
+            serializationId,
             waitUntil = defaultWaitUntil,
         } = settings;
 
@@ -163,10 +164,7 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
         this.defaultTrigger = defaultTrigger;
         this.defaultErrorPolicy = defaultErrorPolicy;
         this.serde = serde;
-        this.serdeTransformerName = resolveSerdeTransformerName(
-            serdeTransformerName,
-            adapter,
-        );
+        this.serializationId = resolveSerializationId(serializationId, adapter);
         this.registerToSerde();
     }
 
@@ -178,7 +176,7 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
             slowCallTime: this.defaultSlowCallTime,
             errorPolicy: this.defaultErrorPolicy,
             trigger: this.defaultTrigger,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
@@ -203,7 +201,7 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
             slowCallTime: TimeSpan.fromTimeSpan(slowCallTime),
             errorPolicy,
             trigger,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
     }
 }

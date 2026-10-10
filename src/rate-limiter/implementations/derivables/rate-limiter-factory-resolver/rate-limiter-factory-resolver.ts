@@ -16,7 +16,7 @@ import type {
     IRateLimiterAdapter,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { RateLimiterFactorySettingsBase } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/_module.js";
-import type { ErrorPolicy, WaitUntil } from "@/utilities/_module-exports.js";
+import type { ErrorPolicy } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
@@ -75,13 +75,6 @@ export class RateLimiterFactoryResolver<
         });
     }
 
-    setWaitUntil(waitUntil: WaitUntil): RateLimiterFactoryResolver<TAdapters> {
-        return new RateLimiterFactoryResolver({
-            ...this.settings,
-            waitUntil,
-        });
-    }
-
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): IRateLimiterFactory {
@@ -101,6 +94,7 @@ export class RateLimiterFactoryResolver<
         return new RateLimiterFactory({
             ...this.settings,
             adapter,
+            serializationId: adapterName,
         });
     }
 }

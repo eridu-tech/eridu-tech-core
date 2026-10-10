@@ -620,7 +620,7 @@ describe("class: CircuitBreakerFactory", () => {
             await deserializedCircuitBreaker2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
+        test("Should differentiate between different serializationIds", async () => {
             const serde = new SuperJsonSerde();
             const key = "a";
             const circuitBreakerPolicy = new ConsecutiveBreaker({
@@ -634,7 +634,7 @@ describe("class: CircuitBreakerFactory", () => {
                     circuitBreakerPolicy,
                 }),
                 enableAsyncTracking: false,
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
             const circuitBreaker1 = circuitBreakerFactory1.create(key);
@@ -656,7 +656,7 @@ describe("class: CircuitBreakerFactory", () => {
                     circuitBreakerPolicy,
                 }),
                 enableAsyncTracking: false,
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
             const circuitBreaker2 = circuitBreakerFactory2.create(key);

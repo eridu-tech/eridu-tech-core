@@ -24,6 +24,7 @@ import type {
 import type {
     AsyncLazy,
     ErrorPolicy,
+    InternalSerdeIdentifiable,
     InvocableFn,
     WaitUntil,
 } from "@/utilities/_module-exports.js";
@@ -38,7 +39,7 @@ export type CircuitBreakerSettings = {
     slowCallTime: TimeSpan;
     errorPolicy: ErrorPolicy;
     trigger: CircuitBreakerTrigger;
-    serdeTransformerName: string;
+    serializationId: string;
     waitUntil: WaitUntil;
 };
 
@@ -53,16 +54,23 @@ export type ISerializedCircuitBreaker = {
 /**
  * @internal
  */
-export class CircuitBreaker implements ICircuitBreaker {
+export const CIRCUIT_BREAKER_CLASS_TAG = Symbol("CircuitBreaker");
+
+/**
+ * @internal
+ */
+export class CircuitBreaker
+    implements ICircuitBreaker, InternalSerdeIdentifiable
+{
     /**
      * @internal
      */
     static internalSerialize(
-        deserializedValue: CircuitBreaker,
+        deserializedValue: ICircuitBreaker,
     ): ISerializedCircuitBreaker {
         return {
             version: "1",
-            key: deserializedValue.internalKey,
+            key: deserializedValue.key,
         };
     }
 
@@ -72,7 +80,7 @@ export class CircuitBreaker implements ICircuitBreaker {
     private readonly trigger: CircuitBreakerTrigger;
     private readonly slowCallTime: TimeSpan;
     private readonly adapter: ICircuitBreakerAdapter;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly enableAsyncTracking: boolean;
 
     constructor(settings: CircuitBreakerSettings) {
@@ -83,7 +91,7 @@ export class CircuitBreaker implements ICircuitBreaker {
             trigger,
             adapter,
             slowCallTime,
-            serdeTransformerName,
+            serializationId,
             waitUntil,
         } = settings;
 
@@ -94,11 +102,15 @@ export class CircuitBreaker implements ICircuitBreaker {
         this.trigger = trigger;
         this.adapter = adapter;
         this.slowCallTime = slowCallTime;
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId;
     }
 
-    internalGetSerdeTransformerName(): string {
-        return this.serdeTransformerName;
+    internalClassTag(): symbol {
+        return CIRCUIT_BREAKER_CLASS_TAG;
+    }
+
+    internalSerializationId(): string {
+        return this.serializationId;
     }
 
     get key(): string {

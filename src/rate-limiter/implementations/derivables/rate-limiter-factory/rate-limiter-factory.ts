@@ -7,9 +7,8 @@ import { RateLimiter } from "@/rate-limiter/implementations/derivables/rate-limi
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import {
     CORE,
-    defaultWaitUntil,
     resolveOneOrMore,
-    resolveSerdeTransformerName,
+    resolveSerializationId,
 } from "@/utilities/_module-exports.js";
 
 import type {
@@ -19,11 +18,7 @@ import type {
     RateLimiterFactoryCreateSettings,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
-import type {
-    ErrorPolicy,
-    OneOrMore,
-    WaitUntil,
-} from "@/utilities/_module-exports.js";
+import type { ErrorPolicy, OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `RateLimiterFactory` variants.
@@ -32,6 +27,17 @@ import type {
  * @group Derivables
  */
 export type RateLimiterFactorySettingsBase = {
+    /**
+     * Optional prefix used to scope the serde transformer name for this rate limiter.
+     * This keeps multiple adapters with the same constructor name distinct.
+     *
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
+     */
+    serializationId?: string;
+
     /**
      * You can set the default `ErrorPolicy`
      *
@@ -58,27 +64,6 @@ export type RateLimiterFactorySettingsBase = {
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
-
-    /**
-     * The serde transformer name used to identify rate-limiter serializers and deserializers when there are adapters with the same name.
-     *
-     * The adapter's constructor name is appended to this value, or used on its own when omitted.
-     * @default
-     * ```ts
-     * getConstructorName(adapter)
-     * ```
-     */
-    serdeTransformerName?: string;
-
-    /**
-     * You can pass the `waitUntil` function to handle background promises.
-     * This is required when working with environments like Cloudflare Workers or Vercel Functions to ensure tasks complete after the response is sent.
-     * @default
-     * ```ts
-     * import { defaultWaitUntil } from "eridu-tech/utilities"
-     * ```
-     */
-    waitUntil?: WaitUntil;
 };
 
 /**
@@ -106,8 +91,7 @@ export class RateLimiterFactory implements IRateLimiterFactory {
     private readonly onlyError: boolean;
     private readonly defaultErrorPolicy: ErrorPolicy;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
-    private readonly waitUntil: WaitUntil;
+    private readonly serializationId: string;
 
     constructor(settings: RateLimiterFactorySettings) {
         const {
@@ -115,15 +99,10 @@ export class RateLimiterFactory implements IRateLimiterFactory {
             onlyError = false,
             defaultErrorPolicy = () => true,
             serde = new SuperJsonSerde(),
-            serdeTransformerName,
-            waitUntil = defaultWaitUntil,
+            serializationId,
         } = settings;
 
-        this.waitUntil = waitUntil;
-        this.serdeTransformerName = resolveSerdeTransformerName(
-            serdeTransformerName,
-            adapter,
-        );
+        this.serializationId = resolveSerializationId(serializationId, adapter);
         this.adapter = adapter;
         this.onlyError = onlyError;
         this.defaultErrorPolicy = defaultErrorPolicy;
@@ -133,11 +112,10 @@ export class RateLimiterFactory implements IRateLimiterFactory {
 
     private registerToSerde(): void {
         const transformer = new RateLimiterSerdeTransformer({
-            waitUntil: this.waitUntil,
             adapter: this.adapter,
             onlyError: this.onlyError,
             errorPolicy: this.defaultErrorPolicy,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
@@ -155,12 +133,11 @@ export class RateLimiterFactory implements IRateLimiterFactory {
         } = settings;
         return new RateLimiter({
             limit,
-            waitUntil: this.waitUntil,
             adapter: this.adapter,
             key,
             errorPolicy,
             onlyError,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
     }
 }

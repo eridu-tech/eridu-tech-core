@@ -2,11 +2,17 @@
  * @module Lock
  */
 
-import { Lock } from "@/lock/implementations/derivables/lock-factory/lock.js";
+import {
+    Lock,
+    LOCK_CLASS_TAG,
+} from "@/lock/implementations/derivables/lock-factory/lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { getConstructorName } from "@/utilities/_module-exports.js";
+import {
+    getConstructorName,
+    isInternalSerdeIdentifiable,
+} from "@/utilities/_module-exports.js";
 
-import type { ILockAdapter } from "@/lock/contracts/_module-exports.js";
+import type { ILock, ILockAdapter } from "@/lock/contracts/_module-exports.js";
 import type { ISerializedLock } from "@/lock/implementations/derivables/lock-factory/lock.js";
 import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
 import type { OneOrMore } from "@/utilities/_module-exports.js";
@@ -17,24 +23,24 @@ import type { OneOrMore } from "@/utilities/_module-exports.js";
 export type LockSerdeTransformerSettings = {
     adapter: ILockAdapter;
     defaultRefreshTime: TimeSpan;
-    serdeTransformerName: string;
+    serializationId?: string;
 };
 
 /**
  * @internal
  */
 export class LockSerdeTransformer implements ISerdeTransformer<
-    Lock,
+    ILock,
     ISerializedLock
 > {
     private readonly adapter: ILockAdapter;
     private readonly defaultRefreshTime: TimeSpan;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
 
     constructor(settings: LockSerdeTransformerSettings) {
-        const { adapter, defaultRefreshTime, serdeTransformerName } = settings;
+        const { adapter, defaultRefreshTime, serializationId } = settings;
 
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId ?? "";
         this.adapter = adapter;
         this.defaultRefreshTime = defaultRefreshTime;
     }
@@ -42,23 +48,23 @@ export class LockSerdeTransformer implements ISerdeTransformer<
     get name(): OneOrMore<string> {
         return [
             "lock",
-            this.serdeTransformerName,
+            this.serializationId,
             getConstructorName(this.adapter),
         ].filter((str) => str !== "");
     }
 
-    isApplicable(value: unknown): value is Lock {
-        const isLock =
-            value instanceof Lock && getConstructorName(value) === Lock.name;
-        if (!isLock) {
+    async isApplicable(value: unknown): Promise<boolean> {
+        if (!isInternalSerdeIdentifiable(value)) {
+            return false;
+        }
+        if (value.internalClassTag() !== LOCK_CLASS_TAG) {
             return false;
         }
 
-        const isSerdTransformerNameMathcing =
-            this.serdeTransformerName ===
-            value.internalGetSerdeTransformerName();
+        const isSerlizationIdMathcing =
+            this.serializationId === (await value.internalSerializationId());
 
-        return isSerdTransformerNameMathcing;
+        return isSerlizationIdMathcing;
     }
 
     deserialize(serializedValue: ISerializedLock): Lock {
@@ -68,7 +74,7 @@ export class LockSerdeTransformer implements ISerdeTransformer<
             adapter: this.adapter,
             key,
             lockId,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
             ttl: ttlInMs === null ? null : TimeSpan.fromMilliseconds(ttlInMs),
             defaultRefreshTime: this.defaultRefreshTime,
         });

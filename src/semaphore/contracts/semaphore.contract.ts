@@ -39,6 +39,11 @@ export type ISemaphoreStateMethods = {
      * `null` indicates slots do not expire and must be explicitly released.
      */
     readonly ttl: TimeSpan | null;
+
+    /**
+     * Maximum number of active slots allowed for this semaphore.
+     */
+    readonly limit: number;
 };
 
 /**

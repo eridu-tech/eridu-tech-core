@@ -161,7 +161,7 @@ export class DatabaseCircuitBreakerFactoryResolver<
             adapter: new DatabaseCircuitBreakerAdapter({
                 adapter,
             }),
-            serdeTransformerName: adapterName,
+            serializationId: adapterName,
         });
     }
 }

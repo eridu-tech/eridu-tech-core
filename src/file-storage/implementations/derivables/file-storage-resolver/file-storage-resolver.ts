@@ -109,7 +109,7 @@ export class FileStorageResolver<
         return new FileStorage({
             ...this.settings,
             adapter,
-            serdeTransformerName: adapterName,
+            serializationId: adapterName,
         });
     }
 }

@@ -11,7 +11,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     CORE,
     resolveOneOrMore,
-    resolveSerdeTransformerName,
+    resolveSerializationId,
     callInvocable,
 } from "@/utilities/_module-exports.js";
 
@@ -33,6 +33,17 @@ import type { Invocable, OneOrMore } from "@/utilities/_module-exports.js";
  */
 export type SharedLockFactorySettingsBase = {
     /**
+     * Optional prefix used to scope the serde transformer name for this shared lock factory.
+     * This keeps multiple adapters with the same constructor name distinct.
+     *
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
+     */
+    serializationId?: string;
+
+    /**
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link SharedLockFactory | `SharedLockFactory`} to register the shared lock's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
@@ -42,17 +53,6 @@ export type SharedLockFactorySettingsBase = {
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
-
-    /**
-     * The serde transformer name used to identify shared-lock serializer and deserializer adapters when there are adapters with the same name.
-     *
-     * The adapter's constructor name is appended to this value, or used on its own when omitted.
-     * @default
-     * ```ts
-     * getConstructorName(adapter)
-     * ```
-     */
-    serdeTransformerName?: string;
 
     /**
      * You can pass your own lock id generator function.
@@ -116,7 +116,7 @@ export class SharedLockFactory implements ISharedLockFactory {
     private readonly defaultTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
 
     constructor(settings: SharedLockFactorySettings) {
         const {
@@ -125,7 +125,7 @@ export class SharedLockFactory implements ISharedLockFactory {
             createLockId = () => v4(),
             serde = new SuperJsonSerde(),
             adapter,
-            serdeTransformerName,
+            serializationId,
         } = settings;
 
         this.serde = serde;
@@ -133,10 +133,7 @@ export class SharedLockFactory implements ISharedLockFactory {
         this.creatLockId = createLockId;
         this.defaultTtl =
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
-        this.serdeTransformerName = resolveSerdeTransformerName(
-            serdeTransformerName,
-            adapter,
-        );
+        this.serializationId = resolveSerializationId(serializationId, adapter);
 
         this.adapter = adapter;
         this.registerToSerde();
@@ -146,7 +143,7 @@ export class SharedLockFactory implements ISharedLockFactory {
         const transformer = new SharedLockSerdeTransformer({
             adapter: this.adapter,
             defaultRefreshTime: this.defaultRefreshTime,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
@@ -169,7 +166,7 @@ export class SharedLockFactory implements ISharedLockFactory {
             key,
             lockId,
             ttl: ttl === null ? null : TimeSpan.fromTimeSpan(ttl),
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
             defaultRefreshTime: this.defaultRefreshTime,
         });
     }

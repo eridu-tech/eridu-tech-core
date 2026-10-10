@@ -99,7 +99,7 @@ export class LockFactoryResolver<
         return new LockFactory({
             ...this.settings,
             adapter,
-            serdeTransformerName: adapterName,
+            serializationId: adapterName,
         });
     }
 }

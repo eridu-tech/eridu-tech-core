@@ -483,7 +483,7 @@ describe("class: RateLimiterFactory", () => {
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
+        test("Should differentiate between different serializationIds", async () => {
             const serde = new SuperJsonSerde();
             const key = "a";
             const rateLimiterPolicy = new FixedWindowLimiter({
@@ -495,7 +495,7 @@ describe("class: RateLimiterFactory", () => {
                     adapter: new MemoryRateLimiterStorageAdapter(),
                     rateLimiterPolicy,
                 }),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
             const rateLimiter1 = rateLimiterFactory1.create(key, {
@@ -518,7 +518,7 @@ describe("class: RateLimiterFactory", () => {
                     adapter: new MemoryRateLimiterStorageAdapter(),
                     rateLimiterPolicy,
                 }),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
             const rateLimiter2 = rateLimiterFactory2.create(key, {

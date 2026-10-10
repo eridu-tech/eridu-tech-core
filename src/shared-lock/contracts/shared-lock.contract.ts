@@ -146,6 +146,11 @@ export type ISharedLockStateMethods = {
      * The `ttl` of `ISharedLock` instance.
      */
     readonly ttl: TimeSpan | null;
+
+    /**
+     * Maximum number of active reader slots allowed for this shared lock.
+     */
+    readonly limit: number;
 };
 
 /**

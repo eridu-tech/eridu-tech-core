@@ -287,7 +287,7 @@ describe("class: FileStorage", () => {
 
             expect(result).toBe(true);
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
+        test("Should differentiate between different serializationIds", async () => {
             const serde = new SuperJsonSerde();
             const key = "a";
 
@@ -296,7 +296,7 @@ describe("class: FileStorage", () => {
                     adapter: new MemoryFileStorageAdapter(),
                     urlAdapter: {},
                 }),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
             const lock1 = lockProvider1.create(key);
@@ -308,7 +308,7 @@ describe("class: FileStorage", () => {
                     adapter: new MemoryFileStorageAdapter(),
                     urlAdapter: {},
                 }),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
 

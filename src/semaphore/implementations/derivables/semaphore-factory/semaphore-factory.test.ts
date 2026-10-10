@@ -100,7 +100,7 @@ describe("class: SemaphoreFactory", () => {
 
             expect(result).toBe(true);
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
+        test("Should differentiate between different serializationIds", async () => {
             const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
@@ -108,7 +108,7 @@ describe("class: SemaphoreFactory", () => {
 
             const lockProvider1 = new SemaphoreFactory({
                 adapter: new MemorySemaphoreAdapter(),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
             const lock1 = lockProvider1.create(key, { ttl, limit });
@@ -116,7 +116,7 @@ describe("class: SemaphoreFactory", () => {
 
             const lockProvider2 = new SemaphoreFactory({
                 adapter: new MemorySemaphoreAdapter(),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
 

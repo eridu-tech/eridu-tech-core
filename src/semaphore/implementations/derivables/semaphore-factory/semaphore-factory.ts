@@ -13,7 +13,7 @@ import {
     CORE,
     isPositiveNbr,
     resolveOneOrMore,
-    resolveSerdeTransformerName,
+    resolveSerializationId,
 } from "@/utilities/_module-exports.js";
 
 import type {
@@ -34,6 +34,17 @@ import type { Invocable, OneOrMore } from "@/utilities/_module-exports.js";
  */
 export type SemaphoreFactorySettingsBase = {
     /**
+     * Optional prefix used to scope the serde transformer name for this semaphore factory.
+     * This keeps multiple adapters with the same constructor name distinct.
+     *
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
+     */
+    serializationId?: string;
+
+    /**
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link SemaphoreFactory | `SemaphoreFactory`} to register the semaphore's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
@@ -43,17 +54,6 @@ export type SemaphoreFactorySettingsBase = {
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
-
-    /**
-     * The serde transformer name used to identify semaphore serializer and deserializer adapters when there are adapters with the same name.
-     *
-     * The adapter's constructor name is appended to this value, or used on its own when omitted.
-     * @default
-     * ```ts
-     * getConstructorName(adapter)
-     * ```
-     */
-    serdeTransformerName?: string;
 
     /**
      * You can pass your slot id generator function.
@@ -116,7 +116,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
     private readonly defaultTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly createSlotId: Invocable<[], string>;
 
     constructor(settings: SemaphoreFactorySettings) {
@@ -126,7 +126,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
             defaultRefreshTime = TimeSpan.fromMinutes(5),
             serde = new SuperJsonSerde(),
             adapter,
-            serdeTransformerName,
+            serializationId,
         } = settings;
 
         this.createSlotId = createSlotId;
@@ -134,10 +134,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
         this.defaultRefreshTime = TimeSpan.fromTimeSpan(defaultRefreshTime);
         this.defaultTtl =
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
-        this.serdeTransformerName = resolveSerdeTransformerName(
-            serdeTransformerName,
-            adapter,
-        );
+        this.serializationId = resolveSerializationId(serializationId, adapter);
 
         this.adapter = adapter;
 
@@ -148,7 +145,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
         const transformer = new SemaphoreSerdeTransformer({
             adapter: this.adapter,
             defaultRefreshTime: this.defaultRefreshTime,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
@@ -169,7 +166,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
             adapter: this.adapter,
             key,
             ttl: ttl === null ? null : TimeSpan.fromTimeSpan(ttl),
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
             defaultRefreshTime: this.defaultRefreshTime,
         });
     }

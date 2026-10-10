@@ -2,10 +2,19 @@
  * @module FileStorage
  */
 
-import { File } from "@/file-storage/implementations/derivables/file-storage/file.js";
-import { getConstructorName } from "@/utilities/_module-exports.js";
+import {
+    File,
+    FILE_CLASS_TAG,
+} from "@/file-storage/implementations/derivables/file-storage/file.js";
+import {
+    getConstructorName,
+    isInternalSerdeIdentifiable,
+} from "@/utilities/_module-exports.js";
 
-import type { ISignedFileStorageAdapter } from "@/file-storage/contracts/_module-exports.js";
+import type {
+    IFile,
+    ISignedFileStorageAdapter,
+} from "@/file-storage/contracts/_module-exports.js";
 import type { ISerializedFile } from "@/file-storage/implementations/derivables/file-storage/file.js";
 import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
 import type { OneOrMore } from "@/utilities/_module-exports.js";
@@ -19,18 +28,18 @@ export type FileSerdeTransformerSettings = {
     defaultCacheControl: string | null;
     defaultContentLanguage: string | null;
     adapter: ISignedFileStorageAdapter;
-    serdeTransformerName: string;
+    serializationId?: string;
 };
 
 /**
  * @internal
  */
 export class FileSerdeTransformer implements ISerdeTransformer<
-    File,
+    IFile,
     ISerializedFile
 > {
     private readonly adapter: ISignedFileStorageAdapter;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly defaultContentDisposition: string | null;
     private readonly defaultContentEncoding: string | null;
     private readonly defaultCacheControl: string | null;
@@ -39,7 +48,7 @@ export class FileSerdeTransformer implements ISerdeTransformer<
     constructor(settings: FileSerdeTransformerSettings) {
         const {
             adapter,
-            serdeTransformerName,
+            serializationId,
             defaultCacheControl,
             defaultContentDisposition,
             defaultContentEncoding,
@@ -47,7 +56,7 @@ export class FileSerdeTransformer implements ISerdeTransformer<
         } = settings;
 
         this.adapter = adapter;
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId ?? "";
         this.defaultCacheControl = defaultCacheControl;
         this.defaultContentDisposition = defaultContentDisposition;
         this.defaultContentEncoding = defaultContentEncoding;
@@ -57,23 +66,23 @@ export class FileSerdeTransformer implements ISerdeTransformer<
     get name(): OneOrMore<string> {
         return [
             "file",
-            this.serdeTransformerName,
+            this.serializationId,
             getConstructorName(this.adapter),
         ].filter((str) => str !== "");
     }
 
-    isApplicable(value: unknown): value is File {
-        const isFile =
-            value instanceof File && getConstructorName(value) === File.name;
-        if (!isFile) {
+    async isApplicable(value: unknown): Promise<boolean> {
+        if (!isInternalSerdeIdentifiable(value)) {
+            return false;
+        }
+        if (value.internalClassTag() !== FILE_CLASS_TAG) {
             return false;
         }
 
-        const isSerdTransformerNameMathcing =
-            this.serdeTransformerName ===
-            value.internalGetSerdeTransformerName();
+        const isSerlizationIdMathcing =
+            this.serializationId === (await value.internalSerializationId());
 
-        return isSerdTransformerNameMathcing;
+        return isSerlizationIdMathcing;
     }
 
     deserialize(serializedValue: ISerializedFile): File {
@@ -87,7 +96,7 @@ export class FileSerdeTransformer implements ISerdeTransformer<
             defaultContentLanguage: this.defaultContentLanguage,
             adapter: this.adapter,
             key,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
     }
 

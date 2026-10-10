@@ -99,14 +99,14 @@ describe("class: LockFactory", () => {
 
             expect(result).toBe(true);
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
+        test("Should differentiate between different serializationIds", async () => {
             const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
 
             const lockFactory1 = new LockFactory({
                 adapter: new MemoryLockAdapter(),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
             const lock1 = lockFactory1.create(key, { ttl });
@@ -114,7 +114,7 @@ describe("class: LockFactory", () => {
 
             const lockFactory2 = new LockFactory({
                 adapter: new MemoryLockAdapter(),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
 

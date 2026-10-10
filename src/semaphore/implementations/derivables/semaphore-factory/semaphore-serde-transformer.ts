@@ -2,11 +2,20 @@
  * @module Semaphore
  */
 
-import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
+import {
+    Semaphore,
+    SEMAPHORE_CLASS_TAG,
+} from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { getConstructorName } from "@/utilities/_module-exports.js";
+import {
+    getConstructorName,
+    isInternalSerdeIdentifiable,
+} from "@/utilities/_module-exports.js";
 
-import type { ISemaphoreAdapter } from "@/semaphore/contracts/_module-exports.js";
+import type {
+    ISemaphore,
+    ISemaphoreAdapter,
+} from "@/semaphore/contracts/_module-exports.js";
 import type { ISerializedSemaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
 import type { OneOrMore } from "@/utilities/_module-exports.js";
@@ -17,24 +26,24 @@ import type { OneOrMore } from "@/utilities/_module-exports.js";
 export type SemaphoreSerdeTransformerSettings = {
     adapter: ISemaphoreAdapter;
     defaultRefreshTime: TimeSpan;
-    serdeTransformerName: string;
+    serializationId?: string;
 };
 
 /**
  * @internal
  */
 export class SemaphoreSerdeTransformer implements ISerdeTransformer<
-    Semaphore,
+    ISemaphore,
     ISerializedSemaphore
 > {
     private readonly adapter: ISemaphoreAdapter;
     private readonly defaultRefreshTime: TimeSpan;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
 
     constructor(settings: SemaphoreSerdeTransformerSettings) {
-        const { adapter, defaultRefreshTime, serdeTransformerName } = settings;
+        const { adapter, defaultRefreshTime, serializationId } = settings;
 
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId ?? "";
         this.adapter = adapter;
         this.defaultRefreshTime = defaultRefreshTime;
     }
@@ -42,24 +51,23 @@ export class SemaphoreSerdeTransformer implements ISerdeTransformer<
     get name(): OneOrMore<string> {
         return [
             "semaphore",
-            this.serdeTransformerName,
+            this.serializationId,
             getConstructorName(this.adapter),
         ].filter((str) => str !== "");
     }
 
-    isApplicable(value: unknown): value is Semaphore {
-        const isSemaphore =
-            value instanceof Semaphore &&
-            getConstructorName(value) === Semaphore.name;
-        if (!isSemaphore) {
+    async isApplicable(value: unknown): Promise<boolean> {
+        if (!isInternalSerdeIdentifiable(value)) {
+            return false;
+        }
+        if (value.internalClassTag() !== SEMAPHORE_CLASS_TAG) {
             return false;
         }
 
-        const isSerdTransformerNameMathcing =
-            value.internalGetSerdeTransformerName() ===
-            this.serdeTransformerName;
+        const isSerlizationIdMathcing =
+            this.serializationId === (await value.internalSerializationId());
 
-        return isSerdTransformerNameMathcing;
+        return isSerlizationIdMathcing;
     }
 
     deserialize(serializedValue: ISerializedSemaphore): Semaphore {
@@ -69,7 +77,7 @@ export class SemaphoreSerdeTransformer implements ISerdeTransformer<
             adapter: this.adapter,
             key,
             limit,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
             ttl: ttlInMs === null ? null : TimeSpan.fromMilliseconds(ttlInMs),
             defaultRefreshTime: this.defaultRefreshTime,
         });

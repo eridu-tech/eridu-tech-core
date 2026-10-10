@@ -98,7 +98,7 @@ describe("class: SharedLockFactory", () => {
 
             expect(result).toBe(true);
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
+        test("Should differentiate between different serializationIds", async () => {
             const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
@@ -106,7 +106,7 @@ describe("class: SharedLockFactory", () => {
 
             const sharedLockFactory1 = new SharedLockFactory({
                 adapter: new MemorySharedLockAdapter(),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
             const lock1 = sharedLockFactory1.create(key, { ttl, limit });
@@ -114,7 +114,7 @@ describe("class: SharedLockFactory", () => {
 
             const sharedLockFactory2 = new SharedLockFactory({
                 adapter: new MemorySharedLockAdapter(),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
 

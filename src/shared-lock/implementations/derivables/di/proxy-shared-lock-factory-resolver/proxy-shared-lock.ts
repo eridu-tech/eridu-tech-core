@@ -61,6 +61,10 @@ export class ProxySharedLock<
             : TimeSpan.fromTimeSpan(this.createSettings.ttl);
     }
 
+    get limit(): number {
+        return this.limit;
+    }
+
     async getState(): Promise<ISharedLockState> {
         return (await this.getSharedLock()).getState();
     }

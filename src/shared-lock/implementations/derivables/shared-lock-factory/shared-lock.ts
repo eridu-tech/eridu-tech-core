@@ -28,7 +28,11 @@ import type {
     ISharedLockState,
 } from "@/shared-lock/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { AsyncLazy, Option } from "@/utilities/_module-exports.js";
+import type {
+    AsyncLazy,
+    InternalSerdeIdentifiable,
+    Option,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -46,7 +50,7 @@ export type ISerializedSharedLock = {
  */
 export type SharedLockSettings = {
     key: string;
-    serdeTransformerName: string;
+    serializationId?: string;
     adapter: ISharedLockAdapter;
     limit: number;
     lockId: string;
@@ -57,19 +61,24 @@ export type SharedLockSettings = {
 /**
  * @internal
  */
-export class SharedLock implements ISharedLock {
+export const SHARED_LOCK_CLASS_TAG = Symbol("SharedLock");
+
+/**
+ * @internal
+ */
+export class SharedLock implements ISharedLock, InternalSerdeIdentifiable {
     /**
      * @internal
      */
     static internalSerialize(
-        deserializedValue: SharedLock,
+        deserializedValue: ISharedLock,
     ): ISerializedSharedLock {
         return {
             version: "1",
-            key: deserializedValue.internalKey,
+            key: deserializedValue.key,
             limit: deserializedValue.limit,
-            lockId: deserializedValue.lockId,
-            ttlInMs: deserializedValue.internalTtl?.toMilliseconds() ?? null,
+            lockId: deserializedValue.id,
+            ttlInMs: deserializedValue.ttl?.toMilliseconds() ?? null,
         };
     }
 
@@ -78,31 +87,35 @@ export class SharedLock implements ISharedLock {
     private readonly lockId: string;
     private internalTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
-    private readonly serdeTransformerName: string;
-    private readonly limit: number;
+    private readonly serializationId: string;
+    private readonly internalLimit: number;
 
     constructor(settings: SharedLockSettings) {
         const {
             adapter,
             lockId,
             ttl,
-            serdeTransformerName,
+            serializationId,
             defaultRefreshTime,
             limit,
             key,
         } = settings;
 
         this.internalKey = key;
-        this.limit = limit;
-        this.serdeTransformerName = serdeTransformerName;
+        this.internalLimit = limit;
+        this.serializationId = serializationId ?? "";
         this.adapter = adapter;
         this.lockId = lockId;
         this.internalTtl = ttl;
         this.defaultRefreshTime = defaultRefreshTime;
     }
 
-    internalGetSerdeTransformerName(): string {
-        return this.serdeTransformerName;
+    internalClassTag(): symbol {
+        return SHARED_LOCK_CLASS_TAG;
+    }
+
+    internalSerializationId(): string {
+        return this.serializationId;
     }
 
     async runReaderOrFail<TValue = void>(
@@ -120,7 +133,7 @@ export class SharedLock implements ISharedLock {
         return await this.adapter.acquireReader({
             key: this.internalKey,
             lockId: this.lockId,
-            limit: this.limit,
+            limit: this.internalLimit,
             ttl: this.internalTtl?.toEndDate() ?? null,
         });
     }
@@ -244,6 +257,10 @@ export class SharedLock implements ISharedLock {
 
     get ttl(): TimeSpan | null {
         return this.internalTtl;
+    }
+
+    get limit(): number {
+        return this.internalLimit;
     }
 
     async forceRelease(): Promise<boolean> {

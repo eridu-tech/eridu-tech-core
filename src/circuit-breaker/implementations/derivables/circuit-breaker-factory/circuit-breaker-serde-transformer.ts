@@ -2,11 +2,15 @@
  * @module CircuitBreaker
  */
 
-import { CircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
-import { getConstructorName } from "@/utilities/_module-exports.js";
+import {
+    CIRCUIT_BREAKER_CLASS_TAG,
+    CircuitBreaker,
+} from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
+import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 import type {
     CircuitBreakerTrigger,
+    ICircuitBreaker,
     ICircuitBreakerAdapter,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import type { ISerializedCircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
@@ -26,7 +30,7 @@ export type CircuitBreakerSerdeTransformerSettings = {
     slowCallTime: TimeSpan;
     errorPolicy: ErrorPolicy;
     trigger: CircuitBreakerTrigger;
-    serdeTransformerName: string;
+    serializationId: string;
     enableAsyncTracking: boolean;
     waitUntil: WaitUntil;
 };
@@ -35,14 +39,14 @@ export type CircuitBreakerSerdeTransformerSettings = {
  * @internal
  */
 export class CircuitBreakerSerdeTransformer implements ISerdeTransformer<
-    CircuitBreaker,
+    ICircuitBreaker,
     ISerializedCircuitBreaker
 > {
     private readonly adapter: ICircuitBreakerAdapter;
     private readonly slowCallTime: TimeSpan;
     private readonly errorPolicy: ErrorPolicy;
     private readonly trigger: CircuitBreakerTrigger;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly enableAsyncTracking: boolean;
     private readonly waitUntil: WaitUntil;
 
@@ -52,7 +56,7 @@ export class CircuitBreakerSerdeTransformer implements ISerdeTransformer<
             slowCallTime,
             errorPolicy,
             trigger,
-            serdeTransformerName,
+            serializationId,
             enableAsyncTracking,
             waitUntil,
         } = settings;
@@ -63,30 +67,27 @@ export class CircuitBreakerSerdeTransformer implements ISerdeTransformer<
         this.slowCallTime = slowCallTime;
         this.errorPolicy = errorPolicy;
         this.trigger = trigger;
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId;
     }
 
     get name(): OneOrMore<string> {
-        return [
-            "circuitBreaker",
-            this.serdeTransformerName,
-            getConstructorName(this.adapter),
-        ].filter((str) => str !== "");
+        return ["circuitBreaker", this.serializationId].filter(
+            (str) => str !== "",
+        );
     }
 
-    isApplicable(value: unknown): value is CircuitBreaker {
-        const isCircuitBreaker =
-            value instanceof CircuitBreaker &&
-            getConstructorName(value) === CircuitBreaker.name;
-        if (!isCircuitBreaker) {
+    async isApplicable(value: unknown): Promise<boolean> {
+        if (!isInternalSerdeIdentifiable(value)) {
+            return false;
+        }
+        if (value.internalClassTag() !== CIRCUIT_BREAKER_CLASS_TAG) {
             return false;
         }
 
-        const isSerdTransformerNameMathcing =
-            this.serdeTransformerName ===
-            value.internalGetSerdeTransformerName();
+        const isSerlizationIdMathcing =
+            this.serializationId === (await value.internalSerializationId());
 
-        return isSerdTransformerNameMathcing;
+        return isSerlizationIdMathcing;
     }
 
     deserialize(serializedValue: ISerializedCircuitBreaker): CircuitBreaker {
@@ -100,7 +101,7 @@ export class CircuitBreakerSerdeTransformer implements ISerdeTransformer<
             slowCallTime: this.slowCallTime,
             errorPolicy: this.errorPolicy,
             trigger: this.trigger,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
     }
 
