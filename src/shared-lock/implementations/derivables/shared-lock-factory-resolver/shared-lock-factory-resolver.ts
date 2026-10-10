@@ -45,8 +45,6 @@ export type SharedLockFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
- * The `SharedLockFactoryResolver` class is immutable.
- *
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
  * @group Derivables
  */

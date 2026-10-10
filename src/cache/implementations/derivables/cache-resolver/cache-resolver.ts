@@ -47,8 +47,6 @@ export type CacheResolverSettings<
 };
 
 /**
- * The `CacheResolver` class is immutable.
- *
  * IMPORT_PATH: `"eridu-tech/cache"`
  * @group Derivables
  */

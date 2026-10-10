@@ -47,8 +47,6 @@ export type CircuitBreakerFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
- * The `CircuitBreakerFactoryResolver` class is immutable.
- *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
  * @group Derivables
  */

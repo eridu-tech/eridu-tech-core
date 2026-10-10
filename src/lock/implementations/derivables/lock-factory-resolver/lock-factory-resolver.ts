@@ -44,8 +44,6 @@ export type LockFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
- * The `LockFactoryResolver` class is immutable.
- *
  * IMPORT_PATH: `"eridu-tech/lock"`
  * @group Derivables
  */

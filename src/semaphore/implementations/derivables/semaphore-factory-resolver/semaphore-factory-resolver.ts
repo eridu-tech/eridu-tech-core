@@ -44,8 +44,6 @@ export type SemaphoreFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
- * The `SemaphoreFactoryResolver` class is immutable.
- *
  * IMPORT_PATH: `"eridu-tech/semaphore"`
  * @group Derivables
  */

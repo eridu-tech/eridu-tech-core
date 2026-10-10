@@ -47,8 +47,6 @@ export type RateLimiterFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
- * The `RateLimiterFactoryResolver` class is immutable.
- *
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
  * @group Derivables
  */
