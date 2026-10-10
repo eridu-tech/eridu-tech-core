@@ -52,6 +52,9 @@ describe("class: ProxyCacheResolver", () => {
                         defaultAdapter: "adapter1",
                     });
                 },
+                onInit: async (factory) => {
+                    await factory.init();
+                },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
             });
@@ -111,14 +114,16 @@ describe("class: ProxyCacheResolver", () => {
 
             container.registerFactory({
                 token: CacheResolver,
-                factory: () => {
-                    return new CacheResolver<Adapters>({
+                factory: async () => {
+                    const factory = new CacheResolver<Adapters>({
                         adapters: {
                             adapter1,
                             adapter2,
                         },
                         defaultAdapter: "adapter1",
                     });
+                    await factory.init();
+                    return factory;
                 },
                 deps: {},
                 lifetime: LIFETIME.TRANSIENT,
@@ -179,14 +184,16 @@ describe("class: ProxyCacheResolver", () => {
 
             container.registerFactory({
                 token: CacheResolver,
-                factory: () => {
-                    return new CacheResolver<Adapters>({
+                factory: async () => {
+                    const factory = new CacheResolver<Adapters>({
                         adapters: {
                             adapter1,
                             adapter2,
                         },
                         defaultAdapter: "adapter1",
                     });
+                    await factory.init();
+                    return factory;
                 },
                 deps: {},
                 lifetime: LIFETIME.SCOPED,
@@ -198,6 +205,7 @@ describe("class: ProxyCacheResolver", () => {
 
             await container.init();
         });
+
         test("Default adapter:", async () => {
             const key = "a";
             await container.run({
