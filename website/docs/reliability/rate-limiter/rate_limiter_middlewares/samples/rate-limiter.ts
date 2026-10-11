@@ -13,3 +13,5 @@ export const rateLimiterFactoryResolver = new RateLimiterFactoryResolver({
     },
     defaultAdapter: "storage1",
 });
+
+await rateLimiterFactoryResolver.init();

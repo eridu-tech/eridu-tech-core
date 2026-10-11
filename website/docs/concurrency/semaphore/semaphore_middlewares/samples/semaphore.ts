@@ -8,3 +8,5 @@ export const semaphoreFactoryResolver = new SemaphoreFactoryResolver({
     },
     defaultAdapter: "storage1",
 });
+
+await semaphoreFactoryResolver.init();

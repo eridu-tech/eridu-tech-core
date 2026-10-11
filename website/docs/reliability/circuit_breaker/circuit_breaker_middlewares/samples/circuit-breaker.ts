@@ -13,3 +13,5 @@ export const circuitBreakerFactoryResolver = new CircuitBreakerFactoryResolver({
     },
     defaultAdapter: "storage1",
 });
+
+await circuitBreakerFactoryResolver.init();

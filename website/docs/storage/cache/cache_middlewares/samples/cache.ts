@@ -9,4 +9,6 @@ export const cacheResolver = new CacheResolver({
     defaultAdapter: "storage1",
 });
 
+await cacheResolver.init();
+
 export const cache = cacheResolver.use();

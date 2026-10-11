@@ -20,7 +20,7 @@ Transaction-context middlewares wrap functions to run them within a transaction 
 
 ## Initial configuration
 
-To begin using the transaction middlewares, you'll need to create and configure a `TransactionContext` instance:
+To begin using the transaction middlewares, create and configure a `TransactionContextResolver`:
 
 ```ts file=./samples/transaction-context.ts
 
@@ -28,7 +28,7 @@ To begin using the transaction middlewares, you'll need to create and configure 
 
 ## withTransactionFactory middleware {#with_transaction_factory_middleware}
 
-The transaction middleware intercepts function calls and runs them inside a transaction. When the wrapped function is invoked, the middleware delegates to `transactionContext.run()` with the requested propagation mode, so the wrapped function executes within a transaction scope — joining, starting, or forbidding one depending on the mode.
+The transaction middleware intercepts function calls and runs them inside a transaction. When the wrapped function is invoked, the middleware delegates to the selected transaction context's `run()` method with the requested propagation mode, so the wrapped function executes within a transaction scope — joining, starting, or forbidding one depending on the mode.
 
 The propagation mode defaults to `REQUIRED`: the wrapped function joins an existing transaction when one is active and starts a new one otherwise.
 
@@ -37,6 +37,8 @@ The propagation mode defaults to `REQUIRED`: the wrapped function joins an exist
 ```ts file=./samples/with-transaction.ts
 
 ```
+
+Calling `withTransaction()` uses the transaction resolver's default adapter (`primary` in this example). Use `withTransaction.use("secondary")()` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withTransactionFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/TransactionContext.withTransactionFactory.html) function.
