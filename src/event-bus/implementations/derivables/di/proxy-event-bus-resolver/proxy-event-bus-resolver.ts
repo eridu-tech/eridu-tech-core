@@ -58,9 +58,7 @@ export class ProxyEventBusResolver<
         IEventBusResolver<TAdapters, TEventMap>
     >;
 
-    constructor(
-        settings: EventBusResolverSettings<TAdapters, TEventMap>,
-    ) {
+    constructor(settings: EventBusResolverSettings<TAdapters, TEventMap>) {
         this.container = settings.container;
         this.resolverToken = settings.resolverToken;
     }

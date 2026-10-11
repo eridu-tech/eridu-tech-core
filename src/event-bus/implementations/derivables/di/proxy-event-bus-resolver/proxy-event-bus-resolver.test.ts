@@ -88,7 +88,6 @@ describe("class: ProxyEventBusResolver", () => {
             );
             expect(dispatch2).not.toHaveBeenCalled();
         });
-
         test("Adapter 1:", async () => {
             await container.init();
 
@@ -101,7 +100,6 @@ describe("class: ProxyEventBusResolver", () => {
             );
             expect(dispatch2).not.toHaveBeenCalled();
         });
-
         test("Adapter 2:", async () => {
             await container.init();
 
@@ -114,21 +112,28 @@ describe("class: ProxyEventBusResolver", () => {
             );
             expect(dispatch1).not.toHaveBeenCalled();
         });
-
         test("Registers listeners before the application starts:", async () => {
             const listener = vi.fn();
             await eventBus.addListener("userCreated", listener);
             await container.init();
 
-            const event = { userId: "user-2" };
-            await eventBus.use("adapter2").dispatch("userCreated", event);
+            const event1 = { userId: "user-1" };
+            await eventBus.use("adapter1").dispatch("userCreated", event1);
 
             expect(listener).toHaveBeenCalledExactlyOnceWith({
-                ...event,
+                ...event1,
+                type: "userCreated",
+            });
+
+            const event2 = { userId: "user-2" };
+            await eventBus.use("adapter2").dispatch("userCreated", event2);
+
+            expect(listener).toHaveBeenCalledTimes(2);
+            expect(listener).toHaveBeenCalledWith({
+                ...event1,
                 type: "userCreated",
             });
         });
-
         test("Throws when registering a listener after the application starts:", async () => {
             await container.init();
 
