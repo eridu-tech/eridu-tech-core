@@ -3,7 +3,9 @@ import { TRANSACTION_PROPAGATION } from "eridu-tech/transaction-context/contract
 import { withTransactionFactory } from "eridu-tech/transaction-context/middlewares";
 import { transactionContext } from "./transaction-context.js";
 
-const withTransaction = withTransactionFactory(transactionContext);
+const withTransaction = withTransactionFactory({
+    use: () => transactionContext,
+});
 
 const createUser = async (userId: string, name: string): Promise<string> => {
     await transactionContext.current
@@ -19,7 +21,9 @@ const createUserInTransaction = use(createUser, withTransaction());
 // Runs the wrapped function inside the existing transaction
 const createUserInExistingTransaction = use(
     createUser,
-    withTransaction(TRANSACTION_PROPAGATION.MANDATORY),
+    withTransaction({
+        propagation: TRANSACTION_PROPAGATION.MANDATORY,
+    }),
 );
 
 await createUserInTransaction("1", "Jose");

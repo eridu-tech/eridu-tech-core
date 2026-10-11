@@ -44,16 +44,6 @@ Note that if you dont set a default adapter, an error will be thrown.
 Note that if you specify a non-existent adapter, an error will be thrown.
 :::
 
-### 3. Overriding default settings
-
-```ts file=./samples/file-storage-resolver-override-settings.ts
-
-```
-
-:::info
-Note that the `FileStorageResolver` is immutable, meaning any configuration override returns a new instance rather than modifying the existing one.
-:::
-
 ## Further information
 
 For further information refer to [`eridu-tech/file-storage`](https://eridu-tech.github.io/eridu-tech-core/modules/file-storage.html) API docs.

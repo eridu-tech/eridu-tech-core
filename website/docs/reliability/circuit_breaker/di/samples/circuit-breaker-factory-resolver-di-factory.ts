@@ -1,6 +1,6 @@
 import { CircuitBreakerFactoryResolver } from "eridu-tech/circuit-breaker";
 import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
-import { circuitBreakerFactoryResolverDiFactory } from "eridu-tech/circuit-breaker/di";
+import { ProxyCircuitBreakerFactoryResolver } from "eridu-tech/circuit-breaker/di";
 import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storage-adapter";
 import { Container } from "eridu-tech/di";
 import { ExecutionContext } from "eridu-tech/execution-context";
@@ -24,6 +24,8 @@ const circuitBreakerFactoryResolver =
         defaultAdapter: "storage1",
     });
 
+await circuitBreakerFactoryResolver.init();
+
 container.registerValue({
     token: CircuitBreakerFactoryResolver,
     value: circuitBreakerFactoryResolver,
@@ -31,9 +33,9 @@ container.registerValue({
 
 // Create the proxy before container.init()
 export const circuitBreakerFactory =
-    circuitBreakerFactoryResolverDiFactory<Adapters>(
+    new ProxyCircuitBreakerFactoryResolver<Adapters>({
         container,
-        CircuitBreakerFactoryResolver,
-    );
+        resolverToken: CircuitBreakerFactoryResolver,
+    });
 
 await container.init();

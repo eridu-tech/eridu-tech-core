@@ -11,3 +11,5 @@ export const lockFactoryResolver = new LockFactoryResolver({
     // You can set an optional default adapter
     defaultAdapter: "memory",
 });
+
+await lockFactoryResolver.init();

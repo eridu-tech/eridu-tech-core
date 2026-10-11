@@ -9,3 +9,5 @@ export const circuitBreakerFactory = new CircuitBreakerFactory({
         adapter: new MemoryCircuitBreakerStorageAdapter(),
     }),
 });
+
+await circuitBreakerFactory.init();

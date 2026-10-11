@@ -1,14 +1,13 @@
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { TimeSpan } from "eridu-tech/time-span";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 
 serde.registerCustom(TimeSpan.serdeTransformer);
 
 const timeSpan = TimeSpan.fromSeconds(12);
-const serializedTimeSpan = serde.serialize(timeSpan);
-const deserializedTimeSpan = serde.deserialize(serializedTimeSpan);
+const serializedTimeSpan = await serde.serialize(timeSpan);
+const deserializedTimeSpan = await serde.deserialize(serializedTimeSpan);
 
 // logs false
 console.log(serializedTimeSpan === deserializedTimeSpan);

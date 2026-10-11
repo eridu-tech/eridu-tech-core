@@ -16,6 +16,8 @@ keywords:
 
 # TransactionContext middlewares
 
+Transaction-context middlewares wrap functions to run them within a transaction or defer them until a transaction commits. They let you apply transaction behavior without adding it to the function implementation.
+
 ## Initial configuration
 
 To begin using the transaction middlewares, you'll need to create and configure a `TransactionContext` instance:
@@ -24,7 +26,7 @@ To begin using the transaction middlewares, you'll need to create and configure 
 
 ```
 
-## withTransactionFactory middleware
+## withTransactionFactory middleware {#with_transaction_factory_middleware}
 
 The transaction middleware intercepts function calls and runs them inside a transaction. When the wrapped function is invoked, the middleware delegates to `transactionContext.run()` with the requested propagation mode, so the wrapped function executes within a transaction scope — joining, starting, or forbidding one depending on the mode.
 
@@ -40,11 +42,13 @@ The propagation mode defaults to `REQUIRED`: the wrapped function joins an exist
 Here is a complete list of settings for the [`withTransactionFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/TransactionContext.withTransactionFactory.html) function.
 :::
 
-## withAfterCommitFactory middleware
+## withAfterCommitFactory middleware {#with_after_commit_factory_middleware}
 
 The after-commit middleware intercepts function calls and registers them to run once the active transaction commits. When the wrapped function is invoked, the middleware delegates to `transactionContext.afterCommit()`, so the wrapped function is registered as an after-commit invocable instead of running immediately. This is useful for side effects that must not happen when the transaction is rolled back, such as sending emails or publishing events.
 
 When no transaction is active, the wrapped function runs immediately, unless `runIfNoTransaction` is `false`, in which case it is discarded.
+
+When using a `TransactionContextResolver`, `afterCommit` can be called within a transaction started by any configured adapter, for example `resolver.use("primary").run(callback)` or `resolver.use("secondary").run(callback)`. The hook runs after the active transaction commits.
 
 ### Usage
 

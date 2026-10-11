@@ -44,16 +44,6 @@ Note that if you dont set a default adapter, an error will be thrown.
 Note that if you specify a non-existent adapter, an error will be thrown.
 :::
 
-### 3. Overriding default settings
-
-```ts file=./samples/shared-lock-factory-resolver-override-settings.ts
-
-```
-
-:::info
-Note that the `SharedLockFactoryResolver` is immutable, meaning any configuration override returns a new instance rather than modifying the existing one.
-:::
-
 ## Further information
 
 For further information refer to [`eridu-tech/shared-lock`](https://eridu-tech.github.io/eridu-tech-core/modules/SharedLock.html) API docs.

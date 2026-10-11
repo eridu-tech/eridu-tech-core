@@ -44,24 +44,6 @@ Note that if you dont set a default adapter, an error will be thrown.
 Note that if you specify a non-existent adapter, an error will be thrown.
 :::
 
-### 3. Overriding default settings
-
-The `CacheResolver` provides chainable methods to override the base configuration per-use:
-
-```ts file=./samples/cache-resolver-override-settings.ts
-
-```
-
-You can also change the type parameter for compile-time type safety:
-
-```ts file=./samples/cache-resolver-set-type.ts
-
-```
-
-:::info
-Note that the `CacheResolver` is immutable, meaning any configuration override returns a new instance rather than modifying the existing one.
-:::
-
 ## Further information
 
 For further information refer to [`eridu-tech/cache`](https://eridu-tech.github.io/eridu-tech-core/modules/Cache.html) API docs.

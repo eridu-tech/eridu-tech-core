@@ -10,3 +10,5 @@ export const sharedLockFactory = new SharedLockFactory({
     // You can choose the adapter to use
     adapter: new MemorySharedLockAdapter(),
 });
+
+await sharedLockFactory.init();

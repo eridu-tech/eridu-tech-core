@@ -1,4 +1,3 @@
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
-export const serde = new Serde(new SuperJsonSerdeAdapter());
+export const serde = new SuperJsonSerde();

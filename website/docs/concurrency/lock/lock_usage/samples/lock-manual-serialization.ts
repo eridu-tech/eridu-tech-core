@@ -1,10 +1,9 @@
 import { Redis } from "ioredis";
 import { RedisLockAdapter } from "eridu-tech/lock/redis-lock-adapter";
 import { LockFactory } from "eridu-tech/lock";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 
 const redisClient = new Redis("YOUR_REDIS_CONNECTION");
 
@@ -15,5 +14,5 @@ const lockFactory = new LockFactory({
 });
 
 const lock = lockFactory.create("resource");
-const serializedLock = serde.serialize(lock);
-const deserializedLock = serde.deserialize(serializedLock);
+const serializedLock = await serde.serialize(lock);
+const deserializedLock = await serde.deserialize(serializedLock);

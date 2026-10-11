@@ -1,10 +1,9 @@
 import { Redis } from "ioredis";
 import { RedisSemaphoreAdapter } from "eridu-tech/semaphore/redis-semaphore-adapter";
 import { SemaphoreFactory } from "eridu-tech/semaphore";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 
 const redisClient = new Redis("YOUR_REDIS_CONNECTION");
 
@@ -17,5 +16,5 @@ const semaphoreFactory = new SemaphoreFactory({
 const semaphore = semaphoreFactory.create("resource", {
     limit: 2,
 });
-const serializedSemaphore = serde.serialize(semaphore);
-const deserializedSemaphore = serde.deserialize(serializedSemaphore);
+const serializedSemaphore = await serde.serialize(semaphore);
+const deserializedSemaphore = await serde.deserialize(serializedSemaphore);

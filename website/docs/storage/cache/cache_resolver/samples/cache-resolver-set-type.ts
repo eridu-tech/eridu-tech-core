@@ -1,6 +1,6 @@
 import { cacheResolver } from "./cache-resolver-initial-config.js";
 
-await cacheResolver
-    .setType<string>()
-    .use("redis")
-    .add("user/jose@gmail.com", "some-string-value");
+await cacheResolver.use("redis").add("user/jose@gmail.com", {
+    name: "Jose",
+    age: 20,
+});

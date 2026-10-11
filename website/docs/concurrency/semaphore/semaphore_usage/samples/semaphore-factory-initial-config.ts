@@ -10,3 +10,5 @@ export const semaphoreFactory = new SemaphoreFactory({
     // You can choose the adapter to use
     adapter: new MemorySemaphoreAdapter(),
 });
+
+await semaphoreFactory.init();

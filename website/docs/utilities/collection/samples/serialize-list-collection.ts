@@ -1,15 +1,14 @@
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { ListCollection, IterableCollection } from "eridu-tech/collection";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 
 serde.registerCustom(ListCollection.serdeTransformer);
 serde.registerCustom(IterableCollection.serdeTransformer);
 
 const listCollection = new ListCollection([1, 2, 3, 4, 5]);
-const serializedListCollection = serde.serialize(listCollection);
-const deserializedListCollection = serde.deserialize<ListCollection>(
+const serializedListCollection = await serde.serialize(listCollection);
+const deserializedListCollection = await serde.deserialize<ListCollection>(
     serializedListCollection,
 );
 

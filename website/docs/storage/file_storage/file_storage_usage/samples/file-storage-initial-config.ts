@@ -9,3 +9,5 @@ export const fileStorage = new FileStorage({
         urlAdapter: {},
     }),
 });
+
+await fileStorage.init();
