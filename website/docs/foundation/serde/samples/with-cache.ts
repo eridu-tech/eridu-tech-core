@@ -1,12 +1,11 @@
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { RedisCacheAdapter } from "eridu-tech/cache/redis-cache-adapter";
 import { Cache } from "eridu-tech/cache";
 import { ListCollection } from "eridu-tech/collection";
 import type { ICollection } from "eridu-tech/collection/contracts";
 import { Redis } from "ioredis";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 serde.registerCustom(ListCollection.serdeTransformer);
 
 const cache = new Cache<ICollection<string>>({
