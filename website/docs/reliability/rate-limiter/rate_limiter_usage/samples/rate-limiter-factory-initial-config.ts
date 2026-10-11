@@ -9,3 +9,5 @@ export const rateLimiterFactory = new RateLimiterFactory({
         adapter: new MemoryRateLimiterStorageAdapter(),
     }),
 });
+
+await rateLimiterFactory.init();
