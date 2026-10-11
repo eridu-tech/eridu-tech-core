@@ -11,3 +11,5 @@ export const sharedLockFactoryResolver = new SharedLockFactoryResolver({
     // You can set an optional default adapter
     defaultAdapter: "memory",
 });
+
+await sharedLockFactoryResolver.init();
