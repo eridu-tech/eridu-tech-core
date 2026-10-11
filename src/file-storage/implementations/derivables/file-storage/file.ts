@@ -22,6 +22,7 @@ import type {
     WritableFileContent,
     FileUploadUrlOptions,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { InternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -30,7 +31,7 @@ export type FileSettings = {
     originalKey: string;
     adapter: ISignedFileStorageAdapter;
     key: string;
-    serdeTransformerName: string;
+    serializationId?: string;
     defaultContentDisposition: string | null;
     defaultContentEncoding: string | null;
     defaultCacheControl: string | null;
@@ -48,14 +49,19 @@ export type ISerializedFile = {
 /**
  * @internal
  */
-export class File implements IFile {
+export const FILE_CLASS_TAG = Symbol("File");
+
+/**
+ * @internal
+ */
+export class File implements IFile, InternalSerdeIdentifiable {
     /**
      * @internal
      */
-    static internalSerialize(deserializedValue: File): ISerializedFile {
+    static internalSerialize(deserializedValue: IFile): ISerializedFile {
         return {
             version: "1",
-            key: deserializedValue.internalKey,
+            key: deserializedValue.key,
         };
     }
 
@@ -63,7 +69,7 @@ export class File implements IFile {
 
     private readonly adapter: ISignedFileStorageAdapter;
     private readonly internalKey: string;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly defaultContentDisposition: string | null;
     private readonly defaultContentEncoding: string | null;
     private readonly defaultCacheControl: string | null;
@@ -73,7 +79,7 @@ export class File implements IFile {
         const {
             adapter,
             key,
-            serdeTransformerName,
+            serializationId,
             defaultContentDisposition,
             defaultContentEncoding,
             defaultCacheControl,
@@ -82,15 +88,19 @@ export class File implements IFile {
 
         this.adapter = adapter;
         this.internalKey = key;
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId ?? "";
         this.defaultContentDisposition = defaultContentDisposition;
         this.defaultContentEncoding = defaultContentEncoding;
         this.defaultCacheControl = defaultCacheControl;
         this.defaultContentLanguage = defaultContentLanguage;
     }
 
-    internalGetSerdeTransformerName(): string {
-        return this.serdeTransformerName;
+    internalClassTag(): symbol {
+        return FILE_CLASS_TAG;
+    }
+
+    internalSerializationId(): string {
+        return this.serializationId;
     }
 
     async getText(): Promise<string | null> {

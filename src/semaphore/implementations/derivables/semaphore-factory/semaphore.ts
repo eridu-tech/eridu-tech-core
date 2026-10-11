@@ -17,7 +17,10 @@ import type {
     ISemaphoreState,
 } from "@/semaphore/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { AsyncLazy } from "@/utilities/_module-exports.js";
+import type {
+    AsyncLazy,
+    InternalSerdeIdentifiable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -36,7 +39,7 @@ export type ISerializedSemaphore = {
 export type SemaphoreSettings = {
     slotId: string;
     limit: number;
-    serdeTransformerName: string;
+    serializationId?: string;
     adapter: ISemaphoreAdapter;
     key: string;
     ttl: TimeSpan | null;
@@ -46,29 +49,34 @@ export type SemaphoreSettings = {
 /**
  * @internal
  */
-export class Semaphore implements ISemaphore {
+export const SEMAPHORE_CLASS_TAG = Symbol("Semaphore");
+
+/**
+ * @internal
+ */
+export class Semaphore implements ISemaphore, InternalSerdeIdentifiable {
     /**
      * @internal
      */
     static internalSerialize(
-        deserializedValue: Semaphore,
+        deserializedValue: ISemaphore,
     ): ISerializedSemaphore {
         return {
             version: "1",
-            key: deserializedValue.internalKey,
+            key: deserializedValue.key,
             limit: deserializedValue.limit,
-            slotId: deserializedValue.slotId,
-            ttlInMs: deserializedValue.internalTtl?.toMilliseconds() ?? null,
+            slotId: deserializedValue.id,
+            ttlInMs: deserializedValue.ttl?.toMilliseconds() ?? null,
         };
     }
 
     private readonly slotId: string;
-    private readonly limit: number;
+    private readonly internalLimit: number;
     private readonly adapter: ISemaphoreAdapter;
     private readonly internalKey: string;
     private internalTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
 
     constructor(settings: SemaphoreSettings) {
         const {
@@ -77,21 +85,25 @@ export class Semaphore implements ISemaphore {
             adapter,
             key,
             ttl,
-            serdeTransformerName,
+            serializationId,
             defaultRefreshTime,
         } = settings;
 
         this.slotId = slotId;
-        this.limit = limit;
-        this.serdeTransformerName = serdeTransformerName;
+        this.internalLimit = limit;
+        this.serializationId = serializationId ?? "";
         this.adapter = adapter;
         this.internalKey = key;
         this.internalTtl = ttl;
         this.defaultRefreshTime = defaultRefreshTime;
     }
 
-    internalGetSerdeTransformerName(): string {
-        return this.serdeTransformerName;
+    internalClassTag(): symbol {
+        return SEMAPHORE_CLASS_TAG;
+    }
+
+    internalSerializationId(): string {
+        return this.serializationId;
     }
 
     async runOrFail<TValue = void>(
@@ -108,7 +120,7 @@ export class Semaphore implements ISemaphore {
         return await this.adapter.acquire({
             key: this.internalKey,
             slotId: this.slotId,
-            limit: this.limit,
+            limit: this.internalLimit,
             ttl: this.internalTtl?.toEndDate() ?? null,
         });
     }
@@ -170,6 +182,10 @@ export class Semaphore implements ISemaphore {
 
     get key(): string {
         return this.internalKey;
+    }
+
+    get limit(): number {
+        return this.internalLimit;
     }
 
     async getState(): Promise<ISemaphoreState> {

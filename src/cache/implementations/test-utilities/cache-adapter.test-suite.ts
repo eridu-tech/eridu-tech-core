@@ -59,7 +59,7 @@ export function cacheAdapterTestSuite(
         await delay(TimeSpan.fromTimeSpan(ttl).addTimeSpan(delayBuffer));
     }
 
-    const TTL = TimeSpan.fromMilliseconds(50);
+    const TTL = TimeSpan.fromMilliseconds(100);
     describe("ICacheAdapter tests:", () => {
         describe("method: get", () => {
             test("Should return the value when key exists", async () => {

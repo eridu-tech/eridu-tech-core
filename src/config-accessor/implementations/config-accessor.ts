@@ -72,12 +72,12 @@ export class ConfigAccessor<
         const path_ = path;
         const [root, nested, ...rest] = path_.split(".");
         if (rest.length > 0) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Config path supports at most one nested path segment.",
             );
         }
         if (root === undefined) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "BUG: Config path must specify a field name (received undefined). This is an internal error and should be reported.",
             );
         }

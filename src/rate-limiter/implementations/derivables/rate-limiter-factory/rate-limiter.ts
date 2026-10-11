@@ -23,7 +23,7 @@ import type {
 import type {
     AsyncLazy,
     ErrorPolicy,
-    WaitUntil,
+    InternalSerdeIdentifiable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -35,8 +35,7 @@ export type RateLimiterSettings = {
     key: string;
     errorPolicy: ErrorPolicy;
     onlyError: boolean;
-    serdeTransformerName: string;
-    waitUntil: WaitUntil;
+    serializationId?: string;
 };
 
 /**
@@ -51,41 +50,37 @@ export type ISerializedRateLimiter = {
 /**
  * @internal
  */
-export class RateLimiter implements IRateLimiter {
+export const RATE_LIMITER_CLASS_TAG = Symbol("RateLimiter");
+
+/**
+ * @internal
+ */
+export class RateLimiter implements IRateLimiter, InternalSerdeIdentifiable {
     /**
      * @internal
      */
     static internalSerialize(
-        deserializedValue: RateLimiter,
+        deserializedValue: IRateLimiter,
     ): ISerializedRateLimiter {
         return {
             version: "1",
-            key: deserializedValue.internalKey,
-            limit: deserializedValue._limit,
+            key: deserializedValue.key,
+            limit: deserializedValue.limit,
         };
     }
 
-    private readonly waitUntil: WaitUntil;
     private readonly internalKey: string;
     private readonly _limit: number;
     private readonly errorPolicy: ErrorPolicy;
     private readonly onlyError: boolean;
     private readonly adapter: IRateLimiterAdapter;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
 
     constructor(settings: RateLimiterSettings) {
-        const {
-            limit,
-            key,
-            errorPolicy,
-            onlyError,
-            adapter,
-            serdeTransformerName,
-            waitUntil,
-        } = settings;
+        const { limit, key, errorPolicy, onlyError, adapter, serializationId } =
+            settings;
 
-        this.waitUntil = waitUntil;
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId ?? "";
         this._limit = limit;
         this.internalKey = key;
         this.errorPolicy = errorPolicy;
@@ -93,8 +88,12 @@ export class RateLimiter implements IRateLimiter {
         this.adapter = adapter;
     }
 
-    internalGetSerdeTransformerName(): string {
-        return this.serdeTransformerName;
+    internalClassTag(): symbol {
+        return RATE_LIMITER_CLASS_TAG;
+    }
+
+    internalSerializationId(): string {
+        return this.serializationId;
     }
 
     private toRateLimiterState(

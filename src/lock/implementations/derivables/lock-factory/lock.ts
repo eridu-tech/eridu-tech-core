@@ -20,7 +20,10 @@ import type {
     ILockUnavailableState,
 } from "@/lock/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { AsyncLazy } from "@/utilities/_module-exports.js";
+import type {
+    AsyncLazy,
+    InternalSerdeIdentifiable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -36,7 +39,7 @@ export type ISerializedLock = {
  * @internal
  */
 export type LockSettings = {
-    serdeTransformerName: string;
+    serializationId?: string;
     adapter: ILockAdapter;
     key: string;
     lockId: string;
@@ -47,16 +50,21 @@ export type LockSettings = {
 /**
  * @internal
  */
-export class Lock implements ILock {
+export const LOCK_CLASS_TAG = Symbol("Lock");
+
+/**
+ * @internal
+ */
+export class Lock implements ILock, InternalSerdeIdentifiable {
     /**
      * @internal
      */
-    static internalSerialize(deserializedValue: Lock): ISerializedLock {
+    static internalSerialize(deserializedValue: ILock): ISerializedLock {
         return {
             version: "1",
             key: deserializedValue.key,
-            lockId: deserializedValue.lockId,
-            ttlInMs: deserializedValue.internalTtl?.toMilliseconds() ?? null,
+            lockId: deserializedValue.id,
+            ttlInMs: deserializedValue.ttl?.toMilliseconds() ?? null,
         };
     }
 
@@ -65,7 +73,7 @@ export class Lock implements ILock {
     private readonly lockId: string;
     private internalTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
 
     constructor(settings: LockSettings) {
         const {
@@ -73,11 +81,11 @@ export class Lock implements ILock {
             key,
             lockId,
             ttl,
-            serdeTransformerName,
+            serializationId,
             defaultRefreshTime,
         } = settings;
 
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId ?? "";
         this.adapter = adapter;
         this.internalKey = key;
         this.lockId = lockId;
@@ -85,8 +93,12 @@ export class Lock implements ILock {
         this.defaultRefreshTime = defaultRefreshTime;
     }
 
-    internalGetSerdeTransformerName(): string {
-        return this.serdeTransformerName;
+    internalClassTag(): symbol {
+        return LOCK_CLASS_TAG;
+    }
+
+    internalSerializationId(): string {
+        return this.serializationId;
     }
 
     async runOrFail<TValue = void>(

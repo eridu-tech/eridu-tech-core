@@ -4,7 +4,8 @@
 
 import type {
     BaseEventMap,
-    IEventBus,
+    IEventDispatcher,
+    IEventListenable,
 } from "@/event-bus/contracts/event-bus.contract.js";
 
 /**
@@ -30,7 +31,7 @@ import type {
 export type IEventBusResolver<
     TAdapters extends string = string,
     TEventMap extends BaseEventMap = BaseEventMap,
-> = {
+> = Pick<IEventListenable<TEventMap>, "addListener"> & {
     /**
      * Retrieves an event bus adapter by name.
      * If no adapter name is provided, uses the default registered adapter.
@@ -41,5 +42,5 @@ export type IEventBusResolver<
      * @throws {UnregisteredAdapterError} If the specified adapter name is not registered
      * @throws {DefaultAdapterNotDefinedError} If no adapter name is provided and no default adapter is defined
      */
-    use(adapterName?: TAdapters): IEventBus<TEventMap>;
+    use(adapterName?: TAdapters): IEventDispatcher<TEventMap>;
 };

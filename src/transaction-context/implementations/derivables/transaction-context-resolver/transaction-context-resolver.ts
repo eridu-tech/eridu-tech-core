@@ -2,19 +2,15 @@
  * @module TransactionContext
  */
 
-import { contextToken } from "@/execution-context/contracts/_module-exports.js";
+import { genericToken } from "@/di/contracts/_module-exports.js";
 import { MultiTransactionHooks } from "@/transaction-context/implementations/derivables/multi-transaction-hooks/_module.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/transaction-context/_module.js";
 import {
     DefaultAdapterNotDefinedError,
-    UnexpectedError,
     UnregisteredAdapterError,
 } from "@/utilities/_module-exports.js";
 
-import type {
-    ContextToken,
-    IExecutionContext,
-} from "@/execution-context/contracts/_module-exports.js";
+import type { IExecutionContext } from "@/execution-context/contracts/_module-exports.js";
 import type {
     AfterCommitSettings,
     ITransactionAdapter,
@@ -22,8 +18,7 @@ import type {
     ITransactionContextResolver,
     ITransactionContextBase,
 } from "@/transaction-context/contracts/_module-exports.js";
-import type { ITransactionData } from "@/transaction-context/implementations/derivables/transaction-context/_module.js";
-import type { AsyncLazy } from "@/utilities/_module-exports.js";
+import type { AsyncLazy, IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/transaction-context"`
@@ -35,7 +30,7 @@ export type TransactionAdapters<TAdapters extends string = string> = Partial<
 
 /**
  * Configuration for `TransactionContextResolver`.
- * Registers named transaction adapters and designates a default.
+ * Provide named transaction adapters and their shared execution context.
  *
  * IMPORT_PATH: `"eridu-tech/transaction-context"`
  * @group Derivables
@@ -53,73 +48,79 @@ export type TransactionContextResolverSettings<
      */
     defaultAdapter?: NoInfer<TAdapters>;
 
+    /** The execution context used by every registered transaction adapter. */
     executionContext: IExecutionContext;
 };
 
 /**
- * The `TransactionContextResolver` class is immutable.
+ * Resolves named transaction adapters into transaction contexts.
+ * Call `init()` before using `use()` or `afterCommit()`.
  *
  * IMPORT_PATH: `"eridu-tech/transaction-context"`
  * @group Derivables
  */
 export class TransactionContextResolver<TAdapters extends string = string>
-    implements ITransactionHooks, ITransactionContextResolver<TAdapters>
+    implements
+        ITransactionHooks,
+        ITransactionContextResolver<TAdapters>,
+        IInitizable
 {
-    private readonly hooks: ITransactionHooks;
-    private readonly tokens: Partial<
-        Record<string, ContextToken<ITransactionData>>
-    >;
+    private hooks?: ITransactionHooks;
 
     constructor(
         private readonly settings: TransactionContextResolverSettings<TAdapters>,
-    ) {
-        this.hooks = new MultiTransactionHooks(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            Object.values(settings.adapters) as any,
-        );
-        this.tokens = Object.fromEntries(
-            Object.keys(settings.adapters).map((adapterName) => [
-                adapterName,
-                contextToken(adapterName),
-            ]),
-        );
+    ) {}
+
+    private readonly transactionContexts = {} as Partial<
+        Record<TAdapters, TransactionContext>
+    >;
+
+    async init(): Promise<void> {
+        const { adapters, executionContext } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const transactionContext = new TransactionContext({
+                adapter,
+                executionContext,
+                token: genericToken<any>(adapterName),
+            });
+            this.transactionContexts[adapterName] = transactionContext;
+        }
+        const transactionContexts = Object.values(
+            this.transactionContexts,
+        ).filter((transactionContext) => {
+            return transactionContext instanceof TransactionContext;
+        });
+        this.hooks = new MultiTransactionHooks(transactionContexts);
+        return Promise.resolve();
     }
 
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ITransactionContextBase<any> {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
-                TransactionContextResolver.name,
+            throw DefaultAdapterNotDefinedError.create(
+                TransactionContext.name,
                 Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
-            throw new UnregisteredAdapterError(
+        const transactionContext = this.transactionContexts[adapterName];
+        if (transactionContext === undefined) {
+            throw UnregisteredAdapterError.create(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
         }
-
-        const token = this.tokens[adapterName];
-        if (token === undefined) {
-            throw new UnexpectedError(
-                `Internal inconsistency: no context token was registered for adapter "${adapterName}". This is a bug and should be reported.`,
-            );
-        }
-
-        return new TransactionContext({
-            ...this.settings,
-            adapter,
-            token,
-        });
+        return transactionContext;
     }
 
-    afterCommit(
+    async afterCommit(
         asyncInvocable: AsyncLazy<void>,
         settings?: AfterCommitSettings,
     ): Promise<void> {
-        return this.hooks.afterCommit(asyncInvocable, settings);
+        await this.hooks?.afterCommit(asyncInvocable, settings);
     }
 }

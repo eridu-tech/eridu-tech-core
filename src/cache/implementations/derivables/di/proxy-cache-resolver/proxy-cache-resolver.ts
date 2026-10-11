@@ -2,22 +2,49 @@
  * @module Cache
  */
 
+import { ProxyCache } from "@/cache/implementations/derivables/di/proxy-cache-resolver/proxy-cache.js";
+
 import type { ICacheResolver } from "@/cache/contracts/cache-resolver.contract.js";
 import type { ICache } from "@/cache/contracts/cache.contract.js";
 import type {
     DiToken,
-    IContainerHooks,
+    IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
-import type { AsyncLazyable } from "@/utilities/_module-exports.js";
+import type { AsyncLazyable, NoneFunc } from "@/utilities/_module-exports.js";
+
+/**
+ * Settings used to construct a {@link ProxyCacheResolver}.
+ *
+ * IMPORT_PATH: `"eridu-tech/cache/di"`
+ * @group Derivables
+ */
+export type ProxyCacheResolverSettings<
+    TAdapters extends string = string,
+    TType = unknown,
+> = {
+    container: Pick<IServiceResolver, "resolveOrFail">;
+    resolverToken: DiToken<ICacheResolver<TAdapters, TType>>;
+};
 
 /**
  * An {@link ICacheResolver} and {@link ICache} that resolve the underlying resolver
  * from a dependency-injection container.
  *
- * The token is resolved once by {@link IContainer.init}, after which `use()` and the
- * cache operations delegate to the real resolver. Construct the instance before
- * `init()`; calling `use()` or a cache operation before `init()` is awaited throws.
+ * Construct the proxy with a {@link ProxyCacheResolverSettings}.
+ *
+ * The `resolverToken` is resolved through the container on every operation via
+ * {@link IServiceResolver.resolveOrFail}, and the operation is then delegated to the
+ * resolved {@link ICacheResolver}. Because resolution happens lazily, every
+ * `LIFETIME` is supported:
+ *
+ * - `SINGLETON` and `TRANSIENT` registrations can be used once
+ *   `IContainer.init()` has been awaited.
+ * - `SCOPED` registrations are resolved per operation, so the proxy must be used
+ *   inside `IContainer.run()`; resolving it outside of a scope throws.
+ *
+ * `use()` returns a lightweight {@link ICache} that performs the same per-operation
+ * resolution and forwards each cache method to the selected adapter.
  *
  * @template TAdapters - Union type of the registered adapter names.
  * @template TType - The type of values cached.
@@ -31,28 +58,16 @@ export class ProxyCacheResolver<
 >
     implements ICache<TType>, ICacheResolver<TAdapters, TType>
 {
-    private resolver: ICacheResolver<TAdapters, TType> | null = null;
+    private readonly container: Pick<IServiceResolver, "resolveOrFail">;
+    private readonly resolverToken: DiToken<ICacheResolver<TAdapters, TType>>;
 
-    constructor(
-        container: Pick<IContainerHooks, "onInit">,
-        resolverToken: DiToken<ICacheResolver<TAdapters, TType>>,
-    ) {
-        container.onInit({ resolver: resolverToken }, (deps) => {
-            this.resolver = deps.resolver;
-        });
-    }
-
-    private getResolver(): ICacheResolver<TAdapters, TType> {
-        if (this.resolver === null) {
-            throw new Error(
-                "ProxyCacheResolver is not ready. Await IContainer.init() before use.",
-            );
-        }
-        return this.resolver;
+    constructor(settings: ProxyCacheResolverSettings<TAdapters, TType>) {
+        this.container = settings.container;
+        this.resolverToken = settings.resolverToken;
     }
 
     use(adapterName?: TAdapters): ICache<TType> {
-        return this.getResolver().use(adapterName);
+        return new ProxyCache(this.container, this.resolverToken, adapterName);
     }
 
     exists(key: string): Promise<boolean> {
@@ -73,9 +88,7 @@ export class ProxyCacheResolver<
 
     getOr(
         key: string,
-        defaultValue: AsyncLazyable<
-            Exclude<TType, (...args: Array<unknown>) => unknown>
-        >,
+        defaultValue: AsyncLazyable<NoneFunc<TType>>,
     ): Promise<TType> {
         return this.use().getOr(key, defaultValue);
     }

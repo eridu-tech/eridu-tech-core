@@ -98,7 +98,7 @@ export async function eagerInitialization<T>(
     const getPendingDependencyCount = (id: T): number => {
         const unInitialized = pending.get(id);
         if (unInitialized === undefined) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Expected node id "${String(id)}" to exist in the pending dependency counts. Each node must be declared in nodeIds before it is referenced as a dependency.`,
             );
         }
@@ -139,7 +139,7 @@ export async function eagerInitialization<T>(
         .map(([id]) => id);
 
     if (blockedNodes.length > 0) {
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             `Eager initialization failed: nodes ${blockedNodes.map((id) => `"${String(id)}"`).join(", ")} could not be initialized because their dependencies remain unresolved (possible cycle or undeclared dependency).`,
         );
     }
@@ -164,7 +164,7 @@ export function findEffectedNodes<T>(args: FindEffectedNodesArgs<T>): Array<T> {
         const node = queue.shift();
 
         if (node === undefined) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invariant violation: the traversal queue must not be empty inside the loop, so shift() should always return a node.",
             );
         }
@@ -261,7 +261,7 @@ export function findAllCycles<TNode>(
             const frame = stack[stack.length - 1];
 
             if (frame === undefined) {
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     "Invariant violation: the DFS stack must not be empty inside the loop, so the top frame should always exist.",
                 );
             }
@@ -331,7 +331,7 @@ export function getMissingNodes<T>(
 
     const allNodes = new Set<T>(nodes);
     if (allNodes.size !== nodes.length) {
-        throw new UnexpectedError("Nodes argument contain duplicates");
+        throw UnexpectedError.create("Nodes argument contain duplicates");
     }
 
     for (const node of nodes) {

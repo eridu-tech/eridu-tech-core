@@ -14,8 +14,12 @@ import type {
     IFileStorageResolver,
 } from "@/file-storage/contracts/_module-exports.js";
 import type { FileStorageSettingsBase } from "@/file-storage/implementations/derivables/file-storage/_module.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `FileStorageResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */
@@ -44,72 +48,55 @@ export type FileStorageResolverSettings<TAdapters extends string = string> =
     };
 
 /**
+ * Resolves named file-storage adapters to storage instances.
+ * Call `init()` before selecting a storage adapter.
+ *
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */
-export class FileStorageResolver<
-    TAdapters extends string = string,
-> implements IFileStorageResolver<TAdapters> {
+export class FileStorageResolver<TAdapters extends string = string>
+    implements IFileStorageResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: FileStorageResolverSettings<TAdapters>,
     ) {}
 
-    setDefaultContentDisposition(
-        contentDisposition: string | null,
-    ): FileStorageResolver<TAdapters> {
-        return new FileStorageResolver({
-            ...this.settings,
-            defaultContentDisposition: contentDisposition,
-        });
-    }
+    private readonly storages = {} as Partial<Record<TAdapters, FileStorage>>;
 
-    setDefaultContentEncoding(
-        contentEncoding: string | null,
-    ): FileStorageResolver<TAdapters> {
-        return new FileStorageResolver({
-            ...this.settings,
-            defaultContentEncoding: contentEncoding,
-        });
-    }
-
-    setDefaultCacheControl(
-        cacheControl: string | null,
-    ): FileStorageResolver<TAdapters> {
-        return new FileStorageResolver({
-            ...this.settings,
-            defaultCacheControl: cacheControl,
-        });
-    }
-
-    setDefaultContentLanguage(
-        contentLanguage: string | null,
-    ): FileStorageResolver<TAdapters> {
-        return new FileStorageResolver({
-            ...this.settings,
-            defaultContentLanguage: contentLanguage,
-        });
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new FileStorage({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.storages[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): IFileStorage {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
-                FileStorageResolver.name,
+            throw DefaultAdapterNotDefinedError.create(
+                FileStorage.name,
                 Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
-            throw new UnregisteredAdapterError(
+        const factory = this.storages[adapterName];
+        if (factory === undefined) {
+            throw UnregisteredAdapterError.create(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
         }
-        return new FileStorage({
-            ...this.settings,
-            adapter,
-            serdeTransformerName: adapterName,
-        });
+        return factory;
     }
 }

@@ -216,7 +216,7 @@ function throwErrors(settings: ThrowErrorsSettings): never {
     if (allErrors.length !== 0 && throwLastError) {
         throw allErrors.at(-1);
     }
-    throw new UnexpectedError(
+    throw UnexpectedError.create(
         "retryInterval middleware reached an unreachble state, this is a bug please file issue on github.",
     );
 }

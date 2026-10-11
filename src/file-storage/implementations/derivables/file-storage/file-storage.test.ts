@@ -8,8 +8,7 @@ import {
     fileStorageSerdeTestSuite,
     fileStorageTestSuite,
 } from "@/file-storage/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 
 import type {
     FileAdapterMetadata,
@@ -24,8 +23,8 @@ import type {
 } from "@/file-storage/contracts/_module-exports.js";
 
 describe("class: FileStorage", () => {
-    function createFileStorage() {
-        const serde = new Serde(new SuperJsonSerdeAdapter());
+    async function createFileStorage() {
+        const serde = new SuperJsonSerde();
         const fileStorage = new FileStorage({
             serde,
             adapter: new SignedFileStorageAdapter({
@@ -33,6 +32,7 @@ describe("class: FileStorage", () => {
                 urlAdapter: {},
             }),
         });
+        await fileStorage.init();
         return {
             fileStorage,
             serde,
@@ -57,7 +57,7 @@ describe("class: FileStorage", () => {
 
     describe("Serde tests:", () => {
         test("Should differentiate between different adapters", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
 
             class Adapter1 implements ISignedFileStorageAdapter {
@@ -167,7 +167,9 @@ describe("class: FileStorage", () => {
                 adapter: adapter1,
                 serde,
             });
+            await fileStorage1.init();
             const file1 = fileStorage1.create(key);
+
             const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
             await file1.add({ data: data1 });
 
@@ -278,47 +280,51 @@ describe("class: FileStorage", () => {
                 adapter: adapter2,
                 serde,
             });
-
+            await fileStorage2.init();
             const file2 = fileStorage2.create(key);
-            const deserializeLock2 = serde.deserialize<IFile>(
-                serde.serialize(file2),
+
+            const deserializeFile2 = await serde.deserialize<IFile>(
+                await serde.serialize(file2),
             );
             const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
-            const result = await deserializeLock2.add({ data: data2 });
+            const result = await deserializeFile2.add({ data: data2 });
 
             expect(result).toBe(true);
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+        test("Should differentiate between different serializationIds", async () => {
+            const serde = new SuperJsonSerde();
             const key = "a";
 
-            const lockProvider1 = new FileStorage({
+            const fileStorage1 = new FileStorage({
                 adapter: new SignedFileStorageAdapter({
                     adapter: new MemoryFileStorageAdapter(),
                     urlAdapter: {},
                 }),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
-            const lock1 = lockProvider1.create(key);
+            await fileStorage1.init();
+            const file1 = fileStorage1.create(key);
+
             const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
-            await lock1.add({ data: data1 });
+            await file1.add({ data: data1 });
 
-            const lockProvider2 = new FileStorage({
+            const fileStorage2 = new FileStorage({
                 adapter: new SignedFileStorageAdapter({
                     adapter: new MemoryFileStorageAdapter(),
                     urlAdapter: {},
                 }),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
+            await fileStorage2.init();
+            const file2 = fileStorage2.create(key);
 
-            const lock2 = lockProvider2.create(key);
-            const deserializeLock2 = serde.deserialize<IFile>(
-                serde.serialize(lock2),
+            const deserializeFile2 = await serde.deserialize<IFile>(
+                await serde.serialize(file2),
             );
             const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
-            const result = await deserializeLock2.add({ data: data2 });
+            const result = await deserializeFile2.add({ data: data2 });
 
             expect(result).toBe(true);
         });

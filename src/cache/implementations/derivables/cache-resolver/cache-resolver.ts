@@ -8,18 +8,13 @@ import {
     UnregisteredAdapterError,
 } from "@/utilities/_module-exports.js";
 
-import type { StandardSchemaV1 } from "@standard-schema/spec";
-
 import type {
     ICache,
     ICacheAdapter,
     ICacheResolver,
 } from "@/cache/contracts/_module-exports.js";
-import type {
-    CacheSettings,
-    CacheSettingsBase,
-} from "@/cache/implementations/derivables/cache/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { CacheSettingsBase } from "@/cache/implementations/derivables/cache/_module.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/cache"`
@@ -53,60 +48,50 @@ export type CacheResolverSettings<
 };
 
 /**
- * The `CacheResolver` class is immutable.
- *
  * IMPORT_PATH: `"eridu-tech/cache"`
  * @group Derivables
  */
-export class CacheResolver<
-    TAdapters extends string = string,
-    TType = unknown,
-> implements ICacheResolver<TAdapters, TType> {
+export class CacheResolver<TAdapters extends string = string, TType = unknown>
+    implements ICacheResolver<TAdapters, TType>, IInitizable
+{
     constructor(
         private readonly settings: CacheResolverSettings<TAdapters, TType>,
     ) {}
 
-    setDefaultTtl(ttl: ITimeSpan | null): CacheResolver<TAdapters, TType> {
-        return new CacheResolver({
-            ...this.settings,
-            defaultTtl: ttl,
-        });
-    }
+    private readonly factories = {} as Partial<Record<TAdapters, Cache<TType>>>;
 
-    setType<TOutputType>(): CacheResolver<TAdapters, TOutputType> {
-        return new CacheResolver<TAdapters, TOutputType>(
-            this.settings as CacheResolverSettings<TAdapters, TOutputType>,
-        );
-    }
-
-    setSchema<TOutputType>(
-        schema: StandardSchemaV1<TOutputType>,
-    ): CacheResolver<TAdapters, TOutputType> {
-        return new CacheResolver({
-            ...this.settings,
-            schema,
-        } as CacheResolverSettings<TAdapters, TOutputType>);
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new Cache({
+                ...rest,
+                adapter,
+            });
+            this.factories[adapterName] = factory as Cache<TType>;
+        }
+        return Promise.resolve();
     }
 
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ICache<TType> {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
-                CacheResolver.name,
+            throw DefaultAdapterNotDefinedError.create(
+                Cache.name,
                 Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
-            throw new UnregisteredAdapterError(
+        const cache = this.factories[adapterName];
+        if (cache === undefined) {
+            throw UnregisteredAdapterError.create(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
         }
-        return new Cache({
-            ...this.settings,
-            adapter,
-        } as CacheSettings<TType>);
+        return cache;
     }
 }

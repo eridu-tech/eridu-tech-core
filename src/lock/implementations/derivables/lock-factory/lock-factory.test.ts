@@ -12,8 +12,7 @@ import {
     lockFactorySerdeTestSuite,
     lockFactoryTestSuite,
 } from "@/lock/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
@@ -24,12 +23,13 @@ import type { KyselyLockTables } from "@/lock/implementations/adapters/kysely-lo
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: LockFactory", () => {
-    function createLockFactory() {
-        const serde = new Serde(new SuperJsonSerdeAdapter());
+    async function createLockFactory() {
+        const serde = new SuperJsonSerde();
         const lockFactory = new LockFactory({
             serde,
             adapter: new MemoryLockAdapter(),
         });
+        await lockFactory.init();
         return {
             lockFactory,
             serde,
@@ -71,7 +71,7 @@ describe("class: LockFactory", () => {
     }
     describe("Serde tests:", () => {
         test("Should differentiate between different adapters that have same namespace", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
 
@@ -80,7 +80,9 @@ describe("class: LockFactory", () => {
                 adapter: adapter1,
                 serde,
             });
+            await lockFactory1.init();
             const lock1 = lockFactory1.create(key, { ttl });
+
             await lock1.acquire();
 
             const adapter2 = new KyselyLockAdapter({
@@ -91,37 +93,41 @@ describe("class: LockFactory", () => {
                 adapter: adapter2,
                 serde,
             });
+            await lockFactory2.init();
 
             const lock2 = lockFactory2.create(key, { ttl });
-            const deserializeLock2 = serde.deserialize<ILock>(
-                serde.serialize(lock2),
+            const deserializeLock2 = await serde.deserialize<ILock>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquire();
 
             expect(result).toBe(true);
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+        test("Should differentiate between different serializationIds", async () => {
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
 
             const lockFactory1 = new LockFactory({
                 adapter: new MemoryLockAdapter(),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
+            await lockFactory1.init();
             const lock1 = lockFactory1.create(key, { ttl });
+
             await lock1.acquire();
 
             const lockFactory2 = new LockFactory({
                 adapter: new MemoryLockAdapter(),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
-
+            await lockFactory2.init();
             const lock2 = lockFactory2.create(key, { ttl });
-            const deserializeLock2 = serde.deserialize<ILock>(
-                serde.serialize(lock2),
+
+            const deserializeLock2 = await serde.deserialize<ILock>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquire();
 

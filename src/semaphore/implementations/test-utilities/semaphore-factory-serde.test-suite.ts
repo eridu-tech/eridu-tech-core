@@ -97,8 +97,8 @@ export function semaphoreFactorySerdeTestSuite(
                 limit,
                 ttl,
             });
-            const deserializedSemaphore = serde.deserialize<ISemaphore>(
-                serde.serialize(semaphore),
+            const deserializedSemaphore = await serde.deserialize<ISemaphore>(
+                await serde.serialize(semaphore),
             );
 
             const result = await deserializedSemaphore.getState();
@@ -116,8 +116,8 @@ export function semaphoreFactorySerdeTestSuite(
                 ttl,
                 limit,
             });
-            const deserializedSemaphore = serde.deserialize<ISemaphore>(
-                serde.serialize(semaphore),
+            const deserializedSemaphore = await serde.deserialize<ISemaphore>(
+                await serde.serialize(semaphore),
             );
             await deserializedSemaphore.acquire();
             await delayWithBuffer(ttl);
@@ -144,8 +144,8 @@ export function semaphoreFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserializedSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(semaphore2),
+            const deserializedSemaphore2 = await serde.deserialize<ISemaphore>(
+                await serde.serialize(semaphore2),
             );
             await deserializedSemaphore2.acquire();
 
@@ -173,8 +173,8 @@ export function semaphoreFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserialziedSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(semaphore2),
+            const deserialziedSemaphore2 = await serde.deserialize<ISemaphore>(
+                await serde.serialize(semaphore2),
             );
             await deserialziedSemaphore2.acquire();
 
@@ -203,8 +203,8 @@ export function semaphoreFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserialziedSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(semaphore2),
+            const deserialziedSemaphore2 = await serde.deserialize<ISemaphore>(
+                await serde.serialize(semaphore2),
             );
 
             const state = await deserialziedSemaphore2.getState();
@@ -233,8 +233,8 @@ export function semaphoreFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserializedSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(semaphore2),
+            const deserializedSemaphore2 = await serde.deserialize<ISemaphore>(
+                await serde.serialize(semaphore2),
             );
             await deserializedSemaphore2.acquire();
             await delayWithBuffer(ttl2);
@@ -269,8 +269,8 @@ export function semaphoreFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserializedSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(semaphore2),
+            const deserializedSemaphore2 = await serde.deserialize<ISemaphore>(
+                await serde.serialize(semaphore2),
             );
             await deserializedSemaphore2.acquire();
 
@@ -301,8 +301,8 @@ export function semaphoreFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserializedSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(semaphore2),
+            const deserializedSemaphore2 = await serde.deserialize<ISemaphore>(
+                await serde.serialize(semaphore2),
             );
             await delayWithBuffer(ttl2);
 

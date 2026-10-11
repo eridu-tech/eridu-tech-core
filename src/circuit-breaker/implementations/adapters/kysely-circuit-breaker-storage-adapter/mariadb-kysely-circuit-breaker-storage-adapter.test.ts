@@ -8,8 +8,7 @@ import { circuitBreakerStorageAdapterTestSuite } from "@/circuit-breaker/impleme
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
@@ -71,7 +70,7 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
         createAdapter: async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
                 transactionContext: createTrxCtx(database),
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             return adapter;
@@ -86,7 +85,7 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
             const trxCtx = createTrxCtx(database);
             const adapter = new KyselyCircuitBreakerStorageAdapter({
                 transactionContext: trxCtx,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -116,7 +115,7 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
                 transactionContext: createTrxCtx(database),
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -130,7 +129,7 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
             const trxCtx = createTrxCtx(database);
             const adapter = new KyselyCircuitBreakerStorageAdapter({
                 transactionContext: trxCtx,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             await adapter.deInit();
@@ -146,7 +145,7 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
                 transactionContext: createTrxCtx(database),
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             await adapter.deInit();
@@ -158,7 +157,7 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
         test("Should not throw error when called before init", async () => {
             const adapter = new KyselyCircuitBreakerStorageAdapter({
                 transactionContext: createTrxCtx(database),
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
 
             const promise = adapter.deInit();
@@ -171,7 +170,7 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
             const trxCtx = createTrxCtx(database);
             const adapter = new KyselyCircuitBreakerStorageAdapter({
                 transactionContext: trxCtx,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -198,7 +197,7 @@ describe("mariadb class: KyselyCircuitBreakerStorageAdapter", () => {
             const trxCtx = createTrxCtx(database);
             const adapter = new KyselyCircuitBreakerStorageAdapter({
                 transactionContext: trxCtx,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 

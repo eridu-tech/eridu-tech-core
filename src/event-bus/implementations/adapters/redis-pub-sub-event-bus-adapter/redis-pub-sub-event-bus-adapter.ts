@@ -6,8 +6,8 @@ import { EventEmitter } from "node:events";
 
 import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    SuperJsonSerdeAdapter,
-} from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
+    SuperJsonSerde,
+} from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type { Redis } from "ioredis";
@@ -48,7 +48,7 @@ export type RedisPubSubEventBusAdapterSettings = {
 };
 
 /**
- * To utilize the `RedisPubSubEventBusAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package and supply a {@link ISerde | `ISerde`}, with a {@link SuperJsonSerdeAdapter | `SuperJsonSerdeAdapter`}.
+ * To utilize the `RedisPubSubEventBusAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package and supply a {@link ISerde | `ISerde`}, with a {@link SuperJsonSerde | `SuperJsonSerde`}.
  *
  * IMPORT_PATH: `"eridu-tech/event-bus/redis-pub-sub-event-bus-adapter"`
  * @group Adapters
@@ -73,8 +73,11 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
         this.serde = serde;
     }
 
-    private redisListener = (channel: string, message: string): void => {
-        this.eventEmitter.emit(channel, this.serde.deserialize(message));
+    private redisListener = async (
+        channel: string,
+        message: string,
+    ): Promise<void> => {
+        this.eventEmitter.emit(channel, await this.serde.deserialize(message));
     };
 
     async addListener(
@@ -104,7 +107,7 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
         return this.transactionHooks.afterCommit(async () => {
             await this.dispatcherClient.publish(
                 eventName,
-                this.serde.serialize(eventData),
+                await this.serde.serialize(eventData),
             );
         });
     }
