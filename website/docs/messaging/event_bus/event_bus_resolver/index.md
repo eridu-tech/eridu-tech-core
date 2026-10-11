@@ -44,16 +44,6 @@ Note that if you dont set a default adapter, an error will be thrown.
 Note that if you specify a non-existent adapter, an error will be thrown.
 :::
 
-### 3. Overriding default settings
-
-```ts file=./samples/event-bus-resolver-override-settings.ts
-
-```
-
-:::info
-Note that the `EventBusResolver` is immutable, meaning any configuration override returns a new instance rather than modifying the existing one.
-:::
-
 ## Further information
 
 For further information refer to [`eridu-tech/event-bus`](https://eridu-tech.github.io/eridu-tech-core/modules/EventBus.html) API docs.
