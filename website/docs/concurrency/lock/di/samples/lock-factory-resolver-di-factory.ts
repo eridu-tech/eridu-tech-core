@@ -2,7 +2,7 @@ import { Container } from "eridu-tech/di";
 import { ExecutionContext } from "eridu-tech/execution-context";
 import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
 import { LockFactoryResolver } from "eridu-tech/lock";
-import { lockFactoryResolverDiFactory } from "eridu-tech/lock/di";
+import { ProxyLockFactoryResolver } from "eridu-tech/lock/di";
 import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
 
 type Adapters = "storage1" | "storage2";
@@ -18,15 +18,17 @@ const lockFactoryResolver = new LockFactoryResolver<Adapters>({
     defaultAdapter: "storage1",
 });
 
+await lockFactoryResolver.init();
+
 container.registerValue({
     token: LockFactoryResolver,
     value: lockFactoryResolver,
 });
 
 // Create the proxy before container.init()
-export const lockFactory = lockFactoryResolverDiFactory<Adapters>(
+export const lockFactory = new ProxyLockFactoryResolver<Adapters>({
     container,
-    LockFactoryResolver,
-);
+    resolverToken: LockFactoryResolver,
+});
 
 await container.init();
