@@ -1,12 +1,16 @@
 import { CacheResolver } from "eridu-tech/cache";
 import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
 import { RedisCacheAdapter } from "eridu-tech/cache/redis-cache-adapter";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { Redis } from "ioredis";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
-export const cacheResolver = new CacheResolver({
+type User = {
+    name: string;
+    age: number;
+};
+
+const serde = new SuperJsonSerde();
+export const cacheResolver = new CacheResolver<"memory" | "redis", User>({
     adapters: {
         memory: new MemoryCacheAdapter(),
         redis: new RedisCacheAdapter({
@@ -17,3 +21,5 @@ export const cacheResolver = new CacheResolver({
     // You can set an optional default adapter
     defaultAdapter: "memory",
 });
+
+await cacheResolver.init();
