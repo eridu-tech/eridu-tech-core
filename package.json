@@ -235,6 +235,10 @@
             "types": "./dist/event-bus/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/event-bus/implementations/derivables/_module-exports.js"
         },
+        "./event-bus/di": {
+            "types": "./dist/event-bus/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/event-bus/implementations/derivables/di/_module-exports.js"
+        },
         "./event-bus/middlewares": {
             "types": "./dist/event-bus/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/event-bus/implementations/middlewares/_module-exports.js"

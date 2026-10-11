@@ -9,13 +9,15 @@ import {
 } from "@/utilities/_module-exports.js";
 
 import type {
-    IEventBus,
     IEventBusResolver,
     BaseEventMap,
     IEventBusAdapter,
+    EventListener,
+    IEventDispatcher,
+    InferEvent,
 } from "@/event-bus/contracts/_module-exports.js";
 import type { EventBusSettingsBase } from "@/event-bus/implementations/derivables/event-bus/_module.js";
-import type { EventMapSchema } from "@/event-bus/implementations/derivables/event-bus/with-event-bus-schema.js";
+import type { IInitizable, OneOrArray } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/event-bus"`
@@ -26,8 +28,8 @@ export type EventBusAdapters<TAdapters extends string = string> = Partial<
 >;
 
 /**
- * Configuration for `EventBusResolver`.
- * Registers named event-bus adapters and optionally designates a default.
+ * Configuration for `EventBusResolver`. Provide named adapters and optionally
+ * select the default adapter.
  *
  * IMPORT_PATH: `"eridu-tech/event-bus"`
  * @group Derivables
@@ -48,7 +50,8 @@ export type EventBusResolverSettings<
 };
 
 /**
- * The `EventBusResolver` class is immutable.
+ * Creates an event bus for each registered adapter.
+ * Call `init()` before registering listeners or selecting an event bus.
  *
  * IMPORT_PATH: `"eridu-tech/event-bus"`
  * @group Derivables
@@ -56,7 +59,9 @@ export type EventBusResolverSettings<
 export class EventBusResolver<
     TAdapters extends string = string,
     TEventMap extends BaseEventMap = BaseEventMap,
-> implements IEventBusResolver<TAdapters, TEventMap> {
+>
+    implements IEventBusResolver<TAdapters, TEventMap>, IInitizable
+{
     constructor(
         private readonly settings: EventBusResolverSettings<
             TAdapters,
@@ -64,46 +69,59 @@ export class EventBusResolver<
         >,
     ) {}
 
-    setEventMapType<TOutputEventMap extends BaseEventMap>(): EventBusResolver<
-        TAdapters,
-        TOutputEventMap
-    > {
-        return new EventBusResolver(
-            this.settings as EventBusResolverSettings<
-                TAdapters,
-                TOutputEventMap
-            >,
-        );
+    private readonly factories = {} as Partial<
+        Record<TAdapters, EventBus<TEventMap>>
+    >;
+
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const eventBus = new EventBus({
+                adapter,
+                ...rest,
+            });
+            this.factories[adapterName] = eventBus;
+        }
+        return Promise.resolve();
     }
 
-    setEventMapSchema<TOutputEventMap extends BaseEventMap>(
-        eventMapSchema: EventMapSchema<TOutputEventMap>,
-    ): EventBusResolver<TAdapters, TOutputEventMap> {
-        return new EventBusResolver({
-            ...this.settings,
-            eventMapSchema,
-        });
+    /**
+     * Registers the listener on every configured adapter.
+     * Call this during setup, before the application starts.
+     */
+    async addListener<TEventName extends keyof TEventMap>(
+        eventNames: OneOrArray<TEventName>,
+        listener: EventListener<InferEvent<TEventMap, TEventName>>,
+    ): Promise<void> {
+        for (const adapterName in this.factories) {
+            const eventBus = this.factories[adapterName];
+            if (eventBus === undefined) {
+                continue;
+            }
+            await eventBus.addListener(eventNames, listener);
+        }
     }
 
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
-    ): IEventBus<TEventMap> {
+    ): IEventDispatcher<TEventMap> {
         if (adapterName === undefined) {
             throw DefaultAdapterNotDefinedError.create(
-                EventBusResolver.name,
+                EventBus.name,
                 Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
+        const eventBus = this.factories[adapterName];
+        if (eventBus === undefined) {
             throw UnregisteredAdapterError.create(
                 adapterName,
                 Object.keys(this.settings.adapters),
             );
         }
-        return new EventBus<TEventMap>({
-            ...this.settings,
-            adapter,
-        });
+        return eventBus;
     }
 }
