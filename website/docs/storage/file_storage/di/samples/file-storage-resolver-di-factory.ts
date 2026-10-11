@@ -2,7 +2,7 @@ import { Container } from "eridu-tech/di";
 import { ExecutionContext } from "eridu-tech/execution-context";
 import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
 import { FileStorageResolver } from "eridu-tech/file-storage";
-import { fileStorageResolverDiFactory } from "eridu-tech/file-storage/di";
+import { ProxyFileStorageResolver } from "eridu-tech/file-storage/di";
 import { MemoryFileStorageAdapter } from "eridu-tech/file-storage/memory-file-storage-adapter";
 import { SignedFileStorageAdapter } from "eridu-tech/file-storage/signed-file-storage-adapter";
 
@@ -25,15 +25,17 @@ const fileStorageResolver = new FileStorageResolver<Adapters>({
     defaultAdapter: "storage1",
 });
 
+await fileStorageResolver.init();
+
 container.registerValue({
     token: FileStorageResolver,
     value: fileStorageResolver,
 });
 
 // Create the proxy before container.init()
-export const fileStorage = fileStorageResolverDiFactory<Adapters>(
+export const fileStorage = new ProxyFileStorageResolver<Adapters>({
     container,
-    FileStorageResolver,
-);
+    resolverToken: FileStorageResolver,
+});
 
 await container.init();
