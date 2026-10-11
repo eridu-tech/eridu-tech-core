@@ -1,14 +1,13 @@
 import { ExecutionContext } from "eridu-tech/execution-context";
 import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
 import { contextToken } from "eridu-tech/execution-context/contracts";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { TransactionContext } from "eridu-tech/transaction-context";
 import { MongodbTransactionAdapter } from "eridu-tech/transaction-context/mongodb-transaction-adapter";
 import { MongoClient } from "mongodb";
 import type { ClientSession, Db } from "mongodb";
 
-export const serde = new Serde(new SuperJsonSerdeAdapter());
+export const serde = new SuperJsonSerde();
 
 const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
 const database = client.db("database");
