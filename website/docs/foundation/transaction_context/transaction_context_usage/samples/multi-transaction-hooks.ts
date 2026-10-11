@@ -1,14 +1,11 @@
 import { ExecutionContext } from "eridu-tech/execution-context";
 import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
-import { contextToken } from "eridu-tech/execution-context/contracts";
-import {
-    MultiTransactionHooks,
-    TransactionContext,
-} from "eridu-tech/transaction-context";
+import { TransactionContextResolver } from "eridu-tech/transaction-context";
 import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
-import { transactionContext as sqliteTransactionContext } from "./transaction-context-initial-config.js";
+import Sqlite from "better-sqlite3";
+import { SqliteDialect } from "kysely";
 
 const postgresDatabase = new Kysely<any>({
     dialect: new PostgresDialect({
@@ -25,33 +22,42 @@ const postgresDatabase = new Kysely<any>({
 
 const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
 
-const postgresTransactionContext = new TransactionContext<Kysely<any>>({
-    token: contextToken("postgres-transaction"),
-    adapter: new KyselyTransactionAdapter({ database: postgresDatabase }),
-    executionContext,
+const sqliteDatabase = new Kysely<any>({
+    dialect: new SqliteDialect({
+        database: new Sqlite("local.db"),
+    }),
 });
 
-// Fans out after-commit hooks to every transaction context
-export const transactionHooks = new MultiTransactionHooks([
-    postgresTransactionContext,
-    sqliteTransactionContext,
-]);
+const transactionContextResolver = new TransactionContextResolver({
+    adapters: {
+        postgres: new KyselyTransactionAdapter({ database: postgresDatabase }),
+        sqlite: new KyselyTransactionAdapter({ database: sqliteDatabase }),
+    },
+    executionContext,
+});
+await transactionContextResolver.init();
 
 async function publishUserCreatedEvent(userId: string): Promise<void> {
     // ...
 }
 
 // No wrapped context is in a transaction, so the hook runs immediately
-await transactionHooks.afterCommit(() => publishUserCreatedEvent("1"));
+await transactionContextResolver.afterCommit(() =>
+    publishUserCreatedEvent("1"),
+);
 
 // Only the postgres context is in a transaction, so the hook is registered on
 // it and runs once that transaction commits
-await postgresTransactionContext.run(async () => {
-    await transactionHooks.afterCommit(() => publishUserCreatedEvent("1"));
+await transactionContextResolver.use("postgres").run(async () => {
+    await transactionContextResolver.afterCommit(() =>
+        publishUserCreatedEvent("1"),
+    );
 });
 
 // Only the sqlite context is in a transaction, so the hook is registered on it
 // and runs once that transaction commits
-await sqliteTransactionContext.run(async () => {
-    await transactionHooks.afterCommit(() => publishUserCreatedEvent("1"));
+await transactionContextResolver.use("sqlite").run(async () => {
+    await transactionContextResolver.afterCommit(() =>
+        publishUserCreatedEvent("1"),
+    );
 });
