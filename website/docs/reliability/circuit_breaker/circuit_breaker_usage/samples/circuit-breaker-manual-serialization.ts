@@ -1,10 +1,9 @@
 import { Redis } from "ioredis";
 import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-circuit-breaker-adapter";
 import { CircuitBreakerFactory } from "eridu-tech/circuit-breaker";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 
 const redisClient = new Redis("YOUR_REDIS_CONNECTION");
 
@@ -15,5 +14,7 @@ const circuitBreakerFactory = new CircuitBreakerFactory({
 });
 
 const circuitBreaker = circuitBreakerFactory.create("resource");
-const serializedCircuitBreaker = serde.serialize(circuitBreaker);
-const deserializedCircuitBreaker = serde.deserialize(serializedCircuitBreaker);
+const serializedCircuitBreaker = await serde.serialize(circuitBreaker);
+const deserializedCircuitBreaker = await serde.deserialize(
+    serializedCircuitBreaker,
+);
