@@ -354,7 +354,9 @@ export class S3FileStorageAdapter
                 throw UnexpectedError.create("response.ETag is undefined");
             }
             if (response.ContentType === undefined) {
-                throw UnexpectedError.create("response.ContentType is undefined");
+                throw UnexpectedError.create(
+                    "response.ContentType is undefined",
+                );
             }
             if (response.ContentLength === undefined) {
                 throw UnexpectedError.create(
@@ -362,7 +364,9 @@ export class S3FileStorageAdapter
                 );
             }
             if (response.LastModified === undefined) {
-                throw UnexpectedError.create("response.LastModified is undefined");
+                throw UnexpectedError.create(
+                    "response.LastModified is undefined",
+                );
             }
             return {
                 etag: response.ETag,
