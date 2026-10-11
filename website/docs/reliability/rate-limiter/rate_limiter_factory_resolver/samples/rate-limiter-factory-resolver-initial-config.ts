@@ -2,11 +2,10 @@ import { RateLimiterFactoryResolver } from "eridu-tech/rate-limiter";
 import { MemoryRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter";
 import { DatabaseRateLimiterAdapter } from "eridu-tech/rate-limiter/database-rate-limiter-adapter";
 import { RedisRateLimiterAdapter } from "eridu-tech/rate-limiter/redis-rate-limiter-adapter";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { Redis } from "ioredis";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 export const rateLimiterFactoryResolver = new RateLimiterFactoryResolver({
     serde,
     adapters: {
@@ -19,3 +18,5 @@ export const rateLimiterFactoryResolver = new RateLimiterFactoryResolver({
     },
     defaultAdapter: "memory",
 });
+
+await rateLimiterFactoryResolver.init();

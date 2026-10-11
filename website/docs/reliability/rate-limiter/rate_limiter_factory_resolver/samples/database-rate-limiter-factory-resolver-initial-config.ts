@@ -1,8 +1,8 @@
-import { DatabaseRateLimiterFactoryResolver } from "eridu-tech/rate-limiter";
+import { RateLimiterFactoryResolver } from "eridu-tech/rate-limiter";
 import { MemoryRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter";
+import { DatabaseRateLimiterAdapter } from "eridu-tech/rate-limiter/database-rate-limiter-adapter";
 import { KyselyRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
@@ -11,7 +11,7 @@ import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-exe
 import { TransactionContext } from "eridu-tech/transaction-context";
 import { contextToken } from "eridu-tech/execution-context/contracts";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 const kysely = new Kysely<any>({
     dialect: new SqliteDialect({
         database: new Sqlite("local.db"),
@@ -27,15 +27,20 @@ const transactionContext = new TransactionContext<Kysely<any>>({
     adapter: kyselyTransactionAdapter,
 });
 
-export const rateLimiterFactoryResolver =
-    new DatabaseRateLimiterFactoryResolver({
-        serde,
-        adapters: {
-            memory: new MemoryRateLimiterStorageAdapter(),
-            sqlite: new KyselyRateLimiterStorageAdapter({
+export const rateLimiterFactoryResolver = new RateLimiterFactoryResolver({
+    serde,
+    adapters: {
+        memory: new DatabaseRateLimiterAdapter({
+            adapter: new MemoryRateLimiterStorageAdapter(),
+        }),
+        sqlite: new DatabaseRateLimiterAdapter({
+            adapter: new KyselyRateLimiterStorageAdapter({
                 transactionContext,
                 serde,
             }),
-        },
-        defaultAdapter: "memory",
-    });
+        }),
+    },
+    defaultAdapter: "memory",
+});
+
+await rateLimiterFactoryResolver.init();
