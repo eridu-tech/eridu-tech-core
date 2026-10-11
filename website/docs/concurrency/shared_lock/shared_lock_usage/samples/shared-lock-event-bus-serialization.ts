@@ -4,10 +4,9 @@ import type { ISharedLock } from "eridu-tech/shared-lock/contracts";
 import { SharedLockFactory } from "eridu-tech/shared-lock";
 import { RedisPubSubEventBusAdapter } from "eridu-tech/event-bus/redis-pub-sub-event-bus-adapter";
 import { EventBus } from "eridu-tech/event-bus";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 const redis = new Redis("YOUR_REDIS_CONNECTION");
 
 type EventMap = {

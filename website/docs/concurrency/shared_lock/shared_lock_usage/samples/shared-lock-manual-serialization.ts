@@ -1,10 +1,9 @@
 import { Redis } from "ioredis";
 import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
 import { SharedLockFactory } from "eridu-tech/shared-lock";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 
 const redisClient = new Redis("YOUR_REDIS_CONNECTION");
 
@@ -17,5 +16,5 @@ const sharedLockFactory = new SharedLockFactory({
 const sharedLock = sharedLockFactory.create("resource", {
     limit: 2,
 });
-const serializedSharedLock = serde.serialize(sharedLock);
-const deserializedSharedLock = serde.deserialize(serializedSharedLock);
+const serializedSharedLock = await serde.serialize(sharedLock);
+const deserializedSharedLock = await serde.deserialize(serializedSharedLock);
