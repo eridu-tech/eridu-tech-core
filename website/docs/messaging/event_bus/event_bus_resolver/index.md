@@ -12,17 +12,21 @@ keywords:
 
 # EventBusResolver
 
-The `EventBusResolver` class provides a flexible way to configure and switch between different event-bus adapters at runtime.
+The `EventBusResolver` class creates an event bus for each configured adapter. Use it to dispatch through a default adapter or select a specific adapter at runtime.
 
 ## Initial configuration
 
-To begin using the `EventBusResolver` class, you will need to register all required adapters during initialization.
+Configure the named adapters in the constructor, then call `init()` before registering listeners or selecting an event bus. Initialization creates an event bus for each configured adapter.
 
 ```ts file=./samples/event-bus-resolver-initial-config.ts
 
 ```
 
 ## Usage
+
+### Registering listeners
+
+Register listeners during application setup. The resolver adds each listener to every configured adapter, so it can handle events regardless of which adapter is used to dispatch them.
 
 ### 1. Using the default adapter
 
@@ -31,7 +35,7 @@ To begin using the `EventBusResolver` class, you will need to register all requi
 ```
 
 :::danger
-Note that if you dont set a default adapter, an error will be thrown.
+If no default adapter is configured and none is specified in `use()`, an error is thrown.
 :::
 
 ### 2. Specifying an adapter explicitly
@@ -41,7 +45,7 @@ Note that if you dont set a default adapter, an error will be thrown.
 ```
 
 :::danger
-Note that if you specify a non-existent adapter, an error will be thrown.
+If you specify an adapter that is not configured, an error is thrown. Call `init()` before `use()`; otherwise, no configured adapter is available yet.
 :::
 
 ## Further information
