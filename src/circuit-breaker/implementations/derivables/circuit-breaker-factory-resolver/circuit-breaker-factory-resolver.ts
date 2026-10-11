@@ -19,6 +19,9 @@ import type { CircuitBreakerFactorySettingsBase } from "@/circuit-breaker/implem
 import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `CircuitBreakerFactoryResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
  * @group Derivables
  */
@@ -47,6 +50,9 @@ export type CircuitBreakerFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
+ * Resolves named circuit-breaker adapters to factories.
+ * Call `init()` before selecting a factory.
+ *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
  * @group Derivables
  */

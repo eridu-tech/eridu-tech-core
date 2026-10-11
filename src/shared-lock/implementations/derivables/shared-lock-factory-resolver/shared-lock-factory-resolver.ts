@@ -17,6 +17,9 @@ import type { SharedLockFactorySettingsBase } from "@/shared-lock/implementation
 import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `SharedLockFactoryResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
  * @group Derivables
  */
@@ -45,6 +48,9 @@ export type SharedLockFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
+ * Resolves named shared-lock adapters to factories.
+ * Call `init()` before selecting a factory.
+ *
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
  * @group Derivables
  */

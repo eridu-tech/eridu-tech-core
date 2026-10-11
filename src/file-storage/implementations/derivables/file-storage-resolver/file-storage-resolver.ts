@@ -17,6 +17,9 @@ import type { FileStorageSettingsBase } from "@/file-storage/implementations/der
 import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `FileStorageResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */
@@ -45,6 +48,9 @@ export type FileStorageResolverSettings<TAdapters extends string = string> =
     };
 
 /**
+ * Resolves named file-storage adapters to storage instances.
+ * Call `init()` before selecting a storage adapter.
+ *
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */

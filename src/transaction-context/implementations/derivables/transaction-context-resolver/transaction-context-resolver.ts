@@ -30,7 +30,7 @@ export type TransactionAdapters<TAdapters extends string = string> = Partial<
 
 /**
  * Configuration for `TransactionContextResolver`.
- * Registers named transaction adapters and designates a default.
+ * Provide named transaction adapters and their shared execution context.
  *
  * IMPORT_PATH: `"eridu-tech/transaction-context"`
  * @group Derivables
@@ -48,11 +48,13 @@ export type TransactionContextResolverSettings<
      */
     defaultAdapter?: NoInfer<TAdapters>;
 
+    /** The execution context used by every registered transaction adapter. */
     executionContext: IExecutionContext;
 };
 
 /**
- * The `TransactionContextResolver` class is immutable.
+ * Resolves named transaction adapters into transaction contexts.
+ * Call `init()` before using `use()` or `afterCommit()`.
  *
  * IMPORT_PATH: `"eridu-tech/transaction-context"`
  * @group Derivables

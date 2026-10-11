@@ -16,6 +16,9 @@ import type { LockFactorySettingsBase } from "@/lock/implementations/derivables/
 import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `LockFactoryResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/lock"`
  * @group Derivables
  */
@@ -44,6 +47,9 @@ export type LockFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
+ * Resolves named lock adapters to factories.
+ * Call `init()` before selecting a factory.
+ *
  * IMPORT_PATH: `"eridu-tech/lock"`
  * @group Derivables
  */

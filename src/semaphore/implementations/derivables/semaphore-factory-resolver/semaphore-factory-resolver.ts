@@ -16,6 +16,9 @@ import type { SemaphoreFactorySettingsBase } from "@/semaphore/implementations/d
 import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `SemaphoreFactoryResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/semaphore"`
  * @group Derivables
  */
@@ -44,6 +47,9 @@ export type SemaphoreFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
+ * Resolves named semaphore adapters to factories.
+ * Call `init()` before selecting a factory.
+ *
  * IMPORT_PATH: `"eridu-tech/semaphore"`
  * @group Derivables
  */

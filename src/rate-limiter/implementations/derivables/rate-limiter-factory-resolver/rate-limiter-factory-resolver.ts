@@ -19,6 +19,9 @@ import type { RateLimiterFactorySettingsBase } from "@/rate-limiter/implementati
 import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `RateLimiterFactoryResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
  * @group Derivables
  */
@@ -47,6 +50,9 @@ export type RateLimiterFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
+ * Resolves named rate-limiter adapters to factories.
+ * Call `init()` before selecting a factory.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
  * @group Derivables
  */
