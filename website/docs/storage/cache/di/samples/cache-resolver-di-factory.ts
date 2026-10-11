@@ -1,5 +1,5 @@
 import { CacheResolver } from "eridu-tech/cache";
-import { cacheResolverDiFactory } from "eridu-tech/cache/di";
+import { ProxyCacheResolver } from "eridu-tech/cache/di";
 import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
 import { Container } from "eridu-tech/di";
 import { ExecutionContext } from "eridu-tech/execution-context";
@@ -18,12 +18,17 @@ const cacheResolver = new CacheResolver<Adapters>({
     defaultAdapter: "storage1",
 });
 
+await cacheResolver.init();
+
 container.registerValue({
     token: CacheResolver,
     value: cacheResolver,
 });
 
 // Create the proxy before container.init()
-export const cache = cacheResolverDiFactory<Adapters>(container, CacheResolver);
+export const cache = new ProxyCacheResolver<Adapters>({
+    container,
+    resolverToken: CacheResolver,
+});
 
 await container.init();
