@@ -46,60 +46,6 @@ Note that if you dont set a default adapter, an error will be thrown.
 Note that if you specify a non-existent adapter, an error will be thrown.
 :::
 
-#### 3. Overriding default settings
-
-```ts file=./samples/circuit-breaker-factory-resolver-override-settings.ts
-
-```
-
-:::info
-Note that the `CircuitBreakerFactoryResolver` is immutable, meaning any configuration override returns a new instance rather than modifying the existing one.
-:::
-
-## DatabaseCircuitBreakerFactoryResolver {#database_circuit_breaker_factory_resolver}
-
-The `DatabaseCircuitBreakerFactoryResolver` class provides a flexible way to configure and switch between different circuit-breaker-storage adapters at runtime.
-
-### Initial configuration
-
-To begin using the `DatabaseCircuitBreakerFactoryResolver`, You will need to register all required adapters during initialization.
-
-```ts file=./samples/database-circuit-breaker-factory-resolver-initial-config.ts
-
-```
-
-### Usage
-
-#### 1. Using the default adapter
-
-```ts file=./samples/database-circuit-breaker-factory-resolver-default-adapter.ts
-
-```
-
-:::danger
-Note that if you dont set a default adapter, an error will be thrown.
-:::
-
-#### 2. Specifying an adapter explicitly
-
-```ts file=./samples/database-circuit-breaker-factory-resolver-specific-adapter.ts
-
-```
-
-:::danger
-Note that if you specify a non-existent adapter, an error will be thrown.
-:::
-
-#### 3. Overriding default settings
-
-```ts file=./samples/database-circuit-breaker-factory-resolver-override-settings.ts
-
-```
-
-:::info
-Note that the `DatabaseCircuitBreakerFactoryResolver` is immutable, meaning any configuration override returns a new instance rather than modifying the existing one.
-:::
-
 ## Further information
 
 For further information refer to [`eridu-tech/circuit-breaker`](https://eridu-tech.github.io/eridu-tech-core/modules/CircuitBreaker.html) API docs.

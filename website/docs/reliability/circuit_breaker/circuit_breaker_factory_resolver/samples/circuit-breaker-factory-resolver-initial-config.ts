@@ -2,11 +2,10 @@ import { CircuitBreakerFactoryResolver } from "eridu-tech/circuit-breaker";
 import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storage-adapter";
 import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
 import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-circuit-breaker-adapter";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { Redis } from "ioredis";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 export const circuitBreakerFactoryResolver = new CircuitBreakerFactoryResolver({
     serde,
     adapters: {
@@ -19,3 +18,5 @@ export const circuitBreakerFactoryResolver = new CircuitBreakerFactoryResolver({
     },
     defaultAdapter: "memory",
 });
+
+await circuitBreakerFactoryResolver.init();
