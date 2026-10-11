@@ -11,7 +11,10 @@ export class UserController {
         const params = args.req.params(UserController.paramsSchema);
         const user = await this.userService.get(params.id);
         if (user === null) {
-            throw HttpError.create({ message: "User not found", status: "404" });
+            throw HttpError.create({
+                message: "User not found",
+                status: "404",
+            });
         }
         return args.json(user).setStatus(200);
     };
