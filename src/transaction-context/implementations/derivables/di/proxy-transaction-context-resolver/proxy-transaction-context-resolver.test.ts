@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { LIFETIME } from "@/di/contracts/_module-exports.js";
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
@@ -14,65 +15,255 @@ import type { ITransactionAdapter } from "@/transaction-context/contracts/_modul
 describe("class: ProxyTransactionContextResolver", () => {
     type Adapters = "adapter1" | "adapter2";
     let transactionContext: ProxyTransactionContextResolver<Adapters>;
+    let container: Container;
     let start1: Mock<ITransactionAdapter["start"]>;
     let start2: Mock<ITransactionAdapter["start"]>;
 
-    beforeEach(async () => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
+    describe("LIFETIME.SINGLETON:", () => {
+        beforeEach(async () => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
 
-        const executionContext = new ExecutionContext(
-            new AlsExecutionContextAdapter(),
-        );
-        const container = new Container({
-            executionContext,
-        });
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            container = new Container({ executionContext });
 
-        const adapter1 = new NoOpTransactionAdapter(null);
-        start1 = vi.spyOn(adapter1, "start");
+            const adapter1 = new NoOpTransactionAdapter(null);
+            start1 = vi.spyOn(adapter1, "start");
 
-        const adapter2 = new NoOpTransactionAdapter(null);
-        start2 = vi.spyOn(adapter2, "start");
+            const adapter2 = new NoOpTransactionAdapter(null);
+            start2 = vi.spyOn(adapter2, "start");
 
-        const transactionContextResolver =
-            new TransactionContextResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
+            container.registerFactory({
+                token: TransactionContextResolver,
+                factory: () => {
+                    const resolver = new TransactionContextResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                        executionContext,
+                    });
+                    return resolver;
                 },
-                defaultAdapter: "adapter1",
-                executionContext,
+                onInit: async (factory) => {
+                    await factory.init();
+                },
+                deps: {},
+                lifetime: LIFETIME.SINGLETON,
             });
-        await transactionContextResolver.init();
+            transactionContext = new ProxyTransactionContextResolver<Adapters>({
+                container,
+                resolverToken: TransactionContextResolver,
+            });
 
-        container.registerValue({
-            token: TransactionContextResolver,
-            value: transactionContextResolver,
-        });
-        transactionContext = new ProxyTransactionContextResolver<Adapters>({
-            container,
-            resolverToken: TransactionContextResolver,
+            await container.init();
         });
 
-        await container.init();
+        test("Default adapter:", async () => {
+            await transactionContext.run(async () => {});
+
+            expect(start1).toHaveBeenCalledExactlyOnceWith();
+            expect(start2).not.toHaveBeenCalled();
+        });
+        test("Adapter 1:", async () => {
+            await transactionContext.use("adapter1").run(async () => {});
+
+            expect(start1).toHaveBeenCalledExactlyOnceWith();
+            expect(start2).not.toHaveBeenCalled();
+        });
+        test("Adapter 2:", async () => {
+            await transactionContext.use("adapter2").run(async () => {});
+
+            expect(start2).toHaveBeenCalledExactlyOnceWith();
+            expect(start1).not.toHaveBeenCalled();
+        });
+        test("Runs afterCommit callbacks for different adapters:", async () => {
+            const afterCommit1 = vi.fn(() => Promise.resolve());
+
+            await transactionContext.use("adapter1").run(async () => {
+                await transactionContext.afterCommit(afterCommit1);
+            });
+            expect(afterCommit1).toHaveBeenCalledOnce();
+
+            const afterCommit2 = vi.fn(() => Promise.resolve());
+            await transactionContext.use("adapter2").run(async () => {
+                await transactionContext.afterCommit(afterCommit2);
+            });
+            expect(afterCommit2).toHaveBeenCalledOnce();
+        });
     });
+    describe("LIFETIME.TRANSIENT:", () => {
+        beforeEach(async () => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
 
-    test("Default adapter:", async () => {
-        await transactionContext.run(async () => {});
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            container = new Container({ executionContext });
 
-        expect(start1).toHaveBeenCalledExactlyOnceWith();
-        expect(start2).not.toHaveBeenCalled();
+            const adapter1 = new NoOpTransactionAdapter(null);
+            start1 = vi.spyOn(adapter1, "start");
+
+            const adapter2 = new NoOpTransactionAdapter(null);
+            start2 = vi.spyOn(adapter2, "start");
+
+            container.registerFactory({
+                token: TransactionContextResolver,
+                factory: async () => {
+                    const resolver = new TransactionContextResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                        executionContext,
+                    });
+                    await resolver.init();
+                    return resolver;
+                },
+                deps: {},
+                lifetime: LIFETIME.TRANSIENT,
+            });
+            transactionContext = new ProxyTransactionContextResolver<Adapters>({
+                container,
+                resolverToken: TransactionContextResolver,
+            });
+
+            await container.init();
+        });
+
+        test("Default adapter:", async () => {
+            await transactionContext.run(async () => {});
+
+            expect(start1).toHaveBeenCalledExactlyOnceWith();
+            expect(start2).not.toHaveBeenCalled();
+        });
+        test("Adapter 1:", async () => {
+            await transactionContext.use("adapter1").run(async () => {});
+
+            expect(start1).toHaveBeenCalledExactlyOnceWith();
+            expect(start2).not.toHaveBeenCalled();
+        });
+        test("Adapter 2:", async () => {
+            await transactionContext.use("adapter2").run(async () => {});
+
+            expect(start2).toHaveBeenCalledExactlyOnceWith();
+            expect(start1).not.toHaveBeenCalled();
+        });
+        test("Runs afterCommit callbacks for different adapters:", async () => {
+            const afterCommit1 = vi.fn(() => Promise.resolve());
+
+            await transactionContext.use("adapter1").run(async () => {
+                await transactionContext.afterCommit(afterCommit1);
+            });
+            expect(afterCommit1).toHaveBeenCalledOnce();
+
+            const afterCommit2 = vi.fn(() => Promise.resolve());
+            await transactionContext.use("adapter2").run(async () => {
+                await transactionContext.afterCommit(afterCommit2);
+            });
+            expect(afterCommit2).toHaveBeenCalledOnce();
+        });
     });
-    test("Adapter 1:", async () => {
-        await transactionContext.use("adapter1").run(async () => {});
+    describe("LIFETIME.SCOPED:", () => {
+        beforeEach(async () => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
 
-        expect(start1).toHaveBeenCalledExactlyOnceWith();
-        expect(start2).not.toHaveBeenCalled();
-    });
-    test("Adapter 2:", async () => {
-        await transactionContext.use("adapter2").run(async () => {});
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            container = new Container({ executionContext });
 
-        expect(start2).toHaveBeenCalledExactlyOnceWith();
-        expect(start1).not.toHaveBeenCalled();
+            const adapter1 = new NoOpTransactionAdapter(null);
+            start1 = vi.spyOn(adapter1, "start");
+
+            const adapter2 = new NoOpTransactionAdapter(null);
+            start2 = vi.spyOn(adapter2, "start");
+
+            container.registerFactory({
+                token: TransactionContextResolver,
+                factory: async () => {
+                    const resolver = new TransactionContextResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                        executionContext,
+                    });
+                    await resolver.init();
+                    return resolver;
+                },
+                deps: {},
+                lifetime: LIFETIME.SCOPED,
+            });
+            transactionContext = new ProxyTransactionContextResolver<Adapters>({
+                container,
+                resolverToken: TransactionContextResolver,
+            });
+
+            await container.init();
+        });
+
+        test("Default adapter:", async () => {
+            await container.run({
+                scope: async () => {
+                    await transactionContext.run(async () => {});
+                },
+            });
+
+            expect(start1).toHaveBeenCalledExactlyOnceWith();
+            expect(start2).not.toHaveBeenCalled();
+        });
+        test("Adapter 1:", async () => {
+            await container.run({
+                scope: async () => {
+                    await transactionContext
+                        .use("adapter1")
+                        .run(async () => {});
+                },
+            });
+
+            expect(start1).toHaveBeenCalledExactlyOnceWith();
+            expect(start2).not.toHaveBeenCalled();
+        });
+        test("Adapter 2:", async () => {
+            await container.run({
+                scope: async () => {
+                    await transactionContext
+                        .use("adapter2")
+                        .run(async () => {});
+                },
+            });
+
+            expect(start2).toHaveBeenCalledExactlyOnceWith();
+            expect(start1).not.toHaveBeenCalled();
+        });
+        test("Runs afterCommit callbacks for different adapters:", async () => {
+            const afterCommit1 = vi.fn(() => Promise.resolve());
+            await container.run({
+                scope: async () => {
+                    await transactionContext.use("adapter1").run(async () => {
+                        await transactionContext.afterCommit(afterCommit1);
+                    });
+                },
+            });
+            expect(afterCommit1).toHaveBeenCalledOnce();
+
+            const afterCommit2 = vi.fn(() => Promise.resolve());
+            await container.run({
+                scope: async () => {
+                    await transactionContext.use("adapter2").run(async () => {
+                        await transactionContext.afterCommit(afterCommit2);
+                    });
+                },
+            });
+            expect(afterCommit2).toHaveBeenCalledOnce();
+        });
     });
 });
