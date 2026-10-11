@@ -1,10 +1,9 @@
 import { Redis } from "ioredis";
 import { RedisRateLimiterAdapter } from "eridu-tech/rate-limiter/redis-rate-limiter-adapter";
 import { RateLimiterFactory } from "eridu-tech/rate-limiter";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
-const serde = new Serde(new SuperJsonSerdeAdapter());
+const serde = new SuperJsonSerde();
 
 const redisClient = new Redis("YOUR_REDIS_CONNECTION");
 
@@ -17,5 +16,5 @@ const rateLimiterFactory = new RateLimiterFactory({
 const rateLimiter = rateLimiterFactory.create("resource", {
     limit: 10,
 });
-const serializedRateLimiter = serde.serialize(rateLimiter);
-const deserializedRateLimiter = serde.deserialize(serializedRateLimiter);
+const serializedRateLimiter = await serde.serialize(rateLimiter);
+const deserializedRateLimiter = await serde.deserialize(serializedRateLimiter);
