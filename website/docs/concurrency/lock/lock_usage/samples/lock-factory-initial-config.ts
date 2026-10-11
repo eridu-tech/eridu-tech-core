@@ -10,3 +10,5 @@ export const lockFactory = new LockFactory({
     // You can choose the adapter to use
     adapter: new MemoryLockAdapter(),
 });
+
+await lockFactory.init();
