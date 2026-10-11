@@ -40,7 +40,7 @@ Here is a complete list of settings for the [`withCache`](https://eridu-tech.git
 
 ## withInvalidationFactory middleware {#with_invalidation_factory_middleware}
 
-The Cache invalidation middleware intercepts function calls and invalidates a cache entry after the wrapped function has been invoked. The cache key is derived from the function's arguments via the `key` setting. After the wrapped function runs, the `shouldInvalidate` setting decides whether to invalidate based on the function's arguments and return value; when it returns `true` (the default), the cache entry is removed from the provided `ICache`.
+The Cache invalidation middleware intercepts function calls and invalidates a cache entry after the wrapped function has been invoked. The cache key is derived from the function's arguments via the `key` setting. After the wrapped function runs, the `shouldInvalidate` setting decides whether to invalidate based on the function's arguments and return value; when it returns `true` (the default), the cache entry is removed from the selected cache adapter.
 
 This is useful for write-invalidation caching patterns, where stale cached data must be cleared after a mutation.
 
@@ -49,6 +49,8 @@ This is useful for write-invalidation caching patterns, where stale cached data 
 ```ts file=./samples/with-invalidation.ts
 
 ```
+
+Use `withInvalidation()` to invalidate through the resolver's default adapter (`storage1` in this example), or `withInvalidation.use("storage2")({ ... })` to select a specific adapter.
 
 :::info
 Here is a complete list of settings for the [`withInvalidation`](https://eridu-tech.github.io/eridu-tech-core/types/Cache.WithInvalidationSettings.html) function.

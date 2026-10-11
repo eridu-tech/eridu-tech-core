@@ -12,7 +12,10 @@ describe("function: withDispatchBeforeFactory", () => {
     const eventDispatcher = new EventBus({
         adapter,
     });
-    const withDispatchBefore = withDispatchBeforeFactory(eventDispatcher);
+    const eventBusResolver = {
+        use: vi.fn((_adapter?: "primary" | "secondary") => eventDispatcher),
+    };
+    const withDispatchBefore = withDispatchBeforeFactory(eventBusResolver);
 
     afterEach(() => {
         vi.clearAllMocks();
@@ -216,5 +219,25 @@ describe("function: withDispatchBeforeFactory", () => {
         expect(payload).toHaveBeenCalledOnce();
         expect(dispatch).not.toHaveBeenCalled();
         expect(innerFn).toHaveBeenCalledOnce();
+    });
+
+    test("Should dispatch using the selected event bus adapter", async () => {
+        const dispatch = vi.spyOn(adapter, "dispatch");
+        const wrapped = use(
+            async (): Promise<void> => Promise.resolve(),
+            withDispatchBefore.use("secondary")({
+                type: "user.created",
+                payload: () => ({ userId: "42" }),
+            }),
+        );
+
+        await wrapped();
+
+        expect(eventBusResolver.use).toHaveBeenCalledExactlyOnceWith(
+            "secondary",
+        );
+        expect(dispatch).toHaveBeenCalledExactlyOnceWith("user.created", {
+            userId: "42",
+        });
     });
 });

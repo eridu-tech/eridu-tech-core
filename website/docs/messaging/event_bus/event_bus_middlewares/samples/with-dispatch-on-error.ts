@@ -1,8 +1,8 @@
 import { withDispatchOnErrorFactory } from "eridu-tech/event-bus/middlewares";
 import { use } from "eridu-tech/middleware";
-import { eventBus } from "./event-bus.js";
+import { eventBusResolver } from "./event-bus.js";
 
-const withDispatchOnError = withDispatchOnErrorFactory(eventBus);
+const withDispatchOnError = withDispatchOnErrorFactory(eventBusResolver);
 
 const createUser = async (userId: string): Promise<string> => {
     // ... create the user
@@ -12,7 +12,7 @@ const createUser = async (userId: string): Promise<string> => {
 // Wrap with an error dispatch
 const wrappedCreateUser = use(
     createUser,
-    withDispatchOnError({
+    withDispatchOnError.use("storage2")({
         type: "user.error",
         payload: ({ args, error }) => ({
             userId: args[0],

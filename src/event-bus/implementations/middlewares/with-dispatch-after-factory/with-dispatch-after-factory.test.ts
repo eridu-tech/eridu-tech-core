@@ -12,7 +12,10 @@ describe("function: withDispatchAfterFactory", () => {
     const eventDispatcher = new EventBus({
         adapter,
     });
-    const withDispatchAfter = withDispatchAfterFactory(eventDispatcher);
+    const eventBusResolver = {
+        use: vi.fn((_adapter?: "primary" | "secondary") => eventDispatcher),
+    };
+    const withDispatchAfter = withDispatchAfterFactory(eventBusResolver);
 
     afterEach(() => {
         vi.clearAllMocks();
@@ -211,5 +214,25 @@ describe("function: withDispatchAfterFactory", () => {
         expect(result).toBe("result-u-9");
         expect(payload).toHaveBeenCalledOnce();
         expect(dispatch).not.toHaveBeenCalled();
+    });
+
+    test("Should dispatch using the selected event bus adapter", async () => {
+        const dispatch = vi.spyOn(adapter, "dispatch");
+        const wrapped = use(
+            async (): Promise<string> => Promise.resolve("ok"),
+            withDispatchAfter.use("secondary")({
+                type: "user.created",
+                payload: () => ({ userId: "42" }),
+            }),
+        );
+
+        await wrapped();
+
+        expect(eventBusResolver.use).toHaveBeenCalledExactlyOnceWith(
+            "secondary",
+        );
+        expect(dispatch).toHaveBeenCalledExactlyOnceWith("user.created", {
+            userId: "42",
+        });
     });
 });

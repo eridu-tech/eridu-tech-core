@@ -7,7 +7,7 @@ import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
     BaseEventMap,
-    IEventDispatcher,
+    IEventBusResolver,
 } from "@/event-bus/contracts/_module-exports.js";
 import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 import type { Invocable } from "@/utilities/_module-exports.js";
@@ -64,30 +64,13 @@ export type WithDispatchBeforeSettings<
 };
 
 /**
- * Creates a middleware factory that dispatches an event **before** the wrapped
- * function is invoked.
- *
- * When the wrapped function is called, the middleware resolves the event payload
- * from the function's arguments and dispatches the configured event on the provided
- * event dispatcher, and then invokes the wrapped function and returns its result. If
- * the payload resolves to `undefined` (or doesn't return a value), no event is dispatched and the wrapped
- * function is invoked directly.
- *
- * This is useful for emitting lifecycle events such as "about to create a user"
- * or for tracing and auditing when a function starts.
- *
- * @typeParam TEventMap - The event map of the event dispatcher.
- * @param eventDispatcher - The event dispatcher used to dispatch the event.
- * @returns A function that accepts {@link WithDispatchBeforeSettings} and returns
- *          a middleware.
+ * A middleware factory that dispatches an event before the wrapped function.
  *
  * IMPORT_PATH: `"eridu-tech/event-bus/middlewares"`
  * @group Middlewares
  */
-export function withDispatchBeforeFactory<
-    TEventMap extends BaseEventMap = BaseEventMap,
->(eventDispatcher: IEventDispatcher<TEventMap>) {
-    return <
+export type WithDispatchBefore<TEventMap extends BaseEventMap = BaseEventMap> =
+    <
         TEventName extends keyof TEventMap,
         TParameters extends Array<unknown>,
         TReturn,
@@ -97,13 +80,76 @@ export function withDispatchBeforeFactory<
             TEventName,
             TParameters
         >,
-    ): MiddlewareFn<TParameters, Promise<TReturn>> => {
-        const { type, payload } = settings;
-        return withBeforeHook<TParameters, TReturn>((args) => {
-            const event = callInvocable(payload, { args });
-            if (event !== null) {
-                void eventDispatcher.dispatch(type, event);
-            }
-        });
+    ) => MiddlewareFn<TParameters, Promise<TReturn>>;
+
+/**
+ * Resolver-facing API returned by {@link withDispatchBeforeFactory}.
+ *
+ * IMPORT_PATH: `"eridu-tech/event-bus/middlewares"`
+ * @group Middlewares
+ */
+export type WithDispatchBeforeResolver<
+    TAdapters extends string = string,
+    TEventMap extends BaseEventMap = BaseEventMap,
+> = {
+    /**
+     * Selects the adapter the returned middleware factory uses.
+     *
+     * @param adapter - The adapter to use. Defaults to the resolver's default
+     * adapter.
+     */
+    use(adapter?: TAdapters): WithDispatchBefore<TEventMap>;
+};
+
+/**
+ * Creates a middleware factory that dispatches an event **before** the wrapped
+ * function is invoked.
+ *
+ * When the wrapped function is called, the middleware resolves the event payload
+ * from the function's arguments and dispatches the configured event on the selected
+ * event bus, and then invokes the wrapped function and returns its result. If the
+ * payload resolves to `undefined` (or doesn't return a value), no event is dispatched and the wrapped
+ * function is invoked directly.
+ *
+ * This is useful for emitting lifecycle events such as "about to create a user"
+ * or for tracing and auditing when a function starts.
+ *
+ * @typeParam TEventMap - The event map of the event dispatcher.
+ * @typeParam TAdapters - Union type of the registered adapter names.
+ * @param eventBusResolver - The resolver used to select the event bus adapter.
+ * @returns A {@link WithDispatchBefore} that is also a
+ *          {@link WithDispatchBeforeResolver}.
+ *
+ * IMPORT_PATH: `"eridu-tech/event-bus/middlewares"`
+ * @group Middlewares
+ */
+export function withDispatchBeforeFactory<
+    TEventMap extends BaseEventMap = BaseEventMap,
+    TAdapters extends string = string,
+>(
+    eventBusResolver: Pick<IEventBusResolver<TAdapters, TEventMap>, "use">,
+): WithDispatchBefore<TEventMap> &
+    WithDispatchBeforeResolver<TAdapters, TEventMap> {
+    const withDispatchBeforeResolver: WithDispatchBeforeResolver<
+        TAdapters,
+        TEventMap
+    >["use"] = function use(
+        adapter?: TAdapters,
+    ): WithDispatchBefore<TEventMap> {
+        return (settings) => {
+            const { type, payload } = settings;
+            return withBeforeHook((args) => {
+                const event = callInvocable(payload, { args });
+                if (event !== null) {
+                    void eventBusResolver.use(adapter).dispatch(type, event);
+                }
+            });
+        };
     };
+
+    const middleware =
+        withDispatchBeforeResolver() as WithDispatchBefore<TEventMap> &
+            WithDispatchBeforeResolver<TAdapters, TEventMap>;
+    middleware.use = withDispatchBeforeResolver;
+    return middleware;
 }
