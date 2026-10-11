@@ -8,7 +8,6 @@ import { enhanceUserService } from "./4-aop";
 import { Kysely } from "kysely";
 import { Tables } from "./tables";
 
-
 container.registerFactory({
     token: UserService,
     factory: (deps) => {
@@ -18,7 +17,7 @@ container.registerFactory({
                     Kysely<Tables>
                 >,
             ),
-            enhanceUserService
+            enhanceUserService,
         );
     },
     deps: {

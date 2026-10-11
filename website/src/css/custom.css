@@ -6,39 +6,47 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+    --ifm-color-primary: #2e8555;
+    --ifm-color-primary-dark: #29784c;
+    --ifm-color-primary-darker: #277148;
+    --ifm-color-primary-darkest: #205d3b;
+    --ifm-color-primary-light: #33925d;
+    --ifm-color-primary-lighter: #359962;
+    --ifm-color-primary-lightest: #3cad6e;
+    --ifm-code-font-size: 95%;
+    --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 
-  /* Landing page tokens */
-  --daiso-hero-bg-start: #1a5c38;
-  --daiso-hero-bg-end: #2e8555;
-  --daiso-icon-bg: rgba(46, 133, 85, 0.12);
-  --daiso-icon-color: var(--ifm-color-primary);
-  --daiso-card-bg: linear-gradient(180deg, #ffffff 0%, #f6fbf7 100%);
-  --daiso-card-bg-hover: linear-gradient(180deg, #ffffff 0%, #eef8f1 100%);
+    /* Landing page tokens */
+    --daiso-hero-bg-start: #1a5c38;
+    --daiso-hero-bg-end: #2e8555;
+    --daiso-icon-bg: rgba(46, 133, 85, 0.12);
+    --daiso-icon-color: var(--ifm-color-primary);
+    --daiso-card-bg: linear-gradient(180deg, #ffffff 0%, #f6fbf7 100%);
+    --daiso-card-bg-hover: linear-gradient(180deg, #ffffff 0%, #eef8f1 100%);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-html[data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+html[data-theme="dark"] {
+    --ifm-color-primary: #25c2a0;
+    --ifm-color-primary-dark: #21af90;
+    --ifm-color-primary-darker: #1fa588;
+    --ifm-color-primary-darkest: #1a8870;
+    --ifm-color-primary-light: #29d5b0;
+    --ifm-color-primary-lighter: #32d8b4;
+    --ifm-color-primary-lightest: #4fddbf;
+    --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 
-  --daiso-icon-bg: rgba(37, 194, 160, 0.15);
-  --daiso-card-bg: linear-gradient(180deg, rgba(27, 39, 35, 0.98) 0%, rgba(21, 48, 40, 0.98) 100%);
-  --daiso-card-bg-hover: linear-gradient(180deg, rgba(31, 47, 42, 0.98) 0%, rgba(24, 58, 47, 0.98) 100%);
+    --daiso-icon-bg: rgba(37, 194, 160, 0.15);
+    --daiso-card-bg: linear-gradient(
+        180deg,
+        rgba(27, 39, 35, 0.98) 0%,
+        rgba(21, 48, 40, 0.98) 100%
+    );
+    --daiso-card-bg-hover: linear-gradient(
+        180deg,
+        rgba(31, 47, 42, 0.98) 0%,
+        rgba(24, 58, 47, 0.98) 100%
+    );
 }
 
 /* ================================================================
@@ -46,7 +54,7 @@ html[data-theme='dark'] {
    ================================================================ */
 
 .navbar {
-  border-bottom: 2px solid var(--ifm-color-primary);
+    border-bottom: 2px solid var(--ifm-color-primary);
 }
 
 /* ================================================================
@@ -54,16 +62,16 @@ html[data-theme='dark'] {
    ================================================================ */
 
 .footer {
-  background-color: var(--ifm-navbar-background-color) !important;
-  border-top: 2px solid var(--ifm-color-primary);
+    background-color: var(--ifm-navbar-background-color) !important;
+    border-top: 2px solid var(--ifm-color-primary);
 }
 
 /* Footer copyright text darker in light mode */
 .footer__copyright {
-  color: #222 !important;
+    color: #222 !important;
 }
-[data-theme='dark'] .footer__copyright {
-  color: #fff !important;
+[data-theme="dark"] .footer__copyright {
+    color: #fff !important;
 }
 
 /* ================================================================
@@ -71,167 +79,173 @@ html[data-theme='dark'] {
    ================================================================ */
 
 .daiso-hero {
-  position: relative;
-  background: linear-gradient(
-    135deg,
-    var(--daiso-hero-bg-start) 0%,
-    var(--daiso-hero-bg-end) 100%
-  );
-  padding: 5.5rem 0;
-  text-align: center;
-  overflow: hidden;
+    position: relative;
+    background: linear-gradient(
+        135deg,
+        var(--daiso-hero-bg-start) 0%,
+        var(--daiso-hero-bg-end) 100%
+    );
+    padding: 5.5rem 0;
+    text-align: center;
+    overflow: hidden;
 }
 
 .daiso-hero-pattern {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: radial-gradient(
-      circle at 50% 0%,
-      rgba(255, 255, 255, 0.18) 0%,
-      transparent 60%
-    ),
-    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 100% 100%, 3rem 3rem, 3rem 3rem;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
-  mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255, 255, 255, 0.18) 0%,
+            transparent 60%
+        ),
+        linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size:
+        100% 100%,
+        3rem 3rem,
+        3rem 3rem;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
+    mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
 }
 
 .daiso-hero-inner {
-  position: relative;
-  z-index: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .daiso-hero-title {
-  font-size: clamp(2.25rem, 5vw, 3.5rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  margin-bottom: 0;
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    margin-bottom: 0;
 }
 
 .daiso-hero-subtitle {
-  max-width: 44rem;
-  margin: 1.25rem auto 2.25rem;
-  font-size: 1.125rem;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.9);
+    max-width: 44rem;
+    margin: 1.25rem auto 2.25rem;
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* Hero CTAs sit on the green gradient: solid white primary, glass outline */
 .daiso-hero .daiso-hero-ctas .button--primary {
-  background: #fff;
-  border-color: #fff;
-  color: var(--daiso-hero-bg-start);
+    background: #fff;
+    border-color: #fff;
+    color: var(--daiso-hero-bg-start);
 }
 
 .daiso-hero .daiso-hero-ctas .button--primary:hover,
 .daiso-hero .daiso-hero-ctas .button--primary:focus {
-  background: rgba(255, 255, 255, 0.88);
-  border-color: rgba(255, 255, 255, 0.88);
-  color: var(--daiso-hero-bg-start);
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(255, 255, 255, 0.88);
+    color: var(--daiso-hero-bg-start);
 }
 
 .daiso-hero .daiso-hero-ctas .button--outline.button--secondary {
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.6);
-  color: #fff;
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.6);
+    color: #fff;
 }
 
 .daiso-hero .daiso-hero-ctas .button--outline.button--secondary:hover,
 .daiso-hero .daiso-hero-ctas .button--outline.button--secondary:focus,
 .daiso-hero
-  .daiso-hero-ctas
-  .button--outline.button--secondary[href*="github.com"]:hover,
+    .daiso-hero-ctas
+    .button--outline.button--secondary[href*="github.com"]:hover,
 .daiso-hero
-  .daiso-hero-ctas
-  .button--outline.button--secondary[href*="github.com"]:focus {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: #fff !important;
-  color: #fff !important;
+    .daiso-hero-ctas
+    .button--outline.button--secondary[href*="github.com"]:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: #fff !important;
+    color: #fff !important;
 }
 
 .daiso-install-command {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: #eaf6f0;
-  border: 1px solid var(--ifm-color-primary);
-  border-radius: 0.5rem;
-  padding: 0.7rem 1rem 0.7rem 1.75rem;
-  font-family: var(--ifm-font-family-monospace);
-  color: var(--ifm-color-primary-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #eaf6f0;
+    border: 1px solid var(--ifm-color-primary);
+    border-radius: 0.5rem;
+    padding: 0.7rem 1rem 0.7rem 1.75rem;
+    font-family: var(--ifm-font-family-monospace);
+    color: var(--ifm-color-primary-dark);
 }
 
 .daiso-install-command code {
-  background: none !important;
-  color: inherit !important;
-  font-size: 1rem;
-  padding: 0 !important;
-  border: none !important;
-  border-radius: 0 !important;
+    background: none !important;
+    color: inherit !important;
+    font-size: 1rem;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
 }
 
 .daiso-copy-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--ifm-color-emphasis-200);
-  border: 1px solid var(--ifm-color-emphasis-400);
-  border-radius: 0.35rem;
-  color: var(--ifm-color-emphasis-800);
-  cursor: pointer;
-  padding: 0.3rem 0.45rem;
-  transition: background 0.15s ease, color 0.15s ease;
-  flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ifm-color-emphasis-200);
+    border: 1px solid var(--ifm-color-emphasis-400);
+    border-radius: 0.35rem;
+    color: var(--ifm-color-emphasis-800);
+    cursor: pointer;
+    padding: 0.3rem 0.45rem;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+    flex-shrink: 0;
 }
 
 .daiso-copy-btn:hover {
-  background: var(--ifm-color-emphasis-300);
-  color: var(--ifm-color-emphasis-900);
+    background: var(--ifm-color-emphasis-300);
+    color: var(--ifm-color-emphasis-900);
 }
 
 .daiso-copy-btn:active {
-  background: var(--ifm-color-emphasis-400);
+    background: var(--ifm-color-emphasis-400);
 }
 
 /* Dark-green CTA section (same in both themes): translucent dark pill variant */
 .daiso-cta-section .daiso-install-command {
-  background: rgba(0, 0, 0, 0.28);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.95);
+    background: rgba(0, 0, 0, 0.28);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.95);
 }
 
 .daiso-cta-section .daiso-copy-btn {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .daiso-cta-section .daiso-copy-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
 }
 
 .daiso-cta-section .daiso-copy-btn:active {
-  background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.3);
 }
 
 /* Dark mode: green-tinted pill to match the light-theme style */
-html[data-theme='dark'] .daiso-install-command {
-  background: var(--daiso-icon-bg);
-  border-color: var(--ifm-color-primary);
-  color: var(--ifm-color-primary-lighter);
+html[data-theme="dark"] .daiso-install-command {
+    background: var(--daiso-icon-bg);
+    border-color: var(--ifm-color-primary);
+    color: var(--ifm-color-primary-lighter);
 }
 
 .daiso-hero-ctas {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 /* ================================================================
@@ -239,119 +253,121 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-code-tabs-header {
-  max-width: 46rem;
-  margin-bottom: 2.5rem;
+    max-width: 46rem;
+    margin-bottom: 2.5rem;
 }
 
 .daiso-code-tabs-header .daiso-section-subtitle {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .daiso-code-tabs-actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
 }
 
 .daiso-code-tabs-panel {
-  background: var(--ifm-background-color);
-  border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+    background: var(--ifm-background-color);
+    border: 1px solid var(--ifm-color-emphasis-200);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
 }
 
 .daiso-code-tabs-bar {
-  display: flex;
-  overflow-x: auto;
-  background: var(--ifm-color-emphasis-100);
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+    display: flex;
+    overflow-x: auto;
+    background: var(--ifm-color-emphasis-100);
+    border-bottom: 1px solid var(--ifm-color-emphasis-200);
 }
 
 .daiso-code-tabs-tab {
-  flex: 1 0 auto;
-  padding: 0.9rem 1.5rem;
-  border: none;
-  border-right: 1px solid var(--ifm-color-emphasis-200);
-  background: transparent;
-  color: var(--ifm-color-emphasis-700);
-  font-size: 0.9rem;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+    flex: 1 0 auto;
+    padding: 0.9rem 1.5rem;
+    border: none;
+    border-right: 1px solid var(--ifm-color-emphasis-200);
+    background: transparent;
+    color: var(--ifm-color-emphasis-700);
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
 }
 
 .daiso-code-tabs-tab:last-child {
-  border-right: none;
+    border-right: none;
 }
 
 .daiso-code-tabs-tab:hover {
-  background: var(--ifm-color-emphasis-200);
-  color: var(--ifm-color-emphasis-900);
+    background: var(--ifm-color-emphasis-200);
+    color: var(--ifm-color-emphasis-900);
 }
 
 .daiso-code-tabs-tab--active,
 .daiso-code-tabs-tab--active:hover {
-  background: var(--ifm-color-primary);
-  color: #fff;
+    background: var(--ifm-color-primary);
+    color: #fff;
 }
 
 .daiso-code-tabs-body {
-  padding: 1.5rem;
+    padding: 1.5rem;
 }
 
 .daiso-code-tabs-body [class*="codeBlockContainer"] {
-  margin-bottom: 0 !important;
-  box-shadow: none;
+    margin-bottom: 0 !important;
+    box-shadow: none;
 }
 
 .daiso-code-tabs-note {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--ifm-color-emphasis-200);
-  background: var(--ifm-color-emphasis-100);
-  color: var(--ifm-color-emphasis-700);
-  font-size: 0.95rem;
-  line-height: 1.65;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--ifm-color-emphasis-200);
+    background: var(--ifm-color-emphasis-100);
+    color: var(--ifm-color-emphasis-700);
+    font-size: 0.95rem;
+    line-height: 1.65;
 }
 
 .daiso-code-tabs-note svg {
-  flex-shrink: 0;
-  margin-top: 0.15rem;
-  color: var(--ifm-color-primary);
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    color: var(--ifm-color-primary);
 }
 
 /* Code showcase: install command + CTAs aligned with the left column */
 .daiso-showcase-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1.25rem;
-  margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
 }
 
 .daiso-showcase-ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 /* Code showcase "Get started": brand green in both themes */
 .daiso-showcase-ctas .button--secondary:not(.button--outline) {
-  background: var(--ifm-color-primary);
-  border-color: var(--ifm-color-primary);
-  color: #fff;
+    background: var(--ifm-color-primary);
+    border-color: var(--ifm-color-primary);
+    color: #fff;
 }
 
 .daiso-showcase-ctas .button--secondary:not(.button--outline):hover {
-  background: var(--ifm-color-primary-dark);
-  border-color: var(--ifm-color-primary-dark);
-  color: #fff;
+    background: var(--ifm-color-primary-dark);
+    border-color: var(--ifm-color-primary-dark);
+    color: #fff;
 }
 
 /* ================================================================
@@ -359,40 +375,40 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-stats-bar {
-  background: var(--ifm-color-emphasis-100);
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
-  padding: 2rem 0;
+    background: var(--ifm-color-emphasis-100);
+    border-bottom: 1px solid var(--ifm-color-emphasis-200);
+    padding: 2rem 0;
 }
 
-[data-theme='dark'] .daiso-stats-bar {
-  background: var(--ifm-background-surface-color);
+[data-theme="dark"] .daiso-stats-bar {
+    background: var(--ifm-background-surface-color);
 }
 
 .daiso-stats-inner {
-  display: flex;
-  justify-content: center;
-  gap: 1rem 4rem;
-  flex-wrap: wrap;
+    display: flex;
+    justify-content: center;
+    gap: 1rem 4rem;
+    flex-wrap: wrap;
 }
 
 .daiso-stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
 }
 
 .daiso-stat-value {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--ifm-color-primary);
-  line-height: 1;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--ifm-color-primary);
+    line-height: 1;
 }
 
 .daiso-stat-label {
-  font-size: 0.82rem;
-  color: var(--ifm-color-emphasis-600);
-  text-align: center;
+    font-size: 0.82rem;
+    color: var(--ifm-color-emphasis-600);
+    text-align: center;
 }
 
 /* ================================================================
@@ -400,28 +416,28 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
 }
 
 .daiso-section-header .daiso-section-title {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .daiso-section-title {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-  text-align: left;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    text-align: left;
 }
 
 .daiso-section-subtitle {
-  font-size: 1.05rem;
-  color: var(--ifm-color-emphasis-700);
-  max-width: 580px;
-  line-height: 1.65;
+    font-size: 1.05rem;
+    color: var(--ifm-color-emphasis-700);
+    max-width: 580px;
+    line-height: 1.65;
 }
 
 /* ================================================================
@@ -429,15 +445,15 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-section-alt {
-  background: var(--ifm-color-emphasis-100);
-  border-top: 1px solid var(--ifm-color-emphasis-200);
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+    background: var(--ifm-color-emphasis-100);
+    border-top: 1px solid var(--ifm-color-emphasis-200);
+    border-bottom: 1px solid var(--ifm-color-emphasis-200);
 }
 
-[data-theme='dark'] .daiso-section-alt {
-  background: var(--ifm-background-surface-color);
-  border-top-color: var(--ifm-color-emphasis-300);
-  border-bottom-color: var(--ifm-color-emphasis-300);
+[data-theme="dark"] .daiso-section-alt {
+    background: var(--ifm-background-surface-color);
+    border-top-color: var(--ifm-color-emphasis-300);
+    border-bottom-color: var(--ifm-color-emphasis-300);
 }
 
 /* ================================================================
@@ -445,54 +461,72 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-feature-card {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.04) 0%, transparent 100%);
-  border: 1px solid rgba(46, 204, 113, 0.18);
-  border-radius: 0.6rem;
-  padding: 0.9rem 1.1rem;
-  height: 100%;
-  transition: border-color 0.15s ease, background 0.15s ease;
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.04) 0%,
+        transparent 100%
+    );
+    border: 1px solid rgba(46, 204, 113, 0.18);
+    border-radius: 0.6rem;
+    padding: 0.9rem 1.1rem;
+    height: 100%;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
 }
 
 .daiso-feature-card:hover {
-  border-color: rgba(46, 204, 113, 0.35);
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.08) 0%, transparent 100%);
+    border-color: rgba(46, 204, 113, 0.35);
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.08) 0%,
+        transparent 100%
+    );
 }
 
-[data-theme='dark'] .daiso-feature-card {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.06) 0%, transparent 100%);
-  box-shadow: none;
+[data-theme="dark"] .daiso-feature-card {
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.06) 0%,
+        transparent 100%
+    );
+    box-shadow: none;
 }
 
-[data-theme='dark'] .daiso-feature-card:hover {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.12) 0%, transparent 100%);
+[data-theme="dark"] .daiso-feature-card:hover {
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.12) 0%,
+        transparent 100%
+    );
 }
 
 .daiso-feature-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  flex-shrink: 0;
-  border-radius: 0.4rem;
-  background: rgba(46, 204, 113, 0.12);
-  color: var(--ifm-color-primary);
-  margin-bottom: 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    border-radius: 0.4rem;
+    background: rgba(46, 204, 113, 0.12);
+    color: var(--ifm-color-primary);
+    margin-bottom: 0.55rem;
 }
 
 .daiso-feature-card h3 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 0 0 0.3rem;
-  color: var(--ifm-color-emphasis-900);
-  line-height: 1.35;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.3rem;
+    color: var(--ifm-color-emphasis-900);
+    line-height: 1.35;
 }
 
 .daiso-feature-card p {
-  font-size: 0.83rem;
-  color: var(--ifm-color-emphasis-600);
-  margin: 0;
-  line-height: 1.55;
+    font-size: 0.83rem;
+    color: var(--ifm-color-emphasis-600);
+    margin: 0;
+    line-height: 1.55;
 }
 
 /* ================================================================
@@ -500,32 +534,32 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-star-banner {
-  background: var(--ifm-color-emphasis-100);
-  border-top: 1px solid var(--ifm-color-emphasis-200);
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+    background: var(--ifm-color-emphasis-100);
+    border-top: 1px solid var(--ifm-color-emphasis-200);
+    border-bottom: 1px solid var(--ifm-color-emphasis-200);
 }
 
-[data-theme='dark'] .daiso-star-banner {
-  background: var(--ifm-background-surface-color);
+[data-theme="dark"] .daiso-star-banner {
+    background: var(--ifm-background-surface-color);
 }
 
 .daiso-star-icon {
-  color: #f5a623;
-  margin-bottom: 0.75rem;
+    color: #f5a623;
+    margin-bottom: 0.75rem;
 }
 
 .daiso-star-title {
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin-bottom: 0.6rem;
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 0.6rem;
 }
 
 .daiso-star-subtitle {
-  font-size: 1rem;
-  color: var(--ifm-color-emphasis-700);
-  max-width: 520px;
-  margin: 0 auto 1.5rem;
-  line-height: 1.65;
+    font-size: 1rem;
+    color: var(--ifm-color-emphasis-700);
+    max-width: 520px;
+    margin: 0 auto 1.5rem;
+    line-height: 1.65;
 }
 
 /* ================================================================
@@ -533,47 +567,52 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-cta-section {
-  background: linear-gradient(
-    135deg,
-    var(--daiso-hero-bg-start) 0%,
-    var(--daiso-hero-bg-end) 100%
-  );
-  color: #fff;
-  text-align: center;
+    background: linear-gradient(
+        135deg,
+        var(--daiso-hero-bg-start) 0%,
+        var(--daiso-hero-bg-end) 100%
+    );
+    color: #fff;
+    text-align: center;
 }
 
 .daiso-cta-section h2 {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 0.75rem;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.75rem;
 }
 
 .daiso-cta-subtitle {
-  font-size: 1.05rem;
-  opacity: 0.9;
-  margin-bottom: 1.75rem;
+    font-size: 1.05rem;
+    opacity: 0.9;
+    margin-bottom: 1.75rem;
 }
 
 /* GitHub outline button: native Infima outline on light backgrounds,
    white-on-dark only inside the dark-green CTA section */
 .button--outline.button--secondary[href*="github.com"] {
-  transition: background 0.15s, color 0.15s;
+    transition:
+        background 0.15s,
+        color 0.15s;
 }
 .daiso-cta-section .button--outline.button--secondary[href*="github.com"] {
-  color: #fff !important;
-  border-color: #fff !important;
-  background: transparent !important;
+    color: #fff !important;
+    border-color: #fff !important;
+    background: transparent !important;
 }
 .daiso-cta-section .button--outline.button--secondary[href*="github.com"]:hover,
-.daiso-cta-section .button--outline.button--secondary[href*="github.com"]:focus {
-  background: #fff !important;
-  color: #222 !important;
-  border-color: #fff !important;
+.daiso-cta-section
+    .button--outline.button--secondary[href*="github.com"]:focus {
+    background: #fff !important;
+    color: #222 !important;
+    border-color: #fff !important;
 }
-[data-theme='dark'] .button--outline.button--secondary[href*="github.com"]:hover,
-[data-theme='dark'] .button--outline.button--secondary[href*="github.com"]:focus {
-  color: #222 !important;
+[data-theme="dark"]
+    .button--outline.button--secondary[href*="github.com"]:hover,
+[data-theme="dark"]
+    .button--outline.button--secondary[href*="github.com"]:focus {
+    color: #222 !important;
 }
 
 /* ================================================================
@@ -581,23 +620,23 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-check-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .daiso-check-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.35rem 0;
-  font-size: 0.95rem;
-  color: var(--ifm-color-emphasis-700);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.35rem 0;
+    font-size: 0.95rem;
+    color: var(--ifm-color-emphasis-700);
 }
 
 .daiso-check-list li svg {
-  color: var(--ifm-color-primary);
-  flex-shrink: 0;
+    color: var(--ifm-color-primary);
+    flex-shrink: 0;
 }
 
 /* ================================================================
@@ -605,107 +644,115 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-segmented-control {
-  display: inline-flex;
-  gap: 0;
-  background: var(--ifm-color-emphasis-100);
-  border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: 0.5rem;
-  padding: 0.2rem;
+    display: inline-flex;
+    gap: 0;
+    background: var(--ifm-color-emphasis-100);
+    border: 1px solid var(--ifm-color-emphasis-200);
+    border-radius: 0.5rem;
+    padding: 0.2rem;
 }
 
 .daiso-segmented-control-wrapper {
-  text-align: left;
+    text-align: left;
 }
 
 .daiso-segmented-option {
-  padding: 0.4rem 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 0.35rem;
-  background: transparent;
-  color: var(--ifm-color-emphasis-600);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.35rem;
+    background: transparent;
+    color: var(--ifm-color-emphasis-600);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
 }
 
 .daiso-segmented-option:hover {
-  color: var(--ifm-color-emphasis-800);
+    color: var(--ifm-color-emphasis-800);
 }
 
 .daiso-segmented-option--active {
-  background: var(--ifm-background-color);
-  color: var(--ifm-color-primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    background: var(--ifm-background-color);
+    color: var(--ifm-color-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .daiso-carousel {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.03) 0%, transparent 100%);
-  border: 1px solid rgba(46, 204, 113, 0.15);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.03) 0%,
+        transparent 100%
+    );
+    border: 1px solid rgba(46, 204, 113, 0.15);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
 }
 
-[data-theme='dark'] .daiso-carousel {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.05) 0%, transparent 100%);
-  border-color: rgba(46, 204, 113, 0.12);
+[data-theme="dark"] .daiso-carousel {
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.05) 0%,
+        transparent 100%
+    );
+    border-color: rgba(46, 204, 113, 0.12);
 }
 
 .daiso-carousel-description {
-  font-size: 0.85rem;
-  line-height: 1.6;
-  color: var(--ifm-color-emphasis-700);
-  margin: 0 0 0.75rem;
-  padding: 0.6rem 0.75rem;
-  background: var(--ifm-color-emphasis-100);
-  border-radius: 0.5rem;
-  border-left: 3px solid var(--ifm-color-primary);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--ifm-color-emphasis-700);
+    margin: 0 0 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: var(--ifm-color-emphasis-100);
+    border-radius: 0.5rem;
+    border-left: 3px solid var(--ifm-color-primary);
 }
 
 .daiso-carousel-body {
-  padding: 0.25rem 0.6rem 0.6rem;
-  transition: opacity 0.18s ease;
-  opacity: 1;
+    padding: 0.25rem 0.6rem 0.6rem;
+    transition: opacity 0.18s ease;
+    opacity: 1;
 }
 
 .daiso-carousel-body--fading {
-  opacity: 0;
+    opacity: 0;
 }
 
 .daiso-carousel-text {
-  transition: opacity 0.18s ease;
-  opacity: 1;
+    transition: opacity 0.18s ease;
+    opacity: 1;
 }
 
 .daiso-carousel-text--fading {
-  opacity: 0;
+    opacity: 0;
 }
 
 .daiso-carousel-body [class*="tabs__item"] {
-  font-size: 0.75rem;
-  padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.75rem;
 }
 
 .daiso-carousel-body [class*="codeBlockContainer"] {
-  margin-bottom: 0 !important;
-  border-radius: 0 0.5rem 0.5rem 0.5rem;
-  box-shadow: none;
+    margin-bottom: 0 !important;
+    border-radius: 0 0.5rem 0.5rem 0.5rem;
+    box-shadow: none;
 }
 
 .daiso-carousel-body [class*="codeBlockContent"] {
-  border-radius: 0 0.5rem 0.5rem 0.5rem;
+    border-radius: 0 0.5rem 0.5rem 0.5rem;
 }
 
 .daiso-carousel-body [class*="codeBlock"] {
-  border-radius: 0 0.5rem 0.5rem 0.5rem;
-  font-size: 0.8rem;
-  height: 420px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
+    border-radius: 0 0.5rem 0.5rem 0.5rem;
+    font-size: 0.8rem;
+    height: 420px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 /* ================================================================
@@ -713,166 +760,206 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-comparison-sides {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 .daiso-comp-instead p,
 .daiso-comp-daiso p {
-  font-size: 0.92rem;
-  line-height: 1.65;
-  margin: 0;
-  color: var(--ifm-color-emphasis-700);
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin: 0;
+    color: var(--ifm-color-emphasis-700);
 }
 
 .daiso-comp-daiso p {
-  color: var(--ifm-color-emphasis-900);
+    color: var(--ifm-color-emphasis-900);
 }
 
 .daiso-comp-instead ul,
 .daiso-comp-daiso ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
 .daiso-comp-instead li,
 .daiso-comp-daiso li {
-  position: relative;
-  padding: 0.25rem 0 0.25rem 1.1rem;
-  font-size: 0.92rem;
-  line-height: 1.65;
-  color: var(--ifm-color-emphasis-700);
+    position: relative;
+    padding: 0.25rem 0 0.25rem 1.1rem;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--ifm-color-emphasis-700);
 }
 
 .daiso-comp-daiso li {
-  color: var(--ifm-color-emphasis-900);
+    color: var(--ifm-color-emphasis-900);
 }
 
 .daiso-comp-instead li::before,
 .daiso-comp-daiso li::before {
-  content: "•";
-  position: absolute;
-  left: 0;
-  color: var(--ifm-color-emphasis-500);
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--ifm-color-emphasis-500);
 }
 
 .daiso-comp-daiso li::before {
-  color: var(--ifm-color-primary);
+    color: var(--ifm-color-primary);
 }
 
 .daiso-comp-label-instead,
 .daiso-comp-label-daiso {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.35rem;
 }
 
 .daiso-comp-label-instead {
-  color: var(--ifm-color-emphasis-500);
+    color: var(--ifm-color-emphasis-500);
 }
 
 .daiso-comp-label-daiso {
-  color: var(--ifm-color-primary);
+    color: var(--ifm-color-primary);
 }
 
 /* ================================================================
    WHO IS THIS FOR
    ================================================================ */
 
-
-
 .daiso-who-card {
-  border-radius: 0.65rem;
-  padding: 1.25rem 1.35rem;
-  height: 100%;
-  border: 1px solid rgba(46, 204, 113, 0.18);
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.04) 0%, transparent 100%);
-  transition: border-color 0.15s ease, background 0.15s ease;
+    border-radius: 0.65rem;
+    padding: 1.25rem 1.35rem;
+    height: 100%;
+    border: 1px solid rgba(46, 204, 113, 0.18);
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.04) 0%,
+        transparent 100%
+    );
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
 }
 
 .daiso-who-card:hover {
-  border-color: rgba(46, 204, 113, 0.35);
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.08) 0%, transparent 100%);
+    border-color: rgba(46, 204, 113, 0.35);
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.08) 0%,
+        transparent 100%
+    );
 }
 
 .daiso-who-card h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
 }
 
 .daiso-who-card ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .daiso-who-card li {
-  padding: 0.45rem 0;
-  font-size: 0.93rem;
-  color: var(--ifm-color-emphasis-700);
-  line-height: 1.6;
+    padding: 0.45rem 0;
+    font-size: 0.93rem;
+    color: var(--ifm-color-emphasis-700);
+    line-height: 1.6;
 }
 
 .daiso-who-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .daiso-who-list li {
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--ifm-color-emphasis-100);
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--ifm-color-emphasis-100);
 }
 
 .daiso-who-list li:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .daiso-who-list li strong {
-  color: var(--ifm-color-emphasis-900);
+    color: var(--ifm-color-emphasis-900);
 }
 
 .daiso-who-yes {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.05) 0%, transparent 100%);
-  border-color: rgba(46, 204, 113, 0.2);
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.05) 0%,
+        transparent 100%
+    );
+    border-color: rgba(46, 204, 113, 0.2);
 }
 
 .daiso-who-yes:hover {
-  border-color: rgba(46, 204, 113, 0.4);
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, transparent 100%);
+    border-color: rgba(46, 204, 113, 0.4);
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.1) 0%,
+        transparent 100%
+    );
 }
 
-[data-theme='dark'] .daiso-who-yes {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.08) 0%, transparent 100%);
-  border-color: rgba(46, 204, 113, 0.18);
+[data-theme="dark"] .daiso-who-yes {
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.08) 0%,
+        transparent 100%
+    );
+    border-color: rgba(46, 204, 113, 0.18);
 }
 
-[data-theme='dark'] .daiso-who-yes:hover {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, transparent 100%);
+[data-theme="dark"] .daiso-who-yes:hover {
+    background: linear-gradient(
+        135deg,
+        rgba(46, 204, 113, 0.15) 0%,
+        transparent 100%
+    );
 }
 
 .daiso-who-no {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.04) 0%, transparent 100%);
-  border-color: rgba(245, 158, 11, 0.18);
+    background: linear-gradient(
+        135deg,
+        rgba(245, 158, 11, 0.04) 0%,
+        transparent 100%
+    );
+    border-color: rgba(245, 158, 11, 0.18);
 }
 
 .daiso-who-no:hover {
-  border-color: rgba(245, 158, 11, 0.35);
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, transparent 100%);
+    border-color: rgba(245, 158, 11, 0.35);
+    background: linear-gradient(
+        135deg,
+        rgba(245, 158, 11, 0.08) 0%,
+        transparent 100%
+    );
 }
 
-[data-theme='dark'] .daiso-who-no {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, transparent 100%);
-  border-color: rgba(245, 158, 11, 0.16);
+[data-theme="dark"] .daiso-who-no {
+    background: linear-gradient(
+        135deg,
+        rgba(245, 158, 11, 0.06) 0%,
+        transparent 100%
+    );
+    border-color: rgba(245, 158, 11, 0.16);
 }
 
-[data-theme='dark'] .daiso-who-no:hover {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, transparent 100%);
+[data-theme="dark"] .daiso-who-no:hover {
+    background: linear-gradient(
+        135deg,
+        rgba(245, 158, 11, 0.12) 0%,
+        transparent 100%
+    );
 }
 
 /* ================================================================
@@ -880,51 +967,51 @@ html[data-theme='dark'] .daiso-install-command {
    ================================================================ */
 
 .daiso-comparison-table-wrapper {
-  overflow-x: auto;
-  max-width: 960px;
-  margin: 0 auto;
-  border-radius: 0.75rem;
+    overflow-x: auto;
+    max-width: 960px;
+    margin: 0 auto;
+    border-radius: 0.75rem;
 }
 
 .daiso-comparison-table {
-  width: 100%;
-  min-width: 720px;
-  border-collapse: separate;
-  border-spacing: 0;
-  border: 1px solid var(--ifm-color-emphasis-200);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  font-size: 0.9rem;
+    width: 100%;
+    min-width: 720px;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--ifm-color-emphasis-200);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    font-size: 0.9rem;
 }
 
 .daiso-comparison-table thead th {
-  background: var(--ifm-color-emphasis-100);
-  padding: 0.75rem 0.9rem;
-  text-align: left;
-  font-weight: 700;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: 2px solid var(--ifm-color-emphasis-200);
+    background: var(--ifm-color-emphasis-100);
+    padding: 0.75rem 0.9rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--ifm-color-emphasis-200);
 }
 
 .daiso-comparison-table tbody td {
-  padding: 0.6rem 0.9rem;
-  border-bottom: 1px solid var(--ifm-color-emphasis-100);
-  color: var(--ifm-color-emphasis-800);
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--ifm-color-emphasis-100);
+    color: var(--ifm-color-emphasis-800);
 }
 
 .daiso-comparison-table tbody tr:last-child td {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .daiso-comparison-table tbody tr:hover {
-  background: var(--ifm-color-emphasis-100);
+    background: var(--ifm-color-emphasis-100);
 }
 
 .daiso-comparison-highlight {
-  color: var(--ifm-color-primary);
-  font-weight: 700;
+    color: var(--ifm-color-primary);
+    font-weight: 700;
 }
 
 /* ================================================================
@@ -937,132 +1024,132 @@ html[data-theme='dark'] .daiso-install-command {
 
 /* Split section headers (title + segmented control on one row) */
 .daiso-section-header--split {
-  justify-content: flex-start;
-  gap: 3rem;
+    justify-content: flex-start;
+    gap: 3rem;
 }
 
 @media (max-width: 996px) {
-  /* Section headers: stack the title above the segmented control */
-  .daiso-section-header,
-  .daiso-section-header--split {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
+    /* Section headers: stack the title above the segmented control */
+    .daiso-section-header,
+    .daiso-section-header--split {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
 
-  /* Segmented controls: wrap instead of overflowing */
-  .daiso-segmented-control {
-    max-width: 100%;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-  }
+    /* Segmented controls: wrap instead of overflowing */
+    .daiso-segmented-control {
+        max-width: 100%;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
 
-  /* Install command: stay within the viewport */
-  .daiso-install-command {
-    max-width: 100%;
-  }
-  .daiso-install-command code {
-    overflow-wrap: anywhere;
-    white-space: normal;
-  }
+    /* Install command: stay within the viewport */
+    .daiso-install-command {
+        max-width: 100%;
+    }
+    .daiso-install-command code {
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
 
-  /* Hero */
-  .daiso-hero {
-    padding: 3.5rem 0;
-  }
-  .daiso-hero-subtitle {
-    font-size: 1rem;
-    margin: 1rem auto 1.75rem;
-  }
-  .daiso-hero .daiso-hero-ctas .button {
-    width: 100%;
-  }
+    /* Hero */
+    .daiso-hero {
+        padding: 3.5rem 0;
+    }
+    .daiso-hero-subtitle {
+        font-size: 1rem;
+        margin: 1rem auto 1.75rem;
+    }
+    .daiso-hero .daiso-hero-ctas .button {
+        width: 100%;
+    }
 
-  /* Component code tabs */
-  .daiso-code-tabs-body {
-    padding: 1rem;
-  }
-  .daiso-code-tabs-tab {
-    padding: 0.75rem 1rem;
-    font-size: 0.85rem;
-  }
-  .daiso-code-tabs-note {
-    padding: 0.85rem 1rem;
-    font-size: 0.9rem;
-  }
+    /* Component code tabs */
+    .daiso-code-tabs-body {
+        padding: 1rem;
+    }
+    .daiso-code-tabs-tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+    .daiso-code-tabs-note {
+        padding: 0.85rem 1rem;
+        font-size: 0.9rem;
+    }
 
-  /* Stats bar */
-  .daiso-stats-inner {
-    gap: 1.25rem 2rem;
-  }
-  .daiso-stat-value {
-    font-size: 1.6rem;
-  }
+    /* Stats bar */
+    .daiso-stats-inner {
+        gap: 1.25rem 2rem;
+    }
+    .daiso-stat-value {
+        font-size: 1.6rem;
+    }
 
-  /* Section typography */
-  .daiso-section-title {
-    font-size: 1.6rem;
-  }
+    /* Section typography */
+    .daiso-section-title {
+        font-size: 1.6rem;
+    }
 
-  /* Cards */
-  .daiso-feature-card {
-    padding: 0.85rem 1rem;
-  }
-  .daiso-who-card {
-    padding: 1rem 1.1rem;
-  }
+    /* Cards */
+    .daiso-feature-card {
+        padding: 0.85rem 1rem;
+    }
+    .daiso-who-card {
+        padding: 1rem 1.1rem;
+    }
 
-  /* Code showcase: order text → code → actions on mobile */
-  .daiso-showcase-text-col {
-    display: contents;
-  }
-  .daiso-carousel-text,
-  .daiso-showcase-actions {
-    flex: 0 0 100%;
-    max-width: 100%;
-    width: 100%;
-    padding-left: calc(var(--ifm-spacing-horizontal) / 2);
-    padding-right: calc(var(--ifm-spacing-horizontal) / 2);
-  }
-  .daiso-carousel-text {
-    order: 1;
-  }
-  .daiso-showcase-code-col {
-    order: 2;
-  }
-  .daiso-showcase-actions {
-    order: 3;
-  }
+    /* Code showcase: order text → code → actions on mobile */
+    .daiso-showcase-text-col {
+        display: contents;
+    }
+    .daiso-carousel-text,
+    .daiso-showcase-actions {
+        flex: 0 0 100%;
+        max-width: 100%;
+        width: 100%;
+        padding-left: calc(var(--ifm-spacing-horizontal) / 2);
+        padding-right: calc(var(--ifm-spacing-horizontal) / 2);
+    }
+    .daiso-carousel-text {
+        order: 1;
+    }
+    .daiso-showcase-code-col {
+        order: 2;
+    }
+    .daiso-showcase-actions {
+        order: 3;
+    }
 
-  /* Code showcase: buttons take the full width on mobile */
-  .daiso-showcase-ctas {
-    flex-direction: column;
-    width: 100%;
-  }
-  .daiso-showcase-ctas .button {
-    width: 100%;
-  }
-  .daiso-install-command {
-    width: 100%;
-  }
-  .daiso-code-tabs-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .daiso-code-tabs-actions .button {
-    width: 100%;
-  }
+    /* Code showcase: buttons take the full width on mobile */
+    .daiso-showcase-ctas {
+        flex-direction: column;
+        width: 100%;
+    }
+    .daiso-showcase-ctas .button {
+        width: 100%;
+    }
+    .daiso-install-command {
+        width: 100%;
+    }
+    .daiso-code-tabs-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .daiso-code-tabs-actions .button {
+        width: 100%;
+    }
 
-  /* Code block: shorter on small screens */
-  .daiso-carousel-body [class*="codeBlock"] {
-    height: 320px;
-  }
+    /* Code block: shorter on small screens */
+    .daiso-carousel-body [class*="codeBlock"] {
+        height: 320px;
+    }
 
-  /* CTA / star banner */
-  .daiso-cta-section h2 {
-    font-size: 1.6rem;
-  }
-  .daiso-star-title {
-    font-size: 1.35rem;
-  }
+    /* CTA / star banner */
+    .daiso-cta-section h2 {
+        font-size: 1.6rem;
+    }
+    .daiso-star-title {
+        font-size: 1.35rem;
+    }
 }

@@ -1,29 +1,22 @@
 import { use } from "eridu-tech/middleware";
-import { TRANSACTION_PROPAGATION } from "eridu-tech/transaction-context/contracts";
 import { withTransactionFactory } from "eridu-tech/transaction-context/middlewares";
-import { transactionContext } from "./transaction-context.js";
+import { transactionContextResolver } from "./transaction-context.js";
 
-const withTransaction = withTransactionFactory({
-    use: () => transactionContext,
-});
+const withTransaction = withTransactionFactory(transactionContextResolver);
 
 const createUser = async (userId: string, name: string): Promise<string> => {
-    await transactionContext.current
-        .insertInto("users")
-        .values({ id: userId, name })
-        .execute();
-    return userId;
+    // ...
+    return "user-id";
 };
 
-// Runs the wrapped function inside a transaction, using REQUIRED propagation by default
+// Uses the default adapter (`primary`) and REQUIRED propagation
 const createUserInTransaction = use(createUser, withTransaction());
 
-// Runs the wrapped function inside the existing transaction
-const createUserInExistingTransaction = use(
+// Uses the `secondary` adapter
+const createUserOnSecondary = use(
     createUser,
-    withTransaction({
-        propagation: TRANSACTION_PROPAGATION.MANDATORY,
-    }),
+    withTransaction.use("secondary")(),
 );
 
 await createUserInTransaction("1", "Jose");
+await createUserOnSecondary("2", "Mina");

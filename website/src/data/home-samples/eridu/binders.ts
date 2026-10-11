@@ -1,4 +1,4 @@
-import { bindHttpFactory } from "eridu-tech/http-router/di"
-import { container } from "./container"
+import { bindHttpFactory } from "eridu-tech/http-router/di";
+import { container } from "./container";
 
-export const bindHttp = bindHttpFactory(container)
+export const bindHttp = bindHttpFactory(container);

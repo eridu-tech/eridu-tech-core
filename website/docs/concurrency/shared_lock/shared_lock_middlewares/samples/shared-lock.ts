@@ -8,3 +8,5 @@ export const sharedLockFactoryResolver = new SharedLockFactoryResolver({
     },
     defaultAdapter: "storage1",
 });
+
+await sharedLockFactoryResolver.init();

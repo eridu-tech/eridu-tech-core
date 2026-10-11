@@ -8,3 +8,5 @@ export const lockFactoryResolver = new LockFactoryResolver({
     },
     defaultAdapter: "storage1",
 });
+
+await lockFactoryResolver.init();
