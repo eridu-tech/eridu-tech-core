@@ -1,14 +1,13 @@
 import { ExecutionContext } from "eridu-tech/execution-context";
 import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
 import { contextToken } from "eridu-tech/execution-context/contracts";
-import { Serde } from "eridu-tech/serde";
-import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { TransactionContext } from "eridu-tech/transaction-context";
 import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
 import type { ITransactionContext } from "eridu-tech/transaction-context/contracts";
 import type { Kysely } from "kysely";
 
-export const serde = new Serde(new SuperJsonSerdeAdapter());
+export const serde = new SuperJsonSerde();
 
 const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
 
