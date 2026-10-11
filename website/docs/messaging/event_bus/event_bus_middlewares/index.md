@@ -14,11 +14,11 @@ keywords:
 
 # EventBus middlewares
 
-EventBus middlewares let you dispatch events around a wrapped function without coupling the function itself to the event bus. Each factory takes an `IEventDispatcher` (such as an `EventBus`) and returns a middleware configured with an event `type` and a `payload` invocable. The payload is resolved from the wrapped function's arguments (and, where applicable, its return value or caught error) and dispatched on the provided dispatcher, while the wrapped function's result (or thrown error) passes through unchanged. If the payload resolves to `null` (i.e. it doesn't return a value), no event is dispatched.
+EventBus middlewares let you dispatch events around a wrapped function without coupling the function itself to the event bus. Each factory takes an `IEventBusResolver` and returns a middleware configured with an event `type` and a `payload` invocable. The payload is resolved from the wrapped function's arguments (and, where applicable, its return value or caught error) and dispatched on the selected event bus, while the wrapped function's result (or thrown error) passes through unchanged. If the payload resolves to `null` (i.e. it doesn't return a value), no event is dispatched.
 
 ## Initial configuration
 
-To begin using the EventBus middlewares, you'll need to create and configure an `EventBus` instance:
+To begin using the EventBus middlewares, create and configure an `EventBusResolver`:
 
 ```ts file=./samples/event-bus.ts
 
@@ -35,6 +35,8 @@ This is useful for emitting lifecycle events such as "about to create a user" or
 ```ts file=./samples/with-dispatch-before.ts
 
 ```
+
+Use `withDispatchBefore()` to dispatch through the resolver's default adapter (`storage1` in this example), or `withDispatchBefore.use("storage2")({ ... })` to select a specific adapter.
 
 :::info
 Here is a complete list of settings for the [`withDispatchBefore`](https://eridu-tech.github.io/eridu-tech-core/types/EventBus.WithDispatchBeforeSettings.html) function.
@@ -59,6 +61,8 @@ This is useful for emitting completion events such as "user created" or for reco
 
 ```
 
+Use `withDispatchAfter()` to dispatch through the resolver's default adapter (`storage1` in this example), or `withDispatchAfter.use("storage2")({ ... })` to select a specific adapter.
+
 :::info
 Here is a complete list of settings for the [`withDispatchAfter`](https://eridu-tech.github.io/eridu-tech-core/types/EventBus.WithDispatchAfterSettings.html) function.
 :::
@@ -81,6 +85,8 @@ This is useful for emitting failure events such as "user creation failed" or for
 ```ts file=./samples/with-dispatch-on-error.ts
 
 ```
+
+Use `withDispatchOnError()` to dispatch through the resolver's default adapter (`storage1` in this example), or `withDispatchOnError.use("storage2")({ ... })` to select a specific adapter.
 
 :::info
 Here is a complete list of settings for the [`withDispatchOnError`](https://eridu-tech.github.io/eridu-tech-core/types/EventBus.WithDispatchOnErrorSettings.html) function.

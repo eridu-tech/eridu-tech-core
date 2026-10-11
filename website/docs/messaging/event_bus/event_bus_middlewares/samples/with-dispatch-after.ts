@@ -1,8 +1,8 @@
 import { withDispatchAfterFactory } from "eridu-tech/event-bus/middlewares";
 import { use } from "eridu-tech/middleware";
-import { eventBus } from "./event-bus.js";
+import { eventBusResolver } from "./event-bus.js";
 
-const withDispatchAfter = withDispatchAfterFactory(eventBus);
+const withDispatchAfter = withDispatchAfterFactory(eventBusResolver);
 
 const createUser = async (userId: string): Promise<string> => {
     // ... create the user
@@ -12,7 +12,7 @@ const createUser = async (userId: string): Promise<string> => {
 // Wrap with an "after" dispatch
 const wrappedCreateUser = use(
     createUser,
-    withDispatchAfter({
+    withDispatchAfter.use("storage2")({
         type: "user.after.create",
         payload: ({ args, returnValue }) => ({
             userId: args[0],

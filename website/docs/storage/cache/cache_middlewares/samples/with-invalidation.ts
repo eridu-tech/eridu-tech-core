@@ -1,8 +1,8 @@
 import { withInvalidationFactory } from "eridu-tech/cache/middlewares";
 import { use } from "eridu-tech/middleware";
-import { cache } from "./cache.js";
+import { cacheResolver } from "./cache.js";
 
-const withInvalidation = withInvalidationFactory(cache);
+const withInvalidation = withInvalidationFactory(cacheResolver);
 
 const updateUser = async (userId: string, name: string): Promise<void> => {
     await fetch(`/api/users/${userId}`, {
@@ -14,7 +14,7 @@ const updateUser = async (userId: string, name: string): Promise<void> => {
 // Wrap with invalidation
 const invalidatingUpdateUser = use(
     updateUser,
-    withInvalidation({
+    withInvalidation.use("storage2")({
         key: ([userId]) => `user:${userId}`,
     }),
 );
