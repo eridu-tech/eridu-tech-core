@@ -4,6 +4,7 @@ import { FsFileStorageAdapter } from "eridu-tech/file-storage/fs-file-storage-ad
 import { SignedFileStorageAdapter } from "eridu-tech/file-storage/signed-file-storage-adapter";
 
 export const fileStorageResolver = new FileStorageResolver({
+    defaultCacheControl: "public, max-age=31536000",
     adapters: {
         memory: new SignedFileStorageAdapter({
             adapter: new MemoryFileStorageAdapter(),
@@ -17,3 +18,5 @@ export const fileStorageResolver = new FileStorageResolver({
     // You can set an optional default adapter
     defaultAdapter: "memory",
 });
+
+await fileStorageResolver.init();
