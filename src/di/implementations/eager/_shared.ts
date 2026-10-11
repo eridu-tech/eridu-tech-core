@@ -6,7 +6,6 @@ import { LIFETIME } from "@/di/contracts/_module-exports.js";
 import type {
     ServiceFactory,
     DiToken,
-    DepRecord,
 } from "@/di/contracts/_module-exports.js";
 
 /**
@@ -37,7 +36,7 @@ export type DynamicNodeProps = {
  */
 export type ScopedNodeProps = {
     lifetime: typeof INTERNAL_LIFETIME.SCOPED;
-    service: ServiceFactory<DepRecord>;
+    service: ServiceFactory;
 };
 
 /**
@@ -45,7 +44,7 @@ export type ScopedNodeProps = {
  */
 export type TransientNodeProps = {
     lifetime: typeof INTERNAL_LIFETIME.TRANSIENT;
-    service: ServiceFactory<DepRecord>;
+    service: ServiceFactory;
 };
 
 /**
@@ -53,7 +52,7 @@ export type TransientNodeProps = {
  */
 export type SingletonNodeProps = {
     lifetime: typeof INTERNAL_LIFETIME.SINGLETON;
-    service: ServiceFactory<DepRecord>;
+    service: ServiceFactory;
 };
 
 /**

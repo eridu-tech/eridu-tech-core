@@ -81,34 +81,6 @@ export type WithDispatchBeforeSettings<
  * @returns A function that accepts {@link WithDispatchBeforeSettings} and returns
  *          a middleware.
  *
- * @example
- * ```ts
- * import { withDispatchBeforeFactory } from "eridu-tech/event-bus/middlewares";
- * import { EventBus } from "eridu-tech/event-bus";
- * import { use } from "eridu-tech/middleware";
- * import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus";
- *
- * type EventMap = {
- *     "user.before.create": { userId: string };
- * };
- *
- * const eventBus = new EventBus<EventMap>({
- *     adapter: new MemoryEventBusAdapter(),
- * });
- * const withDispatchBefore = withDispatchBeforeFactory(eventBus);
- *
- * const createUser = async (userId: string): Promise<string> =>
- *     `user-${userId}`;
- *
- * const wrappedCreateUser = use(
- *     createUser,
- *     withDispatchBefore({
- *         type: "user.before.create",
- *         payload: ({ args }) => ({ userId: args[0] }),
- *     }),
- * );
- * ```
- *
  * IMPORT_PATH: `"eridu-tech/event-bus/middlewares"`
  * @group Middlewares
  */

@@ -92,21 +92,6 @@ export class MongodbSemaphoreAdapter
     private readonly trxCtx: ITransactionContext<Db, ClientSession>;
     private readonly collection: Collection<MongodbSemaphoreEntryDocument>;
 
-    /**
-     * @example
-     * ```ts
-     * import { MongodbSemaphoreAdapter } from "eridu-tech/semaphore/mongodb-semaphore-adapter";
-     * import { MongoClient } from "mongodb";
-     *
-     * const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
-     * const database = client.db("database");
-     * const semaphoreAdapter = new MongodbSemaphoreAdapter({
-     *   database
-     * });
-     * // You need initialize the adapter once before using it.
-     * await semaphoreAdapter.init()
-     * ```
-     */
     constructor(settings: MongodbSemaphoreAdapterSettings) {
         const {
             collectionName = "semaphore",

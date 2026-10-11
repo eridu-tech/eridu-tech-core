@@ -38,45 +38,6 @@ export type CacheAdapterTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/cache/test-utilities"`
  * @group TestUtilities
- * @example
- * ```ts
- * import { afterEach, beforeEach, describe, expect, test } from "vitest";
- * import { Redis } from "ioredis";
- * import {
- *   RedisContainer,
- *   type StartedRedisContainer,
- * } from "@testcontainers/redis";
- * import { cacheAdapterTestSuite } from "eridu-tech/cache/test-utilities";
- * import { RedisCacheAdapter } from "eridu-tech/cache/redis-cache-adapter";
- * import { TimeSpan } from "eridu-tech/time-span";
- * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
- * import { Serde } from "eridu-tech/serde";
- *
- * const timeout = TimeSpan.fromMinutes(2);
- * describe("class: RedisCacheAdapter", () => {
- *     let client: Redis;
- *     let startedContainer: StartedRedisContainer;
- *     beforeEach(async () => {
- *         startedContainer = await new RedisContainer("redis:7.4.2").start();
- *         client = new Redis(startedContainer.getConnectionUrl());
- *     }, timeout.toMilliseconds());
- *     afterEach(async () => {
- *         await client.quit();
- *         await startedContainer.stop();
- *     }, timeout.toMilliseconds());
- *     cacheAdapterTestSuite({
- *         createAdapter: () =>
- *             new RedisCacheAdapter({
- *                 database: client,
- *                 serde: new Serde(new SuperJsonSerdeAdapter()),
- *             }),
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function cacheAdapterTestSuite(
     settings: CacheAdapterTestSuiteSettings,
@@ -98,7 +59,7 @@ export function cacheAdapterTestSuite(
         await delay(TimeSpan.fromTimeSpan(ttl).addTimeSpan(delayBuffer));
     }
 
-    const TTL = TimeSpan.fromMilliseconds(50);
+    const TTL = TimeSpan.fromMilliseconds(100);
     describe("ICacheAdapter tests:", () => {
         describe("method: get", () => {
             test("Should return the value when key exists", async () => {

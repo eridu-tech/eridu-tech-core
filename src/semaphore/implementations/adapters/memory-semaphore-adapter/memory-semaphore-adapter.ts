@@ -22,20 +22,7 @@ export class MemorySemaphoreAdapter
     implements ISemaphoreAdapter, IDeinitizable, IPrunable
 {
     /**
-     *  @example
-     * ```ts
-     * import { MemorySemaphoreAdapter } from "eridu-tech/semaphore/memory-semaphore-adapter";
-     *
-     * const semaphoreAdapter = new MemorySemaphoreAdapter();
-     * ```
      * You can also provide an `Map`.
-     * @example
-     * ```ts
-     * import { MemorySemaphoreAdapter } from "eridu-tech/semaphore/memory-semaphore-adapter";
-     *
-     * const map = new Map<string, any>();
-     * const semaphoreAdapter = new MemorySemaphoreAdapter(map);
-     * ```
      */
     constructor(
         private readonly map = new Map<string, ISemaphoreAdapterState>(),

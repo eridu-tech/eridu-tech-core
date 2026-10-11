@@ -15,13 +15,6 @@ import type { Invocable } from "@/utilities/_module-exports.js";
  *
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  *
- * @example
- * ```ts
- * const hook: OnErrorHookSync<[name: string]> = ([name], error) => {
- *   console.error(`Failed to save ${name}`, error);
- * };
- * ```
- *
  * @see {@link withOnErrorSync | `withOnErrorSync`}
  * @see {@link OnErrorHook | `OnErrorHook`}
  *
@@ -44,16 +37,6 @@ export type OnErrorHookSync<
  * @typeParam TReturn - Return type of the wrapped function
  * @param callback - Synchronous hook invoked with the arguments and the thrown error
  * @returns Middleware function that applies the error hook
- *
- * @example
- * ```ts
- * const createUser = use(
- *   saveUser,
- *   withOnErrorSync<[name: string], User>(([name], error) => {
- *     logger.error(`Failed to save ${name}`, error);
- *   }),
- * );
- * ```
  *
  * @see {@link OnErrorHookSync | `OnErrorHookSync`}
  * @see {@link withOnError | `withOnError`}

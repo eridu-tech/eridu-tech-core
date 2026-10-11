@@ -23,20 +23,7 @@ export class MemoryCircuitBreakerStorageAdapter<TType = unknown>
     implements ICircuitBreakerStorageAdapter<TType>, IDeinitizable
 {
     /**
-     *  @example
-     * ```ts
-     * import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storage-adapter";
-     *
-     * const circuitBreakerStorageAdapter = new MemoryCircuitBreakerStorageAdapter();
-     * ```
      * You can also provide an `Map`.
-     * @example
-     * ```ts
-     * import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storage-adapter";
-     *
-     * const map = new Map<string, any>();
-     * const circuitBreakerStorageAdapter = new MemoryCircuitBreakerStorageAdapter(map);
-     * ```
      */
     constructor(private readonly map = new Map<string, TType>()) {}
 

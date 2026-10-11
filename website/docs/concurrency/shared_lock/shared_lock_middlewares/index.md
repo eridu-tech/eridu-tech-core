@@ -16,7 +16,7 @@ keywords:
 
 ## Initial configuration
 
-To begin using the shared-lock middlewares, you'll need to create and configure a `SharedLockFactory` instance:
+To begin using the shared-lock middlewares, you'll need to create and configure a `SharedLockFactoryResolver` instance:
 
 ```ts file=./samples/shared-lock.ts
 
@@ -31,6 +31,8 @@ The SharedLock middleware wraps function calls with a distributed shared lock (r
 ```ts file=./samples/with-shared-lock.ts
 
 ```
+
+Calling `withSharedLock()` directly uses the resolver's default adapter (`storage1`). Use `withSharedLock.use("storage2")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withSharedLock`](https://eridu-tech.github.io/eridu-tech-core/types/SharedLock.WithSharedLockFactorySettings.html) function.

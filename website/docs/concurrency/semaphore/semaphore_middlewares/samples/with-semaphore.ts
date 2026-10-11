@@ -1,18 +1,27 @@
 import { withSemaphoreFactory } from "eridu-tech/semaphore/middlewares";
 import { use } from "eridu-tech/middleware";
-import { semaphoreFactory } from "./semaphore.js";
+import { semaphoreFactoryResolver } from "./semaphore.js";
 
-const withSemaphore = withSemaphoreFactory(semaphoreFactory);
+const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
 
 const processFile = async (filePath: string): Promise<void> => {
     // Process file — limited concurrency
     // ... process the file
 };
 
-// Wrap with semaphore — max 3 concurrent file processes
+// Wrap with semaphore using the default adapter (`storage1`) — max 3 concurrent file processes
 const throttledProcess = use(
     processFile,
     withSemaphore({
+        key: ([filePath]) => `file-path:${filePath}`,
+        limit: 3,
+    }),
+);
+
+// Wrap with semaphore using a specific adapter (`storage2`)
+const throttledProcessOnStorage2 = use(
+    processFile,
+    withSemaphore.use("storage2")({
         key: ([filePath]) => `file-path:${filePath}`,
         limit: 3,
     }),

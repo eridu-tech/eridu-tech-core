@@ -60,37 +60,6 @@ const backoffPolicySettings: Required<ConstantBackoffSettingsEnum> = {
 /**
  * IMPORT_PATH: `"eridu-tech/rate-limiter/test-utilities"`
  * @group TestUtilities
- *
- * @example
- * ```ts
- * import { beforeEach, describe, expect, test } from "vitest";
- * import { DatabaseRateLimiterAdapter } from "eridu-tech/rate-limiter/database-rate-limiter-adapter";
- * import { FixedWindowLimiter } from "eridu-tech/rate-limiter/policies";
- * import { fixedWindowLimiterTestSuite } from "eridu-tech/rate-limiter/test-utilities";
- * import { constantBackoff } from "eridu-tech/backoff-policies";
- * import { MemoryRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter";
- *
- * describe("fixed-window-limiter class: DatabaseRateLimiterAdapter", () => {
- *     fixedWindowLimiterTestSuite({
- *         createAdapter: () => {
- *             const adapter = new DatabaseRateLimiterAdapter({
- *                 adapter: new MemoryRateLimiterStorageAdapter(),
- *                 backoffPolicy: constantBackoff(
- *                     fixedWindowLimiterTestSuite.backoffPolicySettings,
- *                 ),
- *                 rateLimiterPolicy: new FixedWindowLimiter(
- *                     fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
- *                 ),
- *             });
- *             return adapter;
- *         },
- *         beforeEach,
- *         describe,
- *         expect,
- *         test,
- *     });
- * });
- * ```
  */
 export function fixedWindowLimiterTestSuite(
     settings: FixedWindowLimiterTestSuiteSettings,

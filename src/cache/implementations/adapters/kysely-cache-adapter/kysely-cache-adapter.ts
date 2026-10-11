@@ -73,40 +73,6 @@ export class KyselyCacheAdapter<TType = unknown>
         Kysely<KyselyCacheTables>
     >;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselyCacheAdapter } from "eridu-tech/cache/kysely-cache-adapter";
-     * import { contextToken } from "eridu-tech/execution-context/contracts";
-     * import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
-     * import { ExecutionContext } from "eridu-tech/execution-context";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
-     * import { TransactionContext } from "eridu-tech/transaction-context";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const transactionContext = new TransactionContext({
-     *   token: contextToken("kysely"),
-     *   executionContext: new ExecutionContext(new AlsExecutionContextAdapter()),
-     *   adapter: new KyselyTransactionAdapter({
-     *     database: new Kysely({
-     *       dialect: new SqliteDialect({
-     *         database: new Sqlite("local.db"),
-     *       }),
-     *     }),
-     *   }),
-     * });
-     * const cacheAdapter = new KyselyCacheAdapter({
-     *   transactionContext,
-     *   serde,
-     * });
-     * // You need initialize the adapter once before using it.
-     * await cacheAdapter.init();
-     * ```
-     */
     constructor(settings: KyselyCacheAdapterSettings) {
         const { transactionContext, serde } = settings;
         this.transactionContext = transactionContext;
@@ -188,7 +154,7 @@ export class KyselyCacheAdapter<TType = unknown>
             return null;
         }
 
-        return this.serde.deserialize(row.value);
+        return await this.serde.deserialize(row.value);
     }
 
     async getAndRemove(key: string): Promise<TType | null> {
@@ -216,7 +182,7 @@ export class KyselyCacheAdapter<TType = unknown>
                     return null;
                 }
 
-                return this.serde.deserialize(row.value);
+                return await this.serde.deserialize(row.value);
             });
         }
 
@@ -234,7 +200,7 @@ export class KyselyCacheAdapter<TType = unknown>
             return null;
         }
 
-        return this.serde.deserialize(row.value);
+        return await this.serde.deserialize(row.value);
     }
 
     async add(key: string, value: TType, ttl: Date | null): Promise<boolean> {
@@ -254,7 +220,7 @@ export class KyselyCacheAdapter<TType = unknown>
                 }
             }
 
-            const serializedValue = this.serde.serialize(value);
+            const serializedValue = await this.serde.serialize(value);
             const expiration = ttl?.getTime() ?? null;
 
             await this.transactionContext.current
@@ -299,11 +265,11 @@ export class KyselyCacheAdapter<TType = unknown>
                     existing.expiration !== null &&
                     Number(existing.expiration) <= Date.now();
                 if (!isExpired) {
-                    return this.serde.deserialize(existing.value);
+                    return await this.serde.deserialize(existing.value);
                 }
             }
 
-            const serializedValue = this.serde.serialize(valueToAdd());
+            const serializedValue = await this.serde.serialize(valueToAdd());
             const expiration = ttl?.getTime() ?? null;
 
             await this.transactionContext.current
@@ -347,7 +313,7 @@ export class KyselyCacheAdapter<TType = unknown>
                 keyExistedAndNotExpired = !isExpired;
             }
 
-            const serializedValue = this.serde.serialize(value);
+            const serializedValue = await this.serde.serialize(value);
             const expiration = ttl?.getTime() ?? null;
 
             await this.transactionContext.current
@@ -376,7 +342,7 @@ export class KyselyCacheAdapter<TType = unknown>
     }
 
     async update(key: string, value: TType): Promise<boolean> {
-        const serializedValue = this.serde.serialize(value);
+        const serializedValue = await this.serde.serialize(value);
         const result = await this.transactionContext.current
             .updateTable("cache")
             .where("cache.key", "=", key)
@@ -410,7 +376,7 @@ export class KyselyCacheAdapter<TType = unknown>
                 return false;
             }
 
-            const currentValue = this.serde.deserialize(existing.value);
+            const currentValue = await this.serde.deserialize(existing.value);
 
             if (typeof currentValue !== "number" || isNaN(currentValue)) {
                 throw new TypeError(
@@ -423,7 +389,7 @@ export class KyselyCacheAdapter<TType = unknown>
             await this.transactionContext.current
                 .updateTable("cache")
                 .where("cache.key", "=", key)
-                .set({ value: this.serde.serialize(newValue) })
+                .set({ value: await this.serde.serialize(newValue) })
                 .execute();
 
             return true;

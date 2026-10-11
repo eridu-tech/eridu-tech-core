@@ -16,7 +16,7 @@ keywords:
 
 ## Initial configuration
 
-To begin using the rate-limiter middlewares, you'll need to create and configure a `RateLimiterFactory` instance:
+To begin using the rate-limiter middlewares, you'll need to create and configure a `RateLimiterFactoryResolver` instance:
 
 ```ts file=./samples/rate-limiter.ts
 
@@ -31,6 +31,8 @@ The RateLimiter middleware wraps function calls with a rate limiter, controlling
 ```ts file=./samples/with-rate-limiter.ts
 
 ```
+
+Calling `withRateLimiter()` directly uses the resolver's default adapter (`storage1`). Use `withRateLimiter.use("storage2")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withRateLimiter`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.WithRateLimiterSettings.html) function.

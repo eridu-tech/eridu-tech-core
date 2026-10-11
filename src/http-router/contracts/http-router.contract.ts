@@ -87,15 +87,6 @@ export type IHttpEndpoint = {
  * @param endpoint - The endpoint configuration object.
  * @returns The same endpoint configuration object with inferred types.
  *
- * @example
- * ```typescript
- * defineHttpEndpoint({
- *   url: "/users/:id",
- *   method: "GET",
- *   handler: async ({ req }) => { ... },
- * });
- * ```
- *
  * IMPORT_PATH: `"eridu-tech/http-router/contracts"`
  * @group Contracts
  */

@@ -109,7 +109,7 @@ export class Graph<TNodeProp = unknown, TEdgeProp = unknown> {
         }
 
         if (duplicates.length > 0) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Duplicate nodes found in graph: "${duplicates
                     .map(tokenToString)
                     .join(", ")}". Each node must appear only once.`,
@@ -135,7 +135,7 @@ export class Graph<TNodeProp = unknown, TEdgeProp = unknown> {
         }
 
         if (duplicates.length > 0) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Duplicate edges found in graph: "${duplicates
                     .map(edgeToString)
                     .join(", ")}". Each edge must appear only once.`,
@@ -172,7 +172,7 @@ export class Graph<TNodeProp = unknown, TEdgeProp = unknown> {
     getNodePropertyOrThrow(key: Node): TNodeProp {
         const value = this.getNodeProperty(key);
         if (value === null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Node property not found for node: "${tokenToString(
                     key,
                 )}". No property is registered for this node.`,
@@ -184,7 +184,7 @@ export class Graph<TNodeProp = unknown, TEdgeProp = unknown> {
     getEdgePropertyOrThrow(edge: Edge): TEdgeProp {
         const value = this.getEdgeProperty(edge);
         if (value === null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Edge property not found for edge: "${edgeToString(
                     edge,
                 )}". No property is registered for this edge.`,

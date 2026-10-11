@@ -33,26 +33,6 @@ export type RateLimiterStorageAdapterTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/test-utilities"`
  * @group TestUtilities
- * @example
- * ```ts
- * import { afterEach, beforeEach, describe, expect, test } from "vitest";
- * import { rateLimiterStorageAdapterTestSuite } from "eridu-tech/rate-limiter/test-utilities";
- * import { MemoryRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter";
- * import { TimeSpan } from "eridu-tech/time-span";
- * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
- * import { Serde } from "eridu-tech/serde";
- *
- * describe("class: MemoryRateLimiterStorageAdapter", () => {
- *     rateLimiterStorageAdapterTestSuite({
- *         createAdapter: () =>
- *             new MemoryRateLimiterStorageAdapter(),
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function rateLimiterStorageAdapterTestSuite(
     settings: RateLimiterStorageAdapterTestSuiteSettings,

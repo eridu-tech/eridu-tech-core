@@ -105,17 +105,6 @@ export class EventBus<
      */
     private readonly _onUncaughtRejection: InvocableFn<[error: unknown], void>;
 
-    /**
-     * @example
-     * ```ts
-     * import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-adapter";
-     * import { EventBus } from "eridu-tech/event-bus";
-     *
-     * const eventBus = new EventBus({
-     *   adapter: new MemoryEventBusAdapter()
-     * });
-     * ```
-     */
     constructor(settings: EventBusSettings<TEventMap>) {
         const {
             _onUncaughtRejection = (error) => {

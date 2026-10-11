@@ -4653,3 +4653,197 @@ describe("feature: optional tokens", () => {
         });
     });
 });
+
+// ---------------------------------------------------------------------------
+// container hooks: onInit / onDeInit with a deps record (IContainerHooks)
+// ---------------------------------------------------------------------------
+describe("feature: container hooks", () => {
+    let container: IContainer;
+
+    beforeEach(() => {
+        container = createContainerAndExecutionContext().container;
+    });
+
+    // -----------------------------------------------------------------------
+    // required dependencies
+    // -----------------------------------------------------------------------
+    describe("required dependencies", () => {
+        test("Should omit every required token from the listener deps when none are registered", async () => {
+            const first = genericToken<string>("first");
+            const second = genericToken<string>("second");
+            const listener = vi.fn();
+
+            container.onInit({ first, second }, listener);
+
+            await expect(container.init()).resolves.toBeUndefined();
+
+            expect(listener).toHaveBeenCalledExactlyOnceWith({});
+        });
+
+        test("Should pass every required token to the listener deps when all are registered", async () => {
+            const first = genericToken<string>("first");
+            const second = genericToken<string>("second");
+            const listener = vi.fn();
+
+            container.registerValue({ token: first, value: "first-value" });
+            container.registerValue({ token: second, value: "second-value" });
+            container.onInit({ first, second }, listener);
+
+            await expect(container.init()).resolves.toBeUndefined();
+
+            expect(listener).toHaveBeenCalledExactlyOnceWith({
+                first: "first-value",
+                second: "second-value",
+            });
+        });
+
+        test("Should omit only the unregistered required token from the listener deps", async () => {
+            const registered = genericToken<string>("registered");
+            const missing = genericToken<string>("missing");
+            const listener = vi.fn();
+
+            container.registerValue({
+                token: registered,
+                value: "registered-value",
+            });
+            container.onInit({ registered, missing }, listener);
+
+            await expect(container.init()).resolves.toBeUndefined();
+
+            expect(listener).toHaveBeenCalledExactlyOnceWith({
+                registered: "registered-value",
+            });
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // required and optional dependencies
+    // -----------------------------------------------------------------------
+    describe("required and optional dependencies", () => {
+        test("Should pass undefined for the optional token when neither token is registered", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            let received: DepRecord | undefined;
+
+            container.onInit({ required, optional }, (deps) => {
+                received = deps;
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+
+            expect(received).toStrictEqual({ optional: undefined });
+        });
+
+        test("Should pass both registered tokens to the listener deps", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            let received: DepRecord | undefined;
+
+            container.registerValue({
+                token: required,
+                value: "required-value",
+            });
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+            container.onInit({ required, optional }, (deps) => {
+                received = deps;
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+
+            expect(received).toStrictEqual({
+                required: "required-value",
+                optional: "optional-value",
+            });
+        });
+
+        test("Should pass undefined for the optional token when only the required token is registered", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            let received: DepRecord | undefined;
+
+            container.registerValue({
+                token: required,
+                value: "required-value",
+            });
+            container.onInit({ required, optional }, (deps) => {
+                received = deps;
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+
+            expect(received).toStrictEqual({
+                required: "required-value",
+                optional: undefined,
+            });
+        });
+
+        test("Should omit the required token when only the optional token is registered", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            let received: DepRecord | undefined;
+
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+            container.onInit({ required, optional }, (deps) => {
+                received = deps;
+            });
+
+            await expect(container.init()).resolves.toBeUndefined();
+
+            expect(received).toStrictEqual({ optional: "optional-value" });
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // onDeInit
+    // -----------------------------------------------------------------------
+    describe("onDeInit", () => {
+        test("Should pass the registered tokens to the onDeInit listener", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            let received: DepRecord | undefined;
+
+            container.registerValue({
+                token: required,
+                value: "required-value",
+            });
+            container.registerValue({
+                token: optional,
+                value: "optional-value",
+            });
+            container.onDeInit({ required, optional }, (deps) => {
+                received = deps;
+            });
+
+            await container.init();
+            expect(received).toBeUndefined();
+
+            await expect(container.deInit()).resolves.toBeUndefined();
+
+            expect(received).toStrictEqual({
+                required: "required-value",
+                optional: "optional-value",
+            });
+        });
+
+        test("Should pass undefined for an unregistered optional token to the onDeInit listener", async () => {
+            const required = genericToken<string>("required");
+            const optional = optionalToken(genericToken<string>("optional"));
+            let received: DepRecord | undefined;
+
+            container.onDeInit({ required, optional }, (deps) => {
+                received = deps;
+            });
+
+            await container.init();
+            await expect(container.deInit()).resolves.toBeUndefined();
+
+            expect(received).toStrictEqual({ optional: undefined });
+        });
+    });
+});

@@ -62,19 +62,6 @@ export class SignedFileStorageAdapter implements ISignedFileStorageAdapter {
 
     /**
      * @param settings - Configuration providing the underlying file storage adapter and the URL adapter.
-     *
-     * @example
-     * ```ts
-     * import { SignedFileStorageAdapter } from "eridu-tech/file-storage/signed-file-storage-adapter";
-     *
-     * const signedFileStorageAdapter = new SignedFileStorageAdapter({
-     *   adapter: myFileStorageAdapter,
-     *   urlAdapter: {
-     *     getSignedDownloadUrl: (key, settings) => generateSignedDownloadUrl(key, settings),
-     *     getSignedUploadUrl: (key, settings) => generateSignedUploadUrl(key, settings),
-     *   },
-     * });
-     * ```
      */
     constructor(settings: SignedFileStorageAdapterSettings) {
         const { adapter, urlAdapter: urlAdapter } = settings;

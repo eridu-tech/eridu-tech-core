@@ -1,6 +1,7 @@
 /**
  * @module SharedLock
  */
+
 import { SharedLockFactory } from "@/shared-lock/implementations/derivables/shared-lock-factory/_module.js";
 import {
     DefaultAdapterNotDefinedError,
@@ -9,14 +10,16 @@ import {
 
 import type {
     ISharedLockFactoryResolver,
-    ISharedLockFactory,
     ISharedLockAdapter,
+    ISharedLockFactory,
 } from "@/shared-lock/contracts/_module-exports.js";
 import type { SharedLockFactorySettingsBase } from "@/shared-lock/implementations/derivables/shared-lock-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { Invocable } from "@/utilities/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `SharedLockFactoryResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
  * @group Derivables
  */
@@ -45,114 +48,57 @@ export type SharedLockFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
- * The `SharedLockFactoryResolver` class is immutable.
+ * Resolves named shared-lock adapters to factories.
+ * Call `init()` before selecting a factory.
  *
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
  * @group Derivables
  */
-export class SharedLockFactoryResolver<
-    TAdapters extends string,
-> implements ISharedLockFactoryResolver<TAdapters> {
-    /**
-     * @example
-     * ```ts
-     * import { SharedLockFactoryResolver } from "eridu-tech/shared-lock";
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     * import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const lockProviderFactory = new SharedLockFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemorySharedLockAdapter(),
-     *     redis: new RedisSharedLockAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     * ```
-     */
+export class SharedLockFactoryResolver<TAdapters extends string = string>
+    implements ISharedLockFactoryResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: SharedLockFactoryResolverSettings<TAdapters>,
     ) {}
 
-    setCreateLockId(
-        createId: Invocable<[], string>,
-    ): SharedLockFactoryResolver<TAdapters> {
-        return new SharedLockFactoryResolver({
-            ...this.settings,
-            createLockId: createId,
-        });
+    private readonly factories = {} as Partial<
+        Record<TAdapters, SharedLockFactory>
+    >;
+
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new SharedLockFactory({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.factories[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
-    setDefaultTtl(ttl: ITimeSpan | null): SharedLockFactoryResolver<TAdapters> {
-        return new SharedLockFactoryResolver({
-            ...this.settings,
-            defaultTtl: ttl,
-        });
-    }
-
-    setDefaultRefreshTime(
-        time: ITimeSpan,
-    ): SharedLockFactoryResolver<TAdapters> {
-        return new SharedLockFactoryResolver({
-            ...this.settings,
-            defaultRefreshTime: time,
-        });
-    }
-
-    /**
-     * @example
-     * ```ts
-     * import { SharedLockFactoryResolver } from "eridu-tech/shared-lock";
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     * import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { TimeSpan } from "eridu-tech/time-span";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const lockProviderFactory = new SharedLockFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemorySharedLockAdapter(),
-     *     redis: new RedisSharedLockAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     *
-     * // Will acquire key using the default adapter which is MemorySharedLockAdapter
-     * await lockProviderFactory
-     *   .use()
-     *   .create("a")
-     *   .acquireWriter();
-     *
-     * // Will acquire key using the redis adapter
-     * await lockProviderFactory
-     *   .use("redis")
-     *   .create("a")
-     *   .acquireWriter();
-     * ```
-     */
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ISharedLockFactory {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
-                SharedLockFactoryResolver.name,
+            throw DefaultAdapterNotDefinedError.create(
+                SharedLockFactory.name,
+                Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
-            throw new UnregisteredAdapterError(adapterName);
+        const factory = this.factories[adapterName];
+        if (factory === undefined) {
+            throw UnregisteredAdapterError.create(
+                adapterName,
+                Object.keys(this.settings.adapters),
+            );
         }
-        return new SharedLockFactory({
-            ...this.settings,
-            adapter,
-            serdeTransformerName: adapterName,
-        });
+        return factory;
     }
 }

@@ -255,7 +255,7 @@ export class InvalidGraphDiError
         const cyclesData = cycles.map((cycle) => {
             const firstToken = cycle.at(0);
             if (firstToken === undefined) {
-                throw new UnexpectedError("First token is undefined");
+                throw UnexpectedError.create("First token is undefined");
             }
             return {
                 cycle: [...cycle, firstToken].map((node) =>
@@ -432,7 +432,7 @@ export class InvalidMethodCallDiError
                     info,
                 );
             default:
-                throw new UnexpectedError(UNMANAGED_FLAG_ERROR_MESSAGE);
+                throw UnexpectedError.create(UNMANAGED_FLAG_ERROR_MESSAGE);
         }
     }
 }
@@ -643,7 +643,7 @@ export class CanNotResolveServiceDiError
                     },
                 );
             default:
-                throw new UnexpectedError(UNMANAGED_FLAG_ERROR_MESSAGE);
+                throw UnexpectedError.create(UNMANAGED_FLAG_ERROR_MESSAGE);
         }
     }
 }
@@ -774,7 +774,7 @@ export class CanNotRegisterServiceDiError
                 );
 
             default:
-                throw new UnexpectedError(UNMANAGED_FLAG_ERROR_MESSAGE);
+                throw UnexpectedError.create(UNMANAGED_FLAG_ERROR_MESSAGE);
         }
     }
 }
@@ -899,7 +899,7 @@ export class CanNotOverrideServiceDiError
                     info,
                 );
             default:
-                throw new UnexpectedError(UNMANAGED_FLAG_ERROR_MESSAGE);
+                throw UnexpectedError.create(UNMANAGED_FLAG_ERROR_MESSAGE);
         }
     }
 }

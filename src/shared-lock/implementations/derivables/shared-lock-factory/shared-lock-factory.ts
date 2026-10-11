@@ -4,14 +4,14 @@
 
 import { v4 } from "uuid";
 
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import { SharedLockSerdeTransformer } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock-serde-transformer.js";
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     CORE,
     resolveOneOrMore,
+    resolveSerializationId,
     callInvocable,
 } from "@/utilities/_module-exports.js";
 
@@ -23,7 +23,11 @@ import type {
     ISharedLockFactory,
 } from "@/shared-lock/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { Invocable, OneOrMore } from "@/utilities/_module-exports.js";
+import type {
+    IInitizable,
+    Invocable,
+    OneOrMore,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `SharedLockFactory` variants.
@@ -33,22 +37,26 @@ import type { Invocable, OneOrMore } from "@/utilities/_module-exports.js";
  */
 export type SharedLockFactorySettingsBase = {
     /**
+     * Optional prefix used to scope the serde transformer name for this shared lock factory.
+     * This keeps multiple adapters with the same constructor name distinct.
+     *
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
+     */
+    serializationId?: string;
+
+    /**
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link SharedLockFactory | `SharedLockFactory`} to register the shared lock's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { NoOpSerdeAdapter } from "eridu-tech/serde/no-op-serde-adapter";
+     * import { NoOpSerde } from "eridu-tech/serde/no-op-serde";
      *
-     * new Serde(new NoOpSerdeAdapter())
+     * new NoOpSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
-
-    /**
-     * The serde transformer name used to identify shared-lock serializer and deserializer adapters when there are adapters with the same name.
-     * @default ""
-     */
-    serdeTransformerName?: string;
 
     /**
      * You can pass your own lock id generator function.
@@ -106,49 +114,22 @@ export type SharedLockFactorySettings = SharedLockFactorySettingsBase & {
  * IMPORT_PATH: `"eridu-tech/shared-lock"`
  * @group Derivables
  */
-export class SharedLockFactory implements ISharedLockFactory {
+export class SharedLockFactory implements ISharedLockFactory, IInitizable {
     private readonly adapter: ISharedLockAdapter;
     private readonly creatLockId: Invocable<[], string>;
     private readonly defaultTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselySharedLockAdapter } from "eridu-tech/shared-lock/kysely-shared-lock-adapter";
-     * import { SharedLockFactory } from "eridu-tech/shared-lock";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const sharedLockAdapter = new KyselySharedLockAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
-     *     }),
-     *   });
-     * });
-     * // You need initialize the adapter once before using it.
-     * await sharedLockAdapter.init();
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter())
-     * const lockFactory = new SharedLockFactory({
-     *   serde,
-     *   adapter: sharedLockAdapter,
-     * });
-     * ```
-     */
     constructor(settings: SharedLockFactorySettings) {
         const {
             defaultTtl = TimeSpan.fromMinutes(5),
             defaultRefreshTime = TimeSpan.fromMinutes(5),
             createLockId = () => v4(),
-            serde = new Serde(new NoOpSerdeAdapter()),
+            serde = new NoOpSerde(),
             adapter,
-            serdeTransformerName = "",
+            serializationId,
         } = settings;
 
         this.serde = serde;
@@ -156,41 +137,23 @@ export class SharedLockFactory implements ISharedLockFactory {
         this.creatLockId = createLockId;
         this.defaultTtl =
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = resolveSerializationId(serializationId, adapter);
 
         this.adapter = adapter;
-        this.registerToSerde();
     }
 
-    private registerToSerde(): void {
+    async init(): Promise<void> {
         const transformer = new SharedLockSerdeTransformer({
             adapter: this.adapter,
             defaultRefreshTime: this.defaultRefreshTime,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
+        return Promise.resolve();
     }
 
-    /**
-     * @example
-     * ```ts
-     * import { SharedLockFactory } from "eridu-tech/shared-lock";
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     * import { Namespace } from "eridu-tech/namespace";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     *
-     * const lockFactory = new SharedLockFactory({
-     *   adapter: new MemorySharedLockAdapter(),
-     *   namespace: new Namespace("shared_lock"),
-     *   serde: new Serde(new SuperJsonSerdeAdapter())
-     * });
-     *
-     * const sharedLock = lockFactory.create("a");
-     * ```
-     */
     create(
         key: string,
         settings: SharedLockFactoryCreateSettings,
@@ -207,7 +170,7 @@ export class SharedLockFactory implements ISharedLockFactory {
             key,
             lockId,
             ttl: ttl === null ? null : TimeSpan.fromTimeSpan(ttl),
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
             defaultRefreshTime: this.defaultRefreshTime,
         });
     }

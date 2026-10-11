@@ -8,18 +8,13 @@ import {
     UnregisteredAdapterError,
 } from "@/utilities/_module-exports.js";
 
-import type { StandardSchemaV1 } from "@standard-schema/spec";
-
 import type {
     ICache,
     ICacheAdapter,
     ICacheResolver,
 } from "@/cache/contracts/_module-exports.js";
-import type {
-    CacheSettings,
-    CacheSettingsBase,
-} from "@/cache/implementations/derivables/cache/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { CacheSettingsBase } from "@/cache/implementations/derivables/cache/_module.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/cache"`
@@ -53,118 +48,50 @@ export type CacheResolverSettings<
 };
 
 /**
- * The `CacheResolver` class is immutable.
- *
  * IMPORT_PATH: `"eridu-tech/cache"`
  * @group Derivables
  */
-export class CacheResolver<
-    TAdapters extends string = string,
-    TType = unknown,
-> implements ICacheResolver<TAdapters, TType> {
-    /**
-     * @example
-     * ```ts
-     * import { CacheResolver } from "eridu-tech/cache";
-     * import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
-     * import { RedisCacheAdapter } from "eridu-tech/cache/redis-cache-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import type { ISerde } from "eridu-tech/serde/contracts";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const cacheResolver = new CacheResolver({
-     *   adapters: {
-     *     memory: new MemoryCacheAdapter(),
-     *     redis: new RedisCacheAdapter({
-     *       database: new Redis("YOUR_REDIS_CONNECTION"),
-     *       serde,
-     *     }),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     */
+export class CacheResolver<TAdapters extends string = string, TType = unknown>
+    implements ICacheResolver<TAdapters, TType>, IInitizable
+{
     constructor(
         private readonly settings: CacheResolverSettings<TAdapters, TType>,
     ) {}
 
-    setDefaultTtl(ttl: ITimeSpan | null): CacheResolver<TAdapters, TType> {
-        return new CacheResolver({
-            ...this.settings,
-            defaultTtl: ttl,
-        });
+    private readonly factories = {} as Partial<Record<TAdapters, Cache<TType>>>;
+
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new Cache({
+                ...rest,
+                adapter,
+            });
+            this.factories[adapterName] = factory as Cache<TType>;
+        }
+        return Promise.resolve();
     }
 
-    setType<TOutputType>(): CacheResolver<TAdapters, TOutputType> {
-        return new CacheResolver<TAdapters, TOutputType>(
-            this.settings as CacheResolverSettings<TAdapters, TOutputType>,
-        );
-    }
-
-    setSchema<TOutputType>(
-        schema: StandardSchemaV1<TOutputType>,
-    ): CacheResolver<TAdapters, TOutputType> {
-        return new CacheResolver({
-            ...this.settings,
-            schema,
-        } as CacheResolverSettings<TAdapters, TOutputType>);
-    }
-
-    /**
-     * @example
-     * ```ts
-     * import { CacheResolver } from "eridu-tech/cache";
-     * import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
-     * import { RedisCacheAdapter } from "eridu-tech/cache/redis-cache-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import type { ISerde } from "eridu-tech/serde/contracts";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { TimeSpan } from "eridu-tech/time-span";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const cacheResolver = new CacheResolver({
-     *   adapters: {
-     *     memory: new MemoryCacheAdapter(),
-     *     redis: new RedisCacheAdapter({
-     *       database: new Redis("YOUR_REDIS_CONNECTION"),
-     *       serde,
-     *     }),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     *
-     * // Will add key to cache using the default adapter which is MemoryCacheAdapter
-     * await cacheResolver
-     *   .use()
-     *   .add("a", 1);
-     *
-     * // Will add key to cache using the redis adapter
-     * await cacheResolver
-     *   .use("redis")
-     *   .add("a", 1);
-     *
-     * // You can change the default settings of the returned Cache instance.
-     * await cacheResolver
-     *   .setDefaultTtl(TimeSpan.fromMinutes(2))
-     *   .use("sqlite")
-     *   .add("a", 1);
-     * ```
-     */
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ICache<TType> {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(CacheResolver.name);
+            throw DefaultAdapterNotDefinedError.create(
+                Cache.name,
+                Object.keys(this.settings.adapters),
+            );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
-            throw new UnregisteredAdapterError(adapterName);
+        const cache = this.factories[adapterName];
+        if (cache === undefined) {
+            throw UnregisteredAdapterError.create(
+                adapterName,
+                Object.keys(this.settings.adapters),
+            );
         }
-        return new Cache({
-            ...this.settings,
-            adapter,
-        } as CacheSettings<TType>);
+        return cache;
     }
 }

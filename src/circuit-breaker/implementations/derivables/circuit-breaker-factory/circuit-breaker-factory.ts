@@ -5,13 +5,13 @@
 import { CIRCUIT_BREAKER_TRIGGER } from "@/circuit-breaker/contracts/_module-exports.js";
 import { CircuitBreakerSerdeTransformer } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-serde-transformer.js";
 import { CircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/serde.js";
+import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     CORE,
     defaultWaitUntil,
     resolveOneOrMore,
+    resolveSerializationId,
 } from "@/utilities/_module-exports.js";
 
 import type {
@@ -25,6 +25,7 @@ import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type {
     ErrorPolicy,
+    IInitizable,
     OneOrMore,
     WaitUntil,
 } from "@/utilities/_module-exports.js";
@@ -80,19 +81,24 @@ export type CircuitBreakerFactorySettingsBase = {
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link CircuitBreakerFactory | `CircuitBreakerFactory`} to register the circuit breaker's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { NoOpSerdeAdapter } from "eridu-tech/serde/no-op-serde-adapter";
+     * import { NoOpSerde } from "eridu-tech/serde/no-op-serde";
      *
-     * new Serde(new NoOpSerdeAdapter())
+     * new NoOpSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
 
     /**
-     * The serde transformer name used to identify circuit-breaker serializers and deserializers when there are adapters with the same name.
-     * @default ""
+     * Optional prefix that scopes this circuit breaker's serde transformer name,
+     * keeping adapters that share a constructor name distinct.
+     *
+     * The adapter's constructor name is appended to it, or used on its own when omitted.
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
      */
-    serdeTransformerName?: string;
+    serializationId?: string;
 
     /**
      * You can pass the `waitUntil` function to handle background promises.
@@ -130,47 +136,18 @@ export type CircuitBreakerFactorySettings =
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
  * @group Derivables
  */
-export class CircuitBreakerFactory implements ICircuitBreakerFactory {
+export class CircuitBreakerFactory
+    implements ICircuitBreakerFactory, IInitizable
+{
     private readonly adapter: ICircuitBreakerAdapter;
     private readonly defaultSlowCallTime: TimeSpan;
     private readonly defaultTrigger: CircuitBreakerTrigger;
     private readonly defaultErrorPolicy: ErrorPolicy;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly enableAsyncTracking: boolean;
     private readonly waitUntil: WaitUntil;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselyCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/kysely-circuit-breaker-storage-adapter";
-     * import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const circuitBreakerStorageAdapter = new KyselyCircuitBreakerStorageAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
-     *     }),
-     *   }),
-     *   serde
-     * });
-     * // You need initialize the adapter once before using it.
-     * await circuitBreakerStorageAdapter.init();
-     *
-     * const circuitBreakerAdapter = new DatabaseCircuitBreakerAdapter({
-     *   adapter: circuitBreakerStorageAdapter
-     * });
-     *
-     * const circuitBreakerFactory = new CircuitBreakerFactory({
-     *   adapter: circuitBreakerAdapter
-     * })
-     * ```
-     */
     constructor(settings: CircuitBreakerFactorySettings) {
         const {
             enableAsyncTracking = false,
@@ -178,8 +155,8 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
             defaultSlowCallTime = TimeSpan.fromSeconds(10),
             defaultTrigger = CIRCUIT_BREAKER_TRIGGER.BOTH,
             defaultErrorPolicy = () => true,
-            serde = new Serde(new NoOpSerdeAdapter()),
-            serdeTransformerName = "",
+            serde = new NoOpSerde(),
+            serializationId,
             waitUntil = defaultWaitUntil,
         } = settings;
 
@@ -190,11 +167,10 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
         this.defaultTrigger = defaultTrigger;
         this.defaultErrorPolicy = defaultErrorPolicy;
         this.serde = serde;
-        this.serdeTransformerName = serdeTransformerName;
-        this.registerToSerde();
+        this.serializationId = resolveSerializationId(serializationId, adapter);
     }
 
-    private registerToSerde(): void {
+    async init(): Promise<void> {
         const transformer = new CircuitBreakerSerdeTransformer({
             waitUntil: this.waitUntil,
             enableAsyncTracking: this.enableAsyncTracking,
@@ -202,11 +178,13 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
             slowCallTime: this.defaultSlowCallTime,
             errorPolicy: this.defaultErrorPolicy,
             trigger: this.defaultTrigger,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
+
+        return Promise.resolve();
     }
 
     create(
@@ -227,7 +205,7 @@ export class CircuitBreakerFactory implements ICircuitBreakerFactory {
             slowCallTime: TimeSpan.fromTimeSpan(slowCallTime),
             errorPolicy,
             trigger,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
     }
 }

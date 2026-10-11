@@ -40,40 +40,6 @@ export type LockAdapterTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/lock/test-utilities"`
  * @group Utilities
- * @example
- * ```ts
- * import { afterEach, beforeEach, describe, expect, test } from "vitest";
- * import { lockAdapterTestSuite } from "eridu-tech/lock/test-utilities";
- * import { RedisLockAdapter } from "eridu-tech/lock/redis-lock-adapter";
- * import { Redis } from "ioredis";
- * import {
- *     RedisContainer,
- *     type StartedRedisContainer,
- * } from "@testcontainers/redis";
- * import { TimeSpan } from "eridu-tech/time-span";
- *
- * const timeout = TimeSpan.fromMinutes(2);
- * describe("class: RedisLockAdapter", () => {
- *     let client: Redis;
- *     let startedContainer: StartedRedisContainer;
- *     beforeEach(async () => {
- *         startedContainer = await new RedisContainer("redis:7.4.2").start();
- *         client = new Redis(startedContainer.getConnectionUrl());
- *     }, timeout.toMilliseconds());
- *     afterEach(async () => {
- *         await client.quit();
- *         await startedContainer.stop();
- *     }, timeout.toMilliseconds());
- *     lockAdapterTestSuite({
- *         createAdapter: () =>
- *             new RedisLockAdapter(client),
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function lockAdapterTestSuite(
     settings: LockAdapterTestSuiteSettings,

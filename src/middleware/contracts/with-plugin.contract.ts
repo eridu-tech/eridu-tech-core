@@ -84,49 +84,6 @@ export type Plugin<TInstance> = PluginFn<TInstance> | IPluginObject<TInstance>;
  *
  * @returns The same instance after all plugins have been applied
  *
- * @example
- * ```ts
- * class UserService {
- *   async getUser(id: string): Promise<{ name: string }> {
- *      // retrieval logic
- *   }
- *
- *   async deleteUser(id: string): Promise<void> {
- *     // deletion logic
- *   }
- * }
- *
- * // Function-based plugin: adds logging to all methods
- * const loggingPlugin: PluginFn<UserService> = (service, enhance) => {
- *   enhance(service, "getUser", [
- *     (next) => async (...args) => {
- *       console.log(`${method} called with:`, args);
- *       const result = await next(...args);
- *       console.log(`${method} returned:`, result);
- *       return result;
- *     },
- *   ]);
- *
- *   enhance(service, "deleteUser", [
- *     (next) => async (...args) => {
- *       console.log(`${method} called with:`, args);
- *       const result = await next(...args);
- *       console.log(`${method} returned:`, result);
- *       return result;
- *     },
- *   ]);
- * };
- *
- * function main(withPlugin: WithPlugin): void {
- *   const service = new UserService();
- *   const enhancedService = withPlugin(service, loggingPlugin);
- *   await enhancedService.getUser("123");
- *   // Logs:
- *   // getUser called with: ["123"]
- *   // getUser returned: { name: "Alice" }
- * }
- * ```
- *
  * @see {@link PluginFn | `PluginFn`}
  * @see {@link IPluginObject | `IPluginObject`}
  * @see {@link Plugin | `Plugin`}

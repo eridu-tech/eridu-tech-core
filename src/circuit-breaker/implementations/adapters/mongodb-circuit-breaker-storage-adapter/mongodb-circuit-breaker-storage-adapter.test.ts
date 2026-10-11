@@ -6,8 +6,7 @@ import { circuitBreakerStorageAdapterTestSuite } from "@/circuit-breaker/impleme
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { startMongoReplicaSet } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/_module-exports.js";
@@ -55,7 +54,7 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             const adapter = new MongodbCircuitBreakerStorageAdapter({
                 transactionContext: createTrxCtx(client, client.db("database")),
                 collectionName: "circuitBreakers",
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             return adapter;
@@ -75,7 +74,7 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
                     client.db(databaseName),
                 ),
                 collectionName,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -94,7 +93,7 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
                     client.db(databaseName),
                 ),
                 collectionName,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             await adapter.deInit();
@@ -119,7 +118,7 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
                     client.db(databaseName),
                 ),
                 collectionName,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             await adapter.deInit();
@@ -137,7 +136,7 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
                     client.db(databaseName),
                 ),
                 collectionName,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
 
             const promise = adapter.deInit();
@@ -152,7 +151,7 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             const adapter = new MongodbCircuitBreakerStorageAdapter({
                 transactionContext: trxCtx,
                 collectionName,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -179,7 +178,7 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             const adapter = new MongodbCircuitBreakerStorageAdapter({
                 transactionContext: trxCtx,
                 collectionName,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 

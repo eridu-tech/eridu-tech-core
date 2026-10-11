@@ -40,40 +40,6 @@ export type SharedLockAdapterTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/shared-lock/test-utilities"`
  * @group Utilities
- * @example
- * ```ts
- * import { afterEach, beforeEach, describe, expect, test } from "vitest";
- * import { sharedLockAdapterTestSuite } from "eridu-tech/shared-lock/test-utilities";
- * import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
- * import { Redis } from "ioredis";
- * import {
- *     RedisContainer,
- *     type StartedRedisContainer,
- * } from "@testcontainers/redis";
- * import { TimeSpan } from "eridu-tech/time-span";
- *
- * const timeout = TimeSpan.fromMinutes(2);
- * describe("class: RedisSharedLockAdapter", () => {
- *     let client: Redis;
- *     let startedContainer: StartedRedisContainer;
- *     beforeEach(async () => {
- *         startedContainer = await new RedisContainer("redis:7.4.2").start();
- *         client = new Redis(startedContainer.getConnectionUrl());
- *     }, timeout.toMilliseconds());
- *     afterEach(async () => {
- *         await client.quit();
- *         await startedContainer.stop();
- *     }, timeout.toMilliseconds());
- *     sharedLockAdapterTestSuite({
- *         createAdapter: () =>
- *             new RedisSharedLockAdapter(client),
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function sharedLockAdapterTestSuite(
     settings: SharedLockAdapterTestSuiteSettings,

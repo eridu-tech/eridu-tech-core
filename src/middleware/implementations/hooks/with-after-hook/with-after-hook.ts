@@ -17,11 +17,6 @@ import type { Invocable, Promisable } from "@/utilities/_module-exports.js";
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  * @typeParam TReturn - Return type of the wrapped function
  *
- * @example
- * ```ts
- * const hook: AfterHook<[id: string], User> = ([id], user) => ({ ...user, id });
- * ```
- *
  * @see {@link withAfterHook | `withAfterHook`}
  *
  * IMPORT_PATH: `eridu-tech/middleware`
@@ -45,17 +40,6 @@ export type AfterHook<
  * @param callback - Hook invoked with the arguments and result after execution
  * @param detach - When `true`, the hook runs without being awaited and cannot change the result. Defaults to `false`
  * @returns Middleware function that applies the after hook
- *
- * @example
- * ```ts
- * const createUser = use(
- *   saveUser,
- *   withAfterHook<[name: string], User>(([name], user) => ({
- *     ...user,
- *     name,
- *   })),
- * );
- * ```
  *
  * @see {@link AfterHook | `AfterHook`}
  *

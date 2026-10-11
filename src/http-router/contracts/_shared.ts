@@ -127,12 +127,6 @@ export type StaticFileDef = {
  * validation fails, or `null` when the files pass. Use this when validation
  * rules must be computed dynamically based on the actual files.
  *
- * @example
- * ```ts
- * const avatarDef: DynamicFileDef = (collection) =>
- *     collection.size() > 1 ? "Only one avatar is allowed" : null;
- * ```
- *
  * IMPORT_PATH: `"eridu-tech/http-router/contracts"`
  * @group Contracts
  */

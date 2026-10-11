@@ -329,7 +329,7 @@ export class GraphManager {
         const edges: Array<[Edge, EdgeProps]> = keys.map((key) => {
             const diDependencyToken = args.deps[key];
             if (diDependencyToken === undefined) {
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     `Dependency "${key}" of token "${tokenToString(args.token)}" is undefined in the deps record.`,
                 );
             }
@@ -348,7 +348,7 @@ export class GraphManager {
 
         this.setNodeProperty(settings.token, {
             lifetime: settings.lifetime,
-            service: settings.factory as ServiceFactory<DepRecord>,
+            service: settings.factory as ServiceFactory,
         });
 
         edges.forEach(([edge, value]) => {
@@ -409,7 +409,7 @@ export class GraphManager {
 
         this.graph.setNodeProperty(settings.token, {
             lifetime: nodeProps.lifetime,
-            service: factory as ServiceFactory<DepRecord>,
+            service: factory as ServiceFactory,
         });
 
         this.overrideSet.add(settings.token);
@@ -435,7 +435,7 @@ export class GraphManager {
         nodeId: Node,
     ): { status: true; nodes: Array<Node> } | { status: false } {
         if (this.getLifespan(nodeId) !== INTERNAL_LIFETIME.TRANSIENT) {
-            throw new UnexpectedError("Expected node to be transient");
+            throw UnexpectedError.create("Expected node to be transient");
         }
         const nodesVisited = visitedNodes({
             getNeighbors: (node) => this.declaredSuccessorsOf(node),
@@ -458,7 +458,7 @@ export class GraphManager {
 
     getDynamicAncestralNodesOfScopedNode(nodeId: Node): Array<Node> {
         if (this.getLifespan(nodeId) !== INTERNAL_LIFETIME.SCOPED) {
-            throw new UnexpectedError("Expected node to be scoped");
+            throw UnexpectedError.create("Expected node to be scoped");
         }
         const nodesVisited = visitedNodes({
             getNeighbors: (node) => this.declaredSuccessorsOf(node),
@@ -515,7 +515,7 @@ export class GraphManager {
         if (node.lifetime === INTERNAL_LIFETIME.SINGLETON) {
             return node;
         }
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             `Node with token "${tokenToString(nodeId)}" is not registered as a singleton node.`,
         );
     }
@@ -525,7 +525,7 @@ export class GraphManager {
         if (node.lifetime === INTERNAL_LIFETIME.TRANSIENT) {
             return node;
         }
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             `Node with token "${tokenToString(nodeId)}" is not registered as a transient node.`,
         );
     }
@@ -534,7 +534,7 @@ export class GraphManager {
         if (node.lifetime === INTERNAL_LIFETIME.SCOPED) {
             return node;
         }
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             `Node with token "${tokenToString(nodeId)}" is not registered as a scoped node.`,
         );
     }
@@ -544,7 +544,7 @@ export class GraphManager {
         if (node.lifetime === INTERNAL_LIFETIME.DYNAMIC) {
             return node;
         }
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             `Node with token "${tokenToString(nodeId)}" is not registered as a dynamic node.`,
         );
     }
@@ -552,7 +552,7 @@ export class GraphManager {
     getServiceFactory(nodeId: Node): ServiceFactory {
         const node = this.getNodePropertyOrThrow(nodeId);
         if (node.lifetime === INTERNAL_LIFETIME.DYNAMIC) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Node with token "${tokenToString(nodeId)}" is registered as a dynamic node and therefore does not have a service factory.`,
             );
         }

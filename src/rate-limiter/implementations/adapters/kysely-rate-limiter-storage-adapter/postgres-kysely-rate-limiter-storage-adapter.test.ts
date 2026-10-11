@@ -8,8 +8,7 @@ import { AlsExecutionContextAdapter } from "@/execution-context/implementations/
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { KyselyRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-storage-adapter/_module-exports.js";
 import { rateLimiterStorageAdapterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
@@ -62,7 +61,7 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
         createAdapter: async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(database),
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             return adapter;
@@ -77,7 +76,7 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
             const trxCtx = createTrxCtx(database);
             const adapter = new KyselyRateLimiterStorageAdapter({
                 transactionContext: trxCtx,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -136,7 +135,7 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
             const trxCtx = createTrxCtx(database);
             const adapter = new KyselyRateLimiterStorageAdapter({
                 transactionContext: trxCtx,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -172,7 +171,7 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(database),
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -186,7 +185,7 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
             const trxCtx = createTrxCtx(database);
             const adapter = new KyselyRateLimiterStorageAdapter({
                 transactionContext: trxCtx,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             await adapter.deInit();
@@ -202,7 +201,7 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
         test("Should not throw error when called multiple times", async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(database),
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
             await adapter.deInit();
@@ -214,7 +213,7 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
         test("Should not throw error when called before init", async () => {
             const adapter = new KyselyRateLimiterStorageAdapter({
                 transactionContext: createTrxCtx(database),
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
 
             const promise = adapter.deInit();
@@ -227,7 +226,7 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
             const trxCtx = createTrxCtx(database);
             const adapter = new KyselyRateLimiterStorageAdapter({
                 transactionContext: trxCtx,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 
@@ -254,7 +253,7 @@ describe("postgres class: KyselyRateLimiterStorageAdapter", () => {
             const trxCtx = createTrxCtx(database);
             const adapter = new KyselyRateLimiterStorageAdapter({
                 transactionContext: trxCtx,
-                serde: new Serde(new SuperJsonSerdeAdapter()),
+                serde: new SuperJsonSerde(),
             });
             await adapter.init();
 

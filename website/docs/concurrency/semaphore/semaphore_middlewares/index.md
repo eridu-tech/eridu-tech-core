@@ -16,7 +16,7 @@ keywords:
 
 ## Initial configuration
 
-To begin using the semaphore middlewares, you'll need to create and configure a `SemaphoreFactory` instance:
+To begin using the semaphore middlewares, you'll need to create and configure a `SemaphoreFactoryResolver` instance:
 
 ```ts file=./samples/semaphore.ts
 
@@ -31,6 +31,8 @@ The Semaphore middleware wraps function calls with a distributed semaphore, limi
 ```ts file=./samples/with-semaphore.ts
 
 ```
+
+Calling `withSemaphore()` directly uses the resolver's default adapter (`storage1`). Use `withSemaphore.use("storage2")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withSemaphore`](https://eridu-tech.github.io/eridu-tech-core/types/Semaphore.WithSemaphoreSettings.html) function.

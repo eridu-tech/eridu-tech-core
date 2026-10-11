@@ -42,27 +42,6 @@ export type CacheTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/cache/test-utilities"`
  * @group TestUtilities
- * @example
- * ```ts
- * import { beforeEach, describe, expect, test } from "vitest";
- * import { cacheTestSuite } from "eridu-tech/cache/test-utilities";
- * import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
- * import { Cache } from "eridu-tech/cache";
- *
- * describe("class: Cache", () => {
- *     cacheTestSuite({
- *       createCache: () => {
- *           return new Cache({
- *               adapter: new MemoryCacheAdapter(),
- *           });
- *       },
- *       test,
- *       beforeEach,
- *       expect,
- *       describe,
- *   });
- * });
- * ```
  */
 export function cacheTestSuite(settings: CacheTestSuiteSettings): void {
     const {

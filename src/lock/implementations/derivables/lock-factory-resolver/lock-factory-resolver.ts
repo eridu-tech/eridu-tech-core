@@ -13,10 +13,12 @@ import type {
     ILockAdapter,
 } from "@/lock/contracts/_module-exports.js";
 import type { LockFactorySettingsBase } from "@/lock/implementations/derivables/lock-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { Invocable } from "@/utilities/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `LockFactoryResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/lock"`
  * @group Derivables
  */
@@ -45,110 +47,55 @@ export type LockFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
- * The `LockFactoryResolver` class is immutable.
+ * Resolves named lock adapters to factories.
+ * Call `init()` before selecting a factory.
  *
  * IMPORT_PATH: `"eridu-tech/lock"`
  * @group Derivables
  */
-export class LockFactoryResolver<
-    TAdapters extends string,
-> implements ILockFactoryResolver<TAdapters> {
-    /**
-     * @example
-     * ```ts
-     * import { LockFactoryResolver } from "eridu-tech/lock";
-     * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
-     * import { RedisLockAdapter } from "eridu-tech/lock/redis-lock-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const lockFactoryResolver = new LockFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemoryLockAdapter(),
-     *     redis: new RedisLockAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     * ```
-     */
+export class LockFactoryResolver<TAdapters extends string = string>
+    implements ILockFactoryResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: LockFactoryResolverSettings<TAdapters>,
     ) {}
 
-    setCreateLockId(
-        createId: Invocable<[], string>,
-    ): LockFactoryResolver<TAdapters> {
-        return new LockFactoryResolver({
-            ...this.settings,
-            createLockId: createId,
-        });
+    private readonly factories = {} as Partial<Record<TAdapters, LockFactory>>;
+
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new LockFactory({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.factories[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
-    setDefaultTtl(ttl: ITimeSpan | null): LockFactoryResolver<TAdapters> {
-        return new LockFactoryResolver({
-            ...this.settings,
-            defaultTtl: ttl,
-        });
-    }
-
-    setDefaultRefreshTime(time: ITimeSpan): LockFactoryResolver<TAdapters> {
-        return new LockFactoryResolver({
-            ...this.settings,
-            defaultRefreshTime: time,
-        });
-    }
-
-    /**
-     * @example
-     * ```ts
-     * import { LockFactoryResolver } from "eridu-tech/lock";
-     * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
-     * import { RedisLockAdapter } from "eridu-tech/lock/redis-lock-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { TimeSpan } from "eridu-tech/time-span";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const lockFactoryResolver = new LockFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemoryLockAdapter(),
-     *     redis: new RedisLockAdapter(new Redis("YOUR_REDIS_CONNECTION")),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     *
-     * // Will acquire key using the default adapter which is MemoryLockAdapter
-     * await lockFactoryResolver
-     *   .use()
-     *   .create("a")
-     *   .acquire();
-     *
-     * // Will acquire key using the redis adapter
-     * await lockFactoryResolver
-     *   .use("redis")
-     *   .create("a")
-     *   .acquire();
-     * ```
-     */
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ILockFactory {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(LockFactoryResolver.name);
+            throw DefaultAdapterNotDefinedError.create(
+                LockFactory.name,
+                Object.keys(this.settings.adapters),
+            );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
-            throw new UnregisteredAdapterError(adapterName);
+        const factory = this.factories[adapterName];
+        if (factory === undefined) {
+            throw UnregisteredAdapterError.create(
+                adapterName,
+                Object.keys(this.settings.adapters),
+            );
         }
-        return new LockFactory({
-            ...this.settings,
-            adapter,
-            serdeTransformerName: adapterName,
-        });
+        return factory;
     }
 }

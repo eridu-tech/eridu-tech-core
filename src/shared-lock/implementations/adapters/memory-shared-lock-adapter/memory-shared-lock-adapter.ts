@@ -53,20 +53,7 @@ export class MemorySharedLockAdapter
     implements ISharedLockAdapter, IDeinitizable, IPrunable
 {
     /**
-     *  @example
-     * ```ts
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     *
-     * const sharedLockAdapter = new MemorySharedLockAdapter();
-     * ```
      * You can also provide an `Map`.
-     * @example
-     * ```ts
-     * import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
-     *
-     * const map = new Map<string, any>();
-     * const sharedLockAdapter = new MemorySharedLockAdapter(map);
-     * ```
      */
     constructor(
         private readonly map = new Map<string, MemorySharedLockData>(),
@@ -81,7 +68,7 @@ export class MemorySharedLockAdapter
         }
         const { writerLock, readerSemaphore } = sharedLockEntry;
         if (readerSemaphore !== null && writerLock !== null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invalid ISharedLockAdapterState, expected either a reader semaphore or a writer lock to be defined, but not both.",
             );
         }
@@ -124,7 +111,7 @@ export class MemorySharedLockAdapter
         }
         const { writerLock, readerSemaphore } = sharedLock;
         if (readerSemaphore !== null && writerLock !== null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invalid ISharedLockAdapterState, expected either a reader semaphore or a writer lock to be defined, but not both.",
             );
         }

@@ -12,20 +12,7 @@ import type {
 import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 /**
- * An {@link ITransactionHooks} that fans out `afterCommit()` hooks to several
- * {@link ITransactionContext | transaction contexts}, so a single consumer can stay
- * transaction-aware across every database a project uses, for example PostgreSQL and
- * MongoDB at the same time.
- *
- * A hook registered through `afterCommit()` is registered on every wrapped context that
- * currently has an active transaction, and therefore runs once per transaction that
- * commits. When none of the wrapped contexts is in a transaction, the hook runs
- * immediately unless
- * {@link AfterCommitSettings.runIfNoTransaction | `runIfNoTransaction`} is `false`,
- * in which case it is discarded.
- *
- * IMPORT_PATH: `"eridu-tech/transaction-context"`
- * @group Derivables
+ * @internal
  */
 export class MultiTransactionHooks implements ITransactionHooks {
     constructor(

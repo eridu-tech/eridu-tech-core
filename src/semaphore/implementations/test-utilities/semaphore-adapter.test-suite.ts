@@ -37,40 +37,6 @@ export type SemaphoreAdapterTestSuiteSettings = {
  *
  * IMPORT_PATH: `"eridu-tech/semaphore/test-utilities"`
  * @group Utilities
- * @example
- * ```ts
- * import { afterEach, beforeEach, describe, expect, test } from "vitest";
- * import { semaphoreAdapterTestSuite } from "eridu-tech/semaphore/test-utilities";
- * import { RedisSemaphoreAdapter } from "eridu-tech/semaphore/redis-semaphore-adapter";
- * import { Redis } from "ioredis";
- * import {
- *     RedisContainer,
- *     type StartedRedisContainer,
- * } from "@testcontainers/redis";
- * import { TimeSpan } from "eridu-tech/time-span";
- *
- * const timeout = TimeSpan.fromMinutes(2);
- * describe("class: RedisSemaphoreAdapter", () => {
- *     let client: Redis;
- *     let startedContainer: StartedRedisContainer;
- *     beforeEach(async () => {
- *         startedContainer = await new RedisContainer("redis:7.4.2").start();
- *         client = new Redis(startedContainer.getConnectionUrl());
- *     }, timeout.toMilliseconds());
- *     afterEach(async () => {
- *         await client.quit();
- *         await startedContainer.stop();
- *     }, timeout.toMilliseconds());
- *     semaphoreAdapterTestSuite({
- *         createAdapter: () =>
- *             new RedisSemaphoreAdapter(client),
- *         test,
- *         beforeEach,
- *         expect,
- *         describe,
- *     });
- * });
- * ```
  */
 export function semaphoreAdapterTestSuite(
     settings: SemaphoreAdapterTestSuiteSettings,

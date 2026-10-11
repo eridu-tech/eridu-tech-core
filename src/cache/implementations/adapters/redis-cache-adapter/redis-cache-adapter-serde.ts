@@ -14,7 +14,7 @@ import type { ISerde } from "@/serde/contracts/_module-exports.js";
 export class RedisCacheAdapterSerde implements ISerde<string> {
     constructor(private readonly serde: ISerde<string>) {}
 
-    serialize<TValue>(value: TValue): string {
+    async serialize<TValue>(value: TValue): Promise<string> {
         try {
             if (
                 typeof value === "number" &&
@@ -23,27 +23,21 @@ export class RedisCacheAdapterSerde implements ISerde<string> {
             ) {
                 return String(value);
             }
-            return this.serde.serialize(value);
+            return await this.serde.serialize(value);
         } catch (error: unknown) {
-            throw new SerializationSerdeError(
-                `Serialization error "${String(error)}" occurred`,
-                error,
-            );
+            throw SerializationSerdeError.create(error);
         }
     }
 
-    deserialize<TValue>(value: string): TValue {
+    async deserialize<TValue>(value: string): Promise<TValue> {
         try {
             const isNumberRegex = /^(-?([0-9]+)(\.[0-5]+)?)$/g;
             if (isNumberRegex.test(value)) {
                 return Number(value) as TValue;
             }
-            return this.serde.deserialize(value);
+            return await this.serde.deserialize(value);
         } catch (error: unknown) {
-            throw new DeserializationSerdeError(
-                `Deserialization error "${String(error)}" occurred`,
-                error,
-            );
+            throw DeserializationSerdeError.create(error);
         }
     }
 }

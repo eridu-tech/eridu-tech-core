@@ -16,7 +16,7 @@ keywords:
 
 ## Initial configuration
 
-To begin using the lock middlewares, you'll need to create and configure a `LockFactory` instance:
+To begin using the lock middlewares, you'll need to create and configure a `LockFactoryResolver` instance:
 
 ```ts file=./samples/lock.ts
 
@@ -31,6 +31,8 @@ The Lock middleware wraps function calls with a distributed lock, ensuring mutua
 ```ts file=./samples/with-lock.ts
 
 ```
+
+Calling `withLock()` directly uses the resolver's default adapter (`storage1`). Use `withLock.use("storage2")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withLock`](https://eridu-tech.github.io/eridu-tech-core/types/Lock.WithLockSettings.html) function.

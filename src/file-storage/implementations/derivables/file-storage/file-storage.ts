@@ -4,9 +4,12 @@
 
 import { FileSerdeTransformer } from "@/file-storage/implementations/derivables/file-storage/file-serde-transformer.js";
 import { File } from "@/file-storage/implementations/derivables/file-storage/file.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
-import { CORE, resolveOneOrMore } from "@/utilities/_module-exports.js";
+import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
+import {
+    CORE,
+    resolveOneOrMore,
+    resolveSerializationId,
+} from "@/utilities/_module-exports.js";
 
 import type {
     IFile,
@@ -14,13 +17,24 @@ import type {
     ISignedFileStorageAdapter,
 } from "@/file-storage/contracts/_module-exports.js";
 import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
-import type { OneOrMore } from "@/utilities/_module-exports.js";
+import type { IInitizable, OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */
 export type FileStorageSettingsBase = {
+    /**
+     * Optional prefix used to scope the serde transformer name for this file storage instance.
+     * This keeps multiple adapters with the same constructor name distinct.
+     *
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
+     */
+    serializationId?: string;
+
     /**
      * Note this setting is only used by cloud object storage services like aws s3, azure, or google cloud storage.
      *
@@ -53,19 +67,12 @@ export type FileStorageSettingsBase = {
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link FileStorage | `FileStorage`} to register the file's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { NoOpSerdeAdapter } from "eridu-tech/serde/no-op-serde-adapter";
+     * import { NoOpSerde } from "eridu-tech/serde/no-op-serde";
      *
-     * new Serde(new NoOpSerdeAdapter())
+     * new NoOpSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
-
-    /**
-     * The serde transformer name used to identify file storage serializers and deserializers when there are adapters with the same name.
-     * @default ""
-     */
-    serdeTransformerName?: string;
 };
 
 /**
@@ -89,36 +96,20 @@ export type FileStorageSettings = FileStorageSettingsBase & {
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */
-export class FileStorage implements IFileStorage {
+export class FileStorage implements IFileStorage, IInitizable {
     private readonly adapter: ISignedFileStorageAdapter;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly defaultContentDisposition: string | null;
     private readonly defaultContentEncoding: string | null;
     private readonly defaultCacheControl: string | null;
     private readonly defaultContentLanguage: string | null;
 
-    /**
-     * @example
-     * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import { FileStorag } from "eridu-tech/file-storage";
-     * import { FsFileStorageAdapter } from "eridu-tech/file-storage/fs-file-storage-adapter";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const fileStorageAdapter = new FsFileStorageAdapter();
-     * const fileStorage = new FileStorage({
-     *   serde,
-     *   adapter: fileStorageAdapter,
-     * })
-     * ```
-     */
     constructor(settings: FileStorageSettings) {
         const {
             adapter,
-            serde = new Serde(new NoOpSerdeAdapter()),
-            serdeTransformerName = "",
+            serde = new NoOpSerde(),
+            serializationId,
             defaultCacheControl = null,
             defaultContentDisposition = "inline",
             defaultContentEncoding = null,
@@ -131,22 +122,22 @@ export class FileStorage implements IFileStorage {
         this.defaultContentLanguage = defaultContentLanguage;
         this.adapter = adapter;
         this.serde = serde;
-        this.serdeTransformerName = serdeTransformerName;
-        this.registerToSerde();
+        this.serializationId = resolveSerializationId(serializationId, adapter);
     }
 
-    private registerToSerde(): void {
+    async init(): Promise<void> {
         const transformer = new FileSerdeTransformer({
             defaultCacheControl: this.defaultCacheControl,
             defaultContentDisposition: this.defaultContentDisposition,
             defaultContentEncoding: this.defaultContentEncoding,
             defaultContentLanguage: this.defaultContentLanguage,
             adapter: this.adapter,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
+        return Promise.resolve();
     }
 
     create(key: string): IFile {
@@ -158,7 +149,7 @@ export class FileStorage implements IFileStorage {
             adapter: this.adapter,
             key,
             originalKey: key,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
     }
 

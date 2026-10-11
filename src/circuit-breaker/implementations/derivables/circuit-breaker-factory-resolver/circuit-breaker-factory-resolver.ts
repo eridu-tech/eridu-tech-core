@@ -12,15 +12,16 @@ import {
 
 import type {
     ICircuitBreakerFactoryResolver,
-    CircuitBreakerTrigger,
     ICircuitBreakerFactory,
     ICircuitBreakerAdapter,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import type { CircuitBreakerFactorySettingsBase } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/_module.js";
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { ErrorPolicy, WaitUntil } from "@/utilities/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `CircuitBreakerFactoryResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
  * @group Derivables
  */
@@ -49,138 +50,57 @@ export type CircuitBreakerFactoryResolverSettings<TAdapters extends string> =
     };
 
 /**
- * The `CircuitBreakerFactoryResolver` class is immutable.
+ * Resolves named circuit-breaker adapters to factories.
+ * Call `init()` before selecting a factory.
  *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker"`
  * @group Derivables
  */
-export class CircuitBreakerFactoryResolver<
-    TAdapters extends string,
-> implements ICircuitBreakerFactoryResolver<TAdapters> {
-    /**
-     * @example
-     * ```ts
-     * import { CircuitBreakerFactoryResolver } from "eridu-tech/circuit-breaker";
-     * import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storate-adapter";
-     * import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
-     * import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-circuit-breaker-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const circuitBreakerFactoryResolver = new CircuitBreakerFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new DatabaseCircuitBreakerAdapter({
-     *       adapter: new MemoryCircuitBreakerStorageAdapter()
-     *     }),
-     *     redis: new RedisCircuitBreakerAdapter({
-     *       database: new Redis("YOUR_REDIS_CONNECTION")
-     *     }),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     * ```
-     */
+export class CircuitBreakerFactoryResolver<TAdapters extends string = string>
+    implements ICircuitBreakerFactoryResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: CircuitBreakerFactoryResolverSettings<TAdapters>,
     ) {}
 
-    setDefaultSlowCallTime(
-        slowCallTime?: ITimeSpan,
-    ): CircuitBreakerFactoryResolver<TAdapters> {
-        return new CircuitBreakerFactoryResolver({
-            ...this.settings,
-            defaultSlowCallTime: slowCallTime,
-        });
+    private readonly factories = {} as Partial<
+        Record<TAdapters, CircuitBreakerFactory>
+    >;
+
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new CircuitBreakerFactory({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.factories[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
-    setDefaultTrigger(
-        trigger?: CircuitBreakerTrigger,
-    ): CircuitBreakerFactoryResolver<TAdapters> {
-        return new CircuitBreakerFactoryResolver({
-            ...this.settings,
-            defaultTrigger: trigger,
-        });
-    }
-
-    setDefaultErrorPolicy(
-        defaultErrorPolicy: ErrorPolicy,
-    ): CircuitBreakerFactoryResolver<TAdapters> {
-        return new CircuitBreakerFactoryResolver({
-            ...this.settings,
-            defaultErrorPolicy,
-        });
-    }
-
-    setWaitUntil(
-        waitUntil: WaitUntil,
-    ): CircuitBreakerFactoryResolver<TAdapters> {
-        return new CircuitBreakerFactoryResolver({
-            ...this.settings,
-            waitUntil,
-        });
-    }
-
-    /**
-     * @example
-     * ```ts
-     * import { CircuitBreakerFactoryResolver } from "eridu-tech/circuit-breaker";
-     * import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storate-adapter";
-     * import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
-     * import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-circuit-breaker-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import { Redis } from "ioredis";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const circuitBreakerFactoryResolver = new CircuitBreakerFactoryResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new DatabaseCircuitBreakerAdapter({
-     *       adapter: new MemoryCircuitBreakerStorageAdapter()
-     *     }),
-     *     redis: new RedisCircuitBreakerAdapter({
-     *       database: new Redis("YOUR_REDIS_CONNECTION")
-     *     }),
-     *   },
-     *   defaultAdapter: "memory",
-     * });
-     *
-     * // Will apply circuit breaker logic the default adapter which is MemoryCircuitBreakerStorageAdapter
-     * await circuitBreakerFactoryResolver
-     *   .use()
-     *   .create("a")
-     *   .runOrFail(async () => {
-     *     // ... code to apply circuit breaker logic
-     *   });
-     *
-     * // Will apply circuit breaker logic using the RedisCircuitBreakerAdapter
-     * await circuitBreakerFactoryResolver
-     *   .use("redis")
-     *   .create("a")
-     *   .runOrFail(async () => {
-     *     // ... code to apply circuit breaker logic
-     *   });
-     * ```
-     */
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): ICircuitBreakerFactory {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(
+            throw DefaultAdapterNotDefinedError.create(
                 CircuitBreakerFactoryResolver.name,
+                Object.keys(this.settings.adapters),
             );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
-            throw new UnregisteredAdapterError(adapterName);
+        const factory = this.factories[adapterName];
+        if (factory === undefined) {
+            throw UnregisteredAdapterError.create(
+                adapterName,
+                Object.keys(this.settings.adapters),
+            );
         }
-        return new CircuitBreakerFactory({
-            ...this.settings,
-            adapter,
-            serdeTransformerName: adapterName,
-        });
+        return factory;
     }
 }

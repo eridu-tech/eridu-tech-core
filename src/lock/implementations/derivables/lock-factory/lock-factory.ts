@@ -6,12 +6,12 @@ import { v4 } from "uuid";
 
 import { LockSerdeTransformer } from "@/lock/implementations/derivables/lock-factory/lock-serde-transformer.js";
 import { Lock } from "@/lock/implementations/derivables/lock-factory/lock.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     CORE,
     resolveOneOrMore,
+    resolveSerializationId,
     callInvocable,
 } from "@/utilities/_module-exports.js";
 
@@ -23,7 +23,11 @@ import type {
 } from "@/lock/contracts/_module-exports.js";
 import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { OneOrMore, Invocable } from "@/utilities/_module-exports.js";
+import type {
+    OneOrMore,
+    Invocable,
+    IInitizable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `LockFactory` variants.
@@ -33,22 +37,26 @@ import type { OneOrMore, Invocable } from "@/utilities/_module-exports.js";
  */
 export type LockFactorySettingsBase = {
     /**
+     * Optional prefix used to scope the serde transformer name for this lock factory.
+     * This keeps multiple adapters with the same constructor name distinct.
+     *
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
+     */
+    serializationId?: string;
+
+    /**
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link LockFactory | `LockFactory`} to register the lock's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { NoOpSerdeAdapter } from "eridu-tech/serde/no-op-serde-adapter";
+     * import { NoOpSerde } from "eridu-tech/serde/no-op-serde";
      *
-     * new Serde(new NoOpSerdeAdapter())
+     * new NoOpSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
-
-    /**
-     * The registered serde transformer name used to identify lock serializer and deserializer adapters when there are adapters with the same name.
-     * @default ""
-     */
-    serdeTransformerName?: string;
 
     /**
      * You can pass your own lock id generator function.
@@ -106,49 +114,22 @@ export type LockFactorySettings = LockFactorySettingsBase & {
  * IMPORT_PATH: `"eridu-tech/lock"`
  * @group Derivables
  */
-export class LockFactory implements ILockFactory {
+export class LockFactory implements ILockFactory, IInitizable {
     private readonly adapter: ILockAdapter;
     private readonly creatLockId: Invocable<[], string>;
     private readonly defaultTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselyLockAdapter } from "eridu-tech/lock/kysely-lock-adapter";
-     * import { LockFactory } from "eridu-tech/lock";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const lockAdapter = new KyselyLockAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
-     *     }),
-     *   });
-     * });
-     * // You need initialize the adapter once before using it.
-     * await lockAdapter.init();
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter())
-     * const lockFactory = new LockFactory({
-     *   serde,
-     *   adapter: lockAdapter,
-     * });
-     * ```
-     */
     constructor(settings: LockFactorySettings) {
         const {
             defaultTtl = TimeSpan.fromMinutes(5),
             defaultRefreshTime = TimeSpan.fromMinutes(5),
             createLockId = () => v4(),
-            serde = new Serde(new NoOpSerdeAdapter()),
+            serde = new NoOpSerde(),
             adapter,
-            serdeTransformerName = "",
+            serializationId,
         } = settings;
 
         this.serde = serde;
@@ -156,41 +137,23 @@ export class LockFactory implements ILockFactory {
         this.creatLockId = createLockId;
         this.defaultTtl =
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = resolveSerializationId(serializationId, adapter);
 
         this.adapter = adapter;
-        this.registerToSerde();
     }
 
-    private registerToSerde(): void {
+    async init(): Promise<void> {
         const transformer = new LockSerdeTransformer({
             adapter: this.adapter,
             defaultRefreshTime: this.defaultRefreshTime,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
+        return Promise.resolve();
     }
 
-    /**
-     * @example
-     * ```ts
-     * import { LockFactory } from "eridu-tech/lock";
-     * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
-     * import { Namespace } from "eridu-tech/namespace";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     *
-     * const lockFactory = new LockFactory({
-     *   adapter: new MemoryLockAdapter(),
-     *   namespace: new Namespace("lock"),
-     *   serde: new Serde(new SuperJsonSerdeAdapter())
-     * });
-     *
-     * const lock = lockFactory.create("a");
-     * ```
-     */
     create(key: string, settings: LockFactoryCreateSettings = {}): ILock {
         const {
             ttl = this.defaultTtl,
@@ -202,7 +165,7 @@ export class LockFactory implements ILockFactory {
             key,
             lockId,
             ttl: ttl === null ? null : TimeSpan.fromTimeSpan(ttl),
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
             defaultRefreshTime: this.defaultRefreshTime,
         });
     }

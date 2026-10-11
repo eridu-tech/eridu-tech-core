@@ -16,7 +16,7 @@ keywords:
 
 ## Initial configuration
 
-To begin using the circuit-breaker middlewares, you'll need to create and configure a `CircuitBreakerFactory` instance:
+To begin using the circuit-breaker middlewares, you'll need to create and configure a `CircuitBreakerFactoryResolver` instance:
 
 ```ts file=./samples/circuit-breaker.ts
 
@@ -31,6 +31,8 @@ The CircuitBreaker middleware wraps function calls with a circuit-breaker, provi
 ```ts file=./samples/with-circuit-breaker.ts
 
 ```
+
+Calling `withCircuitBreaker()` directly uses the resolver's default adapter (`storage1`). Use `withCircuitBreaker.use("storage2")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withCircuitBreaker`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.WithCircuitBreakerSettings.html) function.

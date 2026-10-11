@@ -16,7 +16,7 @@ keywords:
 
 ## Initial configuration
 
-To begin using the cache middlewares, you'll need to create and configure a `Cache` instance:
+To begin using the cache middlewares, you'll need to create and configure a `CacheResolver` instance:
 
 ```ts file=./samples/cache.ts
 
@@ -31,6 +31,8 @@ The Cache middleware intercepts function calls and caches their return values us
 ```ts file=./samples/with-cache-factory.ts
 
 ```
+
+Calling `withCache()` directly uses the resolver's default adapter (`storage1`). Use `withCache.use("storage2")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withCache`](https://eridu-tech.github.io/eridu-tech-core/types/Cache.WithCacheSettings.html) function.

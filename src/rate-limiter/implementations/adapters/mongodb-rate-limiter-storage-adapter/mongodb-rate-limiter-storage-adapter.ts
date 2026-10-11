@@ -74,26 +74,6 @@ export class MongodbRateLimiterStorageAdapter<TType>
     private readonly collection: Collection<MongodbRateLimiterDocument>;
     private readonly serde: ISerde<string>;
 
-    /**
-     * @example
-     * ```ts
-     * import { MongodbRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/mongodb-rate-limiter-storage-adapter";
-     * import { MongoClient } from "mongodb";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     *
-     * const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
-     * const database = client.db("database");
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const rateLimiterStorageAdapter = new MongodbRateLimiterStorageAdapter({
-     *   client,
-     *   database,
-     *   serde
-     * });
-     * // You need initialize the adapter once before using it.
-     * await rateLimiterStorageAdapter.init()
-     * ```
-     */
     constructor(settings: MongodbRateLimiterStorageAdapterSettings) {
         const {
             collectionName = "rateLimiter",
@@ -169,7 +149,7 @@ export class MongodbRateLimiterStorageAdapter<TType>
             },
             {
                 $set: {
-                    state: this.serde.serialize(state),
+                    state: await this.serde.serialize(state),
                     expiration,
                 },
             },
@@ -208,7 +188,7 @@ export class MongodbRateLimiterStorageAdapter<TType>
             return null;
         }
         return {
-            state: this.serde.deserialize(doc.state),
+            state: await this.serde.deserialize(doc.state),
             expiration: doc.expiration,
         };
     }

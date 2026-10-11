@@ -20,8 +20,6 @@ import type {
 
 import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import type {
     ITransactionContext,
     TransactionAware,
@@ -74,7 +72,7 @@ export type MongodbCacheEntryDocument = {
 };
 
 /**
- * To utilize the `MongodbCacheAdapter`, you must install the [`"mongodb"`](https://www.npmjs.com/package/mongodb) package and supply a {@link ISerde | `ISerde`}, with an adapter like {@link SuperJsonSerdeAdapter | `SuperJsonSerdeAdapter`}.
+ * To utilize the `MongodbCacheAdapter`, you must install the [`"mongodb"`](https://www.npmjs.com/package/mongodb) package and supply a {@link ISerde | `ISerde`}, with an adapter like {@link SuperJsonSerde | `SuperJsonSerde`}.
  *
  * IMPORT_PATH: `"eridu-tech/cache/mongodb-cache-adapter"`
  * @group Adapters
@@ -136,25 +134,6 @@ export class MongodbCacheAdapter<TType = unknown>
     private readonly serde: ISerde<string | number>;
     private readonly collection: Collection<MongodbCacheEntryDocument>;
 
-    /**
-     * @example
-     * ```ts
-     * import { MongodbCacheAdapter } from "eridu-tech/cache/mongodb-cache-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import { MongoClient } from "mongodb";
-     *
-     * const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
-     * const database = client.db("database");
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const cacheAdapter = new MongodbCacheAdapter({
-     *   database,
-     *   serde,
-     * });
-     * // You need initialize the adapter once before using it.
-     * await cacheAdapter.init();
-     * ```
-     */
     constructor(settings: MongodbCacheAdapterSettings) {
         const {
             collectionName = "cache",
@@ -186,7 +165,7 @@ export class MongodbCacheAdapter<TType = unknown>
         const hasExpirationAndExpiredQuery = {
             $and: [hasExpirationQuery, hasExpiredQuery],
         };
-        const serializedValue = this.serde.serialize(valueToAdd());
+        const serializedValue = await this.serde.serialize(valueToAdd());
         const document = await this.collection.findOneAndUpdate(
             {
                 key,
@@ -228,7 +207,7 @@ export class MongodbCacheAdapter<TType = unknown>
 
         const { expiration, value } = document;
         if (expiration === null) {
-            return this.serde.deserialize(value);
+            return await this.serde.deserialize(value);
         }
 
         const hasExpired = expiration.getTime() <= new Date().getTime();
@@ -236,7 +215,7 @@ export class MongodbCacheAdapter<TType = unknown>
             return valueToAdd();
         }
 
-        return this.serde.deserialize(value);
+        return await this.serde.deserialize(value);
     }
 
     /**
@@ -284,21 +263,21 @@ export class MongodbCacheAdapter<TType = unknown>
         }
     }
 
-    private getDocValue(
+    private async getDocValue(
         document: MongodbCacheEntryDocument | null,
-    ): TType | null {
+    ): Promise<TType | null> {
         if (document === null) {
             return null;
         }
         const { expiration, value } = document;
         if (expiration === null) {
-            return this.serde.deserialize(value);
+            return await this.serde.deserialize(value);
         }
         const hasExpired = expiration.getTime() <= new Date().getTime();
         if (hasExpired) {
             return null;
         }
-        return this.serde.deserialize(value);
+        return await this.serde.deserialize(value);
     }
 
     async get(key: string): Promise<TType | null> {
@@ -357,7 +336,7 @@ export class MongodbCacheAdapter<TType = unknown>
         const hasExpirationAndExpiredQuery = {
             $and: [hasExpirationQuery, hasExpiredQuery],
         };
-        const serializedValue = this.serde.serialize(value);
+        const serializedValue = await this.serde.serialize(value);
         const document = await this.collection.findOneAndUpdate(
             {
                 key,
@@ -401,7 +380,7 @@ export class MongodbCacheAdapter<TType = unknown>
             },
             {
                 $set: {
-                    value: this.serde.serialize(value),
+                    value: await this.serde.serialize(value),
                     expiration: ttl ?? null,
                 },
             },
@@ -422,7 +401,7 @@ export class MongodbCacheAdapter<TType = unknown>
             MongodbCacheAdapter.filterUnexpiredKeys([key]),
             {
                 $set: {
-                    value: this.serde.serialize(value),
+                    value: await this.serde.serialize(value),
                 },
             },
             {
@@ -430,7 +409,7 @@ export class MongodbCacheAdapter<TType = unknown>
             },
         );
         if (!updateResult.acknowledged) {
-            throw new UnexpectedError("Mongodb update was not acknowledged");
+            throw UnexpectedError.create("Mongodb update was not acknowledged");
         }
         return updateResult.modifiedCount > 0;
     }
@@ -449,7 +428,7 @@ export class MongodbCacheAdapter<TType = unknown>
                 },
             );
             if (!updateResult.acknowledged) {
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     "Mongodb update was not acknowledged",
                 );
             }
@@ -472,7 +451,9 @@ export class MongodbCacheAdapter<TType = unknown>
             },
         );
         if (!deleteResult.acknowledged) {
-            throw new UnexpectedError("Mongodb deletion was not acknowledged");
+            throw UnexpectedError.create(
+                "Mongodb deletion was not acknowledged",
+            );
         }
         return deleteResult.deletedCount > 0;
     }
@@ -485,7 +466,9 @@ export class MongodbCacheAdapter<TType = unknown>
             },
         );
         if (!mongodbResult.acknowledged) {
-            throw new UnexpectedError("Mongodb deletion was not acknowledged");
+            throw UnexpectedError.create(
+                "Mongodb deletion was not acknowledged",
+            );
         }
     }
 
@@ -505,7 +488,9 @@ export class MongodbCacheAdapter<TType = unknown>
             },
         );
         if (!mongodbResult.acknowledged) {
-            throw new UnexpectedError("Mongodb deletion was not acknowledged");
+            throw UnexpectedError.create(
+                "Mongodb deletion was not acknowledged",
+            );
         }
     }
 }

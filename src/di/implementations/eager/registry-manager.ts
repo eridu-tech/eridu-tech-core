@@ -146,7 +146,7 @@ export class RegistryManager {
                 this.executionContext.put(args.token, args.value[VALUE_KEY]);
                 break;
             default:
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     `Unexpected lifetime "${String(args.type)}" when saving a registry element for token "${tokenToString(args.token)}".`,
                 );
         }
@@ -171,7 +171,7 @@ export class RegistryManager {
                 return { type: REGISTER_ELEMENT_TYPE.DIRECT, value };
             }
             default:
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     `Unexpected lifetime "${String(args.type)}" when saving a registry element for token "${tokenToString(args.token)}".`,
                 );
         }
@@ -189,7 +189,7 @@ export class RegistryManager {
                 return this.executionContext.exists(args.token);
             }
             default:
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     `Unexpected lifetime "${String(args.type)}" when saving a registry element for token "${tokenToString(args.token)}".`,
                 );
         }
@@ -213,7 +213,7 @@ export class RegistryManager {
                 return { type: REGISTER_ELEMENT_TYPE.DIRECT, value };
             }
             default:
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     `Unexpected lifetime "${String(args.type)}" when saving a registry element for token "${tokenToString(args.token)}".`,
                 );
         }
@@ -225,7 +225,7 @@ export class RegistryManager {
     }): RegisterValueElement[typeof VALUE_KEY] {
         const element = this.getOrThrow(args);
         if (element[TYPE_KEY] !== REGISTER_ELEMENT_TYPE.DIRECT) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Registry element for token: "${tokenToString(args.token)}" is not a value. Expected a direct value element ("value") but the registered element is a function.`,
             );
         }
@@ -238,7 +238,7 @@ export class RegistryManager {
     }): RegisterFunctionElement[typeof VALUE_KEY] {
         const element = this.getOrThrow(args);
         if (element[TYPE_KEY] !== REGISTER_ELEMENT_TYPE.FUNC) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Registry element for token: "${tokenToString(args.token)}" is not a function. Expected a function element ("func") but the registered element is not callable.`,
             );
         }

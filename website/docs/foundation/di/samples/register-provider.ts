@@ -1,15 +1,11 @@
-import {
-    LIFETIME,
-    type IServiceRegister,
-    type IServiceProvider,
-} from "eridu-tech/di/contracts";
+import { LIFETIME, type IServiceRegister } from "eridu-tech/di/contracts";
 import { container } from "./container.js";
 import { Database } from "./database.js";
 import { FileLogger, Logger } from "./logger.js";
 import { UserProvider } from "./user-provider.js";
 
-// As a plain function
-function loggingProvider(register: IServiceRegister): void {
+// A plain function that groups related registrations
+function registerLogging(register: IServiceRegister): void {
     register.registerFactory({
         token: Logger,
         factory: () => new Logger(),
@@ -25,25 +21,22 @@ function loggingProvider(register: IServiceRegister): void {
     });
 }
 
-// As a class with an invoke(register: IServiceRegister) method
-class DatabaseProvider implements IServiceProvider {
-    invoke(register: IServiceRegister): void {
-        register.registerFactory({
-            token: Database,
-            factory: () => new Database(),
-            deps: {},
-            lifetime: LIFETIME.SINGLETON,
-        });
+function registerDatabase(register: IServiceRegister): void {
+    register.registerFactory({
+        token: Database,
+        factory: () => new Database(),
+        deps: {},
+        lifetime: LIFETIME.SINGLETON,
+    });
 
-        register.registerFactory({
-            token: UserProvider,
-            factory: ({ db }) => new UserProvider(db),
-            deps: { db: Database },
-            lifetime: LIFETIME.SCOPED,
-        });
-    }
+    register.registerFactory({
+        token: UserProvider,
+        factory: ({ db }) => new UserProvider(db),
+        deps: { db: Database },
+        lifetime: LIFETIME.SCOPED,
+    });
 }
 
-// Register providers
-container.registerProvider(loggingProvider);
-container.registerProvider(new DatabaseProvider());
+// The container implements IServiceRegister, so pass it directly
+registerLogging(container);
+registerDatabase(container);

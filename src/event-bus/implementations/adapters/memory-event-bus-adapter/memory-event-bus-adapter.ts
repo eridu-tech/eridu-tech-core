@@ -49,21 +49,7 @@ export class MemoryEventBusAdapter implements IEventBusAdapter {
     private readonly transactionHooks: ITransactionHooks;
 
     /**
-     *  @example
-     * ```ts
-     * import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus";
-     *
-     * const eventBusAdapter = new MemoryEventBusAdapter();
-     * ```
      * You can also provide an {@link EventEmitter | `EventEmitter`} that will be used dispatching the events in memory.
-     * @example
-     * ```ts
-     * import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus";
-     * import { EventEmitter } from "node:events";
-     *
-     * const eventEmitter = new EventEmitter<any>();
-     * const eventBusAdapter = new MemoryEventBusAdapter({ eventEmitter });
-     * ```
      */
     constructor(settings: MemoryEventBusAdapterSettings = {}) {
         const {

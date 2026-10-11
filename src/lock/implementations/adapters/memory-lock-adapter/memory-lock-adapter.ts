@@ -21,20 +21,7 @@ export class MemoryLockAdapter
     implements ILockAdapter, IDeinitizable, IPrunable
 {
     /**
-     *  @example
-     * ```ts
-     * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
-     *
-     * const lockAdapter = new MemoryLockAdapter();
-     * ```
      * You can also provide an `Map`.
-     * @example
-     * ```ts
-     * import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
-     *
-     * const map = new Map<string, any>();
-     * const lockAdapter = new MemoryLockAdapter(map);
-     * ```
      */
     constructor(private readonly map = new Map<string, ILockAdapterState>()) {}
 

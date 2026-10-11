@@ -117,21 +117,6 @@ export class MongodbSharedLockAdapter
     private readonly trxCtx: ITransactionContext<Db, ClientSession>;
     private readonly collection: Collection<MongodbSharedLockEntryDocument>;
 
-    /**
-     * @example
-     * ```ts
-     * import { MongodbSharedLockAdapter } from "eridu-tech/shared-lock/mongodb-shared-lock-adapter";
-     * import { MongoClient } from "mongodb";
-     *
-     * const client = await MongoClient.connect("YOUR_MONGODB_CONNECTION_STRING");
-     * const database = client.db("database");
-     * const sharedLockAdapter = new MongodbSharedLockAdapter({
-     *   database
-     * });
-     * // You need initialize the adapter once before using it.
-     * await sharedLockAdapter.init()
-     * ```
-     */
     constructor(settings: MongodbSharedLockAdapterSettings) {
         const {
             collectionName = "sharedLock",
@@ -362,7 +347,7 @@ export class MongodbSharedLockAdapter
             return false;
         }
         if (writerLock === null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invalid ISharedLockAdapterState, expected either the writer field must be defined, but not both.",
             );
         }
@@ -418,7 +403,7 @@ export class MongodbSharedLockAdapter
             return false;
         }
         if (writerLock === null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invalid ISharedLockAdapterState, expected either the writer field must be defined, but not both.",
             );
         }
@@ -642,7 +627,7 @@ export class MongodbSharedLockAdapter
             return false;
         }
         if (readerSemaphore === null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invalid ISharedLockAdapterState, expected either the writer field must be defined, but not both.",
             );
         }
@@ -713,7 +698,7 @@ export class MongodbSharedLockAdapter
             return false;
         }
         if (readerSemaphore === null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invalid ISharedLockAdapterState, expected either the writer field must be defined, but not both.",
             );
         }
@@ -802,7 +787,7 @@ export class MongodbSharedLockAdapter
             return false;
         }
         if (readerSemaphore === null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Invalid ISharedLockAdapterState, expected either the writer field must be defined, but not both.",
             );
         }
@@ -844,7 +829,7 @@ export class MongodbSharedLockAdapter
             return unexpiredSlots.length > 0;
         }
 
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             "Invalid ISharedLockAdapterState, expected either the writer field must be defined, but not both.",
         );
     }
@@ -951,7 +936,7 @@ export class MongodbSharedLockAdapter
             return readerState.value;
         }
 
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             "Invalid ISharedLockAdapterState, expected either the writer field must be defined, but not both.",
         );
     }

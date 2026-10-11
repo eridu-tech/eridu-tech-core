@@ -57,55 +57,6 @@ export class ConfigAccessor<
 > implements IConfigAccessor<TOutputConfig> {
     private readonly configObject: TOutputConfig;
 
-    /**
-     * @example
-     * ```ts
-     * import { ConfigAccessor } from "eridu-tech/config-accessor";
-     * import { z } from "zod";
-     *
-     * const config = {}
-     *
-     * const schema = z.object({
-     *   // Supports primitive string, number, boolean values
-     *   a: z.string(),
-     *
-     *   // Supports nested object with fields of string, number, boolean values
-     *   b: z.object({
-     *     a: z.string(),
-     *   }),
-     *
-     *   // Supports array with item of string, number, boolean values
-     *   c: z.string().array(),
-     *
-     *   // Supports array of object with fields of string, number, boolean values
-     *   d: z.object({
-     *     a: z.string(),
-     *   })
-     *   .array(),
-     * })
-     *
-     * const accessor = new ConfigAccessor({
-     *   config,
-     *   // Schema is optional, you can pass in a type
-     *   schema,
-     * })
-     *
-     * // Return the value of field a
-     * accessor.get("a")
-     *
-     * // Return the value of field b which is an object
-     * accessor.get("b")
-     *
-     * // Return the value of field b.a which is an primitive
-     * accessor.get("b.a")
-     *
-     * // Return the first item of field c which an primitive
-     * accessor.get("c.1")
-     *
-     * // Return the first item of field d which an object
-     * accessor.get("d.2")
-     * ```
-     */
     constructor(settings: ConfigAccessorSettings<TOutputConfig, TInputConfig>) {
         const { config: configObject, schema } = settings;
 
@@ -121,12 +72,12 @@ export class ConfigAccessor<
         const path_ = path;
         const [root, nested, ...rest] = path_.split(".");
         if (rest.length > 0) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Config path supports at most one nested path segment.",
             );
         }
         if (root === undefined) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "BUG: Config path must specify a field name (received undefined). This is an internal error and should be reported.",
             );
         }

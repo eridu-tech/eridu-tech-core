@@ -48,13 +48,6 @@ export class MemoryFileStorageAdapter
 {
     /**
      * You can provide an optional {@link Map | `Map`}, that will be used for storing the data.
-     * @example
-     * ```ts
-     * import { MemoryFileStorageAdapter } from "eridu-tech/file-storage/memory-file-storage-adapter";
-     *
-     * const map = new Map<string, any>();
-     * const fileStorageAdapter = new MemoryFileStorageAdapter(map);
-     * ```
      */
     constructor(private readonly map = new Map<string, MemoryFile>()) {}
 

@@ -14,8 +14,12 @@ import type {
     IFileStorageResolver,
 } from "@/file-storage/contracts/_module-exports.js";
 import type { FileStorageSettingsBase } from "@/file-storage/implementations/derivables/file-storage/_module.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
+ * Configuration for `FileStorageResolver`.
+ * Provide named adapters and optionally select a default.
+ *
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */
@@ -44,86 +48,55 @@ export type FileStorageResolverSettings<TAdapters extends string = string> =
     };
 
 /**
+ * Resolves named file-storage adapters to storage instances.
+ * Call `init()` before selecting a storage adapter.
+ *
  * IMPORT_PATH: `"eridu-tech/file-storage"`
  * @group Derivables
  */
-export class FileStorageResolver<
-    TAdapters extends string = string,
-> implements IFileStorageResolver<TAdapters> {
-    /**
-     * @example
-     * ```ts
-     * import { FileStorageResolver } from "eridu-tech/file-storage";
-     * import { FsFileStorageAdapter } from "eridu-tech/file-storage/fs-file-storage-adapter";
-     * import { MemoryFileStorageAdapter } from "eridu-tech/file-storage/memory-file-storage-adapter";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const fileStorageResolver = new FileStorageResolver({
-     *   serde,
-     *   adapters: {
-     *     memory: new MemoryFileStorageAdapter(),
-     *     fs: new FsFileStorageAdapter(),
-     *   },
-     *   defaultAdapter: "memory"
-     * })
-     * ```
-     */
+export class FileStorageResolver<TAdapters extends string = string>
+    implements IFileStorageResolver<TAdapters>, IInitizable
+{
     constructor(
         private readonly settings: FileStorageResolverSettings<TAdapters>,
     ) {}
 
-    setDefaultContentDisposition(
-        contentDisposition: string | null,
-    ): FileStorageResolver<TAdapters> {
-        return new FileStorageResolver({
-            ...this.settings,
-            defaultContentDisposition: contentDisposition,
-        });
-    }
+    private readonly storages = {} as Partial<Record<TAdapters, FileStorage>>;
 
-    setDefaultContentEncoding(
-        contentEncoding: string | null,
-    ): FileStorageResolver<TAdapters> {
-        return new FileStorageResolver({
-            ...this.settings,
-            defaultContentEncoding: contentEncoding,
-        });
-    }
-
-    setDefaultCacheControl(
-        cacheControl: string | null,
-    ): FileStorageResolver<TAdapters> {
-        return new FileStorageResolver({
-            ...this.settings,
-            defaultCacheControl: cacheControl,
-        });
-    }
-
-    setDefaultContentLanguage(
-        contentLanguage: string | null,
-    ): FileStorageResolver<TAdapters> {
-        return new FileStorageResolver({
-            ...this.settings,
-            defaultContentLanguage: contentLanguage,
-        });
+    async init(): Promise<void> {
+        const { adapters, ...rest } = this.settings;
+        for (const adapterName in adapters) {
+            const adapter = this.settings.adapters[adapterName];
+            if (adapter === undefined) {
+                continue;
+            }
+            const factory = new FileStorage({
+                ...rest,
+                adapter,
+                serializationId: adapterName,
+            });
+            await factory.init();
+            this.storages[adapterName] = factory;
+        }
+        return Promise.resolve();
     }
 
     use(
         adapterName: TAdapters | undefined = this.settings.defaultAdapter,
     ): IFileStorage {
         if (adapterName === undefined) {
-            throw new DefaultAdapterNotDefinedError(FileStorageResolver.name);
+            throw DefaultAdapterNotDefinedError.create(
+                FileStorage.name,
+                Object.keys(this.settings.adapters),
+            );
         }
-        const adapter = this.settings.adapters[adapterName];
-        if (adapter === undefined) {
-            throw new UnregisteredAdapterError(adapterName);
+        const factory = this.storages[adapterName];
+        if (factory === undefined) {
+            throw UnregisteredAdapterError.create(
+                adapterName,
+                Object.keys(this.settings.adapters),
+            );
         }
-        return new FileStorage({
-            ...this.settings,
-            adapter,
-            serdeTransformerName: adapterName,
-        });
+        return factory;
     }
 }

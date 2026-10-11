@@ -6,14 +6,14 @@ import { v4 } from "uuid";
 
 import { SemaphoreSerdeTransformer } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore-serde-transformer.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     callInvocable,
     CORE,
     isPositiveNbr,
     resolveOneOrMore,
+    resolveSerializationId,
 } from "@/utilities/_module-exports.js";
 
 import type {
@@ -24,7 +24,11 @@ import type {
 } from "@/semaphore/contracts/_module-exports.js";
 import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
-import type { Invocable, OneOrMore } from "@/utilities/_module-exports.js";
+import type {
+    IInitizable,
+    Invocable,
+    OneOrMore,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Base configuration shared by all `SemaphoreFactory` variants.
@@ -34,22 +38,26 @@ import type { Invocable, OneOrMore } from "@/utilities/_module-exports.js";
  */
 export type SemaphoreFactorySettingsBase = {
     /**
+     * Optional prefix used to scope the serde transformer name for this semaphore factory.
+     * This keeps multiple adapters with the same constructor name distinct.
+     *
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
+     */
+    serializationId?: string;
+
+    /**
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link SemaphoreFactory | `SemaphoreFactory`} to register the semaphore's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { NoOpSerdeAdapter } from "eridu-tech/serde/no-op-serde-adapter";
+     * import { NoOpSerde } from "eridu-tech/serde/no-op-serde";
      *
-     * new Serde(new NoOpSerdeAdapter())
+     * new NoOpSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
-
-    /**
-     * The serde transformer name used to identify semaphore serializer and deserializer adapters when there are adapters with the same name.
-     * @default ""
-     */
-    serdeTransformerName?: string;
 
     /**
      * You can pass your slot id generator function.
@@ -107,49 +115,22 @@ export type SemaphoreFactorySettings = SemaphoreFactorySettingsBase & {
  * IMPORT_PATH: `"eridu-tech/semaphore"`
  * @group Derivables
  */
-export class SemaphoreFactory implements ISemaphoreFactory {
+export class SemaphoreFactory implements ISemaphoreFactory, IInitizable {
     private readonly adapter: ISemaphoreAdapter;
     private readonly defaultTtl: TimeSpan | null;
     private readonly defaultRefreshTime: TimeSpan;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly createSlotId: Invocable<[], string>;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselySemaphoreAdapter } from "eridu-tech/semaphore/kysely-semaphore-adapter";
-     * import { SemaphoreFactory } from "eridu-tech/semaphore";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const semaphoreAdapter = new KyselySemaphoreAdapter({
-     *   kysely: new Kysely({
-     *     dialect: new SqliteDialect({
-     *       database: new Sqlite("local.db"),
-     *     }),
-     *   });
-     * });
-     * // You need initialize the adapter once before using it.
-     * await semaphoreAdapter.init();
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter())
-     * const lockProvider = new SemaphoreFactory({
-     *   serde,
-     *   adapter: semaphoreAdapter,
-     * });
-     * ```
-     */
     constructor(settings: SemaphoreFactorySettings) {
         const {
             createSlotId = () => v4(),
             defaultTtl = TimeSpan.fromMinutes(5),
             defaultRefreshTime = TimeSpan.fromMinutes(5),
-            serde = new Serde(new NoOpSerdeAdapter()),
+            serde = new NoOpSerde(),
             adapter,
-            serdeTransformerName = "",
+            serializationId,
         } = settings;
 
         this.createSlotId = createSlotId;
@@ -157,22 +138,21 @@ export class SemaphoreFactory implements ISemaphoreFactory {
         this.defaultRefreshTime = TimeSpan.fromTimeSpan(defaultRefreshTime);
         this.defaultTtl =
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = resolveSerializationId(serializationId, adapter);
 
         this.adapter = adapter;
-
-        this.registerToSerde();
     }
 
-    private registerToSerde(): void {
+    async init(): Promise<void> {
         const transformer = new SemaphoreSerdeTransformer({
             adapter: this.adapter,
             defaultRefreshTime: this.defaultRefreshTime,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
+        return Promise.resolve();
     }
 
     create(key: string, settings: SemaphoreFactoryCreateSettings): ISemaphore {
@@ -189,7 +169,7 @@ export class SemaphoreFactory implements ISemaphoreFactory {
             adapter: this.adapter,
             key,
             ttl: ttl === null ? null : TimeSpan.fromTimeSpan(ttl),
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
             defaultRefreshTime: this.defaultRefreshTime,
         });
     }

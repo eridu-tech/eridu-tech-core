@@ -58,7 +58,7 @@ async function find<TType>(
         return null;
     }
     return {
-        state: serde.deserialize(row.state),
+        state: await serde.deserialize(row.state),
         expiration: new Date(Number(row.expiration)),
     };
 }
@@ -81,7 +81,7 @@ class KyselyRateLimiterStorageAdapterTransaction<
 
     async upsert(key: string, state: TType, expiration: Date): Promise<void> {
         const expirationAsMs = expiration.getTime();
-        const serializedState = this.serde.serialize(state);
+        const serializedState = await this.serde.serialize(state);
         await this.kysely
             .insertInto("rateLimiter")
             .values({
@@ -160,40 +160,6 @@ export class KyselyRateLimiterStorageAdapter<TType>
     >;
     private readonly serde: ISerde<string>;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselyRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/kysely-rate-limiter-storage-adapter";
-     * import { contextToken } from "eridu-tech/execution-context/contracts";
-     * import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
-     * import { ExecutionContext } from "eridu-tech/execution-context";
-     * import { Serde } from "eridu-tech/serde";
-     * import { SuperJsonSerdeAdapter } from "eridu-tech/serde/super-json-serde-adapter"
-     * import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
-     * import { TransactionContext } from "eridu-tech/transaction-context";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const serde = new Serde(new SuperJsonSerdeAdapter());
-     * const transactionContext = new TransactionContext({
-     *   token: contextToken("kysely"),
-     *   executionContext: new ExecutionContext(new AlsExecutionContextAdapter()),
-     *   adapter: new KyselyTransactionAdapter({
-     *     database: new Kysely({
-     *       dialect: new SqliteDialect({
-     *         database: new Sqlite("local.db"),
-     *       }),
-     *     }),
-     *   }),
-     * });
-     * const rateLimiterStorageAdapter = new KyselyRateLimiterStorageAdapter({
-     *   transactionContext,
-     *   serde
-     * });
-     * // You need initialize the adapter once before using it.
-     * await rateLimiterStorageAdapter.init();
-     * ```
-     */
     constructor(settings: KyselyRateLimiterStorageAdapterSettings) {
         const { transactionContext, serde } = settings;
 

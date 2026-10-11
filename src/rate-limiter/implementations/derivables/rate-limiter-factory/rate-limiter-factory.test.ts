@@ -8,12 +8,10 @@ import { DatabaseRateLimiterAdapter } from "@/rate-limiter/implementations/adapt
 import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-storage-adapter/_module-exports.js";
 import { RateLimiterFactory } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter-factory.js";
 import { FixedWindowLimiter } from "@/rate-limiter/implementations/policies/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type {
-    IRateLimiterFactory,
     RateLimiterExpiredState,
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
@@ -41,12 +39,14 @@ describe("class: RateLimiterFactory", () => {
 
     class UnexpectedErrorA extends Error {}
 
-    let rateLimiterFactory: IRateLimiterFactory;
-    beforeEach(() => {
+    let rateLimiterFactory: RateLimiterFactory;
+    beforeEach(async () => {
         vi.resetAllMocks();
+        vi.clearAllMocks();
         rateLimiterFactory = new RateLimiterFactory({
             adapter,
         });
+        await rateLimiterFactory.init();
     });
 
     describe("API tests:", () => {
@@ -434,7 +434,7 @@ describe("class: RateLimiterFactory", () => {
                 }
             }
 
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const rateLimiterPolicy = new FixedWindowLimiter({
                 window: TimeSpan.fromMinutes(1),
@@ -449,9 +449,11 @@ describe("class: RateLimiterFactory", () => {
                 ),
                 serde,
             });
+            await rateLimiterFactory1.init();
             const rateLimiter1 = rateLimiterFactory1.create(key, {
                 limit: 1,
             });
+
             try {
                 await rateLimiter1.runOrFail(() => {
                     return Promise.reject(
@@ -471,19 +473,21 @@ describe("class: RateLimiterFactory", () => {
                 }),
                 serde,
             });
+            await rateLimiterFactory2.init();
             const rateLimiter2 = rateLimiterFactory2.create(key, {
                 limit: 1,
             });
 
-            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
-                serde.serialize(rateLimiter2),
-            );
+            const deserializedRateLimiter2 =
+                await serde.deserialize<IRateLimiter>(
+                    await serde.serialize(rateLimiter2),
+                );
             const handler = vi.fn();
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+        test("Should differentiate between different serializationIds", async () => {
+            const serde = new SuperJsonSerde();
             const key = "a";
             const rateLimiterPolicy = new FixedWindowLimiter({
                 window: TimeSpan.fromMinutes(1),
@@ -494,12 +498,14 @@ describe("class: RateLimiterFactory", () => {
                     adapter: new MemoryRateLimiterStorageAdapter(),
                     rateLimiterPolicy,
                 }),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
+            await rateLimiterFactory1.init();
             const rateLimiter1 = rateLimiterFactory1.create(key, {
                 limit: 1,
             });
+
             try {
                 await rateLimiter1.runOrFail(() => {
                     return Promise.reject(
@@ -517,16 +523,18 @@ describe("class: RateLimiterFactory", () => {
                     adapter: new MemoryRateLimiterStorageAdapter(),
                     rateLimiterPolicy,
                 }),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
+            await rateLimiterFactory2.init();
             const rateLimiter2 = rateLimiterFactory2.create(key, {
                 limit: 1,
             });
 
-            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
-                serde.serialize(rateLimiter2),
-            );
+            const deserializedRateLimiter2 =
+                await serde.deserialize<IRateLimiter>(
+                    await serde.serialize(rateLimiter2),
+                );
             const handler = vi.fn();
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();

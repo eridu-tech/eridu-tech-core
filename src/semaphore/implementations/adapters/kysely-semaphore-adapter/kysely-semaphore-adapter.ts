@@ -82,36 +82,6 @@ export class KyselySemaphoreAdapter
     >;
     private readonly isMysql: boolean;
 
-    /**
-     * @example
-     * ```ts
-     * import { KyselySemaphoreAdapter } from "eridu-tech/semaphore/kysely-semaphore-adapter";
-     * import { contextToken } from "eridu-tech/execution-context/contracts";
-     * import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
-     * import { ExecutionContext } from "eridu-tech/execution-context";
-     * import { KyselyTransactionAdapter } from "eridu-tech/transaction-context/kysely-transaction-adapter";
-     * import { TransactionContext } from "eridu-tech/transaction-context";
-     * import Sqlite from "better-sqlite3";
-     * import { Kysely, SqliteDialect } from "kysely";
-     *
-     * const transactionContext = new TransactionContext({
-     *   token: contextToken("kysely"),
-     *   executionContext: new ExecutionContext(new AlsExecutionContextAdapter()),
-     *   adapter: new KyselyTransactionAdapter({
-     *     database: new Kysely({
-     *       dialect: new SqliteDialect({
-     *         database: new Sqlite("local.db"),
-     *       }),
-     *     }),
-     *   }),
-     * });
-     * const semaphoreAdapter = new KyselySemaphoreAdapter({
-     *   transactionContext,
-     * });
-     * // You need initialize the adapter once before using it.
-     * await semaphoreAdapter.init();
-     * ```
-     */
     constructor(settings: KyselySemaphoreAdapterSettings) {
         const { transactionContext } = settings;
         this.transactionContext = transactionContext;
