@@ -12,7 +12,7 @@ const readData = async (key: string): Promise<unknown> => {
     return { data: "..." };
 };
 
-// Wrap with shared-lock in reader mode using the default adapter (`storage1`) — multiple readers allowed
+// Wrap with shared-lock in reader mode using the default adapter (`memory`) — multiple readers allowed
 const safeRead = use(
     readData,
     withSharedLock({
@@ -22,10 +22,10 @@ const safeRead = use(
     }),
 );
 
-// Wrap with shared-lock in reader mode using a specific adapter (`storage2`)
-const safeReadOnStorage2 = use(
+// Wrap with shared-lock in reader mode using a specific adapter (`redis`)
+const safeReadOnRedis = use(
     readData,
-    withSharedLock.use("storage2")({
+    withSharedLock.use("redis")({
         key: ([resourceKey]) => `data:${resourceKey}`,
         when: SHARED_LOCK_WHEN.READER,
         limit: 10,
@@ -36,7 +36,7 @@ const writeData = async (key: string): Promise<void> => {
     // Safe to run concurrently as only writer
 };
 
-// Wrap with shared-lock in writer mode using the default adapter (`storage1`) — only writer allowed
+// Wrap with shared-lock in writer mode using the default adapter (`memory`) — only writer allowed
 const safeWrite = use(
     writeData,
     withSharedLock({
@@ -46,14 +46,16 @@ const safeWrite = use(
     }),
 );
 
-// Wrap with shared-lock in writer mode using a specific adapter (`storage2`)
-const safeWriteOnStorage2 = use(
+// Wrap with shared-lock in writer mode using a specific adapter (`redis`)
+const safeWriteOnRedis = use(
     writeData,
-    withSharedLock.use("storage2")({
+    withSharedLock.use("redis")({
         key: ([resourceKey]) => `data:${resourceKey}`,
         when: SHARED_LOCK_WHEN.WRITER,
         limit: 10,
     }),
 );
 
-await writeData("config");
+await safeReadOnRedis("config");
+await safeWrite("config");
+await safeWriteOnRedis("config");
