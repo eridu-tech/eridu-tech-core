@@ -10,7 +10,7 @@ const processFile = async (filePath: string): Promise<void> => {
 
 const throttledProcess = use(
     processFile,
-    withSemaphore.use("storage2")({
+    withSemaphore.use("redis")({
         key: ([filePath]) => `file-path:${filePath}`,
         limit: 3,
     }),

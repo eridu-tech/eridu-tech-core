@@ -1,6 +1,6 @@
 import { semaphoreFactory } from "./semaphore-factory-resolver-di-factory.js";
 
-// Uses the adapter configured as the default (storage1)
+// Uses the adapter configured as the default (memory)
 await semaphoreFactory
     .create("shared-resource", {
         limit: 2,
