@@ -10,7 +10,7 @@ const fetchUser = async (userId: string): Promise<{ name: string }> => {
     return response.json();
 };
 
-// Wrap with caching using the default adapter (`storage1`)
+// Wrap with caching using the default adapter (`memory`)
 const cachedFetchUser = use(
     fetchUser,
     withCache({
@@ -19,10 +19,10 @@ const cachedFetchUser = use(
     }),
 );
 
-// Wrap with caching using a specific adapter (`storage2`)
-const cachedFetchUserOnStorage2 = use(
+// Wrap with caching using a specific adapter (`redis`)
+const cachedFetchUserOnRedis = use(
     fetchUser,
-    withCache.use("storage2")({
+    withCache.use("redis")({
         key: ([userId]) => `user:${userId}`,
         ttl: TimeSpan.fromMinutes(10),
     }),
@@ -30,4 +30,4 @@ const cachedFetchUserOnStorage2 = use(
 
 const user = await cachedFetchUser("123"); // Cache miss — fetches and caches
 const userAgain = await cachedFetchUser("123"); // Cache hit — returns immediately
-const userOnStorage2 = await cachedFetchUserOnStorage2("123"); // Uses the storage2 adapter
+const userOnRedis = await cachedFetchUserOnRedis("123"); // Uses the Redis adapter

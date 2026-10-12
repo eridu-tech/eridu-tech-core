@@ -32,7 +32,7 @@ The Cache middleware intercepts function calls and caches their return values us
 
 ```
 
-Calling `withCache()` directly uses the resolver's default adapter (`storage1`). Use `withCache.use("storage2")` to run the wrapped function through a specific registered adapter.
+Calling `withCache()` directly uses the resolver's default adapter (`memory`). Use `withCache.use("redis")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withCache`](https://eridu-tech.github.io/eridu-tech-core/types/Cache.WithCacheSettings.html) function.
@@ -50,7 +50,7 @@ This is useful for write-invalidation caching patterns, where stale cached data 
 
 ```
 
-Use `withInvalidation()` to invalidate through the resolver's default adapter (`storage1` in this example), or `withInvalidation.use("storage2")({ ... })` to select a specific adapter.
+Use `withInvalidation()` to invalidate through the resolver's default adapter (`memory` in this example), or `withInvalidation.use("redis")({ ... })` to select a specific adapter.
 
 :::info
 Here is a complete list of settings for the [`withInvalidation`](https://eridu-tech.github.io/eridu-tech-core/types/Cache.WithInvalidationSettings.html) function.
