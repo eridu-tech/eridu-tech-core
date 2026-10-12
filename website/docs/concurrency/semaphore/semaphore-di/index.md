@@ -25,7 +25,27 @@ The proxy is wired to the container during `container.init()`. Create it **befor
 
 ## Initial configuration
 
-Register a `SemaphoreFactoryResolver` in the container and wrap it with `semaphoreFactoryResolverDiFactory`:
+Set up the memory and Redis semaphore adapters, create the container, then register the `SemaphoreFactoryResolver` and wrap it with `semaphoreFactoryResolverDiFactory`:
+
+#### 1. Set up the memory semaphore adapter
+
+```ts file=./samples/memory-semaphore-adapter.ts
+
+```
+
+#### 2. Set up the Redis semaphore adapter
+
+```ts file=./samples/redis-semaphore-adapter.ts
+
+```
+
+#### 3. Create the dependency injection container
+
+```ts file=./samples/container.ts
+
+```
+
+#### 4. Register and initialize the semaphore factory resolver
 
 ```ts file=./samples/semaphore-factory-resolver-di-factory.ts
 
