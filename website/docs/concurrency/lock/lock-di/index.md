@@ -25,7 +25,27 @@ The proxy is wired to the container during `container.init()`. Create it **befor
 
 ## Initial configuration
 
-Register a `LockFactoryResolver` in the container and wrap it with `lockFactoryResolverDiFactory`:
+Set up the memory and Redis lock adapters, create the container, then register the `LockFactoryResolver` and wrap it with `lockFactoryResolverDiFactory`:
+
+#### 1. Set up the memory lock adapter
+
+```ts file=./samples/memory-lock-adapter.ts
+
+```
+
+#### 2. Set up the Redis lock adapter
+
+```ts file=./samples/redis-lock-adapter.ts
+
+```
+
+#### 3. Create the dependency injection container
+
+```ts file=./samples/container.ts
+
+```
+
+#### 4. Register and initialize the lock factory resolver
 
 ```ts file=./samples/lock-factory-resolver-di-factory.ts
 
