@@ -2,26 +2,31 @@ import { CircuitBreakerFactoryResolver } from "eridu-tech/circuit-breaker";
 import { DatabaseCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/database-circuit-breaker-adapter";
 import { ProxyCircuitBreakerFactoryResolver } from "eridu-tech/circuit-breaker/di";
 import { MemoryCircuitBreakerStorageAdapter } from "eridu-tech/circuit-breaker/memory-circuit-breaker-storage-adapter";
+import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-circuit-breaker-adapter";
 import { Container } from "eridu-tech/di";
 import { ExecutionContext } from "eridu-tech/execution-context";
 import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
+import { Redis } from "ioredis";
 
-type Adapters = "storage1" | "storage2";
+type Adapters = "memory" | "redis";
 
 const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
 const container = new Container({ executionContext });
 
+const serde = new SuperJsonSerde();
 const circuitBreakerFactoryResolver =
     new CircuitBreakerFactoryResolver<Adapters>({
+        serde,
         adapters: {
-            storage1: new DatabaseCircuitBreakerAdapter({
+            memory: new DatabaseCircuitBreakerAdapter({
                 adapter: new MemoryCircuitBreakerStorageAdapter(),
             }),
-            storage2: new DatabaseCircuitBreakerAdapter({
-                adapter: new MemoryCircuitBreakerStorageAdapter(),
+            redis: new RedisCircuitBreakerAdapter({
+                database: new Redis("YOUR_REDIS_CONNECTION_STRING"),
             }),
         },
-        defaultAdapter: "storage1",
+        defaultAdapter: "memory",
     });
 
 await circuitBreakerFactoryResolver.init();
