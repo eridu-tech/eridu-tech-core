@@ -32,7 +32,7 @@ The CircuitBreaker middleware wraps function calls with a circuit-breaker, provi
 
 ```
 
-Calling `withCircuitBreaker()` directly uses the resolver's default adapter (`storage1`). Use `withCircuitBreaker.use("storage2")` to run the wrapped function through a specific registered adapter.
+Calling `withCircuitBreaker()` directly uses the resolver's default adapter (`memory`). Use `withCircuitBreaker.use("redis")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withCircuitBreaker`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.WithCircuitBreakerSettings.html) function.

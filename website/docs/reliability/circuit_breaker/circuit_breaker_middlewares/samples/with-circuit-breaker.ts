@@ -11,7 +11,7 @@ const callExternalApi = async (endpoint: string): Promise<unknown> => {
     return response.json();
 };
 
-// Wrap with circuit-breaker using the default adapter (`storage1`)
+// Wrap with circuit-breaker using the default adapter (`memory`)
 const protectedCall = use(
     callExternalApi,
     withCircuitBreaker({
@@ -19,13 +19,13 @@ const protectedCall = use(
     }),
 );
 
-// Wrap with circuit-breaker using a specific adapter (`storage2`)
-const protectedCallOnStorage2 = use(
+// Wrap with circuit-breaker using a specific adapter (`redis`)
+const protectedCallOnRedis = use(
     callExternalApi,
-    withCircuitBreaker.use("storage2")({
+    withCircuitBreaker.use("redis")({
         key: ([endpoint]) => `api:${endpoint}`,
     }),
 );
 
 await protectedCall("users"); // Succeeds or opens the circuit on repeated failures
-await protectedCallOnStorage2("users"); // Uses the storage2 adapter
+await protectedCallOnRedis("users"); // Uses the Redis adapter
