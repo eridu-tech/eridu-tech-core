@@ -1,27 +1,15 @@
-import { Container } from "eridu-tech/di";
-import { ExecutionContext } from "eridu-tech/execution-context";
-import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
 import { FileStorageResolver } from "eridu-tech/file-storage";
 import { ProxyFileStorageResolver } from "eridu-tech/file-storage/di";
-import { FsFileStorageAdapter } from "eridu-tech/file-storage/fs-file-storage-adapter";
-import { MemoryFileStorageAdapter } from "eridu-tech/file-storage/memory-file-storage-adapter";
-import { SignedFileStorageAdapter } from "eridu-tech/file-storage/signed-file-storage-adapter";
+import { container } from "./container.js";
+import { fsFileStorageAdapter } from "./fs-file-storage-adapter.js";
+import { memoryFileStorageAdapter } from "./memory-file-storage-adapter.js";
 
 type Adapters = "memory" | "fs";
 
-const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
-const container = new Container({ executionContext });
-
 const fileStorageResolver = new FileStorageResolver<Adapters>({
     adapters: {
-        memory: new SignedFileStorageAdapter({
-            adapter: new MemoryFileStorageAdapter(),
-            urlAdapter: {},
-        }),
-        fs: new SignedFileStorageAdapter({
-            adapter: new FsFileStorageAdapter(),
-            urlAdapter: {},
-        }),
+        memory: memoryFileStorageAdapter,
+        fs: fsFileStorageAdapter,
     },
     defaultAdapter: "memory",
 });

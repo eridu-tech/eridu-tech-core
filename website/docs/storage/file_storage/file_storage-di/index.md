@@ -25,7 +25,27 @@ The proxy is wired to the container during `container.init()`. Create it **befor
 
 ## Initial configuration
 
-Register a `FileStorageResolver` in the container and wrap it with `fileStorageResolverDiFactory`:
+Set up the memory and filesystem file-storage adapters, create the container, then register the `FileStorageResolver` and wrap it with `fileStorageResolverDiFactory`:
+
+#### 1. Set up the memory file-storage adapter
+
+```ts file=./samples/memory-file-storage-adapter.ts
+
+```
+
+#### 2. Set up the filesystem file-storage adapter
+
+```ts file=./samples/fs-file-storage-adapter.ts
+
+```
+
+#### 3. Create the dependency injection container
+
+```ts file=./samples/container.ts
+
+```
+
+#### 4. Register and initialize the file-storage resolver
 
 ```ts file=./samples/file-storage-resolver-di-factory.ts
 
