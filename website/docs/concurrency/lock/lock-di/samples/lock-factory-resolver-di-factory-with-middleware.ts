@@ -10,7 +10,7 @@ const processJob = async (jobId: string): Promise<void> => {
 
 const safeProcess = use(
     processJob,
-    withLock.use("storage2")({
+    withLock.use("redis")({
         key: ([jobId]) => `job:${jobId}`,
     }),
 );
