@@ -12,7 +12,7 @@ const fetchUser = async (userId: string): Promise<{ name: string }> => {
 
 const cachedFetchUser = use(
     fetchUser,
-    withCache.use("storage2")({
+    withCache.use("redis")({
         key: ([userId]) => `user:${userId}`,
         ttl: TimeSpan.fromMinutes(10),
     }),
