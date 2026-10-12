@@ -1,12 +1,20 @@
 import { EventBusResolver } from "eridu-tech/event-bus";
+import { RedisPubSubEventBusAdapter } from "eridu-tech/event-bus/redis-pub-sub-event-bus-adapter";
 import { MemoryEventBusAdapter } from "eridu-tech/event-bus/memory-event-bus-adapter";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
+import { Redis } from "ioredis";
+
+const serde = new SuperJsonSerde();
 
 export const eventBusResolver = new EventBusResolver({
     adapters: {
-        storage1: new MemoryEventBusAdapter(),
-        storage2: new MemoryEventBusAdapter(),
+        memory: new MemoryEventBusAdapter(),
+        redis: new RedisPubSubEventBusAdapter({
+            client: new Redis("YOUR_REDIS_CONNECTION_STRING"),
+            serde,
+        }),
     },
-    defaultAdapter: "storage1",
+    defaultAdapter: "memory",
 });
 
 await eventBusResolver.init();

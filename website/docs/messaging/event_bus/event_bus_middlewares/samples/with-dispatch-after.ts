@@ -9,10 +9,22 @@ const createUser = async (userId: string): Promise<string> => {
     return `user-${userId}`;
 };
 
-// Wrap with an "after" dispatch
+// Wrap with an "after" dispatch using the default adapter (`memory`)
 const wrappedCreateUser = use(
     createUser,
-    withDispatchAfter.use("storage2")({
+    withDispatchAfter({
+        type: "user.after.create",
+        payload: ({ args, returnValue }) => ({
+            userId: args[0],
+            name: returnValue,
+        }),
+    }),
+);
+
+// Wrap with an "after" dispatch using a specific adapter (`redis`)
+const wrappedCreateUserOnRedis = use(
+    createUser,
+    withDispatchAfter.use("redis")({
         type: "user.after.create",
         payload: ({ args, returnValue }) => ({
             userId: args[0],

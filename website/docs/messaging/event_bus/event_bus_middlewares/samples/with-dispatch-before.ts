@@ -9,10 +9,19 @@ const createUser = async (userId: string): Promise<string> => {
     return `user-${userId}`;
 };
 
-// Wrap with a "before" dispatch
+// Wrap with a "before" dispatch using the default adapter (`memory`)
 const wrappedCreateUser = use(
     createUser,
-    withDispatchBefore.use("storage2")({
+    withDispatchBefore({
+        type: "user.before.create",
+        payload: ({ args }) => ({ userId: args[0] }),
+    }),
+);
+
+// Wrap with a "before" dispatch using a specific adapter (`redis`)
+const wrappedCreateUserOnRedis = use(
+    createUser,
+    withDispatchBefore.use("redis")({
         type: "user.before.create",
         payload: ({ args }) => ({ userId: args[0] }),
     }),
