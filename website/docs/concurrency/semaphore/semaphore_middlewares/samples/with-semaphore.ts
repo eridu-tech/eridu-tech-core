@@ -9,7 +9,7 @@ const processFile = async (filePath: string): Promise<void> => {
     // ... process the file
 };
 
-// Wrap with semaphore using the default adapter (`storage1`) — max 3 concurrent file processes
+// Wrap with semaphore using the default adapter (`memory`) — max 3 concurrent file processes
 const throttledProcess = use(
     processFile,
     withSemaphore({
@@ -18,10 +18,10 @@ const throttledProcess = use(
     }),
 );
 
-// Wrap with semaphore using a specific adapter (`storage2`)
-const throttledProcessOnStorage2 = use(
+// Wrap with semaphore using a specific adapter (`redis`)
+const throttledProcessOnRedis = use(
     processFile,
-    withSemaphore.use("storage2")({
+    withSemaphore.use("redis")({
         key: ([filePath]) => `file-path:${filePath}`,
         limit: 3,
     }),
@@ -34,3 +34,5 @@ await Promise.all([
     throttledProcess("/data/file3.json"),
     throttledProcess("/data/file4.json"), // Waits for a slot
 ]);
+
+await throttledProcessOnRedis("/data/redis-file.json");

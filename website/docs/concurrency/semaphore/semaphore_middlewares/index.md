@@ -32,7 +32,7 @@ The Semaphore middleware wraps function calls with a distributed semaphore, limi
 
 ```
 
-Calling `withSemaphore()` directly uses the resolver's default adapter (`storage1`). Use `withSemaphore.use("storage2")` to run the wrapped function through a specific registered adapter.
+Calling `withSemaphore()` directly uses the resolver's default adapter (`memory`). Use `withSemaphore.use("redis")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withSemaphore`](https://eridu-tech.github.io/eridu-tech-core/types/Semaphore.WithSemaphoreSettings.html) function.
