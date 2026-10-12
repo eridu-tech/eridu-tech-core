@@ -26,7 +26,39 @@ The proxy resolves the resolver lazily, so it supports the container's configure
 
 ## Initial configuration
 
-Register the `TransactionContextResolver` in the container, initialize it from its `onInit` hook, and wrap it with `ProxyTransactionContextResolver`:
+Set up the MongoDB and SQLite databases and transaction adapters. Create the container, register the MongoDB adapter as primary (default) and the SQLite adapter as secondary, initialize the resolver from its `onInit` hook, and wrap it with `ProxyTransactionContextResolver`:
+
+#### 1. Set up the MongoDB database
+
+```ts file=./samples/mongodb-database.ts
+
+```
+
+#### 2. Create the MongoDB transaction adapter
+
+```ts file=./samples/mongodb-transaction-adapter.ts
+
+```
+
+#### 3. Set up the SQLite database
+
+```ts file=./samples/sqlite-database.ts
+
+```
+
+#### 4. Create the SQLite transaction adapter
+
+```ts file=./samples/sqlite-transaction-adapter.ts
+
+```
+
+#### 5. Create the dependency injection container
+
+```ts file=./samples/container.ts
+
+```
+
+#### 6. Register and initialize the transaction context resolver
 
 ```ts file=./samples/transaction-context-resolver-di.ts
 
