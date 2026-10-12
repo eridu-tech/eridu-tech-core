@@ -25,7 +25,27 @@ The proxy is wired to the container during `container.init()`. Create it **befor
 
 ## Initial configuration
 
-Register a `SharedLockFactoryResolver` in the container and wrap it with `sharedLockFactoryResolverDiFactory`:
+Set up the memory and Redis shared-lock adapters, create the container, then register the `SharedLockFactoryResolver` and wrap it with `sharedLockFactoryResolverDiFactory`:
+
+#### 1. Set up the memory shared-lock adapter
+
+```ts file=./samples/memory-shared-lock-adapter.ts
+
+```
+
+#### 2. Set up the Redis shared-lock adapter
+
+```ts file=./samples/redis-shared-lock-adapter.ts
+
+```
+
+#### 3. Create the dependency injection container
+
+```ts file=./samples/container.ts
+
+```
+
+#### 4. Register and initialize the shared-lock factory resolver
 
 ```ts file=./samples/shared-lock-factory-resolver-di-factory.ts
 
