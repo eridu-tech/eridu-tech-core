@@ -4,18 +4,22 @@ import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-exe
 import { SharedLockFactoryResolver } from "eridu-tech/shared-lock";
 import { ProxySharedLockFactoryResolver } from "eridu-tech/shared-lock/di";
 import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lock-adapter";
+import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
+import { Redis } from "ioredis";
 
-type Adapters = "storage1" | "storage2";
+type Adapters = "memory" | "redis";
 
 const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
 const container = new Container({ executionContext });
 
 const sharedLockFactoryResolver = new SharedLockFactoryResolver<Adapters>({
     adapters: {
-        storage1: new MemorySharedLockAdapter(),
-        storage2: new MemorySharedLockAdapter(),
+        memory: new MemorySharedLockAdapter(),
+        redis: new RedisSharedLockAdapter(
+            new Redis("YOUR_REDIS_CONNECTION_STRING"),
+        ),
     },
-    defaultAdapter: "storage1",
+    defaultAdapter: "memory",
 });
 
 await sharedLockFactoryResolver.init();
