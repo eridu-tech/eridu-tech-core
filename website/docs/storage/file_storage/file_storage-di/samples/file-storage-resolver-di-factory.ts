@@ -1,28 +1,17 @@
-import { Container } from "eridu-tech/di";
-import { ExecutionContext } from "eridu-tech/execution-context";
-import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
 import { FileStorageResolver } from "eridu-tech/file-storage";
 import { ProxyFileStorageResolver } from "eridu-tech/file-storage/di";
-import { MemoryFileStorageAdapter } from "eridu-tech/file-storage/memory-file-storage-adapter";
-import { SignedFileStorageAdapter } from "eridu-tech/file-storage/signed-file-storage-adapter";
+import { container } from "./container.js";
+import { fsFileStorageAdapter } from "./fs-file-storage-adapter.js";
+import { memoryFileStorageAdapter } from "./memory-file-storage-adapter.js";
 
-type Adapters = "storage1" | "storage2";
-
-const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
-const container = new Container({ executionContext });
+type Adapters = "memory" | "fs";
 
 const fileStorageResolver = new FileStorageResolver<Adapters>({
     adapters: {
-        storage1: new SignedFileStorageAdapter({
-            adapter: new MemoryFileStorageAdapter(),
-            urlAdapter: {},
-        }),
-        storage2: new SignedFileStorageAdapter({
-            adapter: new MemoryFileStorageAdapter(),
-            urlAdapter: {},
-        }),
+        memory: memoryFileStorageAdapter,
+        fs: fsFileStorageAdapter,
     },
-    defaultAdapter: "storage1",
+    defaultAdapter: "memory",
 });
 
 await fileStorageResolver.init();

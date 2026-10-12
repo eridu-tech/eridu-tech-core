@@ -20,7 +20,33 @@ Transaction-context middlewares wrap functions to run them within a transaction 
 
 ## Initial configuration
 
-To begin using the transaction middlewares, create and configure a `TransactionContextResolver`:
+Set up the MongoDB and SQLite databases and their transaction adapters, then register them with the resolver and call `init()`. MongoDB is registered as the primary (default) adapter, while SQLite is registered as the secondary adapter:
+
+#### 1. Set up the MongoDB database
+
+```ts file=./samples/mongodb-database.ts
+
+```
+
+#### 2. Create the MongoDB transaction adapter
+
+```ts file=./samples/mongodb-transaction-adapter.ts
+
+```
+
+#### 3. Set up the SQLite database
+
+```ts file=./samples/sqlite-database.ts
+
+```
+
+#### 4. Create the SQLite transaction adapter
+
+```ts file=./samples/sqlite-transaction-adapter.ts
+
+```
+
+#### 5. Configure the transaction context resolver
 
 ```ts file=./samples/transaction-context.ts
 

@@ -1,8 +1,8 @@
 import { sharedLockFactory } from "./shared-lock-factory-resolver-di-factory.js";
 
-// Uses the storage2 adapter
+// Uses the Redis adapter
 await sharedLockFactory
-    .use("storage2")
+    .use("redis")
     .create("shared-resource", {
         limit: 4,
     })

@@ -16,7 +16,33 @@ The `TransactionContextResolver` creates a transaction context for each configur
 
 ## Initial configuration
 
-Register the named adapters and the shared execution context, then call `init()` before using the resolver. Initialization creates a transaction context for each configured adapter.
+Set up the SQLite and MongoDB databases and their transaction adapters, then register them with the resolver and call `init()`. Initialization creates a transaction context for each configured adapter.
+
+#### 1. Set up the SQLite database
+
+```ts file=./samples/sqlite-database.ts
+
+```
+
+#### 2. Create the SQLite transaction adapter
+
+```ts file=./samples/sqlite-transaction-adapter.ts
+
+```
+
+#### 3. Set up the MongoDB database
+
+```ts file=./samples/mongodb-database.ts
+
+```
+
+#### 4. Create the MongoDB transaction adapter
+
+```ts file=./samples/mongodb-transaction-adapter.ts
+
+```
+
+#### 5. Configure the transaction context resolver
 
 ```ts file=./samples/transaction-context-resolver-initial-config.ts
 

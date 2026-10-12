@@ -9,7 +9,7 @@ const fetchHandler = async (request: Request): Promise<Response> => {
     return new Response("OK");
 };
 
-// Wrap with rate limiter using the default adapter (`storage1`) — max 10 calls per window
+// Wrap with rate limiter using the default adapter (`memory`) — max 10 calls per window
 const rateLimitedCall = use(
     fetchHandler,
     withRateLimiter({
@@ -18,16 +18,22 @@ const rateLimitedCall = use(
     }),
 );
 
-// Wrap with rate limiter using a specific adapter (`storage2`)
-const rateLimitedCallOnStorage2 = use(
+// Wrap with rate limiter using a specific adapter (`redis`)
+const rateLimitedCallOnRedis = use(
     fetchHandler,
-    withRateLimiter.use("storage2")({
+    withRateLimiter.use("redis")({
         key: ([req]) => `api:${String(req.headers.get("x-ip"))}`,
         limit: 10,
     }),
 );
 
 await rateLimitedCall(
+    new Request("/url", {
+        method: "POST",
+    }),
+);
+
+await rateLimitedCallOnRedis(
     new Request("/url", {
         method: "POST",
     }),

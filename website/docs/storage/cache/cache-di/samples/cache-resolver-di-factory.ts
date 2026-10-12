@@ -1,21 +1,17 @@
 import { CacheResolver } from "eridu-tech/cache";
 import { ProxyCacheResolver } from "eridu-tech/cache/di";
-import { MemoryCacheAdapter } from "eridu-tech/cache/memory-cache-adapter";
-import { Container } from "eridu-tech/di";
-import { ExecutionContext } from "eridu-tech/execution-context";
-import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+import { container } from "./container.js";
+import { memoryCacheAdapter } from "./memory-cache-adapter.js";
+import { redisCacheAdapter } from "./redis-cache-adapter.js";
 
-type Adapters = "storage1" | "storage2";
-
-const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
-const container = new Container({ executionContext });
+type Adapters = "memory" | "redis";
 
 const cacheResolver = new CacheResolver<Adapters>({
     adapters: {
-        storage1: new MemoryCacheAdapter(),
-        storage2: new MemoryCacheAdapter(),
+        memory: memoryCacheAdapter,
+        redis: redisCacheAdapter,
     },
-    defaultAdapter: "storage1",
+    defaultAdapter: "memory",
 });
 
 await cacheResolver.init();

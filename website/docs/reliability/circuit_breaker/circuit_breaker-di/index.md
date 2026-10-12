@@ -25,7 +25,27 @@ The proxy is wired to the container during `container.init()`. Create it **befor
 
 ## Initial configuration
 
-Register a `CircuitBreakerFactoryResolver` in the container and wrap it with `circuitBreakerFactoryResolverDiFactory`:
+Set up the memory and Redis circuit-breaker adapters, create the container, then register the `CircuitBreakerFactoryResolver` and wrap it with `circuitBreakerFactoryResolverDiFactory`:
+
+#### 1. Set up the memory circuit-breaker adapter
+
+```ts file=./samples/memory-circuit-breaker-adapter.ts
+
+```
+
+#### 2. Set up the Redis circuit-breaker adapter
+
+```ts file=./samples/redis-circuit-breaker-adapter.ts
+
+```
+
+#### 3. Create the dependency injection container
+
+```ts file=./samples/container.ts
+
+```
+
+#### 4. Register and initialize the circuit-breaker factory resolver
 
 ```ts file=./samples/circuit-breaker-factory-resolver-di-factory.ts
 

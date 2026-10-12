@@ -22,6 +22,20 @@ The `eridu-tech/transaction-context` component lets you run code inside a databa
 
 To begin using the `TransactionContext` class, you'll need to create and configure an instance:
 
+First, set up the Kysely database:
+
+```ts file=./samples/kysely-database.ts
+
+```
+
+Next, set up the execution context that tracks the active transaction across asynchronous scopes:
+
+```ts file=./samples/execution-context.ts
+
+```
+
+Then create a `TransactionContext` using the database and execution context:
+
 ```ts file=./samples/transaction-context-initial-config.ts
 
 ```

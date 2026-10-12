@@ -1,21 +1,17 @@
-import { Container } from "eridu-tech/di";
-import { ExecutionContext } from "eridu-tech/execution-context";
-import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
 import { SemaphoreFactoryResolver } from "eridu-tech/semaphore";
 import { ProxySemaphoreFactoryResolver } from "eridu-tech/semaphore/di";
-import { MemorySemaphoreAdapter } from "eridu-tech/semaphore/memory-semaphore-adapter";
+import { container } from "./container.js";
+import { memorySemaphoreAdapter } from "./memory-semaphore-adapter.js";
+import { redisSemaphoreAdapter } from "./redis-semaphore-adapter.js";
 
-type Adapters = "storage1" | "storage2";
-
-const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
-const container = new Container({ executionContext });
+type Adapters = "memory" | "redis";
 
 const semaphoreFactoryResolver = new SemaphoreFactoryResolver<Adapters>({
     adapters: {
-        storage1: new MemorySemaphoreAdapter(),
-        storage2: new MemorySemaphoreAdapter(),
+        memory: memorySemaphoreAdapter,
+        redis: redisSemaphoreAdapter,
     },
-    defaultAdapter: "storage1",
+    defaultAdapter: "memory",
 });
 
 await semaphoreFactoryResolver.init();

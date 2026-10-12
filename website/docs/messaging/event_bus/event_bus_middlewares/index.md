@@ -36,7 +36,7 @@ This is useful for emitting lifecycle events such as "about to create a user" or
 
 ```
 
-Use `withDispatchBefore()` to dispatch through the resolver's default adapter (`storage1` in this example), or `withDispatchBefore.use("storage2")({ ... })` to select a specific adapter.
+Use `withDispatchBefore()` to dispatch through the resolver's default adapter (`memory` in this example), or `withDispatchBefore.use("redis")({ ... })` to select a specific adapter.
 
 :::info
 Here is a complete list of settings for the [`withDispatchBefore`](https://eridu-tech.github.io/eridu-tech-core/types/EventBus.WithDispatchBeforeSettings.html) function.
@@ -61,7 +61,7 @@ This is useful for emitting completion events such as "user created" or for reco
 
 ```
 
-Use `withDispatchAfter()` to dispatch through the resolver's default adapter (`storage1` in this example), or `withDispatchAfter.use("storage2")({ ... })` to select a specific adapter.
+Use `withDispatchAfter()` to dispatch through the resolver's default adapter (`memory` in this example), or `withDispatchAfter.use("redis")({ ... })` to select a specific adapter.
 
 :::info
 Here is a complete list of settings for the [`withDispatchAfter`](https://eridu-tech.github.io/eridu-tech-core/types/EventBus.WithDispatchAfterSettings.html) function.
@@ -86,7 +86,7 @@ This is useful for emitting failure events such as "user creation failed" or for
 
 ```
 
-Use `withDispatchOnError()` to dispatch through the resolver's default adapter (`storage1` in this example), or `withDispatchOnError.use("storage2")({ ... })` to select a specific adapter.
+Use `withDispatchOnError()` to dispatch through the resolver's default adapter (`memory` in this example), or `withDispatchOnError.use("redis")({ ... })` to select a specific adapter.
 
 :::info
 Here is a complete list of settings for the [`withDispatchOnError`](https://eridu-tech.github.io/eridu-tech-core/types/EventBus.WithDispatchOnErrorSettings.html) function.

@@ -32,7 +32,7 @@ The RateLimiter middleware wraps function calls with a rate limiter, controlling
 
 ```
 
-Calling `withRateLimiter()` directly uses the resolver's default adapter (`storage1`). Use `withRateLimiter.use("storage2")` to run the wrapped function through a specific registered adapter.
+Calling `withRateLimiter()` directly uses the resolver's default adapter (`memory`). Use `withRateLimiter.use("redis")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withRateLimiter`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.WithRateLimiterSettings.html) function.

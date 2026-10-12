@@ -32,7 +32,7 @@ The SharedLock middleware wraps function calls with a distributed shared lock (r
 
 ```
 
-Calling `withSharedLock()` directly uses the resolver's default adapter (`storage1`). Use `withSharedLock.use("storage2")` to run the wrapped function through a specific registered adapter.
+Calling `withSharedLock()` directly uses the resolver's default adapter (`memory`). Use `withSharedLock.use("redis")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withSharedLock`](https://eridu-tech.github.io/eridu-tech-core/types/SharedLock.WithSharedLockFactorySettings.html) function.

@@ -11,7 +11,7 @@ const fetchHandler = async (request: Request): Promise<Response> => {
 
 const rateLimitedCall = use(
     fetchHandler,
-    withRateLimiter.use("storage2")({
+    withRateLimiter.use("redis")({
         key: ([req]) => `api:${String(req.headers.get("x-ip"))}`,
         limit: 10,
     }),

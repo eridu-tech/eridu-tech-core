@@ -1,7 +1,7 @@
 import { fileStorage } from "./file-storage-resolver-di-factory.js";
 
-// Uses the storage2 adapter
+// Uses the filesystem adapter
 await fileStorage
-    .use("storage2")
+    .use("fs")
     .create("file.txt")
     .add({ data: "Text file content" });

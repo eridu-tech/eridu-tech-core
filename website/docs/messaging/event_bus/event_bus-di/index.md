@@ -25,7 +25,27 @@ Create the proxy before calling `container.init()`. The resolver is initialized 
 
 ## Initial configuration
 
-Register the `EventBusResolver` in the container, wrap it with `ProxyEventBusResolver`, and register listeners before initializing the container:
+Set up the memory and Redis adapters, then create the container and register the `EventBusResolver`. Wrap it with `ProxyEventBusResolver` and register listeners before initializing the container:
+
+#### 1. Set up the memory event-bus adapter
+
+```ts file=./samples/memory-event-bus-adapter.ts
+
+```
+
+#### 2. Set up the Redis event-bus adapter
+
+```ts file=./samples/redis-event-bus-adapter.ts
+
+```
+
+#### 3. Create the dependency injection container
+
+```ts file=./samples/container.ts
+
+```
+
+#### 4. Register and initialize the event-bus resolver
 
 ```ts file=./samples/event-bus-resolver-di.ts
 

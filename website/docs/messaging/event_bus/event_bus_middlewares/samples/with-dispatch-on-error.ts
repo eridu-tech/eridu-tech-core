@@ -9,10 +9,22 @@ const createUser = async (userId: string): Promise<string> => {
     throw new Error("boom");
 };
 
-// Wrap with an error dispatch
+// Wrap with an error dispatch using the default adapter (`memory`)
 const wrappedCreateUser = use(
     createUser,
-    withDispatchOnError.use("storage2")({
+    withDispatchOnError({
+        type: "user.error",
+        payload: ({ args, error }) => ({
+            userId: args[0],
+            error,
+        }),
+    }),
+);
+
+// Wrap with an error dispatch using a specific adapter (`redis`)
+const wrappedCreateUserOnRedis = use(
+    createUser,
+    withDispatchOnError.use("redis")({
         type: "user.error",
         payload: ({ args, error }) => ({
             userId: args[0],

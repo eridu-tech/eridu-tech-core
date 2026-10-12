@@ -25,7 +25,27 @@ The proxy is wired to the container during `container.init()`. Create it **befor
 
 ## Initial configuration
 
-Register a `RateLimiterFactoryResolver` in the container and wrap it with `rateLimiterFactoryResolverDiFactory`:
+Set up the memory and Redis rate-limiter adapters, create the container, then register the `RateLimiterFactoryResolver` and wrap it with `rateLimiterFactoryResolverDiFactory`:
+
+#### 1. Set up the memory rate-limiter adapter
+
+```ts file=./samples/memory-rate-limiter-adapter.ts
+
+```
+
+#### 2. Set up the Redis rate-limiter adapter
+
+```ts file=./samples/redis-rate-limiter-adapter.ts
+
+```
+
+#### 3. Create the dependency injection container
+
+```ts file=./samples/container.ts
+
+```
+
+#### 4. Register and initialize the rate-limiter factory resolver
 
 ```ts file=./samples/rate-limiter-factory-resolver-di-factory.ts
 

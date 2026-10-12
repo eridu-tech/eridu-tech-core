@@ -32,7 +32,7 @@ The Lock middleware wraps function calls with a distributed lock, ensuring mutua
 
 ```
 
-Calling `withLock()` directly uses the resolver's default adapter (`storage1`). Use `withLock.use("storage2")` to run the wrapped function through a specific registered adapter.
+Calling `withLock()` directly uses the resolver's default adapter (`memory`). Use `withLock.use("redis")` to run the wrapped function through a specific registered adapter.
 
 :::info
 Here is a complete list of settings for the [`withLock`](https://eridu-tech.github.io/eridu-tech-core/types/Lock.WithLockSettings.html) function.

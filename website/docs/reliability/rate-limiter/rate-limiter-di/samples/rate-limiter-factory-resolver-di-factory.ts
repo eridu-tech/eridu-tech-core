@@ -1,26 +1,20 @@
-import { Container } from "eridu-tech/di";
-import { ExecutionContext } from "eridu-tech/execution-context";
-import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
 import { RateLimiterFactoryResolver } from "eridu-tech/rate-limiter";
-import { DatabaseRateLimiterAdapter } from "eridu-tech/rate-limiter/database-rate-limiter-adapter";
 import { ProxyRateLimiterFactoryResolver } from "eridu-tech/rate-limiter/di";
-import { MemoryRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter";
+import { container } from "./container.js";
+import { memoryRateLimiterAdapter } from "./memory-rate-limiter-adapter.js";
+import { redisRateLimiterAdapter } from "./redis-rate-limiter-adapter.js";
+import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
-type Adapters = "storage1" | "storage2";
+type Adapters = "memory" | "redis";
 
-const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
-const container = new Container({ executionContext });
-
+const serde = new SuperJsonSerde();
 const rateLimiterFactoryResolver = new RateLimiterFactoryResolver<Adapters>({
+    serde,
     adapters: {
-        storage1: new DatabaseRateLimiterAdapter({
-            adapter: new MemoryRateLimiterStorageAdapter(),
-        }),
-        storage2: new DatabaseRateLimiterAdapter({
-            adapter: new MemoryRateLimiterStorageAdapter(),
-        }),
+        memory: memoryRateLimiterAdapter,
+        redis: redisRateLimiterAdapter,
     },
-    defaultAdapter: "storage1",
+    defaultAdapter: "memory",
 });
 
 await rateLimiterFactoryResolver.init();
