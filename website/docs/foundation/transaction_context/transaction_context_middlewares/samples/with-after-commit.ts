@@ -1,8 +1,8 @@
 import { use } from "eridu-tech/middleware";
 import { withAfterCommitFactory } from "eridu-tech/transaction-context/middlewares";
-import { transactionContext } from "./transaction-context.js";
+import { transactionContextResolver } from "./transaction-context.js";
 
-const withAfterCommit = withAfterCommitFactory(transactionContext);
+const withAfterCommit = withAfterCommitFactory(transactionContextResolver);
 
 const sendWelcomeEmail = async (userId: string): Promise<void> => {
     // ...
@@ -18,7 +18,9 @@ const sendWelcomeEmailAfterCommitOrSkip = use(
 );
 
 // Runs once the transaction commits
-await transactionContext.run(() => sendWelcomeEmailAfterCommit("1"));
+await transactionContextResolver
+    .use("primary")
+    .run(() => sendWelcomeEmailAfterCommit("1"));
 
 // Does nothing, because no transaction is active
 await sendWelcomeEmailAfterCommitOrSkip("2");
