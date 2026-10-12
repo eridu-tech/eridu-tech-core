@@ -11,7 +11,7 @@ const callExternalApi = async (endpoint: string): Promise<unknown> => {
 
 const protectedCall = use(
     callExternalApi,
-    withCircuitBreaker.use("storage2")({
+    withCircuitBreaker.use("redis")({
         key: ([endpoint]) => `api:${endpoint}`,
     }),
 );
