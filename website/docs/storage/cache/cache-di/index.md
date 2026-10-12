@@ -25,7 +25,27 @@ The proxy is wired to the container during `container.init()`. Create it **befor
 
 ## Initial configuration
 
-Register a `CacheResolver` in the container and wrap it with `cacheResolverDiFactory`:
+Set up the memory and Redis cache adapters, create the container, then register the `CacheResolver` and wrap it with `cacheResolverDiFactory`:
+
+#### 1. Set up the memory cache adapter
+
+```ts file=./samples/memory-cache-adapter.ts
+
+```
+
+#### 2. Set up the Redis cache adapter
+
+```ts file=./samples/redis-cache-adapter.ts
+
+```
+
+#### 3. Create the dependency injection container
+
+```ts file=./samples/container.ts
+
+```
+
+#### 4. Register and initialize the cache resolver
 
 ```ts file=./samples/cache-resolver-di-factory.ts
 
