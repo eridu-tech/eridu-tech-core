@@ -14,7 +14,7 @@ const readData = async (key: string): Promise<unknown> => {
 
 const safeRead = use(
     readData,
-    withSharedLock.use("storage2")({
+    withSharedLock.use("redis")({
         key: ([resourceKey]) => `data:${resourceKey}`,
         when: SHARED_LOCK_WHEN.READER,
         limit: 10,
