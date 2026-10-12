@@ -4,18 +4,20 @@ import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-exe
 import { LockFactoryResolver } from "eridu-tech/lock";
 import { ProxyLockFactoryResolver } from "eridu-tech/lock/di";
 import { MemoryLockAdapter } from "eridu-tech/lock/memory-lock-adapter";
+import { RedisLockAdapter } from "eridu-tech/lock/redis-lock-adapter";
+import { Redis } from "ioredis";
 
-type Adapters = "storage1" | "storage2";
+type Adapters = "memory" | "redis";
 
 const executionContext = new ExecutionContext(new AlsExecutionContextAdapter());
 const container = new Container({ executionContext });
 
 const lockFactoryResolver = new LockFactoryResolver<Adapters>({
     adapters: {
-        storage1: new MemoryLockAdapter(),
-        storage2: new MemoryLockAdapter(),
+        memory: new MemoryLockAdapter(),
+        redis: new RedisLockAdapter(new Redis("YOUR_REDIS_CONNECTION_STRING")),
     },
-    defaultAdapter: "storage1",
+    defaultAdapter: "memory",
 });
 
 await lockFactoryResolver.init();
