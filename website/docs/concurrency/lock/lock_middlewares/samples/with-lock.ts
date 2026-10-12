@@ -9,7 +9,7 @@ const processJob = async (jobId: string): Promise<void> => {
     // ... process the job
 };
 
-// Wrap with distributed lock using the default adapter (`storage1`)
+// Wrap with distributed lock using the default adapter (`memory`)
 const safeProcess = use(
     processJob,
     withLock({
@@ -17,13 +17,13 @@ const safeProcess = use(
     }),
 );
 
-// Wrap with distributed lock using a specific adapter (`storage2`)
-const safeProcessOnStorage2 = use(
+// Wrap with distributed lock using a specific adapter (`redis`)
+const safeProcessOnRedis = use(
     processJob,
-    withLock.use("storage2")({
+    withLock.use("redis")({
         key: ([jobId]) => `job:${jobId}`,
     }),
 );
 
 await safeProcess("job-123"); // Acquires lock, processes, releases lock
-await safeProcessOnStorage2("job-456"); // Uses the storage2 adapter
+await safeProcessOnRedis("job-456"); // Uses the Redis adapter
