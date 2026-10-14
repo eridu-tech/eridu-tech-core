@@ -15,6 +15,28 @@ import type { IModuleBuilder } from "@/module/contracts/module-blueprint.contrac
 import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
+ * Base metadata shared by all module registrations.
+ *
+ * It gives each registration a stable optional test hook and a readable
+ * label for debugging and diagnostics.
+ *
+ * IMPORT_PATH: `"eridu-tech/module/contracts"`
+ * @group Contracts
+ */
+export type ModuleRegistrationBase<TRegisteredType = unknown> = {
+    /**
+     * Optional token that identifies this registration, so it can be reached
+     * from tests.
+     */
+    testId?: GenericToken<TRegisteredType>;
+
+    /**
+     * Optional human-readable name used for debugging and diagnostics.
+     */
+    name?: string;
+};
+
+/**
  * Shared fields of every factory-based module registration.
  *
  * A factory registration pairs a {@link ServiceFactory} with the tokens of
@@ -30,18 +52,12 @@ import type { Invocable } from "@/utilities/_module-exports.js";
 export type ModuleFactoryRegistrationBase<
     TDeps extends DepRecord = DepRecord,
     TRegisteredType = unknown,
-> = {
+> = ModuleRegistrationBase<TRegisteredType> & {
     /** The factory function that creates the service instance. */
     factory: ServiceFactory<TDeps, TRegisteredType>;
 
     /** The dependency tokens to resolve and inject into the factory. */
     deps: DepsTokens<TDeps>;
-
-    /**
-     * Optional token that identifies this registration, so it can be reached
-     * from tests.
-     */
-    testId?: GenericToken<TRegisteredType>;
 };
 
 /**
@@ -116,16 +132,11 @@ export type ModuleFactoryRegistration<
  * @group Contracts
  */
 export type ModuleValueRegistration<TRegisteredType = unknown> =
-    ServiceHooks<TRegisteredType> & {
-        /** The pre-constructed value to register. */
-        value: TRegisteredType;
-
-        /**
-         * Optional token that identifies this registration, so it can be
-         * reached from tests.
-         */
-        testId?: GenericToken<TRegisteredType>;
-    };
+    ModuleRegistrationBase<TRegisteredType> &
+        ServiceHooks<TRegisteredType> & {
+            /** The pre-constructed value to register. */
+            value: TRegisteredType;
+        };
 
 /**
  * The dynamic registration settings accepted by
@@ -139,13 +150,8 @@ export type ModuleValueRegistration<TRegisteredType = unknown> =
  * IMPORT_PATH: `"eridu-tech/module/contracts"`
  * @group Contracts
  */
-export type ModuleDynamicRegistration<TRegisteredType = unknown> = {
-    /**
-     * Optional token that identifies this registration, so it can be reached
-     * from tests.
-     */
-    testId?: GenericToken<TRegisteredType>;
-};
+export type ModuleDynamicRegistration<TRegisteredType = unknown> =
+    ModuleRegistrationBase<TRegisteredType>;
 
 /**
  * The alias registration settings accepted by
@@ -156,16 +162,17 @@ export type ModuleDynamicRegistration<TRegisteredType = unknown> = {
  * IMPORT_PATH: `"eridu-tech/module/contracts"`
  * @group Contracts
  */
-export type ModuleAliasRegistration<TRegisteredType = unknown> = {
-    /** The token of the existing service to alias. */
-    target: GenericToken<TRegisteredType>;
+export type ModuleAliasRegistration<TRegisteredType = unknown> =
+    ModuleRegistrationBase<TRegisteredType> & {
+        /** The token of the existing service to alias. */
+        target: GenericToken<TRegisteredType>;
 
-    /**
-     * Optional token that identifies this registration, so it can be reached
-     * from tests.
-     */
-    testId?: GenericToken<TRegisteredType>;
-};
+        /**
+         * Optional token that identifies this registration, so it can be reached
+         * from tests.
+         */
+        testId?: GenericToken<TRegisteredType>;
+    };
 
 /**
  * The configuration accepted by {@link ModuleRegister.module} when composing
@@ -284,8 +291,8 @@ export type ModuleRegister = {
  * @group Contracts
  */
 export type ModuleArgs<
-    TInputs extends DepRecord = DepRecord,
     TSettings extends DepRecord = DepRecord,
+    TInputs extends DepRecord = DepRecord,
 > = ModuleRegister & {
     /** The settings configured for the module. */
     settings: TSettings;
@@ -312,4 +319,4 @@ export type ModuleDefinition<
     TSettings extends DepRecord = DepRecord,
     TInputs extends DepRecord = DepRecord,
     TOutputs extends DepRecord = DepRecord,
-> = Invocable<[args: ModuleArgs<TInputs, TSettings>], DepsTokens<TOutputs>>;
+> = Invocable<[args: ModuleArgs<TSettings, TInputs>], DepsTokens<TOutputs>>;

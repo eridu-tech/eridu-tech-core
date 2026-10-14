@@ -5,6 +5,7 @@
 import type {
     IExecutionContext,
     ContextToken,
+    GenericToken,
 } from "@/execution-context/contracts/_module-exports.js";
 import type {
     AsyncLazy,
@@ -30,10 +31,10 @@ import type {
  */
 export function genericToken<TRegisteredType>(
     id: string,
-): DiToken<TRegisteredType> {
+): GenericToken<TRegisteredType> {
     return {
         description: id,
-    } as ContextToken<TRegisteredType>;
+    } as GenericToken<TRegisteredType>;
 }
 
 /**

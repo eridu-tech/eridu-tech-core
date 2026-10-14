@@ -2,7 +2,11 @@
  * @module Module
  */
 
-import type { DepRecord, EmptyRecord } from "@/di/contracts/_module-exports.js";
+import type {
+    DepRecord,
+    DepsTokens,
+    EmptyRecord,
+} from "@/di/contracts/_module-exports.js";
 import type {
     ModuleFactoryRegistration,
     ModuleValueRegistration,
@@ -53,7 +57,7 @@ export type IModule<
     TInputs extends DepRecord = DepRecord,
     TOutputs extends DepRecord = DepRecord,
 > = {
-    readonly outputs: Readonly<TOutputs>;
+    readonly outputs: Readonly<DepsTokens<TOutputs>>;
 
     /**
      * Overrides a factory registration of this module.

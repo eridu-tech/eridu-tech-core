@@ -3,7 +3,10 @@
  */
 
 import type { DepRecord, IContainer } from "@/di/contracts/_module-exports.js";
-import type { ModuleDefinition } from "@/module/contracts/module-definition.contract.js";
+import type {
+    ModuleCompositionConfig,
+    ModuleDefinition,
+} from "@/module/contracts/module-definition.contract.js";
 import type { IModule } from "@/module/contracts/module.contract.js";
 
 /**
@@ -27,7 +30,10 @@ export type IModuleBuilder<
      * @param container - The container to build the module within.
      * @returns The built module.
      */
-    build(container: IContainer): IModule<TSettings, TInputs, TOutputs>;
+    build(
+        container: IContainer,
+        config: ModuleCompositionConfig<TSettings, TInputs>,
+    ): IModule<TSettings, TInputs, TOutputs>;
 };
 
 /**

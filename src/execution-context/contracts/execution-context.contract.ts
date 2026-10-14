@@ -31,7 +31,7 @@ export type ClassToken<TInstance = unknown> = Class<Array<any>, TInstance>;
  *
  * @template TValue - The type of value this token represents in the context
  */
-export type GenericToken<TValue> = {
+export type GenericToken<TValue = unknown> = {
     /**
      * A human-readable description.
      */

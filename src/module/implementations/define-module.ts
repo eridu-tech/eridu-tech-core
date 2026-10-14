@@ -13,6 +13,7 @@ import type {
     IModule,
     IModuleBlueprint,
     IModuleBuilder,
+    ModuleCompositionConfig,
     ModuleDefinition,
 } from "@/module/contracts/_module-exports.js";
 
@@ -121,32 +122,18 @@ export function defineModule<
             return {
                 build(
                     container: IContainer,
+                    config: ModuleCompositionConfig<
+                        ModuleSettings<TConfig>,
+                        ModuleInputs<TConfig>
+                    >,
                 ): IModule<
                     ModuleSettings<TConfig>,
                     ModuleInputs<TConfig>,
                     TOutputs
                 > {
-                    return new Module(moduleDefinition);
+                    return new Module(config, container, moduleDefinition);
                 },
             };
         },
     };
 }
-
-const module1 = defineModule().blueprint((args) => {
-    return {
-        a: args.value({
-            value: "ad",
-        }),
-    };
-});
-const module2 = defineModule().blueprint((args) => {
-    return {
-        ...args.module(module1, {
-            settings: {
-                c: "",
-            },
-            inputs: {},
-        }),
-    };
-});
