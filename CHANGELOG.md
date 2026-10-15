@@ -1,5 +1,12 @@
 # @daiso-tech/core
 
+## 0.71.0
+
+### Minor Changes
+
+- 8f0cce5: - `FsFileStorageAdapter` no longer stores all files flat in one folder; it stores files in nested directories based on their keys.
+    - `update()` and `updateStream()` truncate existing files before writing, preventing stale trailing content when replacing a file with shorter content.
+
 ## 0.70.1
 
 ### Patch Changes
