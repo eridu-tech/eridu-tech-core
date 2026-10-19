@@ -8,9 +8,7 @@ tags:
     - Mongodb
     - Kysely
     - Sqlite
-    - Mysql
     - Postgres
-    - Libsql
     - NoOp
 keywords:
     - TransactionContext
@@ -18,9 +16,7 @@ keywords:
     - Mongodb
     - Kysely
     - Sqlite
-    - Mysql
     - Postgres
-    - Libsql
     - NoOp
 ---
 
@@ -43,22 +39,6 @@ You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better
 You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
 ```ts file=./samples/kysely-transaction-postgres.ts
-
-```
-
-### Usage with Mysql
-
-You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) package. The same setup applies to MariaDB, by using [`MysqlDialect`](https://kysely-org.github.io/kysely-apidoc/classes/MysqlDialect.html):
-
-```ts file=./samples/kysely-transaction-mysql.ts
-
-```
-
-### Usage with Libsql
-
-You will need to install [`@libsql/kysely-libsql`](https://www.npmjs.com/package/@libsql/kysely-libsql) package:
-
-```ts file=./samples/kysely-transaction-libsql.ts
 
 ```
 
