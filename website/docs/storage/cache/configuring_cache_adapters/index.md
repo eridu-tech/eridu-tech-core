@@ -10,10 +10,8 @@ tags:
     - Redis
     - Kysely
     - Sqlite
-    - Mysql
     - Postgres
     - Sqlite
-    - Libsql
     - NoOp
 keywords:
     - Cache
@@ -23,10 +21,8 @@ keywords:
     - Redis
     - Kysely
     - Sqlite
-    - Mysql
     - Postgres
     - Sqlite
-    - Libsql
     - NoOp
 ---
 
@@ -175,22 +171,6 @@ You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better
 You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
 ```ts file=./samples/kysely-cache-postgres.ts
-
-```
-
-### Usage with Mysql
-
-You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) package:
-
-```ts file=./samples/kysely-cache-mysql.ts
-
-```
-
-### Usage with Libsql
-
-You will need to install [`@libsql/kysely-libsql`](https://www.npmjs.com/package/@libsql/kysely-libsql) package:
-
-```ts file=./samples/kysely-cache-libsql.ts
 
 ```
 

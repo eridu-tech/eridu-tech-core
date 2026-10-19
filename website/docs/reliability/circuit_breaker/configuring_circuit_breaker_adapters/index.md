@@ -10,10 +10,8 @@ tags:
     - Redis
     - Kysely
     - Sqlite
-    - Mysql
     - Postgres
     - Sqlite
-    - Libsql
     - NoOp
 keywords:
     - CircuitBreaker
@@ -23,10 +21,8 @@ keywords:
     - Redis
     - Kysely
     - Sqlite
-    - Mysql
     - Postgres
     - Sqlite
-    - Libsql
     - NoOp
 ---
 
@@ -151,26 +147,6 @@ You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better
 You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
 ```ts file=./samples/kysely-storage-postgres.ts
-
-```
-
-### With Mysql and MariaDB
-
-You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) package:
-
-```ts file=./samples/kysely-storage-mysql.ts
-
-```
-
-:::info
-Works with both MySQL and MariaDB.
-:::
-
-### With Libsql
-
-You will need to install [`@libsql/kysely-libsql`](https://www.npmjs.com/package/@libsql/kysely-libsql) package:
-
-```ts file=./samples/kysely-storage-libsql.ts
 
 ```
 
