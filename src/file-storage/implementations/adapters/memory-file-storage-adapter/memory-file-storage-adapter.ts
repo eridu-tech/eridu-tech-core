@@ -6,19 +6,12 @@ import { Buffer } from "node:buffer";
 
 import etag from "etag";
 
-import {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
-    FILE_WRITE_ENUM,
-} from "@/file-storage/contracts/_module-exports.js";
-
 import type {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     IFileStorage,
     IFileStorageAdapter,
     FileAdapterMetadata,
     FileAdapterStream,
-    FileWriteEnum,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
@@ -183,11 +176,10 @@ export class MemoryFileStorageAdapter
         return Promise.resolve(true);
     }
 
-    put(key: string, content: WritableFileAdapterContent): Promise<boolean> {
+    put(key: string, content: WritableFileAdapterContent): Promise<void> {
         const contentData = Buffer.from(content.data);
         const copiedBuffer = Buffer.alloc(contentData.byteLength);
         contentData.copy(copiedBuffer);
-        const exists = this.map.has(key);
         this.map.set(key, {
             data: copiedBuffer,
             metadata: {
@@ -196,18 +188,17 @@ export class MemoryFileStorageAdapter
                 updatedAt: new Date(),
             },
         });
-        return Promise.resolve(exists);
+        return Promise.resolve();
     }
 
     async putStream(
         key: string,
         stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
+    ): Promise<void> {
         let totalData = Buffer.from([]);
         for await (const chunk of stream.data) {
             totalData = Buffer.concat([totalData, chunk]);
         }
-        const exists = this.map.has(key);
         this.map.set(key, {
             data: totalData,
             metadata: {
@@ -216,40 +207,16 @@ export class MemoryFileStorageAdapter
                 updatedAt: new Date(),
             },
         });
-        return Promise.resolve(exists);
-    }
-
-    private internalCopy(
-        source: string,
-        destination: string,
-    ): Promise<FileWriteEnum> {
-        const sourceFile = this.map.get(source);
-        if (sourceFile === undefined) {
-            return Promise.resolve(FILE_WRITE_ENUM.NOT_FOUND);
-        }
-        if (this.map.has(destination)) {
-            return Promise.resolve(FILE_WRITE_ENUM.KEY_EXISTS);
-        }
-        const copiedBuffer = Buffer.alloc(sourceFile.data.byteLength);
-        sourceFile.data.copy(copiedBuffer);
-        this.map.set(destination, {
-            data: copiedBuffer,
-            metadata: structuredClone(sourceFile.metadata),
-        });
-        return Promise.resolve(FILE_WRITE_ENUM.SUCCESS);
-    }
-
-    copy(source: string, destination: string): Promise<FileWriteEnum> {
-        return this.internalCopy(source, destination);
+        return Promise.resolve();
     }
 
     private internalCopyAndReplace(
         source: string,
         destination: string,
-    ): Promise<boolean> {
+    ): boolean {
         const sourceFile = this.map.get(source);
         if (sourceFile === undefined) {
-            return Promise.resolve(false);
+            return false;
         }
         const copiedBuffer = Buffer.alloc(sourceFile.data.byteLength);
         sourceFile.data.copy(copiedBuffer);
@@ -257,45 +224,32 @@ export class MemoryFileStorageAdapter
             data: copiedBuffer,
             metadata: structuredClone(sourceFile.metadata),
         });
-        return Promise.resolve(true);
+        return true;
     }
 
-    copyAndReplace(source: string, destination: string): Promise<boolean> {
-        return this.internalCopyAndReplace(source, destination);
+    async copy(source: string, destination: string): Promise<boolean> {
+        return Promise.resolve(
+            this.internalCopyAndReplace(source, destination),
+        );
     }
 
-    private internalRemoveMany(keys: Array<string>): Promise<boolean> {
-        let hasDeleted = false;
+    private internalRemoveMany(keys: Array<string>): void {
         for (const key of keys) {
-            const hasDeleted_ = this.map.delete(key);
-            if (hasDeleted_) {
-                hasDeleted = true;
-            }
+            this.map.delete(key);
         }
-        return Promise.resolve(hasDeleted);
     }
 
-    async move(source: string, destination: string): Promise<FileWriteEnum> {
-        const result = await this.internalCopy(source, destination);
-        if (result === FILE_WRITE_ENUM.SUCCESS) {
-            await this.internalRemoveMany([source]);
-        }
-        return result;
-    }
-
-    async moveAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
-        const hasMoved = await this.internalCopyAndReplace(source, destination);
+    async move(source: string, destination: string): Promise<boolean> {
+        const hasMoved = this.internalCopyAndReplace(source, destination);
         if (hasMoved) {
-            await this.internalRemoveMany([source]);
+            this.internalRemoveMany([source]);
         }
-        return hasMoved;
+        return Promise.resolve(hasMoved);
     }
 
-    removeMany(keys: Array<string>): Promise<boolean> {
-        return this.internalRemoveMany(keys);
+    async removeMany(keys: Array<string>): Promise<void> {
+        this.internalRemoveMany(keys);
+        return Promise.resolve();
     }
 
     removeByPrefix(prefix: string): Promise<void> {

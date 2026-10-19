@@ -110,72 +110,26 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
         return (await this.getFile()).missing();
     }
 
-    async getPublicUrl(): Promise<string | null> {
+    async getPublicUrl(): Promise<string> {
         return (await this.getFile()).getPublicUrl();
-    }
-
-    async getPublicUrlOrFail(): Promise<string> {
-        return (await this.getFile()).getPublicUrlOrFail();
     }
 
     async getSignedDownloadUrl(
         options?: FileDownloadUrlOptions,
-    ): Promise<string | null> {
+    ): Promise<string> {
         return (await this.getFile()).getSignedDownloadUrl(options);
     }
 
-    async getSignedDownloadUrlOrFail(
-        options?: FileDownloadUrlOptions,
-    ): Promise<string> {
-        return (await this.getFile()).getSignedDownloadUrlOrFail(options);
-    }
-
-    async add(content: WritableFileContent): Promise<boolean> {
-        return (await this.getFile()).add(content);
-    }
-
-    async addOrFail(content: WritableFileContent): Promise<void> {
-        return (await this.getFile()).addOrFail(content);
-    }
-
-    async addStream(stream: WritableFileStream): Promise<boolean> {
-        return (await this.getFile()).addStream(stream);
-    }
-
-    async addStreamOrFail(stream: WritableFileStream): Promise<void> {
-        return (await this.getFile()).addStreamOrFail(stream);
-    }
-
-    async update(content: WritableFileContent): Promise<boolean> {
-        return (await this.getFile()).update(content);
-    }
-
-    async updateOrFail(content: WritableFileContent): Promise<void> {
-        return (await this.getFile()).updateOrFail(content);
-    }
-
-    async updateStream(stream: WritableFileStream): Promise<boolean> {
-        return (await this.getFile()).updateStream(stream);
-    }
-
-    async updateStreamOrFail(stream: WritableFileStream): Promise<void> {
-        return (await this.getFile()).updateStreamOrFail(stream);
-    }
-
-    async put(content: WritableFileContent): Promise<boolean> {
+    async put(content: WritableFileContent): Promise<void> {
         return (await this.getFile()).put(content);
     }
 
-    async putStream(stream: WritableFileStream): Promise<boolean> {
+    async putStream(stream: WritableFileStream): Promise<void> {
         return (await this.getFile()).putStream(stream);
     }
 
-    async remove(): Promise<boolean> {
+    async remove(): Promise<void> {
         return (await this.getFile()).remove();
-    }
-
-    async removeOrFail(): Promise<void> {
-        return (await this.getFile()).removeOrFail();
     }
 
     async copy(destination: string): Promise<boolean> {
@@ -186,28 +140,12 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
         return (await this.getFile()).copyOrFail(destination);
     }
 
-    async copyAndReplace(destination: string): Promise<boolean> {
-        return (await this.getFile()).copyAndReplace(destination);
-    }
-
-    async copyAndReplaceOrFail(destination: string): Promise<void> {
-        return (await this.getFile()).copyAndReplaceOrFail(destination);
-    }
-
     async move(destination: string): Promise<boolean> {
         return (await this.getFile()).move(destination);
     }
 
     async moveOrFail(destination: string): Promise<void> {
         return (await this.getFile()).moveOrFail(destination);
-    }
-
-    async moveAndReplace(destination: string): Promise<boolean> {
-        return (await this.getFile()).moveAndReplace(destination);
-    }
-
-    async moveAndReplaceOrFail(destination: string): Promise<void> {
-        return (await this.getFile()).moveAndReplaceOrFail(destination);
     }
 
     async getSignedUploadUrl(options?: FileUploadUrlOptions): Promise<string> {

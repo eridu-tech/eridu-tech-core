@@ -58,18 +58,6 @@ export function withFileStoragePrefix(
         enhance(adapter, "getMetaData", ({ args: [key, ...rest], next }) => {
             return next([withPrefix(key), ...rest]);
         });
-        enhance(adapter, "add", ({ args: [key, ...rest], next }) => {
-            return next([withPrefix(key), ...rest]);
-        });
-        enhance(adapter, "addStream", ({ args: [key, ...rest], next }) => {
-            return next([withPrefix(key), ...rest]);
-        });
-        enhance(adapter, "update", ({ args: [key, ...rest], next }) => {
-            return next([withPrefix(key), ...rest]);
-        });
-        enhance(adapter, "updateStream", ({ args: [key, ...rest], next }) => {
-            return next([withPrefix(key), ...rest]);
-        });
         enhance(adapter, "put", ({ args: [key, ...rest], next }) => {
             return next([withPrefix(key), ...rest]);
         });
@@ -85,21 +73,7 @@ export function withFileStoragePrefix(
         );
         enhance(
             adapter,
-            "copyAndReplace",
-            ({ args: [srcKey, destKey, ...rest], next }) => {
-                return next([withPrefix(srcKey), withPrefix(destKey), ...rest]);
-            },
-        );
-        enhance(
-            adapter,
             "move",
-            ({ args: [srcKey, destKey, ...rest], next }) => {
-                return next([withPrefix(srcKey), withPrefix(destKey), ...rest]);
-            },
-        );
-        enhance(
-            adapter,
-            "moveAndReplace",
             ({ args: [srcKey, destKey, ...rest], next }) => {
                 return next([withPrefix(srcKey), withPrefix(destKey), ...rest]);
             },

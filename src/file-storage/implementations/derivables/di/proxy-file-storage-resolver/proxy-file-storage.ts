@@ -48,7 +48,7 @@ export class ProxyFileStorage<
         return (await this.getFileStorage()).clear();
     }
 
-    async removeMany(files: Array<IFile>): Promise<boolean> {
+    async removeMany(files: Array<IFile>): Promise<void> {
         return (await this.getFileStorage()).removeMany(files);
     }
 }

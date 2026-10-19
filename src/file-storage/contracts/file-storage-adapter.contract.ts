@@ -71,29 +71,31 @@ export type FileAdapterSignedUploadUrlSettings = {
 export type IFileUrlAdapter = {
     /**
      * Generates a public, permanently-accessible URL for a file.
-     * Returns null if the file does not exist or public access is not supported by the adapter.
+     * A public URL string is always returned; failures surface as thrown errors.
      *
      * @param key - The file identifier/path
      *
-     * @returns The public URL or null if unavailable
+     * @returns The public URL
+     * @throws Error if public URL generation fails or public access is not supported by the adapter
      */
-    getPublicUrl(key: string): Promise<string | null>;
+    getPublicUrl(key: string): Promise<string>;
 
     /**
      * Generates a temporary signed URL for downloading a file.
      * The URL expires after the configured duration and becomes invalid.
-     * Returns null when the adapter verifies that the file does not exist.
      * Some backends may return a signed URL that fails when accessed if existence checks are disabled.
+     * A signed URL string is always returned; failures surface as thrown errors.
      *
      * @param key - The file identifier/path
      * @param settings - Configuration for the signed URL (expiration, content type, disposition)
      *
-     * @returns The signed download URL, or null when the adapter verifies the file is unavailable
+     * @returns The signed download URL
+     * @throws Error if signed URL generation fails
      */
     getSignedDownloadUrl(
         key: string,
         settings: FileAdapterSignedDownloadUrlSettings,
-    ): Promise<string | null>;
+    ): Promise<string>;
 
     /**
      * Generates a temporary signed URL for uploading a file.
@@ -261,44 +263,6 @@ export type WritableFileAdapterStream = WritableFileAdapterCommonSettings & {
 };
 
 /**
- * Enumeration defining the possible outcomes of write operations.
- * Used by copy and move operations that respect existing key constraints.
- *
- * IMPORT_PATH: `"eridu-tech/file-storage/contracts"`
- * @group Contracts
- */
-export const FILE_WRITE_ENUM = {
-    /**
-     * Operation completed successfully.
-     * File was copied/moved and destination now contains the source content.
-     */
-    SUCCESS: "SUCCESS",
-
-    /**
-     * Source file was not found.
-     * Operation failed because source key does not exist. Destination unchanged.
-     */
-    NOT_FOUND: "NOT_FOUND",
-
-    /**
-     * Destination file already exists.
-     * Operation did not proceed because destination key exists and operation does not allow overwrite.
-     * Use copyAndReplace or moveAndReplace to overwrite existing files.
-     */
-    KEY_EXISTS: "KEY_EXISTS",
-} as const;
-
-/**
- * Type definition for FileWriteEnum string values.
- * Represents one of the possible outcomes from copy/move operations.
- *
- * IMPORT_PATH: `"eridu-tech/file-storage/contracts"`
- * @group Contracts
- */
-export type FileWriteEnum =
-    (typeof FILE_WRITE_ENUM)[keyof typeof FILE_WRITE_ENUM];
-
-/**
  * File storage adapter contract defining complete file operations.
  * Abstracts storage backend implementation (local filesystem, S3, database, memory, etc).
  *
@@ -349,67 +313,14 @@ export type IFileStorageAdapter = {
     getMetaData(key: string): Promise<FileAdapterMetadata | null>;
 
     /**
-     * Creates new file at key if it doesn't already exist.
-     * Fails if key already exists (use put for upsert or update for existing files).
-     * Content is loaded entirely in memory - use addStream for large files.
-     *
-     * @param key - The file identifier/path where file will be created
-     * @param content - File content with HTTP headers configuration
-     *
-     * @returns True if file was created, false if key already exists
-     */
-    add(key: string, content: WritableFileAdapterContent): Promise<boolean>;
-
-    /**
-     * Creates new file at key using streaming content if it doesn't already exist.
-     * Fails if key already exists (use putStream for upsert or updateStream for existing files).
-     * Content is streamed - efficient for large files or continuous data sources.
-     *
-     * @param key - The file identifier/path where file will be created
-     * @param stream - File content stream with HTTP headers configuration
-     *
-     * @returns True if file was created, false if key already exists
-     */
-    addStream(key: string, stream: WritableFileAdapterStream): Promise<boolean>;
-
-    /**
-     * Updates existing file at key with new content.
-     * Fails if key doesn't exist (use put for upsert or add for new files).
-     * Content is loaded entirely in memory - use updateStream for large files.
-     *
-     * @param key - The file identifier/path to update
-     * @param content - New file content with HTTP headers configuration
-     *
-     * @returns True if file was updated, false if key doesn't exist
-     */
-    update(key: string, content: WritableFileAdapterContent): Promise<boolean>;
-
-    /**
-     * Updates existing file at key using streaming content.
-     * Fails if key doesn't exist (use putStream for upsert or addStream for new files).
-     * Content is streamed - efficient for large files or continuous data sources.
-     *
-     * @param key - The file identifier/path to update
-     * @param stream - New file content stream with HTTP headers configuration
-     *
-     * @returns True if file was updated, false if key doesn't exist
-     */
-    updateStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean>;
-
-    /**
      * Creates or overwrites file (upsert) at key with content.
      * Always succeeds: creates file if doesn't exist, overwrites if exists.
      * Content is loaded entirely in memory - use putStream for large files.
      *
      * @param key - The file identifier/path to create or update
      * @param content - File content with HTTP headers configuration
-     *
-     * @returns True if file was updated (already existed), false if newly created
      */
-    put(key: string, content: WritableFileAdapterContent): Promise<boolean>;
+    put(key: string, content: WritableFileAdapterContent): Promise<void>;
 
     /**
      * Creates or overwrites file (upsert) at key using streaming content.
@@ -418,21 +329,8 @@ export type IFileStorageAdapter = {
      *
      * @param key - The file identifier/path to create or update
      * @param stream - File content stream with HTTP headers configuration
-     *
-     * @returns True if file was updated (already existed), false if newly created
      */
-    putStream(key: string, stream: WritableFileAdapterStream): Promise<boolean>;
-
-    /**
-     * Copies source file to destination path if destination doesn't exist.
-     * Destination is left unchanged if source not found or destination already exists.
-     *
-     * @param source - Source file identifier/path to copy from
-     * @param destination - Destination file identifier/path to copy to
-     *
-     * @returns `FileWriteEnum` indicating: SUCCESS (copied), NOT_FOUND (source missing), or KEY_EXISTS (destination exists)
-     */
-    copy(source: string, destination: string): Promise<FileWriteEnum>;
+    putStream(key: string, stream: WritableFileAdapterStream): Promise<void>;
 
     /**
      * Copies source file to destination path, overwriting destination if it exists.
@@ -443,19 +341,7 @@ export type IFileStorageAdapter = {
      *
      * @returns True if source was found and copied, false if source doesn't exist
      */
-    copyAndReplace(source: string, destination: string): Promise<boolean>;
-
-    /**
-     * Moves (renames) source file to destination path if destination doesn't exist.
-     * Destination is left unchanged if source not found or destination already exists.
-     * Effectively deletes the source file after successful copy.
-     *
-     * @param source - Source file identifier/path to move from
-     * @param destination - Destination file identifier/path to move to
-     *
-     * @returns `FileWriteEnum` indicating: SUCCESS (moved), NOT_FOUND (source missing), or KEY_EXISTS (destination exists)
-     */
-    move(source: string, destination: string): Promise<FileWriteEnum>;
+    copy(source: string, destination: string): Promise<boolean>;
 
     /**
      * Moves (renames) source file to destination path, overwriting destination if it exists.
@@ -465,18 +351,16 @@ export type IFileStorageAdapter = {
      * @param source - Source file identifier/path to move from
      * @param destination - Destination file identifier/path to move to (will be overwritten)
      *
-     * @returns True if source was found and moved, false if source doesn't exist
+     * @returns True if source was found and copied, false if source doesn't exist
      */
-    moveAndReplace(source: string, destination: string): Promise<boolean>;
+    move(source: string, destination: string): Promise<boolean>;
 
     /**
      * Removes multiple specific files by key.
      *
      * @param keys - Array of file identifiers/paths to delete
-     *
-     * @returns True if at least one key was deleted, false if no keys were found
      */
-    removeMany(keys: Array<string>): Promise<boolean>;
+    removeMany(keys: Array<string>): Promise<void>;
 
     /**
      * Removes all files whose keys start with the given prefix.
@@ -484,8 +368,6 @@ export type IFileStorageAdapter = {
      * Silently succeeds if no keys match the prefix.
      *
      * @param prefix - Key prefix to match (e.g., "uploads/2024-01/" for all January uploads)
-     *
-     * @returns Void (always succeeds)
      */
     removeByPrefix(prefix: string): Promise<void>;
 };

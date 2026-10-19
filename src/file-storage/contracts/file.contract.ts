@@ -205,29 +205,10 @@ export type IReadableFile = {
      * Gets the publicly accessible URL for this file.
      * Only works if the file storage backend supports public file access.
      *
-     * @returns The public URL, or null if the file is not found or not publicly accessible
-     */
-    getPublicUrl(): Promise<string | null>;
-
-    /**
-     * Gets the publicly accessible URL for this file.
-     * Only works if the file storage backend supports public file access.
-     *
      * @returns The public URL
-     * @throws {KeyNotFoundFileError} If the file is not found or not publicly accessible
+     * @throws Error if the file is not found or not publicly accessible
      */
-    getPublicUrlOrFail(): Promise<string>;
-
-    /**
-     * Generates a signed download URL with optional constraints.
-     * The URL will be valid only for the specified TTL and can include content-type/disposition overrides.
-     *
-     * @param options - Download URL configuration options (TTL, content-type, content-disposition)
-     * @returns A signed URL, or null if the file is not found
-     */
-    getSignedDownloadUrl(
-        options?: FileDownloadUrlOptions,
-    ): Promise<string | null>;
+    getPublicUrl(): Promise<string>;
 
     /**
      * Generates a signed download URL with optional constraints.
@@ -235,11 +216,9 @@ export type IReadableFile = {
      *
      * @param options - Download URL configuration options (TTL, content-type, content-disposition)
      * @returns A signed URL
-     * @throws {KeyNotFoundFileError} If the file is not found
+     * @throws Error if the file is not found
      */
-    getSignedDownloadUrlOrFail(
-        options?: FileDownloadUrlOptions,
-    ): Promise<string>;
+    getSignedDownloadUrl(options?: FileDownloadUrlOptions): Promise<string>;
 };
 
 /**
@@ -306,74 +285,25 @@ export type WritableFileStream = WritableFileCommonSettings & {
  * @group Contracts
  */
 export type IFile = IReadableFile & {
-    add(content: WritableFileContent): Promise<boolean>;
+    put(content: WritableFileContent): Promise<void>;
 
-    /**
-     * @throws {KeyExistsFileError}
-     */
-    addOrFail(content: WritableFileContent): Promise<void>;
+    putStream(stream: WritableFileStream): Promise<void>;
 
-    addStream(stream: WritableFileStream): Promise<boolean>;
-
-    /**
-     * @throws {KeyExistsFileError}
-     */
-    addStreamOrFail(stream: WritableFileStream): Promise<void>;
-
-    update(content: WritableFileContent): Promise<boolean>;
-
-    /**
-     * @throws {KeyNotFoundFileError}
-     */
-    updateOrFail(content: WritableFileContent): Promise<void>;
-
-    updateStream(stream: WritableFileStream): Promise<boolean>;
-
-    /**
-     * @throws {KeyNotFoundFileError}
-     */
-    updateStreamOrFail(stream: WritableFileStream): Promise<void>;
-
-    put(content: WritableFileContent): Promise<boolean>;
-
-    putStream(stream: WritableFileStream): Promise<boolean>;
-
-    remove(): Promise<boolean>;
-
-    /**
-     * @throws {KeyNotFoundFileError}
-     */
-    removeOrFail(): Promise<void>;
+    remove(): Promise<void>;
 
     copy(destination: string): Promise<boolean>;
 
     /**
      * @throws {KeyNotFoundFileError}
-     * @throws {KeyExistsFileError}
      */
     copyOrFail(destination: string): Promise<void>;
-
-    copyAndReplace(destination: string): Promise<boolean>;
-
-    /**
-     * @throws {KeyNotFoundFileError}
-     */
-    copyAndReplaceOrFail(destination: string): Promise<void>;
 
     move(destination: string): Promise<boolean>;
 
     /**
      * @throws {KeyNotFoundFileError}
-     * @throws {KeyExistsFileError}
      */
     moveOrFail(destination: string): Promise<void>;
-
-    moveAndReplace(destination: string): Promise<boolean>;
-
-    /**
-     * @throws {KeyNotFoundFileError}
-     */
-    moveAndReplaceOrFail(destination: string): Promise<void>;
 
     getSignedUploadUrl(options?: FileUploadUrlOptions): Promise<string>;
 };

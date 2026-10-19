@@ -78,7 +78,7 @@ export class ProxyFileStorageResolver<TAdapters extends string = string>
         return this.use().clear();
     }
 
-    removeMany(files: Array<IFile>): Promise<boolean> {
+    removeMany(files: Array<IFile>): Promise<void> {
         return this.use().removeMany(files);
     }
 }

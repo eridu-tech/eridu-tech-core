@@ -2,7 +2,6 @@
  * @module FileStorage
  */
 
-import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module-exports.js";
 import {
     isUint8ByteArrayEqualityTester,
     resolveStream,
@@ -70,7 +69,7 @@ export function fileStorageAdapterTestSuite(
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "application/octet-stream";
-                await adapter.add(key, {
+                await adapter.put(key, {
                     data,
                     cacheControl: null,
                     contentDisposition: null,
@@ -97,7 +96,7 @@ export function fileStorageAdapterTestSuite(
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "application/octet-stream";
-                await adapter.add(key, {
+                await adapter.put(key, {
                     data,
                     cacheControl: null,
                     contentDisposition: null,
@@ -126,7 +125,7 @@ export function fileStorageAdapterTestSuite(
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "application/octet-stream";
-                await adapter.add(key, {
+                await adapter.put(key, {
                     data,
                     cacheControl: null,
                     contentDisposition: null,
@@ -153,7 +152,7 @@ export function fileStorageAdapterTestSuite(
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "text/plain";
-                await adapter.add(key, {
+                await adapter.put(key, {
                     data,
                     cacheControl: null,
                     contentDisposition: null,
@@ -199,7 +198,7 @@ export function fileStorageAdapterTestSuite(
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "text/plain";
-                await adapter.add(key, {
+                await adapter.put(key, {
                     data,
                     cacheControl: null,
                     contentDisposition: null,
@@ -211,7 +210,7 @@ export function fileStorageAdapterTestSuite(
 
                 const newContentType = "application/octet-stream";
                 const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.update(key, {
+                await adapter.put(key, {
                     data: newData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -246,7 +245,7 @@ export function fileStorageAdapterTestSuite(
 
                 const newContentType = "application/octet-stream";
                 const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.update(key, {
+                await adapter.put(key, {
                     data: newData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -299,12 +298,12 @@ export function fileStorageAdapterTestSuite(
                     updatedAt: expect.any(Date) as Date,
                 } satisfies FileAdapterMetadata);
             });
-            test("Should return initial metadata with a null updatedAt after addStream method", async () => {
+            test("Should return initial metadata with a null updatedAt after putStream method", async () => {
                 const key = "a.txt";
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "text/plain";
-                await adapter.addStream(key, {
+                await adapter.putStream(key, {
                     data: {
                         async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                             yield Promise.resolve(data);
@@ -353,12 +352,12 @@ export function fileStorageAdapterTestSuite(
                     updatedAt: expect.any(Date) as Date,
                 } satisfies FileAdapterMetadata);
             });
-            test("Should return metadata with a valid updatedAt after addStream method followed by updateStream method", async () => {
+            test("Should return metadata with a valid updatedAt after putStream method followed by putStream method", async () => {
                 const key = "a.txt";
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "text/plain";
-                await adapter.addStream(key, {
+                await adapter.putStream(key, {
                     data: {
                         async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                             yield Promise.resolve(data);
@@ -374,7 +373,7 @@ export function fileStorageAdapterTestSuite(
 
                 const newContentType = "application/octet-stream";
                 const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.updateStream(key, {
+                await adapter.putStream(key, {
                     data: {
                         async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                             yield Promise.resolve(newData);
@@ -396,7 +395,7 @@ export function fileStorageAdapterTestSuite(
                     updatedAt: expect.any(Date) as Date,
                 } satisfies FileAdapterMetadata);
             });
-            test("Should return metadata with a valid updatedAt after putStream method followed by updateStream method", async () => {
+            test("Should return metadata with a valid updatedAt after putStream method followed by putStream method", async () => {
                 const key = "a.txt";
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
@@ -417,7 +416,7 @@ export function fileStorageAdapterTestSuite(
 
                 const newContentType = "application/octet-stream";
                 const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.updateStream(key, {
+                await adapter.putStream(key, {
                     data: {
                         async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                             yield Promise.resolve(newData);
@@ -483,448 +482,7 @@ export function fileStorageAdapterTestSuite(
                 } satisfies FileAdapterMetadata);
             });
         });
-        describe("method: add", () => {
-            test("Should return true when key does not exists", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                const result = await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(true);
-            });
-            test("Should return false when key exists", async () => {
-                const key = "a";
-
-                const contentType = "application/octet-stream";
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(
-                    Buffer.from("NEW_CONTENT", "utf8"),
-                );
-                const result = await adapter.add(key, {
-                    data: newData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(false);
-            });
-            test("Should persist data when key does not exists", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.getBytes(key);
-                expect(result).toEqual(data);
-            });
-            test("Should not persist data when key exists", async () => {
-                const key = "a";
-
-                const contentType = "application/octet-stream";
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(
-                    Buffer.from("NEW_CONTENT", "utf8"),
-                );
-                await adapter.add(key, {
-                    data: newData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.getBytes(key);
-                expect(result).toEqual(data);
-            });
-        });
-        describe("method: addStream", () => {
-            test("Should return true when key does not exists", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                const result = await adapter.addStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(data);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(true);
-            });
-            test("Should return false when key exists", async () => {
-                const key = "a";
-
-                const contentType = "application/octet-stream";
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.addStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(data);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(
-                    Buffer.from("NEW_CONTENT", "utf8"),
-                );
-                const result = await adapter.addStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(newData);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(false);
-            });
-            test("Should persist data when key does not exists", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.addStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(data);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.getBytes(key);
-                expect(result).toEqual(data);
-            });
-            test("Should not persist data when key exists", async () => {
-                const key = "a";
-
-                const contentType = "application/octet-stream";
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.addStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(data);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(
-                    Buffer.from("NEW_CONTENT", "utf8"),
-                );
-                await adapter.addStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(newData);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.getBytes(key);
-                expect(result).toEqual(data);
-            });
-        });
-        describe("method: update", () => {
-            test("Should return false when key doesnt exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                const result = await adapter.update(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(false);
-            });
-            test("Should not persist data when key doesnt exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.update(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.getBytes(key);
-                expect(result).toBeNull();
-            });
-            test("Should return true when key exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const result = await adapter.update(key, {
-                    data: newData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(true);
-            });
-            test("Should persist data when key exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.update(key, {
-                    data: newData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.getBytes(key);
-                expect(result).toEqual(newData);
-            });
-        });
-        describe("method: updateStream", () => {
-            test("Should return false when key doesnt exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                const result = await adapter.updateStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(data);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(false);
-            });
-            test("Should not persist data when key doesnt exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.updateStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(data);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.getBytes(key);
-                expect(result).toBeNull();
-            });
-            test("Should return true when key exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const result = await adapter.updateStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(newData);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(true);
-            });
-            test("Should persist data when key exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                await adapter.updateStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(newData);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.getBytes(key);
-                expect(result).toEqual(newData);
-            });
-        });
         describe("method: put", () => {
-            test("Should return false when key doesnt exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                const result = await adapter.put(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(false);
-            });
             test("Should persist data when key doesnt exist", async () => {
                 const key = "a";
 
@@ -943,40 +501,12 @@ export function fileStorageAdapterTestSuite(
                 const result = await adapter.getBytes(key);
                 expect(result).toEqual(data);
             });
-            test("Should return true when key exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const result = await adapter.put(key, {
-                    data: newData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(true);
-            });
             test("Should persist data when key exist", async () => {
                 const key = "a";
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "application/octet-stream";
-                await adapter.add(key, {
+                await adapter.put(key, {
                     data,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1002,27 +532,6 @@ export function fileStorageAdapterTestSuite(
             });
         });
         describe("method: putStream", () => {
-            test("Should return false when key doesnt exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                const result = await adapter.putStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(data);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(false);
-            });
             test("Should persist data when key doesnt exist", async () => {
                 const key = "a";
 
@@ -1045,44 +554,12 @@ export function fileStorageAdapterTestSuite(
                 const result = await adapter.getBytes(key);
                 expect(result).toEqual(data);
             });
-            test("Should return true when key exist", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const result = await adapter.putStream(key, {
-                    data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                            yield Promise.resolve(newData);
-                        },
-                    },
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                expect(result).toBe(true);
-            });
             test("Should persist data when key exist", async () => {
                 const key = "a";
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "application/octet-stream";
-                await adapter.add(key, {
+                await adapter.put(key, {
                     data,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1112,159 +589,11 @@ export function fileStorageAdapterTestSuite(
             });
         });
         describe("method: copy", () => {
-            test("Should return FILE_WRITE_ENUM.NOT_FOUND when source does not exists and destination does not exists", async () => {
-                const noneExistingSource = "a";
-                const noneExistingDestination = "c";
-
-                const result = await adapter.copy(
-                    noneExistingSource,
-                    noneExistingDestination,
-                );
-
-                expect(result).toBe(FILE_WRITE_ENUM.NOT_FOUND);
-            });
-            test("Should return FILE_WRITE_ENUM.NOT_FOUND when source does not exists and destination exists", async () => {
-                const noneExistingSource = "a";
-
-                const destination = "c";
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(destination, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.copy(
-                    noneExistingSource,
-                    destination,
-                );
-
-                expect(result).toBe(FILE_WRITE_ENUM.NOT_FOUND);
-            });
-            test("Should return FILE_WRITE_ENUM.KEY_EXISTS when source exists and destination exists", async () => {
-                const source = "a";
-                const sourceData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                const contentType = "application/octet-stream";
-                await adapter.add(source, {
-                    data: sourceData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: sourceData.length,
-                });
-
-                const destination = "c";
-                const destinationData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                await adapter.add(destination, {
-                    data: destinationData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: destinationData.length,
-                });
-
-                const result = await adapter.copy(source, destination);
-
-                expect(result).toBe(FILE_WRITE_ENUM.KEY_EXISTS);
-            });
-            test("Should not persist when source exists and destination exists", async () => {
-                const source = "a";
-                const sourceData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                const contentType = "application/octet-stream";
-                await adapter.add(source, {
-                    data: sourceData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: sourceData.length,
-                });
-
-                const destination = "c";
-                const destinationData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                await adapter.add(destination, {
-                    data: destinationData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: destinationData.length,
-                });
-
-                await adapter.copy(source, destination);
-
-                const result = await adapter.getBytes(destination);
-                expect(result).toEqual(destinationData);
-            });
-            test("Should return FILE_WRITE_ENUM.SUCCESS when source exists and destination does not exists", async () => {
-                const source = "a";
-                const sourceData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                const contentType = "application/octet-stream";
-                await adapter.add(source, {
-                    data: sourceData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: sourceData.length,
-                });
-
-                const destination = "c";
-                const result = await adapter.copy(source, destination);
-
-                expect(result).toBe(FILE_WRITE_ENUM.SUCCESS);
-            });
-            test("Should persist data when source exists and destination does not exists", async () => {
-                const source = "a";
-                const sourceData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                const contentType = "application/octet-stream";
-                await adapter.add(source, {
-                    data: sourceData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: sourceData.length,
-                });
-
-                const destination = "c";
-                await adapter.copy(source, destination);
-
-                const result = await adapter.getBytes(destination);
-                expect(result).toEqual(sourceData);
-            });
-        });
-        describe("method: copyAndReplace", () => {
             test("Should return false when source does not exists and destination does not exists", async () => {
                 const noneExistingSource = "a";
                 const noneExistingDestination = "c";
 
-                const result = await adapter.copyAndReplace(
+                const result = await adapter.copy(
                     noneExistingSource,
                     noneExistingDestination,
                 );
@@ -1277,7 +606,7 @@ export function fileStorageAdapterTestSuite(
                 const destination = "c";
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "application/octet-stream";
-                await adapter.add(destination, {
+                await adapter.put(destination, {
                     data,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1287,7 +616,7 @@ export function fileStorageAdapterTestSuite(
                     fileSizeInBytes: data.length,
                 });
 
-                const result = await adapter.copyAndReplace(
+                const result = await adapter.copy(
                     noneExistingSource,
                     destination,
                 );
@@ -1300,7 +629,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1314,7 +643,7 @@ export function fileStorageAdapterTestSuite(
                 const destinationData = new Uint8Array(
                     Buffer.from("CONTENT", "utf8"),
                 );
-                await adapter.add(destination, {
+                await adapter.put(destination, {
                     data: destinationData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1324,10 +653,7 @@ export function fileStorageAdapterTestSuite(
                     fileSizeInBytes: destinationData.length,
                 });
 
-                const result = await adapter.copyAndReplace(
-                    source,
-                    destination,
-                );
+                const result = await adapter.copy(source, destination);
 
                 expect(result).toBe(true);
             });
@@ -1337,7 +663,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1351,7 +677,7 @@ export function fileStorageAdapterTestSuite(
                 const destinationData = new Uint8Array(
                     Buffer.from("CONTENT", "utf8"),
                 );
-                await adapter.add(destination, {
+                await adapter.put(destination, {
                     data: destinationData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1361,7 +687,7 @@ export function fileStorageAdapterTestSuite(
                     fileSizeInBytes: destinationData.length,
                 });
 
-                await adapter.copyAndReplace(source, destination);
+                await adapter.copy(source, destination);
 
                 const result = await adapter.getBytes(destination);
                 expect(result).toEqual(sourceData);
@@ -1372,7 +698,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1383,10 +709,7 @@ export function fileStorageAdapterTestSuite(
                 });
 
                 const destination = "c";
-                const result = await adapter.copyAndReplace(
-                    source,
-                    destination,
-                );
+                const result = await adapter.copy(source, destination);
 
                 expect(result).toBe(true);
             });
@@ -1396,7 +719,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1407,188 +730,18 @@ export function fileStorageAdapterTestSuite(
                 });
 
                 const destination = "c";
-                await adapter.copyAndReplace(source, destination);
+                await adapter.copy(source, destination);
 
                 const result = await adapter.getBytes(destination);
                 expect(result).toEqual(sourceData);
             });
         });
         describe("method: move", () => {
-            test("Should return FILE_WRITE_ENUM.NOT_FOUND when source does not exists and destination does not exists", async () => {
-                const noneExistingSource = "a";
-                const noneExistingDestination = "c";
-
-                const result = await adapter.move(
-                    noneExistingSource,
-                    noneExistingDestination,
-                );
-
-                expect(result).toBe(FILE_WRITE_ENUM.NOT_FOUND);
-            });
-            test("Should return FILE_WRITE_ENUM.NOT_FOUND when source does not exists and destination exists", async () => {
-                const noneExistingSource = "a";
-
-                const destination = "c";
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(destination, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.move(
-                    noneExistingSource,
-                    destination,
-                );
-
-                expect(result).toBe(FILE_WRITE_ENUM.NOT_FOUND);
-            });
-            test("Should return FILE_WRITE_ENUM.KEY_EXISTS when source exists and destination exists", async () => {
-                const source = "a";
-                const sourceData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                const contentType = "application/octet-stream";
-                await adapter.add(source, {
-                    data: sourceData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: sourceData.length,
-                });
-
-                const destination = "c";
-                const destinationData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                await adapter.add(destination, {
-                    data: destinationData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: destinationData.length,
-                });
-
-                const result = await adapter.move(source, destination);
-
-                expect(result).toBe(FILE_WRITE_ENUM.KEY_EXISTS);
-            });
-            test("Should not persist when source exists and destination exists", async () => {
-                const source = "a";
-                const sourceData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                const contentType = "application/octet-stream";
-                await adapter.add(source, {
-                    data: sourceData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: sourceData.length,
-                });
-
-                const destination = "c";
-                const destinationData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                await adapter.add(destination, {
-                    data: destinationData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: destinationData.length,
-                });
-
-                await adapter.move(source, destination);
-
-                const result = await adapter.getBytes(destination);
-                expect(result).toEqual(destinationData);
-            });
-            test("Should return FILE_WRITE_ENUM.SUCCESS when source exists and destination does not exists", async () => {
-                const source = "a";
-                const sourceData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                const contentType = "application/octet-stream";
-                await adapter.add(source, {
-                    data: sourceData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: sourceData.length,
-                });
-
-                const destination = "c";
-                const result = await adapter.move(source, destination);
-
-                expect(result).toBe(FILE_WRITE_ENUM.SUCCESS);
-            });
-            test("Should persist data when source exists and destination does not exists", async () => {
-                const source = "a";
-                const sourceData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                const contentType = "application/octet-stream";
-                await adapter.add(source, {
-                    data: sourceData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: sourceData.length,
-                });
-
-                const destination = "c";
-                await adapter.move(source, destination);
-
-                const result = await adapter.getBytes(destination);
-                expect(result).toEqual(sourceData);
-            });
-            test("Should remove source when source exists and destination does not exists", async () => {
-                const source = "a";
-                const sourceData = new Uint8Array(
-                    Buffer.from("CONTENT", "utf8"),
-                );
-                const contentType = "application/octet-stream";
-                await adapter.add(source, {
-                    data: sourceData,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: sourceData.length,
-                });
-
-                const destination = "c";
-                await adapter.move(source, destination);
-
-                const result = await adapter.getBytes(source);
-                expect(result).toBeNull();
-            });
-        });
-        describe("method: moveAndReplace", () => {
             test("Should return false when source does not exists and destination does not exists", async () => {
                 const noneExistingSource = "a";
                 const noneExistingDestination = "c";
 
-                const result = await adapter.moveAndReplace(
+                const result = await adapter.move(
                     noneExistingSource,
                     noneExistingDestination,
                 );
@@ -1601,7 +754,7 @@ export function fileStorageAdapterTestSuite(
                 const destination = "c";
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 const contentType = "application/octet-stream";
-                await adapter.add(destination, {
+                await adapter.put(destination, {
                     data,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1611,7 +764,7 @@ export function fileStorageAdapterTestSuite(
                     fileSizeInBytes: data.length,
                 });
 
-                const result = await adapter.moveAndReplace(
+                const result = await adapter.move(
                     noneExistingSource,
                     destination,
                 );
@@ -1624,7 +777,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1638,7 +791,7 @@ export function fileStorageAdapterTestSuite(
                 const destinationData = new Uint8Array(
                     Buffer.from("CONTENT", "utf8"),
                 );
-                await adapter.add(destination, {
+                await adapter.put(destination, {
                     data: destinationData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1648,10 +801,7 @@ export function fileStorageAdapterTestSuite(
                     fileSizeInBytes: destinationData.length,
                 });
 
-                const result = await adapter.moveAndReplace(
-                    source,
-                    destination,
-                );
+                const result = await adapter.move(source, destination);
 
                 expect(result).toBe(true);
             });
@@ -1661,7 +811,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1675,7 +825,7 @@ export function fileStorageAdapterTestSuite(
                 const destinationData = new Uint8Array(
                     Buffer.from("CONTENT", "utf8"),
                 );
-                await adapter.add(destination, {
+                await adapter.put(destination, {
                     data: destinationData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1685,7 +835,7 @@ export function fileStorageAdapterTestSuite(
                     fileSizeInBytes: destinationData.length,
                 });
 
-                await adapter.moveAndReplace(source, destination);
+                await adapter.move(source, destination);
 
                 const result = await adapter.getBytes(destination);
                 expect(result).toEqual(sourceData);
@@ -1696,7 +846,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1710,7 +860,7 @@ export function fileStorageAdapterTestSuite(
                 const destinationData = new Uint8Array(
                     Buffer.from("CONTENT", "utf8"),
                 );
-                await adapter.add(destination, {
+                await adapter.put(destination, {
                     data: destinationData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1720,7 +870,7 @@ export function fileStorageAdapterTestSuite(
                     fileSizeInBytes: destinationData.length,
                 });
 
-                await adapter.moveAndReplace(source, destination);
+                await adapter.move(source, destination);
 
                 const result = await adapter.getBytes(source);
                 expect(result).toBeNull();
@@ -1731,7 +881,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1742,10 +892,7 @@ export function fileStorageAdapterTestSuite(
                 });
 
                 const destination = "c";
-                const result = await adapter.moveAndReplace(
-                    source,
-                    destination,
-                );
+                const result = await adapter.move(source, destination);
 
                 expect(result).toBe(true);
             });
@@ -1755,7 +902,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1766,7 +913,7 @@ export function fileStorageAdapterTestSuite(
                 });
 
                 const destination = "c";
-                await adapter.moveAndReplace(source, destination);
+                await adapter.move(source, destination);
 
                 const result = await adapter.getBytes(destination);
                 expect(result).toEqual(sourceData);
@@ -1777,7 +924,7 @@ export function fileStorageAdapterTestSuite(
                     Buffer.from("CONTENT", "utf8"),
                 );
                 const contentType = "application/octet-stream";
-                await adapter.add(source, {
+                await adapter.put(source, {
                     data: sourceData,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1788,41 +935,17 @@ export function fileStorageAdapterTestSuite(
                 });
 
                 const destination = "c";
-                await adapter.moveAndReplace(source, destination);
+                await adapter.move(source, destination);
 
                 const result = await adapter.getBytes(source);
                 expect(result).toBeNull();
             });
         });
         describe("method: removeMany", () => {
-            test("Should return false when all keys does not exists", async () => {
-                const result = await adapter.removeMany(["a", "b", "c"]);
-
-                expect(result).toBe(false);
-            });
-            test("Should return true when one key exists", async () => {
-                const key = "a";
-
-                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                const contentType = "application/octet-stream";
-                await adapter.add(key, {
-                    data,
-                    cacheControl: null,
-                    contentDisposition: null,
-                    contentEncoding: null,
-                    contentLanguage: null,
-                    contentType,
-                    fileSizeInBytes: data.length,
-                });
-
-                const result = await adapter.removeMany([key, "b", "c"]);
-
-                expect(result).toBe(true);
-            });
             test("Should persist removal of the keys that exists", async () => {
                 const data1 = new Uint8Array(Buffer.from("CONTENT_A", "utf8"));
                 const contentType = "application/octet-stream";
-                await adapter.add("a", {
+                await adapter.put("a", {
                     data: data1,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1833,7 +956,7 @@ export function fileStorageAdapterTestSuite(
                 });
 
                 const data2 = new Uint8Array(Buffer.from("CONTENT_B", "utf8"));
-                await adapter.add("b", {
+                await adapter.put("b", {
                     data: data2,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1844,7 +967,7 @@ export function fileStorageAdapterTestSuite(
                 });
 
                 const data3 = new Uint8Array(Buffer.from("CONTENT_C", "utf8"));
-                await adapter.add("c", {
+                await adapter.put("c", {
                     data: data3,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1868,7 +991,7 @@ export function fileStorageAdapterTestSuite(
             test(`Should remove all keys that start with prefix "file-storage"`, async () => {
                 const dataA = new Uint8Array(Buffer.from("CONTENT_A", "utf8"));
                 const contentType = "application/octet-stream";
-                await adapter.add("cache/a", {
+                await adapter.put("file-storage/a", {
                     data: dataA,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1879,7 +1002,7 @@ export function fileStorageAdapterTestSuite(
                 });
 
                 const dataB = new Uint8Array(Buffer.from("CONTENT_B", "utf8"));
-                await adapter.add("cache/b", {
+                await adapter.put("file-storage/b", {
                     data: dataB,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1890,7 +1013,7 @@ export function fileStorageAdapterTestSuite(
                 });
 
                 const dataC = new Uint8Array(Buffer.from("CONTENT_C", "utf8"));
-                await adapter.add("c", {
+                await adapter.put("c", {
                     data: dataC,
                     cacheControl: null,
                     contentDisposition: null,
@@ -1900,11 +1023,11 @@ export function fileStorageAdapterTestSuite(
                     fileSizeInBytes: dataC.length,
                 });
 
-                await adapter.removeByPrefix("cache");
+                await adapter.removeByPrefix("file-storage");
 
                 const result = [
-                    await adapter.getBytes("cache/a"),
-                    await adapter.getBytes("cache/b"),
+                    await adapter.getBytes("file-storage/a"),
+                    await adapter.getBytes("file-storage/b"),
                     await adapter.getBytes("c"),
                 ];
                 expect(result).toEqual([null, null, dataC]);

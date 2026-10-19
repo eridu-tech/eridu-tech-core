@@ -124,126 +124,6 @@ describe("function: withFileStorageLowerCase", () => {
             >("mykey");
         });
     });
-    describe("method: add", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "add");
-
-            const content: WritableFileAdapterContent = {
-                data: new Uint8Array(),
-                fileSizeInBytes: 0,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.add("myKey", content);
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["add"]>
-            >("mykey", content);
-        });
-    });
-    describe("method: addStream", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "addStream");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            const stream: AsyncIterable<Uint8Array> = {
-                [Symbol.asyncIterator]: () => ({
-                    next: () =>
-                        Promise.resolve({
-                            done: true,
-                            value: undefined as unknown as Uint8Array,
-                        }),
-                }),
-            };
-            await enhanced.addStream("myKey", {
-                data: stream,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            });
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["addStream"]>
-            >("mykey", {
-                data: stream,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            });
-        });
-    });
-    describe("method: update", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "update");
-
-            const content: WritableFileAdapterContent = {
-                data: new Uint8Array(),
-                fileSizeInBytes: 0,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.update("myKey", content);
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["update"]>
-            >("mykey", content);
-        });
-    });
-    describe("method: updateStream", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "updateStream");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            const stream2: AsyncIterable<Uint8Array> = {
-                [Symbol.asyncIterator]: () => ({
-                    next: () =>
-                        Promise.resolve({
-                            done: true,
-                            value: undefined as unknown as Uint8Array,
-                        }),
-                }),
-            };
-            await enhanced.updateStream("myKey", {
-                data: stream2,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            });
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["updateStream"]>
-            >("mykey", {
-                data: stream2,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            });
-        });
-    });
     describe("method: put", () => {
         test("Should lowercase the key", async () => {
             const spy = vi.spyOn(adapter, "put");
@@ -317,19 +197,6 @@ describe("function: withFileStorageLowerCase", () => {
             >("sourcekey", "destkey");
         });
     });
-    describe("method: copyAndReplace", () => {
-        test("Should lowercase the keys", async () => {
-            const spy = vi.spyOn(adapter, "copyAndReplace");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.copyAndReplace("sourceKey", "destKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["copyAndReplace"]>
-            >("sourcekey", "destkey");
-        });
-    });
     describe("method: move", () => {
         test("Should lowercase the keys", async () => {
             const spy = vi.spyOn(adapter, "move");
@@ -340,19 +207,6 @@ describe("function: withFileStorageLowerCase", () => {
 
             expect(spy).toHaveBeenCalledExactlyOnceWith<
                 Parameters<ISignedFileStorageAdapter["move"]>
-            >("sourcekey", "destkey");
-        });
-    });
-    describe("method: moveAndReplace", () => {
-        test("Should lowercase the keys", async () => {
-            const spy = vi.spyOn(adapter, "moveAndReplace");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.moveAndReplace("sourceKey", "destKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["moveAndReplace"]>
             >("sourcekey", "destkey");
         });
     });

@@ -54,18 +54,6 @@ export function withFileStorageLowerCase(): PluginFn<
         enhance(adapter, "getMetaData", ({ args: [key, ...rest], next }) => {
             return next([key.toLowerCase(), ...rest]);
         });
-        enhance(adapter, "add", ({ args: [key, ...rest], next }) => {
-            return next([key.toLowerCase(), ...rest]);
-        });
-        enhance(adapter, "addStream", ({ args: [key, ...rest], next }) => {
-            return next([key.toLowerCase(), ...rest]);
-        });
-        enhance(adapter, "update", ({ args: [key, ...rest], next }) => {
-            return next([key.toLowerCase(), ...rest]);
-        });
-        enhance(adapter, "updateStream", ({ args: [key, ...rest], next }) => {
-            return next([key.toLowerCase(), ...rest]);
-        });
         enhance(adapter, "put", ({ args: [key, ...rest], next }) => {
             return next([key.toLowerCase(), ...rest]);
         });
@@ -85,29 +73,7 @@ export function withFileStorageLowerCase(): PluginFn<
         );
         enhance(
             adapter,
-            "copyAndReplace",
-            ({ args: [srcKey, destKey, ...rest], next }) => {
-                return next([
-                    srcKey.toLowerCase(),
-                    destKey.toLowerCase(),
-                    ...rest,
-                ]);
-            },
-        );
-        enhance(
-            adapter,
             "move",
-            ({ args: [srcKey, destKey, ...rest], next }) => {
-                return next([
-                    srcKey.toLowerCase(),
-                    destKey.toLowerCase(),
-                    ...rest,
-                ]);
-            },
-        );
-        enhance(
-            adapter,
-            "moveAndReplace",
             ({ args: [srcKey, destKey, ...rest], next }) => {
                 return next([
                     srcKey.toLowerCase(),

@@ -125,126 +125,6 @@ describe("function: withFileStoragePrefix", () => {
             >(`${prefix}myKey`);
         });
     });
-    describe("method: add", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "add");
-
-            const content: WritableFileAdapterContent = {
-                data: new Uint8Array(),
-                fileSizeInBytes: 0,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            const enhanced = withPlugin(adapter, withFileStoragePrefix(prefix));
-
-            await enhanced.add("myKey", content);
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["add"]>
-            >(`${prefix}myKey`, content);
-        });
-    });
-    describe("method: addStream", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "addStream");
-
-            const enhanced = withPlugin(adapter, withFileStoragePrefix(prefix));
-
-            const stream: AsyncIterable<Uint8Array> = {
-                [Symbol.asyncIterator]: () => ({
-                    next: () =>
-                        Promise.resolve({
-                            done: true,
-                            value: undefined as unknown as Uint8Array,
-                        }),
-                }),
-            };
-            await enhanced.addStream("myKey", {
-                data: stream,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            });
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["addStream"]>
-            >(`${prefix}myKey`, {
-                data: stream,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            });
-        });
-    });
-    describe("method: update", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "update");
-
-            const content: WritableFileAdapterContent = {
-                data: new Uint8Array(),
-                fileSizeInBytes: 0,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            const enhanced = withPlugin(adapter, withFileStoragePrefix(prefix));
-
-            await enhanced.update("myKey", content);
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["update"]>
-            >(`${prefix}myKey`, content);
-        });
-    });
-    describe("method: updateStream", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "updateStream");
-
-            const enhanced = withPlugin(adapter, withFileStoragePrefix(prefix));
-
-            const stream2: AsyncIterable<Uint8Array> = {
-                [Symbol.asyncIterator]: () => ({
-                    next: () =>
-                        Promise.resolve({
-                            done: true,
-                            value: undefined as unknown as Uint8Array,
-                        }),
-                }),
-            };
-            await enhanced.updateStream("myKey", {
-                data: stream2,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            });
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["updateStream"]>
-            >(`${prefix}myKey`, {
-                data: stream2,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            });
-        });
-    });
     describe("method: put", () => {
         test("Should prefix the key", async () => {
             const spy = vi.spyOn(adapter, "put");
@@ -318,19 +198,6 @@ describe("function: withFileStoragePrefix", () => {
             >(`${prefix}sourceKey`, `${prefix}destKey`);
         });
     });
-    describe("method: copyAndReplace", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "copyAndReplace");
-
-            const enhanced = withPlugin(adapter, withFileStoragePrefix(prefix));
-
-            await enhanced.copyAndReplace("sourceKey", "destKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["copyAndReplace"]>
-            >(`${prefix}sourceKey`, `${prefix}destKey`);
-        });
-    });
     describe("method: move", () => {
         test("Should prefix the key", async () => {
             const spy = vi.spyOn(adapter, "move");
@@ -341,19 +208,6 @@ describe("function: withFileStoragePrefix", () => {
 
             expect(spy).toHaveBeenCalledExactlyOnceWith<
                 Parameters<ISignedFileStorageAdapter["move"]>
-            >(`${prefix}sourceKey`, `${prefix}destKey`);
-        });
-    });
-    describe("method: moveAndReplace", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "moveAndReplace");
-
-            const enhanced = withPlugin(adapter, withFileStoragePrefix(prefix));
-
-            await enhanced.moveAndReplace("sourceKey", "destKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["moveAndReplace"]>
             >(`${prefix}sourceKey`, `${prefix}destKey`);
         });
     });

@@ -15,7 +15,6 @@ import type {
     FileAdapterSignedDownloadUrlSettings,
     FileAdapterSignedUploadUrlSettings,
     FileAdapterStream,
-    FileWriteEnum,
     IFile,
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
@@ -68,13 +67,13 @@ describe("class: FileStorage", () => {
                         urlAdapter: {},
                     });
                 }
-                getPublicUrl(key: string): Promise<string | null> {
+                getPublicUrl(key: string): Promise<string> {
                     return this.adapter.getPublicUrl(key);
                 }
                 getSignedDownloadUrl(
                     key: string,
                     settings: FileAdapterSignedDownloadUrlSettings,
-                ): Promise<string | null> {
+                ): Promise<string> {
                     return this.adapter.getSignedDownloadUrl(key, settings);
                 }
                 getSignedUploadUrl(
@@ -95,67 +94,25 @@ describe("class: FileStorage", () => {
                 getMetaData(key: string): Promise<FileAdapterMetadata | null> {
                     return this.adapter.getMetaData(key);
                 }
-                add(
-                    key: string,
-                    content: WritableFileAdapterContent,
-                ): Promise<boolean> {
-                    return this.adapter.add(key, content);
-                }
-                addStream(
-                    key: string,
-                    stream: WritableFileAdapterStream,
-                ): Promise<boolean> {
-                    return this.adapter.addStream(key, stream);
-                }
-                update(
-                    key: string,
-                    content: WritableFileAdapterContent,
-                ): Promise<boolean> {
-                    return this.adapter.update(key, content);
-                }
-                updateStream(
-                    key: string,
-                    stream: WritableFileAdapterStream,
-                ): Promise<boolean> {
-                    return this.adapter.updateStream(key, stream);
-                }
                 put(
                     key: string,
                     content: WritableFileAdapterContent,
-                ): Promise<boolean> {
+                ): Promise<void> {
                     return this.adapter.put(key, content);
                 }
                 putStream(
                     key: string,
                     stream: WritableFileAdapterStream,
-                ): Promise<boolean> {
+                ): Promise<void> {
                     return this.adapter.putStream(key, stream);
                 }
-                copy(
-                    source: string,
-                    destination: string,
-                ): Promise<FileWriteEnum> {
+                copy(source: string, destination: string): Promise<boolean> {
                     return this.adapter.copy(source, destination);
                 }
-                copyAndReplace(
-                    source: string,
-                    destination: string,
-                ): Promise<boolean> {
-                    return this.adapter.copyAndReplace(source, destination);
-                }
-                move(
-                    source: string,
-                    destination: string,
-                ): Promise<FileWriteEnum> {
+                move(source: string, destination: string): Promise<boolean> {
                     return this.adapter.move(source, destination);
                 }
-                moveAndReplace(
-                    source: string,
-                    destination: string,
-                ): Promise<boolean> {
-                    return this.adapter.moveAndReplace(source, destination);
-                }
-                removeMany(keys: Array<string>): Promise<boolean> {
+                removeMany(keys: Array<string>): Promise<void> {
                     return this.adapter.removeMany(keys);
                 }
                 removeByPrefix(prefix: string): Promise<void> {
@@ -171,7 +128,7 @@ describe("class: FileStorage", () => {
             const file1 = fileStorage1.create(key);
 
             const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
-            await file1.add({ data: data1 });
+            await file1.put({ data: data1 });
 
             class Adapter2 implements ISignedFileStorageAdapter {
                 private readonly adapter: SignedFileStorageAdapter;
@@ -181,13 +138,13 @@ describe("class: FileStorage", () => {
                         urlAdapter: {},
                     });
                 }
-                getPublicUrl(key: string): Promise<string | null> {
+                getPublicUrl(key: string): Promise<string> {
                     return this.adapter.getPublicUrl(key);
                 }
                 getSignedDownloadUrl(
                     key: string,
                     settings: FileAdapterSignedDownloadUrlSettings,
-                ): Promise<string | null> {
+                ): Promise<string> {
                     return this.adapter.getSignedDownloadUrl(key, settings);
                 }
                 getSignedUploadUrl(
@@ -208,67 +165,25 @@ describe("class: FileStorage", () => {
                 getMetaData(key: string): Promise<FileAdapterMetadata | null> {
                     return this.adapter.getMetaData(key);
                 }
-                add(
-                    key: string,
-                    content: WritableFileAdapterContent,
-                ): Promise<boolean> {
-                    return this.adapter.add(key, content);
-                }
-                addStream(
-                    key: string,
-                    stream: WritableFileAdapterStream,
-                ): Promise<boolean> {
-                    return this.adapter.addStream(key, stream);
-                }
-                update(
-                    key: string,
-                    content: WritableFileAdapterContent,
-                ): Promise<boolean> {
-                    return this.adapter.update(key, content);
-                }
-                updateStream(
-                    key: string,
-                    stream: WritableFileAdapterStream,
-                ): Promise<boolean> {
-                    return this.adapter.updateStream(key, stream);
-                }
                 put(
                     key: string,
                     content: WritableFileAdapterContent,
-                ): Promise<boolean> {
+                ): Promise<void> {
                     return this.adapter.put(key, content);
                 }
                 putStream(
                     key: string,
                     stream: WritableFileAdapterStream,
-                ): Promise<boolean> {
+                ): Promise<void> {
                     return this.adapter.putStream(key, stream);
                 }
-                copy(
-                    source: string,
-                    destination: string,
-                ): Promise<FileWriteEnum> {
+                copy(source: string, destination: string): Promise<boolean> {
                     return this.adapter.copy(source, destination);
                 }
-                copyAndReplace(
-                    source: string,
-                    destination: string,
-                ): Promise<boolean> {
-                    return this.adapter.copyAndReplace(source, destination);
-                }
-                move(
-                    source: string,
-                    destination: string,
-                ): Promise<FileWriteEnum> {
+                move(source: string, destination: string): Promise<boolean> {
                     return this.adapter.move(source, destination);
                 }
-                moveAndReplace(
-                    source: string,
-                    destination: string,
-                ): Promise<boolean> {
-                    return this.adapter.moveAndReplace(source, destination);
-                }
-                removeMany(keys: Array<string>): Promise<boolean> {
+                removeMany(keys: Array<string>): Promise<void> {
                     return this.adapter.removeMany(keys);
                 }
                 removeByPrefix(prefix: string): Promise<void> {
@@ -287,7 +202,8 @@ describe("class: FileStorage", () => {
                 await serde.serialize(file2),
             );
             const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
-            const result = await deserializeFile2.add({ data: data2 });
+            await deserializeFile2.put({ data: data2 });
+            const result = await deserializeFile2.exists();
 
             expect(result).toBe(true);
         });
@@ -307,7 +223,7 @@ describe("class: FileStorage", () => {
             const file1 = fileStorage1.create(key);
 
             const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
-            await file1.add({ data: data1 });
+            await file1.put({ data: data1 });
 
             const fileStorage2 = new FileStorage({
                 adapter: new SignedFileStorageAdapter({
@@ -324,7 +240,8 @@ describe("class: FileStorage", () => {
                 await serde.serialize(file2),
             );
             const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
-            const result = await deserializeFile2.add({ data: data2 });
+            await deserializeFile2.put({ data: data2 });
+            const result = await deserializeFile2.exists();
 
             expect(result).toBe(true);
         });
