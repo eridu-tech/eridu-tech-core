@@ -27,28 +27,6 @@ export class KeyNotFoundFileError extends Error {
 }
 
 /**
- * The error is thrown when a file key already exists found
- *
- * IMPORT_PATH: `"eridu-tech/file-storage/contracts"`
- * @group Errors
- */
-export class KeyExistsFileError extends Error {
-    static create(key: string, cause?: unknown): KeyExistsFileError {
-        return new KeyExistsFileError(`Key "${key}" already exists`, cause);
-    }
-
-    /**
-     * Note: Do not instantiate `KeyExistsFileError` directly via the constructor. Use the static `create()` factory method instead.
-     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
-     * @internal
-     */
-    constructor(message: string, cause?: unknown) {
-        super(message, { cause });
-        this.name = KeyExistsFileError.name;
-    }
-}
-
-/**
  * The error is thrown when file key is invalid.
  *
  * IMPORT_PATH: `"eridu-tech/file-storage/contracts"`
@@ -76,7 +54,6 @@ export class InvalidKeyFileError extends Error {
  */
 export const FILE_STORAGE_ERRORS = {
     KeyNotFound: KeyNotFoundFileError,
-    KeyExists: KeyExistsFileError,
     InvalidKey: InvalidKeyFileError,
 } as const;
 

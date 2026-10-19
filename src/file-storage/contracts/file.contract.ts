@@ -306,34 +306,6 @@ export type WritableFileStream = WritableFileCommonSettings & {
  * @group Contracts
  */
 export type IFile = IReadableFile & {
-    add(content: WritableFileContent): Promise<boolean>;
-
-    /**
-     * @throws {KeyExistsFileError}
-     */
-    addOrFail(content: WritableFileContent): Promise<void>;
-
-    addStream(stream: WritableFileStream): Promise<boolean>;
-
-    /**
-     * @throws {KeyExistsFileError}
-     */
-    addStreamOrFail(stream: WritableFileStream): Promise<void>;
-
-    update(content: WritableFileContent): Promise<boolean>;
-
-    /**
-     * @throws {KeyNotFoundFileError}
-     */
-    updateOrFail(content: WritableFileContent): Promise<void>;
-
-    updateStream(stream: WritableFileStream): Promise<boolean>;
-
-    /**
-     * @throws {KeyNotFoundFileError}
-     */
-    updateStreamOrFail(stream: WritableFileStream): Promise<void>;
-
     put(content: WritableFileContent): Promise<boolean>;
 
     putStream(stream: WritableFileStream): Promise<boolean>;
