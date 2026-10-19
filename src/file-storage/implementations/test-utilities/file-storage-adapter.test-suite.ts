@@ -82,6 +82,42 @@ export function fileStorageAdapterTestSuite(
 
                 expect(result).toBe(true);
             });
+            test("Should return true for both the keys root and root/nested", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const parentData = new Uint8Array(
+                    Buffer.from("PARENT_CONTENT", "utf8"),
+                );
+                const nestedData = new Uint8Array(
+                    Buffer.from("NESTED_CONTENT", "utf8"),
+                );
+                const contentType = "application/octet-stream";
+                await adapter.put(parentKey, {
+                    data: parentData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: parentData.length,
+                });
+                await adapter.put(nestedKey, {
+                    data: nestedData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: nestedData.length,
+                });
+
+                const result = [
+                    await adapter.exists(parentKey),
+                    await adapter.exists(nestedKey),
+                ];
+                expect(result).toEqual([true, true]);
+            });
         });
         describe("method: getStream", () => {
             test("Should return null when key does not exists", async () => {
@@ -111,6 +147,42 @@ export function fileStorageAdapterTestSuite(
 
                 expect(result).toEqual(data);
             });
+            test("Should return the content of both the keys root and root/nested", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const parentData = new Uint8Array(
+                    Buffer.from("PARENT_CONTENT", "utf8"),
+                );
+                const nestedData = new Uint8Array(
+                    Buffer.from("NESTED_CONTENT", "utf8"),
+                );
+                const contentType = "application/octet-stream";
+                await adapter.put(parentKey, {
+                    data: parentData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: parentData.length,
+                });
+                await adapter.put(nestedKey, {
+                    data: nestedData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: nestedData.length,
+                });
+
+                const result = [
+                    await resolveStream(await adapter.getStream(parentKey)),
+                    await resolveStream(await adapter.getStream(nestedKey)),
+                ];
+                expect(result).toEqual([parentData, nestedData]);
+            });
         });
         describe("method: getBytes", () => {
             test("Should return null when key does not exists", async () => {
@@ -137,6 +209,42 @@ export function fileStorageAdapterTestSuite(
                 const result = await adapter.getBytes(key);
 
                 expect(result).toEqual(data);
+            });
+            test("Should return the bytes of both the keys root and root/nested", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const parentData = new Uint8Array(
+                    Buffer.from("PARENT_CONTENT", "utf8"),
+                );
+                const nestedData = new Uint8Array(
+                    Buffer.from("NESTED_CONTENT", "utf8"),
+                );
+                const contentType = "application/octet-stream";
+                await adapter.put(parentKey, {
+                    data: parentData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: parentData.length,
+                });
+                await adapter.put(nestedKey, {
+                    data: nestedData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: nestedData.length,
+                });
+
+                const result = [
+                    await adapter.getBytes(parentKey),
+                    await adapter.getBytes(nestedKey),
+                ];
+                expect(result).toEqual([parentData, nestedData]);
             });
         });
         describe.skipIf(!enableGetMetaData)("method: getMetaData", () => {
@@ -481,6 +589,43 @@ export function fileStorageAdapterTestSuite(
                     updatedAt: expect.any(Date) as Date,
                 } satisfies FileAdapterMetadata);
             });
+            test("Should return metadata for both the keys root and root/nested", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const parentData = new Uint8Array(
+                    Buffer.from("PARENT_CONTENT", "utf8"),
+                );
+                const nestedData = new Uint8Array(
+                    Buffer.from("NESTED_CONTENT", "utf8"),
+                );
+                const contentType = "text/plain";
+                await adapter.put(parentKey, {
+                    data: parentData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: parentData.length,
+                });
+                await adapter.put(nestedKey, {
+                    data: nestedData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: nestedData.length,
+                });
+
+                const result = [
+                    await adapter.getMetaData(parentKey),
+                    await adapter.getMetaData(nestedKey),
+                ];
+                expect(result[0]).not.toBeNull();
+                expect(result[1]).not.toBeNull();
+            });
         });
         describe("method: put", () => {
             test("Should persist data when key doesnt exist", async () => {
@@ -529,6 +674,42 @@ export function fileStorageAdapterTestSuite(
 
                 const result = await adapter.getBytes(key);
                 expect(result).toEqual(newData);
+            });
+            test("Should persist data for both the keys root and root/nested", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const parentData = new Uint8Array(
+                    Buffer.from("PARENT_CONTENT", "utf8"),
+                );
+                const nestedData = new Uint8Array(
+                    Buffer.from("NESTED_CONTENT", "utf8"),
+                );
+                const contentType = "application/octet-stream";
+                await adapter.put(parentKey, {
+                    data: parentData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: parentData.length,
+                });
+                await adapter.put(nestedKey, {
+                    data: nestedData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: nestedData.length,
+                });
+
+                const result = [
+                    await adapter.getBytes(parentKey),
+                    await adapter.getBytes(nestedKey),
+                ];
+                expect(result).toEqual([parentData, nestedData]);
             });
         });
         describe("method: putStream", () => {
@@ -586,6 +767,50 @@ export function fileStorageAdapterTestSuite(
 
                 const result = await adapter.getBytes(key);
                 expect(result).toEqual(newData);
+            });
+            test("Should persist streamed data for both the keys root and root/nested", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const parentData = new Uint8Array(
+                    Buffer.from("PARENT_CONTENT", "utf8"),
+                );
+                const nestedData = new Uint8Array(
+                    Buffer.from("NESTED_CONTENT", "utf8"),
+                );
+                const contentType = "application/octet-stream";
+                await adapter.putStream(parentKey, {
+                    data: {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            yield Promise.resolve(parentData);
+                        },
+                    },
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: parentData.length,
+                });
+                await adapter.putStream(nestedKey, {
+                    data: {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            yield Promise.resolve(nestedData);
+                        },
+                    },
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: nestedData.length,
+                });
+
+                const result = [
+                    await adapter.getBytes(parentKey),
+                    await adapter.getBytes(nestedKey),
+                ];
+                expect(result).toEqual([parentData, nestedData]);
             });
         });
         describe("method: copy", () => {
@@ -734,6 +959,31 @@ export function fileStorageAdapterTestSuite(
 
                 const result = await adapter.getBytes(destination);
                 expect(result).toEqual(sourceData);
+            });
+            test("Should copy data from the key root to the key root/nested", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+                const contentType = "application/octet-stream";
+                await adapter.put(parentKey, {
+                    data,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: data.length,
+                });
+
+                const result = await adapter.copy(parentKey, nestedKey);
+
+                expect(result).toBe(true);
+                const storedData = [
+                    await adapter.getBytes(parentKey),
+                    await adapter.getBytes(nestedKey),
+                ];
+                expect(storedData).toEqual([data, data]);
             });
         });
         describe("method: move", () => {
@@ -940,6 +1190,31 @@ export function fileStorageAdapterTestSuite(
                 const result = await adapter.getBytes(source);
                 expect(result).toBeNull();
             });
+            test("Should move data from the key root to the key root/nested", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+                const contentType = "application/octet-stream";
+                await adapter.put(parentKey, {
+                    data,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: data.length,
+                });
+
+                const result = await adapter.move(parentKey, nestedKey);
+
+                expect(result).toBe(true);
+                const storedData = [
+                    await adapter.getBytes(parentKey),
+                    await adapter.getBytes(nestedKey),
+                ];
+                expect(storedData).toEqual([null, data]);
+            });
         });
         describe("method: removeMany", () => {
             test("Should persist removal of the keys that exists", async () => {
@@ -986,6 +1261,44 @@ export function fileStorageAdapterTestSuite(
                 ];
                 expect(result).toEqual([null, null, data3]);
             });
+            test("Should remove both the keys root and root/nested", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const parentData = new Uint8Array(
+                    Buffer.from("PARENT_CONTENT", "utf8"),
+                );
+                const nestedData = new Uint8Array(
+                    Buffer.from("NESTED_CONTENT", "utf8"),
+                );
+                const contentType = "application/octet-stream";
+                await adapter.put(parentKey, {
+                    data: parentData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: parentData.length,
+                });
+                await adapter.put(nestedKey, {
+                    data: nestedData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: nestedData.length,
+                });
+
+                await adapter.removeMany([parentKey, nestedKey]);
+
+                const result = [
+                    await adapter.getBytes(parentKey),
+                    await adapter.getBytes(nestedKey),
+                ];
+                expect(result).toEqual([null, null]);
+            });
         });
         describe("method: removeByPrefix", () => {
             test(`Should remove all keys that start with prefix "file-storage"`, async () => {
@@ -1031,6 +1344,107 @@ export function fileStorageAdapterTestSuite(
                     await adapter.getBytes("c"),
                 ];
                 expect(result).toEqual([null, null, dataC]);
+            });
+            test("Should remove both the keys root and root/nested when they match the prefix root", async () => {
+                const parentKey = "root";
+                const nestedKey = "root/nested";
+
+                const parentData = new Uint8Array(
+                    Buffer.from("PARENT_CONTENT", "utf8"),
+                );
+                const nestedData = new Uint8Array(
+                    Buffer.from("NESTED_CONTENT", "utf8"),
+                );
+                const contentType = "application/octet-stream";
+                await adapter.put(parentKey, {
+                    data: parentData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: parentData.length,
+                });
+                await adapter.put(nestedKey, {
+                    data: nestedData,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: nestedData.length,
+                });
+
+                await adapter.removeByPrefix(parentKey);
+
+                const result = [
+                    await adapter.getBytes(parentKey),
+                    await adapter.getBytes(nestedKey),
+                ];
+                expect(result).toEqual([null, null]);
+            });
+            test("Should remove the keys root, root-a/b and root/b but keep the key b when given the prefix root", async () => {
+                const contentType = "application/octet-stream";
+
+                const dataRoot = new Uint8Array(
+                    Buffer.from("CONTENT_ROOT", "utf8"),
+                );
+                await adapter.put("root", {
+                    data: dataRoot,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: dataRoot.length,
+                });
+
+                const dataRootDash = new Uint8Array(
+                    Buffer.from("CONTENT_ROOT_A", "utf8"),
+                );
+                await adapter.put("root-a/b", {
+                    data: dataRootDash,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: dataRootDash.length,
+                });
+
+                const dataRootSlash = new Uint8Array(
+                    Buffer.from("CONTENT_ROOT_B", "utf8"),
+                );
+                await adapter.put("root/b", {
+                    data: dataRootSlash,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: dataRootSlash.length,
+                });
+
+                const dataB = new Uint8Array(Buffer.from("CONTENT_B", "utf8"));
+                await adapter.put("b", {
+                    data: dataB,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: dataB.length,
+                });
+
+                await adapter.removeByPrefix("root");
+
+                const result = [
+                    await adapter.getBytes("root"),
+                    await adapter.getBytes("root-a/b"),
+                    await adapter.getBytes("root/b"),
+                    await adapter.getBytes("b"),
+                ];
+                expect(result).toEqual([null, null, null, dataB]);
             });
         });
     });
