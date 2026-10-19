@@ -58,7 +58,7 @@ export function fileStorageSerdeTestSuite(
         test("Should allow get data from a deserialized file instance", async () => {
             const file = fileStorage.create("a.txt");
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            await file.add({ data });
+            await file.put({ data });
             const deserializedFile = await serde.deserialize<IFile>(
                 await serde.serialize(file),
             );
@@ -70,13 +70,13 @@ export function fileStorageSerdeTestSuite(
         test("Should allow update data on a deserialized file instance", async () => {
             const file = fileStorage.create("a.txt");
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            await file.add({ data });
+            await file.put({ data });
             const deserializedFile = await serde.deserialize<IFile>(
                 await serde.serialize(file),
             );
 
             const newData = new Uint8Array(Buffer.from("NEW_CONTENT", "utf8"));
-            await deserializedFile.update({
+            await deserializedFile.put({
                 data: newData,
             });
             const retrievedData = await deserializedFile.getBytes();
@@ -86,7 +86,7 @@ export function fileStorageSerdeTestSuite(
         test("Should allow put data on a deserialized file instance", async () => {
             const file = fileStorage.create("a.txt");
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            await file.add({ data });
+            await file.put({ data });
             const deserializedFile = await serde.deserialize<IFile>(
                 await serde.serialize(file),
             );
@@ -102,7 +102,7 @@ export function fileStorageSerdeTestSuite(
         test("Should allow remove data on a deserialized file instance", async () => {
             const file = fileStorage.create("a.txt");
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            await file.add({ data });
+            await file.put({ data });
             const deserializedFile = await serde.deserialize<IFile>(
                 await serde.serialize(file),
             );
