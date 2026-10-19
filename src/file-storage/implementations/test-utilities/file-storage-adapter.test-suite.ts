@@ -1023,7 +1023,7 @@ export function fileStorageAdapterTestSuite(
                     fileSizeInBytes: dataC.length,
                 });
 
-                await adapter.removeByPrefix("cache");
+                await adapter.removeByPrefix("file-storage");
 
                 const result = [
                     await adapter.getBytes("file-storage/a"),
