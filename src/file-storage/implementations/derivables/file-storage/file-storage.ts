@@ -157,10 +157,10 @@ export class FileStorage implements IFileStorage, IInitizable {
         await this.adapter.removeByPrefix("");
     }
 
-    async removeMany(files: Array<IFile>): Promise<boolean> {
+    async removeMany(files: Array<IFile>): Promise<void> {
         const keys = files.map((file) => {
             return file.key;
         });
-        return await this.adapter.removeMany(keys);
+        await this.adapter.removeMany(keys);
     }
 }
