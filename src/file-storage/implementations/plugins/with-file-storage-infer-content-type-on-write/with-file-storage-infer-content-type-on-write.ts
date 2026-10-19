@@ -102,54 +102,6 @@ export function withFileStorageInferContentTypeOnWrite(
                 },
             );
         }
-        enhance(adapter, "add", ({ args: [key, { ...restContent }], next }) => {
-            return next([
-                key,
-                {
-                    ...restContent,
-                    contentType: inferContentType(key),
-                },
-            ]);
-        });
-        enhance(
-            adapter,
-            "addStream",
-            ({ args: [key, { ...restContent }], next }) => {
-                return next([
-                    key,
-                    {
-                        ...restContent,
-                        contentType: inferContentType(key),
-                    },
-                ]);
-            },
-        );
-        enhance(
-            adapter,
-            "update",
-            ({ args: [key, { ...restContent }], next }) => {
-                return next([
-                    key,
-                    {
-                        ...restContent,
-                        contentType: inferContentType(key),
-                    },
-                ]);
-            },
-        );
-        enhance(
-            adapter,
-            "updateStream",
-            ({ args: [key, { ...restContent }], next }) => {
-                return next([
-                    key,
-                    {
-                        ...restContent,
-                        contentType: inferContentType(key),
-                    },
-                ]);
-            },
-        );
         enhance(adapter, "put", ({ args: [key, { ...restContent }], next }) => {
             return next([
                 key,
