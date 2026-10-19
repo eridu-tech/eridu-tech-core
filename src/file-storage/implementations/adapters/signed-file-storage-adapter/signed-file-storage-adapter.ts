@@ -9,7 +9,6 @@ import type {
     FileAdapterSignedUploadUrlSettings,
     FileAdapterMetadata,
     FileAdapterStream,
-    FileWriteEnum,
     IFileStorageAdapter,
     IFileUrlAdapter,
     ISignedFileStorageAdapter,
@@ -68,110 +67,61 @@ export class SignedFileStorageAdapter implements ISignedFileStorageAdapter {
         this.adapter = adapter;
         this.urlAdapter = new MergedFileUrlAdapter(urlAdapter);
     }
-
-    async getPublicUrl(key: string): Promise<string | null> {
-        return await this.urlAdapter.getPublicUrl(key);
+    put(key: string, content: WritableFileAdapterContent): Promise<void> {
+        return this.adapter.put(key, content);
     }
 
-    async getSignedDownloadUrl(
+    putStream(key: string, stream: WritableFileAdapterStream): Promise<void> {
+        return this.adapter.putStream(key, stream);
+    }
+
+    copy(source: string, destination: string): Promise<boolean> {
+        return this.adapter.copy(source, destination);
+    }
+
+    move(source: string, destination: string): Promise<boolean> {
+        return this.adapter.move(source, destination);
+    }
+
+    removeMany(keys: Array<string>): Promise<void> {
+        return this.adapter.removeMany(keys);
+    }
+
+    removeByPrefix(prefix: string): Promise<void> {
+        return this.adapter.removeByPrefix(prefix);
+    }
+
+    getPublicUrl(key: string): Promise<string> {
+        return this.urlAdapter.getPublicUrl(key);
+    }
+
+    getSignedDownloadUrl(
         key: string,
         settings: FileAdapterSignedDownloadUrlSettings,
-    ): Promise<string | null> {
-        return await this.urlAdapter.getSignedDownloadUrl(key, settings);
+    ): Promise<string> {
+        return this.urlAdapter.getSignedDownloadUrl(key, settings);
     }
 
-    async getSignedUploadUrl(
+    getSignedUploadUrl(
         key: string,
         settings: FileAdapterSignedUploadUrlSettings,
     ): Promise<string> {
-        return await this.urlAdapter.getSignedUploadUrl(key, settings);
+        return this.urlAdapter.getSignedUploadUrl(key, settings);
     }
 
-    async exists(key: string): Promise<boolean> {
-        return await this.adapter.exists(key);
+    exists(key: string): Promise<boolean> {
+        return this.adapter.exists(key);
     }
 
-    async getStream(key: string): Promise<FileAdapterStream | null> {
-        return await this.adapter.getStream(key);
+    getStream(key: string): Promise<FileAdapterStream | null> {
+        return this.adapter.getStream(key);
     }
 
-    async getBytes(key: string): Promise<Uint8Array | null> {
-        return await this.adapter.getBytes(key);
+    getBytes(key: string): Promise<Uint8Array | null> {
+        return this.adapter.getBytes(key);
     }
 
-    async getMetaData(key: string): Promise<FileAdapterMetadata | null> {
-        return await this.adapter.getMetaData(key);
-    }
-
-    async add(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        return await this.adapter.add(key, content);
-    }
-
-    async addStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        return await this.adapter.addStream(key, stream);
-    }
-
-    async update(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        return await this.adapter.update(key, content);
-    }
-
-    async updateStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        return await this.adapter.updateStream(key, stream);
-    }
-
-    async put(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        return await this.adapter.put(key, content);
-    }
-
-    async putStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        return await this.adapter.putStream(key, stream);
-    }
-
-    async copy(source: string, destination: string): Promise<FileWriteEnum> {
-        return await this.adapter.copy(source, destination);
-    }
-
-    async copyAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
-        return await this.adapter.copyAndReplace(source, destination);
-    }
-
-    async move(source: string, destination: string): Promise<FileWriteEnum> {
-        return await this.adapter.move(source, destination);
-    }
-
-    async moveAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
-        return await this.adapter.moveAndReplace(source, destination);
-    }
-
-    async removeMany(keys: Array<string>): Promise<boolean> {
-        return await this.adapter.removeMany(keys);
-    }
-
-    async removeByPrefix(prefix: string): Promise<void> {
-        await this.adapter.removeByPrefix(prefix);
+    getMetaData(key: string): Promise<FileAdapterMetadata | null> {
+        return this.adapter.getMetaData(key);
     }
 }

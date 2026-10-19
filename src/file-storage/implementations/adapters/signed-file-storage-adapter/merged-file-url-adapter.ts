@@ -17,7 +17,7 @@ export class MergedFileUrlAdapter implements IFileUrlAdapter {
 
     constructor(private readonly adapter: Partial<IFileUrlAdapter>) {}
 
-    async getPublicUrl(key: string): Promise<string | null> {
+    async getPublicUrl(key: string): Promise<string> {
         if (this.adapter.getPublicUrl === undefined) {
             return this.noOpUrlAdapter.getPublicUrl(key);
         }
@@ -27,7 +27,7 @@ export class MergedFileUrlAdapter implements IFileUrlAdapter {
     async getSignedDownloadUrl(
         key: string,
         settings: FileAdapterSignedDownloadUrlSettings,
-    ): Promise<string | null> {
+    ): Promise<string> {
         if (this.adapter.getSignedDownloadUrl === undefined) {
             return this.noOpUrlAdapter.getSignedDownloadUrl(key, settings);
         }
