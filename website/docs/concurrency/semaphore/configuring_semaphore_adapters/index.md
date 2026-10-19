@@ -10,10 +10,8 @@ tags:
     - Redis
     - Kysely
     - Sqlite
-    - Mysql
     - Postgres
     - Sqlite
-    - Libsql
     - NoOp
 keywords:
     - Semaphore
@@ -23,10 +21,8 @@ keywords:
     - Redis
     - Kysely
     - Sqlite
-    - Mysql
     - Postgres
     - Sqlite
-    - Libsql
     - NoOp
 ---
 
@@ -189,30 +185,6 @@ You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 
 :::danger
 Note in order to use `KyselySemaphoreAdapter` with `postgres` correctly, ensure you use a single, consistent database across all server instances. This means you can't use replication.
-:::
-
-### With Mysql
-
-You will need to install [`mysql2`](https://www.npmjs.com/package/mysql2) package:
-
-```ts file=./samples/kysely-semaphore-mysql.ts
-
-```
-
-:::danger
-Note in order to use `KyselySemaphoreAdapter` with `mysql` correctly, ensure you use a single, consistent database across all server instances. This means you can't use replication.
-:::
-
-### With Libsql
-
-You will need to install [`@libsql/kysely-libsql`](https://www.npmjs.com/package/@libsql/kysely-libsql) package:
-
-```ts file=./samples/kysely-semaphore-libsql.ts
-
-```
-
-:::danger
-Note in order to use `KyselySemaphoreAdapter` with `libsql` correctly, ensure you use a single, consistent database across all server instances. This means you can't use libsql embedded replicas.
 :::
 
 ### Settings
