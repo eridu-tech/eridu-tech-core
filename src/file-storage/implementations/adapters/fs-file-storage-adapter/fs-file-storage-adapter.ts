@@ -10,7 +10,6 @@ import {
     copyFile,
     mkdir,
     rm,
-    constants,
     readdir,
     open,
 } from "node:fs/promises";
@@ -20,12 +19,9 @@ import { fileURLToPath } from "node:url";
 
 import etag from "etag";
 
-import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module-exports.js";
-
 import type {
     FileAdapterMetadata,
     FileAdapterStream,
-    FileWriteEnum,
     IFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
@@ -292,55 +288,24 @@ export class FsFileStorageAdapter
         }
     }
 
-    async put(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
+    async put(key: string, content: WritableFileAdapterContent): Promise<void> {
         const keyPath = this.keyPath(key);
-        const isFound = await FsFileStorageAdapter.isFileFound(keyPath);
+        await mkdir(dirname(keyPath), {
+            recursive: true,
+        });
         await writeFile(keyPath, content.data);
-        return isFound;
     }
 
     async putStream(
         key: string,
         stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
+    ): Promise<void> {
         const keyPath = this.keyPath(key);
-        const isFound = await FsFileStorageAdapter.isFileFound(keyPath);
+        await mkdir(dirname(keyPath), {
+            recursive: true,
+        });
         const writeStream = createWriteStream(keyPath);
         await pipeline(stream.data, writeStream);
-        return isFound;
-    }
-
-    private async _copy(
-        source: string,
-        destination: string,
-    ): Promise<FileWriteEnum> {
-        try {
-            const normalizeSource = this.keyPath(source);
-            const normalizeDestination = this.keyPath(destination);
-            await copyFile(
-                normalizeSource,
-                normalizeDestination,
-                constants.COPYFILE_EXCL,
-            );
-            return FILE_WRITE_ENUM.SUCCESS;
-        } catch (error: unknown) {
-            // The source does not exists
-            if (FsFileStorageAdapter.isFileNotFoundError(error)) {
-                return FILE_WRITE_ENUM.NOT_FOUND;
-            }
-            // The destination does already exists
-            if (FsFileStorageAdapter.isFileFoundError(error)) {
-                return FILE_WRITE_ENUM.KEY_EXISTS;
-            }
-            throw error;
-        }
-    }
-
-    async copy(source: string, destination: string): Promise<FileWriteEnum> {
-        return this._copy(source, destination);
     }
 
     private async _copyAndReplace(
@@ -361,14 +326,11 @@ export class FsFileStorageAdapter
         }
     }
 
-    async copyAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
+    async copy(source: string, destination: string): Promise<boolean> {
         return this._copyAndReplace(source, destination);
     }
 
-    private async _removeMany(keys: Array<string>): Promise<boolean> {
+    private async _removeMany(keys: Array<string>): Promise<void> {
         const promises = [
             ...new Set(
                 keys.map((key) => {
@@ -386,35 +348,18 @@ export class FsFileStorageAdapter
                 throw error;
             }
         });
-        const results = await Promise.all(promises);
-        for (const result of results) {
-            if (result) {
-                return true;
-            }
-        }
-        return false;
+        await Promise.all(promises);
     }
 
-    async move(source: string, destination: string): Promise<FileWriteEnum> {
-        const result = await this._copy(source, destination);
-        if (result === FILE_WRITE_ENUM.SUCCESS) {
-            await this._removeMany([source]);
-        }
-        return result;
-    }
-
-    async moveAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
-        const hasMoved = await this.copyAndReplace(source, destination);
+    async move(source: string, destination: string): Promise<boolean> {
+        const hasMoved = await this.copy(source, destination);
         if (hasMoved) {
             await this._removeMany([source]);
         }
         return hasMoved;
     }
 
-    async removeMany(keys: Array<string>): Promise<boolean> {
+    async removeMany(keys: Array<string>): Promise<void> {
         return this._removeMany(keys);
     }
 
