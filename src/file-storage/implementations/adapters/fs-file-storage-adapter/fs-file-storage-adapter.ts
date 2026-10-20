@@ -2,7 +2,7 @@
  * @module FileStorage
  */
 
-import { createReadStream, createWriteStream } from "node:fs";
+import { createReadStream, createWriteStream, statSync } from "node:fs";
 import {
     stat,
     writeFile,
@@ -80,24 +80,30 @@ export class FsFileStorageAdapter
      * Creates the root foolder where the files will be saved.
      */
     async init(): Promise<void> {
-        try {
-            await mkdir(this.location);
-        } catch {
-            /* EMPTY */
+        const dirStat = statSync(this.location, {
+            throwIfNoEntry: false,
+        });
+        if (dirStat?.isDirectory() === true) {
+            return;
         }
+
+        await mkdir(this.location);
     }
 
     /**
      * Removes the root foolder where the files are saved.
      */
     async deInit(): Promise<void> {
-        try {
-            await rm(this.location, {
-                recursive: true,
-            });
-        } catch {
-            /* EMPTY */
+        const dirStat = statSync(this.location, {
+            throwIfNoEntry: false,
+        });
+        if (dirStat?.isDirectory() !== true) {
+            return;
         }
+
+        await rm(this.location, {
+            recursive: true,
+        });
     }
 
     private static isFileNotFoundError(error: unknown): boolean {
@@ -118,9 +124,9 @@ export class FsFileStorageAdapter
         );
     }
 
-    private static async isFileFound(key: string): Promise<boolean> {
+    private static async isFileFound(path: string): Promise<boolean> {
         try {
-            const fileStat = await stat(key);
+            const fileStat = await stat(path);
             return fileStat.isFile();
         } catch (error: unknown) {
             if (FsFileStorageAdapter.isFileNotFoundError(error)) {
