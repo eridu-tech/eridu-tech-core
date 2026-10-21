@@ -143,6 +143,10 @@
             "types": "./dist/codec/implementations/base-64-codec/_module-exports.d.ts",
             "import": "./dist/codec/implementations/base-64-codec/_module-exports.js"
         },
+        "./codec/base-64-url-codec": {
+            "types": "./dist/codec/implementations/base-64-url-codec/_module-exports.d.ts",
+            "import": "./dist/codec/implementations/base-64-url-codec/_module-exports.js"
+        },
         "./circuit-breaker": {
             "types": "./dist/circuit-breaker/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/circuit-breaker/implementations/derivables/_module-exports.js"
@@ -644,7 +648,6 @@
         "@changesets/cli": "^2.31.1",
         "@standard-schema/spec": "^1.1.0",
         "@testcontainers/mariadb": "^12.1.0",
-        "@testcontainers/minio": "^12.0.4",
         "@testcontainers/mongodb": "^12.0.4",
         "@testcontainers/mysql": "^12.1.0",
         "@testcontainers/postgresql": "^12.0.4",

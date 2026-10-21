@@ -46,7 +46,7 @@ describe("class: FsFileStorageAdapter", () => {
 
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
             const contentType = "application/json";
-            await adapter_.add(key, {
+            await adapter_.put(key, {
                 data,
                 cacheControl: null,
                 contentDisposition: null,
@@ -69,7 +69,7 @@ describe("class: FsFileStorageAdapter", () => {
 
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
             const contentType = "application/json";
-            await adapter_.add(key, {
+            await adapter_.put(key, {
                 data,
                 cacheControl: null,
                 contentDisposition: null,
@@ -92,7 +92,7 @@ describe("class: FsFileStorageAdapter", () => {
 
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
             const contentType = "application/json";
-            await adapter_.add(key, {
+            await adapter_.put(key, {
                 data,
                 cacheControl: null,
                 contentDisposition: null,
