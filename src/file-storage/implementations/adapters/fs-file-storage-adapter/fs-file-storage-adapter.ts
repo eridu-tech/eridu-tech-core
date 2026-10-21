@@ -12,13 +12,14 @@ import {
     rm,
     readdir,
 } from "node:fs/promises";
-import { dirname, join, normalize } from "node:path";
+import { join, normalize } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 
 import etag from "etag";
 
 import { Base64UrlCodec } from "@/codec/implementations/base-64-url-codec/_module-exports.js";
+import { FsKeyPathMapper } from "@/file-storage/implementations/adapters/_shared/_module.js";
 
 import type { ICodec } from "@/codec/contracts/_module-exports.js";
 import type {
@@ -85,11 +86,7 @@ export class FsFileStorageAdapter
     implements IFileStorageAdapter, IDeinitizable, IInitizable
 {
     private readonly location: string;
-    private readonly delimiter: string;
-    private static readonly nestedDir = "N";
-    private static readonly keysDir = "K";
-    private static readonly pathDirPrefix = "S_";
-    private readonly codec: ICodec<string, string>;
+    private readonly keyPathMapper: FsKeyPathMapper;
 
     constructor(settings: FsFileStorageAdapterSettings) {
         const {
@@ -98,8 +95,7 @@ export class FsFileStorageAdapter
             codec = new Base64UrlCodec(),
         } = settings;
         this.location = location;
-        this.delimiter = delimiter;
-        this.codec = codec;
+        this.keyPathMapper = new FsKeyPathMapper(delimiter, codec);
     }
 
     /**
@@ -154,55 +150,22 @@ export class FsFileStorageAdapter
     }
 
     private toPath(key: string): string {
-        return key
-            .split(this.delimiter)
-            .map(
-                (segment) =>
-                    `${FsFileStorageAdapter.pathDirPrefix}${this.codec.encode(segment)}`,
-            )
-            .map((segment, index, { length }) => {
-                const isLast = index === length - 1;
-                if (isLast) {
-                    return [FsFileStorageAdapter.keysDir, segment];
-                }
-
-                return [FsFileStorageAdapter.nestedDir, segment];
-            })
-            .flat()
-            .join("/");
+        return normalize(join(this.location, this.keyPathMapper.toPath(key)));
     }
 
-    private fromPath(path: string): string {
-        return path
-            .split(this.delimiter)
-            .map((segment) => {
-                if (segment.startsWith(FsFileStorageAdapter.pathDirPrefix)) {
-                    return this.codec.decode(
-                        segment.slice(
-                            FsFileStorageAdapter.pathDirPrefix.length,
-                        ),
-                    );
-                }
-
-                return segment;
-            })
-            .filter(
-                (segment) =>
-                    ![
-                        FsFileStorageAdapter.nestedDir,
-                        FsFileStorageAdapter.keysDir,
-                    ].includes(segment),
-            )
-            .join(this.delimiter);
+    private toDirectoryPath(key: string): string {
+        return normalize(
+            join(this.location, this.keyPathMapper.toDirectoryPath(key)),
+        );
     }
 
     async exists(key: string): Promise<boolean> {
-        const path = normalize(join(this.location, this.toPath(key)));
+        const path = this.toPath(key);
         return FsFileStorageAdapter.isFileFound(path);
     }
 
     async getStream(key: string): Promise<FileAdapterStream | null> {
-        const path = normalize(join(this.location, this.toPath(key)));
+        const path = this.toPath(key);
         if (!(await FsFileStorageAdapter.isFileFound(path))) {
             return null;
         }
@@ -211,7 +174,7 @@ export class FsFileStorageAdapter
 
     async getBytes(key: string): Promise<Uint8Array | null> {
         try {
-            const path = normalize(join(this.location, this.toPath(key)));
+            const path = this.toPath(key);
             const file = await readFile(path);
             return new Uint8Array(file);
         } catch (error: unknown) {
@@ -224,14 +187,14 @@ export class FsFileStorageAdapter
 
     async getMetaData(key: string): Promise<FileAdapterMetadata | null> {
         try {
-            const path = normalize(join(this.location, this.toPath(key)));
+            const path = this.toPath(key);
             const pathStat = await stat(path);
             return {
                 etag: etag(pathStat),
                 contentType: null,
                 fileSizeInBytes: pathStat.size,
                 updatedAt: pathStat.mtime,
-            } satisfies FileAdapterMetadata;
+            };
         } catch (error: unknown) {
             if (FsFileStorageAdapter.isFileNotFoundError(error)) {
                 return null;
@@ -241,8 +204,8 @@ export class FsFileStorageAdapter
     }
 
     async put(key: string, content: WritableFileAdapterContent): Promise<void> {
-        const path = normalize(join(this.location, this.toPath(key)));
-        await mkdir(dirname(path), {
+        const path = this.toPath(key);
+        await mkdir(this.toDirectoryPath(key), {
             recursive: true,
         });
         await writeFile(path, content.data);
@@ -252,26 +215,19 @@ export class FsFileStorageAdapter
         key: string,
         stream: WritableFileAdapterStream,
     ): Promise<void> {
-        const path = normalize(join(this.location, this.toPath(key)));
-        await mkdir(dirname(path), {
+        const path = this.toPath(key);
+        await mkdir(this.toDirectoryPath(key), {
             recursive: true,
         });
         const writeStream = createWriteStream(path);
         await pipeline(stream.data, writeStream);
     }
 
-    private async _copyAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
+    private async _copy(source: string, destination: string): Promise<boolean> {
         try {
-            const sourcePath = normalize(
-                join(this.location, this.toPath(source)),
-            );
-            const destinationPath = normalize(
-                join(this.location, this.toPath(destination)),
-            );
-            await mkdir(dirname(destinationPath), {
+            const sourcePath = this.toPath(source);
+            const destinationPath = this.toPath(destination);
+            await mkdir(this.toDirectoryPath(destination), {
                 recursive: true,
             });
             await copyFile(sourcePath, destinationPath);
@@ -286,14 +242,14 @@ export class FsFileStorageAdapter
     }
 
     async copy(source: string, destination: string): Promise<boolean> {
-        return this._copyAndReplace(source, destination);
+        return this._copy(source, destination);
     }
 
     private async _removeMany(keys: Array<string>): Promise<void> {
         const promises = [
             ...new Set(
                 keys.map((key) => {
-                    return normalize(join(this.location, this.toPath(key)));
+                    return this.toPath(key);
                 }),
             ),
         ].map(async (path) => {
@@ -311,7 +267,7 @@ export class FsFileStorageAdapter
     }
 
     async move(source: string, destination: string): Promise<boolean> {
-        const hasMoved = await this._copyAndReplace(source, destination);
+        const hasMoved = await this._copy(source, destination);
         if (hasMoved) {
             await this._removeMany([source]);
         }
@@ -324,9 +280,11 @@ export class FsFileStorageAdapter
 
     async removeByPrefix(prefix: string): Promise<void> {
         if (prefix === "") {
-            return rm(normalize(this.location), {
+            await rm(normalize(this.location), {
                 recursive: true,
             });
+
+            return;
         }
 
         const paths = await readdir(normalize(this.location), {
@@ -335,10 +293,12 @@ export class FsFileStorageAdapter
 
         for (const path of paths) {
             if (
-                !this.fromPath(
-                    // On windows they left slashes \\, this.fromPath method expects left slashes
-                    path.replaceAll(/\\/g, "/"),
-                ).startsWith(prefix)
+                !this.keyPathMapper
+                    .fromPath(
+                        // On windows they left slashes \\, this.keyPathMapper.fromPath method expects left slashes
+                        path.replaceAll(/\\/g, "/"),
+                    )
+                    .startsWith(prefix)
             ) {
                 continue;
             }
@@ -346,8 +306,11 @@ export class FsFileStorageAdapter
                 await rm(join(this.location, path), {
                     recursive: true,
                 });
-            } catch {
-                /* EMPTY */
+            } catch (error: unknown) {
+                if (FsFileStorageAdapter.isFileNotFoundError(error)) {
+                    continue;
+                }
+                throw error;
             }
         }
     }
