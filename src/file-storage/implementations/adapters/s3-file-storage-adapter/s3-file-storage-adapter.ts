@@ -375,10 +375,7 @@ export class S3FileStorageAdapter
         );
     }
 
-    private async _copyAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
+    private async _copy(source: string, destination: string): Promise<boolean> {
         try {
             await this.client.send(
                 new CopyObjectCommand({
@@ -396,11 +393,11 @@ export class S3FileStorageAdapter
     }
 
     async copy(source: string, destination: string): Promise<boolean> {
-        return this._copyAndReplace(source, destination);
+        return this._copy(source, destination);
     }
 
     async move(source: string, destination: string): Promise<boolean> {
-        const hasMoved = await this._copyAndReplace(source, destination);
+        const hasMoved = await this._copy(source, destination);
         if (hasMoved) {
             await this._removeMany([source]);
         }
