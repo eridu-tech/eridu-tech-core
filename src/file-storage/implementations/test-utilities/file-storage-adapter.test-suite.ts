@@ -1301,6 +1301,50 @@ export function fileStorageAdapterTestSuite(
             });
         });
         describe("method: removeByPrefix", () => {
+            test(`Should remove all keys when prefix is ""`, async () => {
+                const dataA = new Uint8Array(Buffer.from("CONTENT_A", "utf8"));
+                const contentType = "application/octet-stream";
+                await adapter.put("file-storage/a", {
+                    data: dataA,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: dataA.length,
+                });
+
+                const dataB = new Uint8Array(Buffer.from("CONTENT_B", "utf8"));
+                await adapter.put("file-storage/b", {
+                    data: dataB,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: dataB.length,
+                });
+
+                const dataC = new Uint8Array(Buffer.from("CONTENT_C", "utf8"));
+                await adapter.put("c", {
+                    data: dataC,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: dataC.length,
+                });
+
+                await adapter.removeByPrefix("");
+
+                const result = [
+                    await adapter.getBytes("file-storage/a"),
+                    await adapter.getBytes("file-storage/b"),
+                    await adapter.getBytes("c"),
+                ];
+                expect(result).toEqual([null, null, null]);
+            });
             test(`Should remove all keys that start with prefix "file-storage"`, async () => {
                 const dataA = new Uint8Array(Buffer.from("CONTENT_A", "utf8"));
                 const contentType = "application/octet-stream";

@@ -143,6 +143,10 @@
             "types": "./dist/codec/implementations/base-64-codec/_module-exports.d.ts",
             "import": "./dist/codec/implementations/base-64-codec/_module-exports.js"
         },
+        "./codec/base-64-url-codec": {
+            "types": "./dist/codec/implementations/base-64-url-codec/_module-exports.d.ts",
+            "import": "./dist/codec/implementations/base-64-url-codec/_module-exports.js"
+        },
         "./circuit-breaker": {
             "types": "./dist/circuit-breaker/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/circuit-breaker/implementations/derivables/_module-exports.js"
