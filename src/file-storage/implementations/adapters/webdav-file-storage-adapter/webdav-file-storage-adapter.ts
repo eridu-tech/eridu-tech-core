@@ -124,7 +124,9 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
             return value;
         }
 
-        throw new UnexpectedError("!!__MESSAGE__!!");
+        throw UnexpectedError.create(
+            "WebDAV getFileContents returned an unsupported data format; expected binary file contents",
+        );
     }
 
     private static isFileNotFoundError(error: unknown): boolean {
