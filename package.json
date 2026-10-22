@@ -331,6 +331,10 @@
             "types": "./dist/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js"
         },
+        "./file-storage/webdav-file-storage-adapter": {
+            "types": "./dist/file-storage/implementations/adapters/webdav-file-storage-adapter/_module-exports.d.ts",
+            "import": "./dist/file-storage/implementations/adapters/webdav-file-storage-adapter/_module-exports.js"
+        },
         "./file-storage/test-utilities": {
             "types": "./dist/file-storage/implementations/test-utilities/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/test-utilities/_module-exports.js"
@@ -693,6 +697,7 @@
         "typescript": "^6.0.3",
         "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.1.10",
+        "webdav": "^5.11.0",
         "zod": "^4.4.3"
     },
     "peerDependencies": {
@@ -701,7 +706,8 @@
         "hono": "^4.13.0",
         "ioredis": "^6.0.0",
         "kysely": "^0.29.0",
-        "mongodb": "^7.5.0"
+        "mongodb": "^7.5.0",
+        "webdav": "^5.11.0"
     },
     "peerDependenciesMeta": {
         "ioredis": {
@@ -720,6 +726,9 @@
             "optional": true
         },
         "@aws-sdk/s3-request-presigner": {
+            "optional": true
+        },
+        "webdav": {
             "optional": true
         }
     },
