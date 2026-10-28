@@ -6,7 +6,7 @@ import { isGenericPool } from "@/generic-pool/implementations/is-generic-pool.js
 import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
-    IGenericPoolRunner,
+    IGenericPoolBase,
     Poolable,
 } from "@/generic-pool/contracts/_module-exports.js";
 import type { Invocable } from "@/utilities/_module-exports.js";
@@ -16,8 +16,8 @@ import type { Invocable } from "@/utilities/_module-exports.js";
  */
 export function resolvePoolable<TClient>(
     poolable: Poolable<TClient>,
-    poolFactory: Invocable<[client: TClient], IGenericPoolRunner<TClient>>,
-): IGenericPoolRunner<TClient> {
+    poolFactory: Invocable<[client: TClient], IGenericPoolBase<TClient>>,
+): IGenericPoolBase<TClient> {
     if (isGenericPool(poolable)) {
         return poolable;
     }

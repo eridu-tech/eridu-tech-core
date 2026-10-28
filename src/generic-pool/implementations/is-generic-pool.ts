@@ -3,7 +3,7 @@
  */
 
 import type {
-    IGenericPoolRunner,
+    IGenericPoolBase,
     Poolable,
 } from "@/generic-pool/contracts/_module-exports.js";
 
@@ -12,7 +12,7 @@ import type {
  */
 export function isGenericPool<TClient>(
     poolable: Poolable<TClient>,
-): poolable is IGenericPoolRunner<TClient> {
+): poolable is IGenericPoolBase<TClient> {
     return (
         typeof poolable === "object" &&
         poolable !== null &&

@@ -26,7 +26,7 @@ import type {
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 import type {
-    IGenericPoolRunner,
+    IGenericPoolBase,
     Poolable,
 } from "@/generic-pool/contracts/_module-exports.js";
 
@@ -135,7 +135,7 @@ export class SftpFileStorageAdapter implements IFileStorageAdapter {
     private readonly keyPathMapper: FsKeyPathMapper;
     private readonly location: string;
     private readonly pathType: PathType;
-    private readonly pool: IGenericPoolRunner<SftpClient>;
+    private readonly pool: IGenericPoolBase<SftpClient>;
 
     constructor(settings: SftpFileStorageAdapterSettings) {
         const {

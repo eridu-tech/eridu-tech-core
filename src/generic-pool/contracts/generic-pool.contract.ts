@@ -30,12 +30,14 @@ export type IResourceFactory<TClient> = {
 };
 
 /**
- * Defines an operation that uses a client from the pool.
+ * Defines how callers borrow a client from the pool.
+ *
+ * `IGenericPool` extends it with pool shutdown.
  *
  * IMPORT_PATH: `"eridu-tech/generic-pool/contracts"`
  * @group Contracts
  */
-export type IGenericPoolRunner<TClient = unknown> = {
+export type IGenericPoolBase<TClient = unknown> = {
     /**
      * Invokes a callback with a client from the pool and returns its result.
      *
@@ -71,12 +73,12 @@ export type IGenericPoolRunner<TClient = unknown> = {
 };
 
 /**
- * Defines client operations and pool shutdown.
+ * Defines how callers borrow a client and how the pool is shut down.
  *
  * IMPORT_PATH: `"eridu-tech/generic-pool/contracts"`
  * @group Contracts
  */
-export type IGenericPool<TClient = unknown> = IGenericPoolRunner<TClient> & {
+export type IGenericPool<TClient = unknown> = IGenericPoolBase<TClient> & {
     /**
      * Closes the pool.
      */
@@ -89,4 +91,4 @@ export type IGenericPool<TClient = unknown> = IGenericPoolRunner<TClient> & {
  * IMPORT_PATH: `"eridu-tech/generic-pool/contracts"`
  * @group Contracts
  */
-export type Poolable<TClient = unknown> = TClient | IGenericPoolRunner<TClient>;
+export type Poolable<TClient = unknown> = TClient | IGenericPoolBase<TClient>;
