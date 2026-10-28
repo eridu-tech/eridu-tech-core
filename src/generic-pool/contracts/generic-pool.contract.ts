@@ -84,11 +84,3 @@ export type IGenericPool<TClient = unknown> = IGenericPoolBase<TClient> & {
      */
     close(): Promise<void>;
 };
-
-/**
- * A client or a pool for that client.
- *
- * IMPORT_PATH: `"eridu-tech/generic-pool/contracts"`
- * @group Contracts
- */
-export type Poolable<TClient = unknown> = TClient | IGenericPoolBase<TClient>;
