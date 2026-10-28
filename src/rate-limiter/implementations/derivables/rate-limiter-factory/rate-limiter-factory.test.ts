@@ -23,16 +23,16 @@ import type {
 describe("class: RateLimiterFactory", () => {
     const adapter: IRateLimiterAdapter = {
         getState(_key: string): Promise<IRateLimiterAdapterState | null> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         updateState(
             _key: string,
             _limit: number,
         ): Promise<IRateLimiterAdapterState> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         reset(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
     };
     const KEY = "a";
@@ -72,7 +72,7 @@ describe("class: RateLimiterFactory", () => {
                                 onlyError: true,
                             })
                             .runOrFail(() => {
-                                throw new UnexpectedErrorA("Unexpected error");
+                                throw new Error("Unexpected error");
                             });
                     } catch (error: unknown) {
                         if (!(error instanceof UnexpectedErrorA)) {
@@ -124,7 +124,7 @@ describe("class: RateLimiterFactory", () => {
                                 onlyError: true,
                             })
                             .runOrFail(() => {
-                                throw new UnexpectedErrorA("Unexpected error");
+                                throw new Error("Unexpected error");
                             });
                     } catch (error: unknown) {
                         if (!(error instanceof UnexpectedErrorA)) {
@@ -204,7 +204,7 @@ describe("class: RateLimiterFactory", () => {
                                 onlyError: false,
                             })
                             .runOrFail(() => {
-                                throw new UnexpectedErrorA("Unexpected error");
+                                throw new Error("Unexpected error");
                             });
                     } catch (error: unknown) {
                         if (!(error instanceof UnexpectedErrorA)) {
@@ -256,7 +256,7 @@ describe("class: RateLimiterFactory", () => {
                                 onlyError: false,
                             })
                             .runOrFail(() => {
-                                throw new UnexpectedErrorA("Unexpected error");
+                                throw new Error("Unexpected error");
                             });
                     } catch (error: unknown) {
                         if (!(error instanceof UnexpectedErrorA)) {

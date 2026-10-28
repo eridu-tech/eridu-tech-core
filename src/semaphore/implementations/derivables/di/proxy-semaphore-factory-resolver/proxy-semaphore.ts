@@ -4,7 +4,10 @@
 
 import { SEMAPHORE_CLASS_TAG } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+import {
+    isInternalSerdeIdentifiable,
+    UnexpectedError,
+} from "@/utilities/_module-exports.js";
 
 import type {
     DiToken,
@@ -56,7 +59,9 @@ export class ProxySemaphore<
     async internalSerializationId(): Promise<string> {
         const semaphore = await this.getSemaphore();
         if (!isInternalSerdeIdentifiable(semaphore)) {
-            throw new Error("!!__MESSAGE__!!");
+            throw UnexpectedError.create(
+                "Cannot serialize the resolved semaphore, it does not implement internal serialization",
+            );
         }
         return await semaphore.internalSerializationId();
     }

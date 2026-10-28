@@ -3,7 +3,10 @@
  */
 
 import { RATE_LIMITER_CLASS_TAG } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
-import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+import {
+    isInternalSerdeIdentifiable,
+    UnexpectedError,
+} from "@/utilities/_module-exports.js";
 
 import type {
     DiToken,
@@ -54,7 +57,9 @@ export class ProxyRateLimiter<
     async internalSerializationId(): Promise<string> {
         const rateLimiter = await this.getRateLimiter();
         if (!isInternalSerdeIdentifiable(rateLimiter)) {
-            throw new Error("!!__MESSAGE__!!");
+            throw UnexpectedError.create(
+                "Cannot serialize the resolved rate limiter, it does not implement internal serialization",
+            );
         }
         return await rateLimiter.internalSerializationId();
     }

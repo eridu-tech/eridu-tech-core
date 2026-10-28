@@ -24,22 +24,22 @@ import type {
 describe("class: CircuitBreakerFactory", () => {
     const adapter: ICircuitBreakerAdapter = {
         getState(_key: string): Promise<CircuitBreakerState> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         updateState(_key: string): Promise<CircuitBreakerStateTransition> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         isolate(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         trackFailure(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         trackSuccess(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         reset(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
     };
     const KEY = "A";
