@@ -721,7 +721,9 @@
         "ioredis": "^6.0.0",
         "kysely": "^0.29.0",
         "mongodb": "^7.5.0",
-        "webdav": "^5.11.0"
+        "webdav": "^5.11.0",
+        "@types/ssh2-sftp-client": "^9.0.6",
+        "ssh2-sftp-client": "^12.1.0"
     },
     "peerDependenciesMeta": {
         "ioredis": {
@@ -743,6 +745,12 @@
             "optional": true
         },
         "webdav": {
+            "optional": true
+        },
+        "@types/ssh2-sftp-client": {
+            "optional": true
+        },
+        "ssh2-sftp-client": {
             "optional": true
         }
     },
