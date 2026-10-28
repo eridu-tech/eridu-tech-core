@@ -4,7 +4,10 @@
 
 import { LOCK_CLASS_TAG } from "@/lock/implementations/derivables/lock-factory/lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+import {
+    isInternalSerdeIdentifiable,
+    UnexpectedError,
+} from "@/utilities/_module-exports.js";
 
 import type {
     DiToken,
@@ -54,7 +57,9 @@ export class ProxyLock<TAdapters extends string = string> implements ILock {
     async internalSerializationId(): Promise<string> {
         const lock = await this.getLock();
         if (!isInternalSerdeIdentifiable(lock)) {
-            throw new Error("!!__MESSAGE__!!");
+            throw UnexpectedError.create(
+                "Cannot serialize the resolved lock, it does not implement internal serialization",
+            );
         }
         return await lock.internalSerializationId();
     }

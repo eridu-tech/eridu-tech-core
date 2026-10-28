@@ -3,7 +3,10 @@
  */
 
 import { FILE_CLASS_TAG } from "@/file-storage/implementations/derivables/file-storage/file.js";
-import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+import {
+    isInternalSerdeIdentifiable,
+    UnexpectedError,
+} from "@/utilities/_module-exports.js";
 
 import type {
     DiToken,
@@ -51,11 +54,13 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
     }
 
     async internalSerializationId(): Promise<string> {
-        const circuitBreaker = await this.getFile();
-        if (!isInternalSerdeIdentifiable(circuitBreaker)) {
-            throw new Error("!!__MESSAGE__!!");
+        const file = await this.getFile();
+        if (!isInternalSerdeIdentifiable(file)) {
+            throw UnexpectedError.create(
+                "Cannot serialize the resolved file, it does not implement internal serialization",
+            );
         }
-        return await circuitBreaker.internalSerializationId();
+        return await file.internalSerializationId();
     }
 
     get key(): string {

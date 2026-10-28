@@ -327,6 +327,10 @@
             "types": "./dist/file-storage/implementations/adapters/s3-file-storage-adapter/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/adapters/s3-file-storage-adapter/_module-exports.js"
         },
+        "./file-storage/sftp-file-storage-adapter": {
+            "types": "./dist/file-storage/implementations/adapters/sftp-file-storage-adapter/_module-exports.d.ts",
+            "import": "./dist/file-storage/implementations/adapters/sftp-file-storage-adapter/_module-exports.js"
+        },
         "./file-storage/signed-file-storage-adapter": {
             "types": "./dist/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js"
@@ -338,6 +342,14 @@
         "./file-storage/test-utilities": {
             "types": "./dist/file-storage/implementations/test-utilities/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/test-utilities/_module-exports.js"
+        },
+        "./generic-pool": {
+            "types": "./dist/generic-pool/implementations/_module-exports.d.ts",
+            "import": "./dist/generic-pool/implementations/_module-exports.js"
+        },
+        "./generic-pool/contracts": {
+            "types": "./dist/generic-pool/contracts/_module-exports.d.ts",
+            "import": "./dist/generic-pool/contracts/_module-exports.js"
         },
         "./http-router": {
             "types": "./dist/http-router/implementations/_module-exports.d.ts",
@@ -661,6 +673,7 @@
         "@types/mime-types": "^3.0.1",
         "@types/node": "^26.1.2",
         "@types/pg": "^8.20.3",
+        "@types/ssh2-sftp-client": "^9.0.6",
         "@types/uuid": "^11.0.0",
         "@typescript-eslint/eslint-plugin": "^8.66.0",
         "@typescript-eslint/parser": "^8.66.0",
@@ -689,6 +702,7 @@
         "publint": "^0.3.22",
         "rimraf": "^6.1.3",
         "sloc": "^0.3.2",
+        "ssh2-sftp-client": "^12.1.1",
         "testcontainers": "^12.0.4",
         "tsc-alias": "^1.9.1",
         "tsx": "^4.23.5",
@@ -707,7 +721,9 @@
         "ioredis": "^6.0.0",
         "kysely": "^0.29.0",
         "mongodb": "^7.5.0",
-        "webdav": "^5.11.0"
+        "webdav": "^5.11.0",
+        "@types/ssh2-sftp-client": "^9.0.6",
+        "ssh2-sftp-client": "^12.1.0"
     },
     "peerDependenciesMeta": {
         "ioredis": {
@@ -729,6 +745,12 @@
             "optional": true
         },
         "webdav": {
+            "optional": true
+        },
+        "@types/ssh2-sftp-client": {
+            "optional": true
+        },
+        "ssh2-sftp-client": {
             "optional": true
         }
     },

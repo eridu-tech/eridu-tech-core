@@ -3,7 +3,10 @@
  */
 
 import { CIRCUIT_BREAKER_CLASS_TAG } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
-import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+import {
+    isInternalSerdeIdentifiable,
+    UnexpectedError,
+} from "@/utilities/_module-exports.js";
 
 import type {
     CircuitBreakerFactoryCreateSettings,
@@ -58,7 +61,9 @@ export class ProxyCircuitBreaker<TAdapters extends string = string>
     async internalSerializationId(): Promise<string> {
         const circuitBreaker = await this.getCircuitBreaker();
         if (!isInternalSerdeIdentifiable(circuitBreaker)) {
-            throw new Error("!!__MESSAGE__!!");
+            throw UnexpectedError.create(
+                "Cannot serialize the resolved circuit breaker, it does not implement internal serialization",
+            );
         }
         return await circuitBreaker.internalSerializationId();
     }

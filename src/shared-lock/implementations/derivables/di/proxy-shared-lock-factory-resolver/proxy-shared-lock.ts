@@ -4,7 +4,10 @@
 
 import { SHARED_LOCK_CLASS_TAG } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { isInternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+import {
+    isInternalSerdeIdentifiable,
+    UnexpectedError,
+} from "@/utilities/_module-exports.js";
 
 import type {
     DiToken,
@@ -56,7 +59,9 @@ export class ProxySharedLock<
     async internalSerializationId(): Promise<string> {
         const sharedLock = await this.getSharedLock();
         if (!isInternalSerdeIdentifiable(sharedLock)) {
-            throw new Error("!!__MESSAGE__!!");
+            throw UnexpectedError.create(
+                "Cannot serialize the resolved shared lock, it does not implement internal serialization",
+            );
         }
         return await sharedLock.internalSerializationId();
     }

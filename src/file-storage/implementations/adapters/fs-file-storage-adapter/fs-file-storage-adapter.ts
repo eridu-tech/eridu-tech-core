@@ -204,22 +204,20 @@ export class FsFileStorageAdapter
     }
 
     async put(key: string, content: WritableFileAdapterContent): Promise<void> {
-        const path = this.toPath(key);
         await mkdir(this.toDirectoryPath(key), {
             recursive: true,
         });
-        await writeFile(path, content.data);
+        await writeFile(this.toPath(key), content.data);
     }
 
     async putStream(
         key: string,
         stream: WritableFileAdapterStream,
     ): Promise<void> {
-        const path = this.toPath(key);
         await mkdir(this.toDirectoryPath(key), {
             recursive: true,
         });
-        const writeStream = createWriteStream(path);
+        const writeStream = createWriteStream(this.toPath(key));
         await pipeline(stream.data, writeStream);
     }
 
@@ -233,7 +231,6 @@ export class FsFileStorageAdapter
             await copyFile(sourcePath, destinationPath);
             return true;
         } catch (error: unknown) {
-            // The source does not exists
             if (FsFileStorageAdapter.isFileNotFoundError(error)) {
                 return false;
             }
@@ -255,10 +252,9 @@ export class FsFileStorageAdapter
         ].map(async (path) => {
             try {
                 await rm(path);
-                return true;
             } catch (error: unknown) {
                 if (FsFileStorageAdapter.isFileNotFoundError(error)) {
-                    return false;
+                    return;
                 }
                 throw error;
             }
