@@ -29,13 +29,8 @@ import type {
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 
-type EtagStatsLike = Extract<
-    Parameters<typeof etag>[0],
-    { ctime: Date; mtime: Date; ino: number; size: number }
->;
-
 /**
- * Configuration for `WebdavFipleStorageAdapter`.
+ * Configuration for `WebdavFileStorageAdapter`.
  * Provides local filesystem-based file storage.
  *
  * IMPORT_PATH: `"eridu-tech/file-storage/webdav-file-storage-adapter"`
@@ -155,7 +150,7 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
         return "data" in fileStat ? fileStat.data : fileStat;
     }
 
-    private static toStats(fileStat: FileStat): EtagStatsLike {
+    private static toStats(fileStat: FileStat): etag.StatsLike {
         if (!Number.isFinite(fileStat.size) || fileStat.size < 0) {
             throw UnexpectedError.create(
                 `WebDAV stat size is invalid: ${String(fileStat.size)}`,
@@ -167,7 +162,6 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
         ) {
             throw UnexpectedError.create("WebDAV stat lastmod is missing");
         }
-
         const mtime = new Date(fileStat.lastmod);
         if (Number.isNaN(mtime.getTime())) {
             throw UnexpectedError.create(
@@ -183,12 +177,12 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
         };
     }
 
-    private static toFileMetadata(stat: EtagStatsLike): FileAdapterMetadata {
+    private static toFileMetadata(stat: FileStat): FileAdapterMetadata {
         return {
-            etag: etag(stat),
+            etag: stat.etag ?? etag(this.toStats(stat)),
             contentType: null,
             fileSizeInBytes: stat.size,
-            updatedAt: stat.mtime,
+            updatedAt: new Date(stat.lastmod),
         };
     }
 
@@ -198,8 +192,7 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
             const webdavStat = await this.client.stat(path);
             const resolvedWebdavStat =
                 WebdavFileStorageAdapter.resolveWebdavStat(webdavStat);
-            const stats = WebdavFileStorageAdapter.toStats(resolvedWebdavStat);
-            return WebdavFileStorageAdapter.toFileMetadata(stats);
+            return WebdavFileStorageAdapter.toFileMetadata(resolvedWebdavStat);
         } catch (error: unknown) {
             if (WebdavFileStorageAdapter.isFileNotFoundError(error)) {
                 return null;
@@ -209,16 +202,15 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
     }
 
     async put(key: string, content: WritableFileAdapterContent): Promise<void> {
-        const { data } = content;
         const path = this.keyPathMapper.toPath(key);
         const directory = this.keyPathMapper.toDirectoryPath(key);
 
         await this.client.createDirectory(directory, {
             recursive: true,
         });
-        await this.client.putFileContents(path, Buffer.from(data), {
+        await this.client.putFileContents(path, Buffer.from(content.data), {
             overwrite: true,
-            contentLength: data.byteLength,
+            contentLength: content.fileSizeInBytes,
         });
     }
 
@@ -269,10 +261,9 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
         ].map(async (path) => {
             try {
                 await this.client.deleteFile(path);
-                return true;
             } catch (error: unknown) {
                 if (WebdavFileStorageAdapter.isFileNotFoundError(error)) {
-                    return false;
+                    return;
                 }
                 throw error;
             }
