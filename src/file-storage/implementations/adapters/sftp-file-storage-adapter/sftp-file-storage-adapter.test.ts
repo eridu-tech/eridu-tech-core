@@ -1,14 +1,16 @@
-import SftpClient from "ssh2-sftp-client";
 import { GenericContainer, Wait } from "testcontainers";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { SftpFileStorageAdapter } from "@/file-storage/implementations/adapters/sftp-file-storage-adapter/sftp-file-storage-adapter.js";
+import { sftpPool } from "@/file-storage/implementations/adapters/sftp-file-storage-adapter/sftp-pool.js";
 import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
+import type SftpClient from "ssh2-sftp-client";
 import type { StartedTestContainer } from "testcontainers";
 
 import type { FileAdapterMetadata } from "@/file-storage/contracts/_module-exports.js";
+import type { IGenericPool } from "@/generic-pool/contracts/generic-pool.contract.js";
 
 const timeout = TimeSpan.fromMinutes(2);
 
@@ -18,7 +20,7 @@ const USERNAME = "eridu";
 const PASSWORD = "eridu";
 
 describe("class: SftpFileStorageAdapter", () => {
-    let client: SftpClient;
+    let pool: IGenericPool<SftpClient>;
     let adapter_: SftpFileStorageAdapter;
     let startedContainer: StartedTestContainer;
     beforeEach(async () => {
@@ -31,15 +33,18 @@ describe("class: SftpFileStorageAdapter", () => {
                 ),
             )
             .start();
-        client = new SftpClient("sftp-file-storage-adapter");
-        await client.connect({
-            host: startedContainer.getHost(),
-            port: startedContainer.getMappedPort(SFTP_PORT),
-            username: USERNAME,
-            password: PASSWORD,
+
+        pool = sftpPool({
+            name: "sftp-file-storage-adapter",
+            connectionSettings: {
+                host: startedContainer.getHost(),
+                port: startedContainer.getMappedPort(SFTP_PORT),
+                username: USERNAME,
+                password: PASSWORD,
+            },
         });
         adapter_ = new SftpFileStorageAdapter({
-            client,
+            pool,
             location: "/upload",
         });
     }, timeout.toMilliseconds());

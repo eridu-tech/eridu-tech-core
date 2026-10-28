@@ -11,8 +11,6 @@ import etag from "etag";
 
 import { Base64UrlCodec } from "@/codec/implementations/base-64-url-codec/_module-exports.js";
 import { FsKeyPathMapper } from "@/file-storage/implementations/adapters/_shared/_module.js";
-import { SingleResourcePool } from "@/generic-pool/implementations/_module-exports.js";
-import { resolvePoolable } from "@/generic-pool/implementations/resolve-poolable.js";
 import { UnexpectedError } from "@/utilities/errors.js";
 
 import type SftpClient from "ssh2-sftp-client";
@@ -25,10 +23,7 @@ import type {
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
-import type {
-    IGenericPoolBase,
-    Poolable,
-} from "@/generic-pool/contracts/_module-exports.js";
+import type { IGenericPoolBase } from "@/generic-pool/contracts/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/sftp-file-storage-adapter"`
@@ -53,7 +48,7 @@ export type PathType = (typeof PATH_TYPE)[keyof typeof PATH_TYPE];
  * @group Adapters
  */
 export type SftpFileStorageAdapterSettings = {
-    client: Poolable<SftpClient>;
+    pool: IGenericPoolBase<SftpClient>;
 
     /**
      * @default
@@ -139,7 +134,7 @@ export class SftpFileStorageAdapter implements IFileStorageAdapter {
 
     constructor(settings: SftpFileStorageAdapterSettings) {
         const {
-            client,
+            pool,
             codec = new Base64UrlCodec(),
             delimiter = "/",
             location = "/",
@@ -148,16 +143,7 @@ export class SftpFileStorageAdapter implements IFileStorageAdapter {
         this.keyPathMapper = new FsKeyPathMapper(delimiter, codec);
         this.pathType = pathType;
         this.location = location;
-        this.pool = resolvePoolable(
-            client,
-            (client_) =>
-                new SingleResourcePool({
-                    client: client_,
-                    async destroy(resource: SftpClient): Promise<void> {
-                        await resource.end();
-                    },
-                }),
-        );
+        this.pool = pool;
     }
 
     private normalize(path: string): string {
