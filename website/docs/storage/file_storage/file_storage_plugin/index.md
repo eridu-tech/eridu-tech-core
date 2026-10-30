@@ -9,7 +9,6 @@ keywords:
     - FileStorage
     - Plugins
     - withFileStoragePrefix
-    - withFileStorageLock
     - withFileStorageKeyValidator
     - withFileStorageLowerCase
     - withFileStorageInferContentTypeOnRead
@@ -46,22 +45,16 @@ The plugin prefixes keys for the following methods:
 | `getStream`            | first argument (`key`)                              | `prefix + key`                            |
 | `getBytes`             | first argument (`key`)                              | `prefix + key`                            |
 | `getMetaData`          | first argument (`key`)                              | `prefix + key`                            |
-| `add`                  | first argument (`key`)                              | `prefix + key`                            |
-| `addStream`            | first argument (`key`)                              | `prefix + key`                            |
-| `update`               | first argument (`key`)                              | `prefix + key`                            |
-| `updateStream`         | first argument (`key`)                              | `prefix + key`                            |
 | `put`                  | first argument (`key`)                              | `prefix + key`                            |
 | `putStream`            | first argument (`key`)                              | `prefix + key`                            |
 | `copy`                 | first and second argument (`source`, `destination`) | `prefix + source`, `prefix + destination` |
-| `copyAndReplace`       | first and second argument (`source`, `destination`) | `prefix + source`, `prefix + destination` |
 | `move`                 | first and second argument (`source`, `destination`) | `prefix + source`, `prefix + destination` |
-| `moveAndReplace`       | first and second argument (`source`, `destination`) | `prefix + source`, `prefix + destination` |
 | `removeMany`           | first argument (`keys`)                             | `keys.map(k => prefix + k)`               |
 | `removeByPrefix`       | first argument (`key`)                              | `prefix + key`                            |
 
 #### Copy and move behavior
 
-For the `copy`, `copyAndReplace`, `move`, and `moveAndReplace` methods, booth the **destination** and **source** keys are prefixed.
+For the `copy` and `move` methods, both the **destination** and **source** keys are prefixed.
 
 ### Usage
 
@@ -99,75 +92,6 @@ The `removeMany` method receives an array of keys. The plugin maps over the arra
 
 ```
 
-## withFileStorageLock plugin
-
-The FileStorage lock plugin acquires a distributed lock before executing operations on a file-storage adapter. It wraps all methods (both reads and writes) with a lock acquired via an [`ILockFactory`](/docs/concurrency/lock/lock_usage), ensuring that concurrent access to the same file key is serialised.
-
-### Use cases
-
-- **Concurrency control** — Prevent race conditions when multiple processes read or write the same file
-- **Distributed environments** — Coordinate file access across multiple application instances
-- **Copy/move safety** — Prevent modifications to source files during copy or move operations
-- **Batch safety** — Serialise operations on multiple keys in `removeMany`
-- **Signed URL consistency** — Ensure URL generation and file mutations don't overlap
-
-### How it works
-
-The `withFileStorageLock` function returns a [`PluginFn`](/docs/foundation/middleware) that calls `enhance` on all methods of the adapter. When an enhanced method is invoked, the plugin acquires a lock keyed by the file key (the source key for `copy`/`move`) before executing the operation. The lock is released automatically after the operation completes.
-
-The lock key is derived directly from the file key, ensuring that concurrent operations on the same file are serialised while operations on different files can proceed in parallel.
-
-All methods are protected by default:
-
-| Method                 | Lock key source | Behaviour                                               |
-| ---------------------- | --------------- | ------------------------------------------------------- |
-| `exists`               | Single key      | Acquires lock for the key before checking existence     |
-| `getStream`            | Single key      | Acquires lock for the key before reading the stream     |
-| `getBytes`             | Single key      | Acquires lock for the key before reading bytes          |
-| `getMetaData`          | Single key      | Acquires lock for the key before reading metadata       |
-| `add`                  | Single key      | Acquires lock for the key before adding                 |
-| `addStream`            | Single key      | Acquires lock for the key before adding a stream        |
-| `update`               | Single key      | Acquires lock for the key before updating               |
-| `updateStream`         | Single key      | Acquires lock for the key before updating a stream      |
-| `put`                  | Single key      | Acquires lock for the key before putting                |
-| `putStream`            | Single key      | Acquires lock for the key before putting a stream       |
-| `copy`                 | Source key      | Acquires lock on the source file before copying         |
-| `copyAndReplace`       | Source key      | Acquires lock on the source file before copying         |
-| `move`                 | Source key      | Acquires lock on the source file before moving          |
-| `moveAndReplace`       | Source key      | Acquires lock on the source file before moving          |
-| `removeMany`           | Multiple keys   | Acquires locks for each key sequentially (deduplicated) |
-| `getPublicUrl`         | Single key      | Acquires lock for the key before generating the URL     |
-| `getSignedDownloadUrl` | Single key      | Acquires lock for the key before generating the URL     |
-| `getSignedUploadUrl`   | Single key      | Acquires lock for the key before generating the URL     |
-
-### Usage
-
-```ts file=./samples/with-file-storage-lock.ts
-
-```
-
-#### Restricting protected methods
-
-```ts file=./samples/file-storage-lock-only-methods.ts
-
-```
-
-### Settings
-
-| Option        | Type                                     | Default      | Description                                  |
-| ------------- | ---------------------------------------- | ------------ | -------------------------------------------- |
-| `lockFactory` | `ILockFactory`                           | _(required)_ | A factory that creates named locks           |
-| `onlyMethods` | `Array<keyof ISignedFileStorageAdapter>` | All methods  | The subset of methods to protect with a lock |
-
-:::danger
-Because `withPlugin` uses `enhance` under the hood, the same edge case applies: if one enhanced method internally calls another enhanced method via `this`, the middleware will apply **twice**. Be mindful of inter-method calls when applying plugins that enhance multiple methods on the same instance.
-:::
-
-:::info
-For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/foundation/middleware/#plugin) documentation.
-For more information about lock factories, see the [Lock](/docs/concurrency/lock/lock_usage) documentation.
-:::
-
 ## withFileStorageKeyValidator plugin
 
 The FileStorage key validator plugin validates every file key before it reaches a file-storage adapter. When a key fails validation, an `InvalidKeyFileError` is thrown and the underlying adapter method is never invoked.
@@ -196,16 +120,10 @@ The plugin validates keys for the following methods:
 | `getStream`            | Single key             |
 | `getBytes`             | Single key             |
 | `getMetaData`          | Single key             |
-| `add`                  | Single key             |
-| `addStream`            | Single key             |
-| `update`               | Single key             |
-| `updateStream`         | Single key             |
 | `put`                  | Single key             |
 | `putStream`            | Single key             |
 | `copy`                 | Source and destination |
-| `copyAndReplace`       | Source and destination |
 | `move`                 | Source and destination |
-| `moveAndReplace`       | Source and destination |
 | `removeMany`           | Multiple keys          |
 | `removeByPrefix`       | Single key (prefix)    |
 
@@ -254,16 +172,10 @@ The plugin lowercases keys for the following methods:
 | `getStream`            | Single key             | `key.toLowerCase()`  |
 | `getBytes`             | Single key             | `key.toLowerCase()`  |
 | `getMetaData`          | Single key             | `key.toLowerCase()`  |
-| `add`                  | Single key             | `key.toLowerCase()`  |
-| `addStream`            | Single key             | `key.toLowerCase()`  |
-| `update`               | Single key             | `key.toLowerCase()`  |
-| `updateStream`         | Single key             | `key.toLowerCase()`  |
 | `put`                  | Single key             | `key.toLowerCase()`  |
 | `putStream`            | Single key             | `key.toLowerCase()`  |
 | `copy`                 | Source and destination | both keys lowercased |
-| `copyAndReplace`       | Source and destination | both keys lowercased |
 | `move`                 | Source and destination | both keys lowercased |
-| `moveAndReplace`       | Source and destination | both keys lowercased |
 | `removeMany`           | Multiple keys          | each key lowercased  |
 | `removeByPrefix`       | Single key (prefix)    | `key.toLowerCase()`  |
 
@@ -301,10 +213,6 @@ The plugin infers the content type for the following methods:
 | ---------------------- | --------------------------------------------- |
 | `getSignedDownloadUrl` | Infers unless `inferSignedDownloadUrl: false` |
 | `getSignedUploadUrl`   | Infers unless `inferSignedUploadUrl: false`   |
-| `add`                  | Infers always                                 |
-| `addStream`            | Infers always                                 |
-| `update`               | Infers always                                 |
-| `updateStream`         | Infers always                                 |
 | `put`                  | Infers always                                 |
 | `putStream`            | Infers always                                 |
 
@@ -376,14 +284,10 @@ The `withFileStorageInferFileTypeOnWrite` function returns a [`PluginFn`](/docs/
 
 The plugin infers the content type for the following methods:
 
-| Method         | Behaviour          |
-| -------------- | ------------------ |
-| `add`          | Infers from buffer |
-| `addStream`    | Infers from stream |
-| `update`       | Infers from buffer |
-| `updateStream` | Infers from stream |
-| `put`          | Infers from buffer |
-| `putStream`    | Infers from stream |
+| Method      | Behaviour          |
+| ----------- | ------------------ |
+| `put`       | Infers from buffer |
+| `putStream` | Infers from stream |
 
 ### Usage
 
