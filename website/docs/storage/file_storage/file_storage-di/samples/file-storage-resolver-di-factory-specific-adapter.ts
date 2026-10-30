@@ -4,4 +4,4 @@ import { fileStorage } from "./file-storage-resolver-di-factory.js";
 await fileStorage
     .use("fs")
     .create("file.txt")
-    .add({ data: "Text file content" });
+    .put({ data: "Text file content" });

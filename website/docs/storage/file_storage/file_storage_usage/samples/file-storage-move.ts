@@ -1,3 +1,5 @@
 import { fileStorage } from "./file-storage-initial-config.js";
 
-await fileStorage.create("source.txt").move("destination.txt");
+// Returns true when the source exists, the destination is overwritten.
+const hasMoved = await fileStorage.create("source.txt").move("destination.txt");
+console.log(hasMoved);

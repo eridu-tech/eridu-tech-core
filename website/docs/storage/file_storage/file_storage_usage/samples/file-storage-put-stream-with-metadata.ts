@@ -1,10 +1,8 @@
 import { fileStorage } from "./file-storage-initial-config.js";
 import { createReadStream } from "node:fs";
 
-const fileStream = createReadStream("./file.txt");
-
-const hasAdded = await fileStorage.create("file.txt").addStream({
-    data: fileStream,
+await fileStorage.create("file.txt").putStream({
+    data: createReadStream("./file.txt"),
 
     /**
      * You can explicitly set a custom Content-Type. If one is not provided, it will be inferred from the key. For example, a key ending in .txt (such as key-a.txt) will be assigned text/plain.
