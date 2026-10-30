@@ -31,6 +31,7 @@ import {
     ArrowLeftRight,
     List,
     Share2,
+    Boxes,
     GitBranch,
     Gauge,
     Terminal,
@@ -375,6 +376,20 @@ const EXISTING_UTILITIES_RECORD = {
             <>
                 Define, manipulate, and compare file sizes with a typed API,
                 from bytes to gigabytes, with easy unit conversion.
+            </>
+        ),
+    } satisfies ComponentItemProps,
+    GENERIC_POOL: {
+        name: "Generic Pool",
+        icon: <Boxes size="1.5rem" strokeWidth={1.5} />,
+        title: <>Generic Pool</>,
+        link: "/docs/utilities/generic_pool",
+        maturity: 90,
+        description: (
+            <>
+                Reuses expensive clients such as FTP and SFTP connections,
+                borrowing and releasing pooled resources with QueuePool or
+                sharing an already exclusive client with NoOpPool.
             </>
         ),
     } satisfies ComponentItemProps,
@@ -881,6 +896,7 @@ export const UTILITIES_EXISTING_ITEMS: ComponentItemProps[] = [
     COMPONENT_RECORD.COLLECTION,
     COMPONENT_RECORD.TIME_SPAN,
     COMPONENT_RECORD.FILE_SIZE,
+    COMPONENT_RECORD.GENERIC_POOL,
     COMPONENT_RECORD.BACKOFF_POLICIES,
     COMPONENT_RECORD.ERROR_POLICY_TYPE,
     COMPONENT_RECORD.INVOCABLE,
