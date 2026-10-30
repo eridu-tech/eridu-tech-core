@@ -1,5 +1,67 @@
 # @daiso-tech/core
 
+## 0.71.0
+
+### Minor Changes
+
+- 006a5dc: The file-storage contracts now expose a single upsert write path and non-nullable URLs.
+
+    - `IFileStorageAdapter.put()` and `IFileStorageAdapter.putStream()` return `Promise<void>` instead of a boolean indicating whether the file already existed.
+    - `IFileStorageAdapter.copy()` and `IFileStorageAdapter.move()` return `Promise<boolean>` and overwrite the destination when it exists, replacing the previous enum-based `copy()`/`move()` and the separate `copyAndReplace()`/`moveAndReplace()` methods.
+    - `IFileStorageAdapter.removeMany()` and `IFileStorage.removeMany()` return `Promise<void>`.
+    - `IFileUrlAdapter.getPublicUrl()` and `IFileUrlAdapter.getSignedDownloadUrl()` return `Promise<string>` and report failures by throwing instead of returning `null`.
+    - `IReadableFile.getPublicUrl()` and `IReadableFile.getSignedDownloadUrl()` follow the same non-nullable contract, returning a URL or throwing when the file is not found or public access is unsupported.
+    - `IFile.put()`, `IFile.putStream()` and `IFile.remove()` return `Promise<void>`.
+    - `IFile.copyOrFail()` and `IFile.moveOrFail()` no longer throw `KeyExistsFileError`, since `copy()` and `move()` overwrite the destination.
+    - `file-storage-adapter.contract.ts` is re-exported as types only from `eridu-tech/file-storage/contracts`.
+
+    ### Breaking changes
+    - Removed `IFileStorageAdapter.add()`, `addStream()`, `update()` and `updateStream()`; use `put()`/`putStream()`, which upsert.
+    - Removed `IFileStorageAdapter.copyAndReplace()` and `moveAndReplace()`; `copy()` and `move()` now overwrite existing destinations.
+    - Removed the `FILE_WRITE_ENUM` constant and `FileWriteEnum` type.
+    - Removed `IFile.add()`, `addOrFail()`, `addStream()`, `addStreamOrFail()`, `update()`, `updateOrFail()`, `updateStream()`, `updateStreamOrFail()` and `removeOrFail()`; use `put()`/`putStream()` and `remove()`.
+    - Removed `IFile.copyAndReplace()`, `copyAndReplaceOrFail()`, `moveAndReplace()` and `moveAndReplaceOrFail()`; use `copy()`/`move()` or their `*OrFail` variants, which now replace the destination.
+    - `IFile.getPublicUrl()` and `IFile.getSignedDownloadUrl()` no longer return `null`; the `getPublicUrlOrFail()` and `getSignedDownloadUrlOrFail()` variants were removed.
+    - Removed `KeyExistsFileError`; `FILE_STORAGE_ERRORS` no longer contains a `KeyExists` entry.
+
+- 8f0cce5: `FsFileStorageAdapter` now stores files in a safe, collision-free folder layout.
+
+    - Key segments become nested folders (`"a/b"` → `<location>/N/S_<a>/K/S_<b>`), so `"a"` and `"a/b"` can coexist and long keys stay under the file name limit.
+    - New `codec` setting (base64url by default) encodes each segment, so unsafe characters work and `"../secret"` cannot escape the root folder.
+    - `copy()` creates the destination folders, and `removeByPrefix("")` deletes the root folder.
+    - `init()`/`deInit()` are idempotent and no longer swallow filesystem errors.
+
+- 13f7aac: New `FtpFileStorageAdapter` for storing files on an FTP server, available from `eridu-tech/file-storage/ftp-file-storage-adapter`.
+
+    - The `pool` setting accepts an `IGenericPoolBase<Client>`: an `IGenericPool` (for example `QueuePool` or `SingleResourcePool`) is borrowed from and released on every operation, so concurrent calls do not share one connection.
+    - `FtpFactory` is an `IResourceFactory<Client>` for those pools. It opens and logs in with `accessSettings`, applies `timeout` (default `30000`) and `clientSettings`, closes the connection on destroy, and validates idle connections with `pwd()`. A custom `clientFactory` replaces the whole connect step, so use it when connections need custom setup, such as upgrading to FTPS.
+    - `ftpPool()` combines the factory with an optional `poolFactory` into a ready-to-use pool.
+    - Keys map to nested folders under `location` (default `"/"`), split by `delimiter` (default `"/"`), and each segment is encoded with `codec` (default `Base64UrlCodec`). Unsafe characters work and keys such as `"../secret"` cannot escape the root folder.
+    - `pathType` selects POSIX or win32 path handling and defaults to `PATH_TYPE.POSIX`.
+    - Implements the full `IFileStorageAdapter` contract, including `putStream()`, `copy()`, `move()`, `removeMany()` and `removeByPrefix()`. `getMetaData()` returns an `etag` derived from the remote size and modification time, and a missing file resolves to `null`/`false` instead of throwing.
+
+    Requires `basic-ftp` as an optional peer dependency.
+
+- 7de51c5: New `generic-pool` component for reusing expensive resources such as database connections or SFTP clients.
+
+    - `eridu-tech/generic-pool/contracts` exposes the `IResourceFactory`, `IGenericPoolBase`, and `IGenericPool` `Poolable` types.
+    - `QueuePool` creates resources through an `IResourceFactory` and queues callers in FIFO order when none are idle. The pool size is bounded by `maxResources` (default `10`) and the wait queue by `maxWaitSize` (default `null`, meaning unbounded).
+    - Resource recycling goes through `IResourceFactory.validate()`, so an unusable resource is destroyed and replaced instead of being handed to the next caller.
+    - `SingleResourcePool` lets exactly one caller use a client at a time, queueing the rest up to `maxWaitSize`.
+    - `NoOpPool` hands the same client to every caller and ignores releases, which is useful when a client is already exclusive.
+    - `acquireOrFail()` rejects with `UnableToAcquireError` when the pool is closed or the wait queue is full.
+    - `eridu-tech/generic-pool` re-exports the implementations, and `eridu-tech/generic-pool/contracts` re-exports the types and errors.
+
+- 7de51c5: New `SftpFileStorageAdapter` for storing files on an SFTP server, available from `eridu-tech/file-storage/sftp-file-storage-adapter`.
+
+    - The `pool` setting accepts a `IGenericPoolBase<SftpClient>`: an `IGenericPool` (for example `QueuePool` or `SingleResourcePool`) is borrowed from and released on every operation, so concurrent calls do not share one connection.
+    - `SftpFactory` is an `IResourceFactory<SftpClient>` for those pools. It connects with `SftpClient.ConnectOptions`, ends the connection on destroy, and validates idle connections with `cwd()`.
+    - Keys map to nested folders under `location` (default `"/"`), split by `delimiter` (default `"/"`), and each segment is encoded with `codec` (default `Base64UrlCodec`). Unsafe characters work and keys such as `"../secret"` cannot escape the root folder.
+    - `pathType` selects POSIX or win32 path handling and defaults to `PATH_TYPE.POSIX`.
+    - Implements the full `IFileStorageAdapter` contract, including `putStream()`, `copy()`, `move()`, `removeMany()` and `removeByPrefix()`.
+
+    Requires `ssh2-sftp-client` as a peer dependency.
+
 ## 0.70.1
 
 ### Patch Changes
