@@ -27,10 +27,12 @@ describe("class: SftpFactory", () => {
             )
             .start();
         factory = new SftpFactory({
-            host: startedContainer.getHost(),
-            port: startedContainer.getMappedPort(SFTP_PORT),
-            username: USERNAME,
-            password: PASSWORD,
+            connectionSettings: {
+                host: startedContainer.getHost(),
+                port: startedContainer.getMappedPort(SFTP_PORT),
+                username: USERNAME,
+                password: PASSWORD,
+            },
         });
     }, timeout.toMilliseconds());
     afterEach(async () => {
