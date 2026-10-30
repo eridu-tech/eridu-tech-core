@@ -315,6 +315,10 @@
             "types": "./dist/file-storage/implementations/adapters/fs-file-storage-adapter/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/adapters/fs-file-storage-adapter/_module-exports.js"
         },
+        "./file-storage/ftp-file-storage-adapter": {
+            "types": "./dist/file-storage/implementations/adapters/ftp-file-storage-adapter/_module-exports.d.ts",
+            "import": "./dist/file-storage/implementations/adapters/ftp-file-storage-adapter/_module-exports.js"
+        },
         "./file-storage/memory-file-storage-adapter": {
             "types": "./dist/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js"
@@ -678,6 +682,7 @@
         "@typescript-eslint/eslint-plugin": "^8.66.0",
         "@typescript-eslint/parser": "^8.66.0",
         "@vitest/eslint-plugin": "^1.0.3",
+        "basic-ftp": "^6.2.3",
         "better-sqlite3": "^13.0.2",
         "commitizen": "^4.3.2",
         "cz-conventional-changelog": "^3.3.0",
@@ -717,13 +722,14 @@
     "peerDependencies": {
         "@aws-sdk/client-s3": "^3.1102.0",
         "@aws-sdk/s3-request-presigner": "^3.1102.0",
+        "@types/ssh2-sftp-client": "^9.0.6",
         "hono": "^4.13.0",
         "ioredis": "^6.0.0",
         "kysely": "^0.29.0",
         "mongodb": "^7.5.0",
+        "ssh2-sftp-client": "^12.1.0",
         "webdav": "^5.11.0",
-        "@types/ssh2-sftp-client": "^9.0.6",
-        "ssh2-sftp-client": "^12.1.0"
+        "basic-ftp": "^6.2.0"
     },
     "peerDependenciesMeta": {
         "ioredis": {
@@ -751,6 +757,9 @@
             "optional": true
         },
         "ssh2-sftp-client": {
+            "optional": true
+        },
+        "basic-ftp": {
             "optional": true
         }
     },
