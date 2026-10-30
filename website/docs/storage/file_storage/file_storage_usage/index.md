@@ -40,26 +40,14 @@ Note the file object represents a reference to a file and doesnt create the real
 
 ### Writing buffered files
 
-You can add a file and true is returned if the file does not exists:
-
-```ts file=./samples/file-storage-add.ts
-
-```
-
-You can update a file and true will be returned if the file exists and was updated:
-
-```ts file=./samples/file-storage-update.ts
-
-```
-
-You can upsert a file and true will be returned if the file was updated otherwise false is returned:
+You can put a file. It upserts, so an existing file is overwritten:
 
 ```ts file=./samples/file-storage-put.ts
 
 ```
 
 :::info
-Note you can pass the following types to `add`, `update`, `put` method:
+Note you can pass the following types to the `put` method:
 
 - `Buffer`
 - `ArrayBuffer`
@@ -80,34 +68,22 @@ Note you can pass the following types to `add`, `update`, `put` method:
 But usually you would use `Uint8Array` because it represents data as bytes.
 :::
 
-You can pass additional optional metadata information to `add`, `update` and `put`:
+You can pass additional optional metadata information to the `put` method:
 
-```ts file=./samples/file-storage-add-with-metadata.ts
+```ts file=./samples/file-storage-put-with-metadata.ts
 
 ```
 
 ### Writing streamed files
 
-You can add a file stream and true is returned if the file does not exists:
-
-```ts file=./samples/file-storage-add-stream.ts
-
-```
-
-You can update a file stream and true will be returned if the file exists and was updated:
-
-```ts file=./samples/file-storage-update-stream.ts
-
-```
-
-You can upsert a file stream and true will be returned if the file was updated otherwise false is returned:
+You can put a file stream. It upserts, so an existing file is overwritten:
 
 ```ts file=./samples/file-storage-put-stream.ts
 
 ```
 
 :::info
-Note you can pass the following types to `addStream`, `updateStream`, `putStream` method:
+Note you can pass the following types to the `putStream` method:
 
 - `AsyncIteralbe<Buffer>`
 - `AsyncIteralbe<ArrayBuffer>`
@@ -128,15 +104,15 @@ Note you can pass the following types to `addStream`, `updateStream`, `putStream
 But usually you would use `AsyncIterable<Uint8Array>` because it represents stream as bytes.
 :::
 
-You can pass additional optional metadata information to `addStrem`, `updateStream` and `putStream`:
+You can pass additional optional metadata information to `putStream`:
 
-```ts file=./samples/file-storage-add-stream-with-metadata.ts
+```ts file=./samples/file-storage-put-stream-with-metadata.ts
 
 ```
 
 You can also pass the file-size of the stream which used for optimizations by some adapters:
 
-```ts file=./samples/file-storage-add-stream-with-file-size.ts
+```ts file=./samples/file-storage-put-stream-with-file-size.ts
 
 ```
 
@@ -190,13 +166,13 @@ You can check if the file doesnt exists:
 
 ### Removing files
 
-You can remove a file and true will be returned if the file exists and was removed:
+You can remove a file:
 
 ```ts file=./samples/file-storage-remove.ts
 
 ```
 
-You can remove multiple files and true will be returned when at least one file exists and was removed:
+You can remove multiple files:
 
 ```ts file=./samples/file-storage-remove-many.ts
 
@@ -216,54 +192,33 @@ The `getMetadata` returns [FileMetadata](https://eridu-tech.github.io/eridu-tech
 
 ### Additional methods
 
-These variants are equivalent to the standard methods but throw an error if the file does not exist and in case of `addOrFail` it throws error if the file exists.
+These variants are equivalent to the standard methods but throw an error if the file does not exist.
 
-- `getTextOfFail`
+- `getTextOrFail`
 - `getBytesOrFail`
 - `getArrayBufferOrFail`
 - `getReadableStreamOrFail`
-- `addOrFail`
-- `addStreamOrFail`
-- `updateOrFail`
-- `updateStreamOrFail`
-- `removeOrFail`
 - `getMetadataOrFail`
 
 ### Copying files
 
-You can copy a file. True is returned if the source exists and destination doesnt exists:
+You can copy a file. True is returned if the source exists, and the destination is overwritten:
 
 ```ts file=./samples/file-storage-copy.ts
 
 ```
 
-Use `copyOrFail` method to perform the same operations as the `copy` method but it throws an error if the source file is missing or destination exists.
-
-You can copy a file and repalce the destination. True is returned if the source exists:
-
-```ts file=./samples/file-storage-copy-and-replace.ts
-
-```
-
-Use `copyAndReplaceOrFail` method to perform the same operations as the `copyAndReplace` method but it throws an error if the source file is missing.
+Use `copyOrFail` method to perform the same operations as the `copy` method but it throws an error if the source file is missing.
 
 ### Moving files
 
-You can move a file. True is returned if the source exists and destination doesnt exists:
+You can move a file. True is returned if the source exists, and the destination is overwritten:
 
 ```ts file=./samples/file-storage-move.ts
 
 ```
 
-Use `moveOrFail` method to perform the same operations as the `move` method but it throws an error if the source file is missing or destination exists.
-
-You can move a file and repalce the destination. True is returned if the source exists:
-
-```ts file=./samples/file-storage-move-and-replace.ts
-
-```
-
-Use `moveAndReplaceOrFail` method to perform the same operations as the `moveAndReplace` method but it throws an error if the source file is missing.
+Use `moveOrFail` method to perform the same operations as the `move` method but it throws an error if the source file is missing.
 
 ### Signed urls and public urls.
 
@@ -281,8 +236,7 @@ Create signed urls to allow clients to download files directly from FileStorage.
 
 Download url methods:
 
-- getSignedDownloadUrl: Returns the signed download url string, or null if the file does not exist.
-- getSignedDownloadUrlOrFail: Returns the signed download url string, but throws an error if the file is missing.
+- getSignedDownloadUrl: Returns the signed download url string, and throws an error if the file does not exist.
 
 ```ts file=./samples/file-storage-get-signed-download-url.ts
 
@@ -290,8 +244,7 @@ Download url methods:
 
 Use these methods to retrieve a permanent link to a file that is publicly accessible within your storage provider.
 
-- `getPublicUrl`: Returns the public url as a string, or null if the file does not exist.
-- `getPublicUrlOrFail`: Returns the public url, but throws an error if the file is missing.
+- `getPublicUrl`: Returns the public url as a string, and throws an error if the file does not exist or public access is not supported.
 
 ```ts file=./samples/file-storage-get-public-url.ts
 

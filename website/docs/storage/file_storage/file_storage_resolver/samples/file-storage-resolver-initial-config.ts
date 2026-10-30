@@ -11,7 +11,7 @@ export const fileStorageResolver = new FileStorageResolver({
             urlAdapter: {},
         }),
         fs: new SignedFileStorageAdapter({
-            adapter: new FsFileStorageAdapter(),
+            adapter: new FsFileStorageAdapter({}),
             urlAdapter: {},
         }),
     },

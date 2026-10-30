@@ -2,7 +2,7 @@ import { TimeSpan } from "eridu-tech/time-span";
 import { fileStorage } from "./file-storage-initial-config.js";
 
 const file = fileStorage.create("source.txt");
-await file.add({
+await file.put({
     data: "CONTENT",
 });
 

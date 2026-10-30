@@ -1,6 +1,6 @@
 import { fileStorage } from "./file-storage-initial-config.js";
 
-const hasAdded = await fileStorage.create("file.txt").add({
+await fileStorage.create("file.txt").put({
     data: "CONTENT",
 
     /**

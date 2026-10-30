@@ -30,18 +30,6 @@ const s3FileStorageAdapter = new S3FileStorageAdapter({
     serverSideEncryption: "AES256",
 
     /**
-     * If false the put method of ISignedFileStorageAdapter will perform one database call and thereby always return true even when the file doesnt exists.
-     * Note the fewer database calls the cheaper when using aws s3.
-     */
-    enableAccuratePut: true,
-
-    /**
-     * If false the getSignedDownloadUrl method of ISignedFileStorageAdapter will perfom one database call and therby always return string even when the file doesnt exists.
-     * Note the fewer database calls the cheaper when using aws s3.
-     */
-    enableAccurateGetSignedDownloadUrl: true,
-
-    /**
      * Define a custom public url generator for creating public and signed URLs.
      */
     publicUrlGenerator: defaultPublicUrlGenerator,

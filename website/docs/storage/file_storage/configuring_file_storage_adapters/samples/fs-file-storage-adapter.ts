@@ -1,3 +1,3 @@
 import { FsFileStorageAdapter } from "eridu-tech/file-storage/fs-file-storage-adapter";
 
-const fsFileStorageAdapter = new FsFileStorageAdapter();
+const fsFileStorageAdapter = new FsFileStorageAdapter({});

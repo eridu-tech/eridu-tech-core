@@ -13,6 +13,9 @@ tags:
     - Tigris
     - Supabase Storage
     - Minio
+    - Sftp
+    - Ftp
+    - Webdav
     - NoOp
     - Signed
 keywords:
@@ -26,6 +29,9 @@ keywords:
     - Tigris
     - Supabase Storage
     - Minio
+    - Sftp
+    - Ftp
+    - Webdav
     - NoOp
     - Signed
 ---
@@ -56,7 +62,7 @@ Note this adapter doesnt have support for creating signed upload, signed downloa
 
 ## FsFileStorageAdapter
 
-To use the `FsFileStorageAdapter` you only need to create instance of it:
+To use the `FsFileStorageAdapter` you only need to create an instance of it, every setting is optional:
 
 ```ts file=./samples/fs-file-storage-adapter.ts
 
@@ -108,6 +114,96 @@ Note this adapter with object storage services that are compatible with aws s3 l
 - Supabase Storage
 - Minio
   :::
+
+## SftpFileStorageAdapter
+
+To use the `SftpFileStorageAdapter`, you'll need to:
+
+1. Install the required dependency: [`ssh2-sftp-client`](https://www.npmjs.com/package/ssh2-sftp-client) package.
+2. Create a pool of SFTP connections with `sftpPool`, which combines `SftpFactory` with a `QueuePool`.
+
+```ts file=./samples/sftp-file-storage-adapter.ts
+
+```
+
+Other settings:
+
+```ts file=./samples/sftp-file-storage-adapter-settings.ts
+
+```
+
+You can build the pool yourself, for example to change the pool size or to share it between adapters:
+
+```ts file=./samples/sftp-file-storage-adapter-custom-pool.ts
+
+```
+
+:::info
+`SftpFactory` connects a new `SftpClient` in `create`, checks idle connections with `cwd()` in `validate`, and ends them in `destroy`. Any `IGenericPoolBase<SftpClient>` can be passed as the `pool` setting.
+:::
+
+:::warning
+This adapter does not support signed upload, signed download and public urls.
+It also doesn't support explicitly setting the content-type and will instead infer the content-type from the file name.
+:::
+
+## FtpFileStorageAdapter
+
+To use the `FtpFileStorageAdapter`, you'll need to:
+
+1. Install the required dependency: [`basic-ftp`](https://www.npmjs.com/package/basic-ftp) package.
+2. Create a pool of FTP connections with `ftpPool`, which combines `FtpFactory` with a `QueuePool`.
+
+```ts file=./samples/ftp-file-storage-adapter.ts
+
+```
+
+Other settings:
+
+```ts file=./samples/ftp-file-storage-adapter-settings.ts
+
+```
+
+You can build the pool yourself, for example to change the pool size or to share it between adapters:
+
+```ts file=./samples/ftp-file-storage-adapter-custom-pool.ts
+
+```
+
+:::info
+Set `secure` to `true` for explicit FTPS over TLS, or to `"implicit"` for legacy implicit FTPS. `FtpFactory` opens and logs in a `Client` in `create`, checks idle connections with `pwd()` in `validate`, and closes them in `destroy`. Any `IGenericPoolBase<Client>` can be passed as the `pool` setting.
+:::
+
+:::warning
+This adapter does not support signed upload, signed download and public urls.
+It also doesn't support explicitly setting the content-type and will instead infer the content-type from the file name.
+:::
+
+## WebdavFileStorageAdapter
+
+To use the `WebdavFileStorageAdapter`, you'll need to:
+
+1. Install the required dependency: [`webdav`](https://www.npmjs.com/package/webdav) package.
+2. Create a client with `createClient` and pass it to the adapter.
+
+```ts file=./samples/webdav-file-storage-adapter.ts
+
+```
+
+Other settings:
+
+```ts file=./samples/webdav-file-storage-adapter-settings.ts
+
+```
+
+:::info
+The adapter keeps the WebDAV client it is given, so a single client serves every operation. Configure authentication, headers and `remoteBasePath` on the client itself.
+:::
+
+:::warning
+This adapter does not support signed upload, signed download and public urls.
+It also doesn't support explicitly setting the content-type and will instead infer the content-type from the file name.
+:::
 
 ## SignedFileStorageAdapter
 
