@@ -5,6 +5,7 @@
 import { FileSize } from "@/file-size/implementations/_module-exports.js";
 
 import type { IHttpFile } from "@/http-router/contracts/_module-exports.js";
+import type { Bytes } from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -12,7 +13,7 @@ import type { IHttpFile } from "@/http-router/contracts/_module-exports.js";
 export class HttpFile implements IHttpFile {
     constructor(private readonly file: File) {}
 
-    async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+    async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
         yield* this.file.stream();
     }
 
@@ -20,7 +21,7 @@ export class HttpFile implements IHttpFile {
         return this.file.text();
     }
 
-    asBytes(): Promise<Uint8Array> {
+    asBytes(): Promise<Bytes> {
         return this.file.bytes();
     }
 
@@ -28,7 +29,7 @@ export class HttpFile implements IHttpFile {
         return this.file.arrayBuffer();
     }
 
-    asReadableStream(): ReadableStream<Uint8Array> {
+    asReadableStream(): ReadableStream<Bytes> {
         return this.file.stream();
     }
 

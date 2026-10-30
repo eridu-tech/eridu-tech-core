@@ -3,6 +3,8 @@ import { describe, expect, test } from "vitest";
 import { AsyncIterableCollection } from "@/collection/implementations/_module-exports.js";
 import { ResolveFileStream } from "@/file-storage/implementations/derivables/file-storage/resolve-file-stream.js";
 
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
+
 describe("class: ResolveFileStream", () => {
     test("Should convert string to Uint8Array", async () => {
         const input: AsyncIterable<string> = {
@@ -47,8 +49,8 @@ describe("class: ResolveFileStream", () => {
         expect(Array.from(result)).toEqual([0xaa, 0xbb]);
     });
     test("Should convert Uint8Array to Uint8Array", async () => {
-        const input: AsyncIterable<Uint8Array> = {
-            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+        const input: ByteStream = {
+            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                 yield Promise.resolve(new Uint8Array([10, 20]));
             },
         };

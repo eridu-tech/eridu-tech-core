@@ -7,6 +7,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
 
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
 export async function startMongoReplicaSet(): Promise<{
     container: StartedMongoDBContainer;
@@ -112,13 +113,13 @@ export function isBytesArrayEqualityTester(
  * @internal
  */
 export async function resolveStream(
-    stream: AsyncIterable<Uint8Array> | null,
-): Promise<Uint8Array | null> {
+    stream: ByteStream | null,
+): Promise<Bytes | null> {
     if (!stream) {
         return null;
     }
 
-    const chunks: Array<Uint8Array> = [];
+    const chunks: Array<Bytes> = [];
     let totalLength = 0;
 
     // 1. Collect all chunks and track the total byte length

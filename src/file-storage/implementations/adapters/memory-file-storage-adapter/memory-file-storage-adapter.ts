@@ -11,11 +11,14 @@ import type {
     IFileStorage,
     IFileStorageAdapter,
     FileAdapterMetadata,
-    FileAdapterStream,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
-import type { IDeinitizable } from "@/utilities/_module-exports.js";
+import type {
+    Bytes,
+    ByteStream,
+    IDeinitizable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/memory-file-storage-adapter"`
@@ -56,19 +59,19 @@ export class MemoryFileStorageAdapter
         return Promise.resolve(this.map.has(key));
     }
 
-    getStream(key: string): Promise<FileAdapterStream | null> {
+    getStream(key: string): Promise<ByteStream | null> {
         const file = this.map.get(key);
         if (file === undefined) {
             return Promise.resolve(null);
         }
         return Promise.resolve({
-            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                 yield Promise.resolve(new Uint8Array(file.data));
             },
-        } satisfies FileAdapterStream);
+        } satisfies ByteStream);
     }
 
-    getBytes(key: string): Promise<Uint8Array | null> {
+    getBytes(key: string): Promise<Bytes | null> {
         const file = this.map.get(key);
         if (file === undefined) {
             return Promise.resolve(null);

@@ -16,7 +16,7 @@ import type {
     IFileStorage,
 } from "@/file-storage/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
-import type { Promisable } from "@/utilities/_module-exports.js";
+import type { Bytes, Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/test-utilities"`
@@ -341,7 +341,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -360,7 +360,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -379,7 +379,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -391,7 +391,7 @@ export function fileStorageTestSuite(
                     );
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(newData);
                             },
                         },
@@ -411,7 +411,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -423,7 +423,7 @@ export function fileStorageTestSuite(
                     );
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(newData);
                             },
                         },
@@ -443,7 +443,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -455,7 +455,7 @@ export function fileStorageTestSuite(
                     );
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(newData);
                             },
                         },
@@ -579,7 +579,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -598,7 +598,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -617,7 +617,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -629,7 +629,7 @@ export function fileStorageTestSuite(
                     );
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(newData);
                             },
                         },
@@ -649,7 +649,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -661,7 +661,7 @@ export function fileStorageTestSuite(
                     );
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(newData);
                             },
                         },
@@ -681,7 +681,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -693,7 +693,7 @@ export function fileStorageTestSuite(
                     );
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(newData);
                             },
                         },
@@ -788,7 +788,7 @@ export function fileStorageTestSuite(
                     const file = fileStorage.create(key);
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(data);
                             },
                         },
@@ -809,7 +809,7 @@ export function fileStorageTestSuite(
                     );
                     await file.putStream({
                         data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                            async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                                 yield Promise.resolve(newData);
                             },
                         },

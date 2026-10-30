@@ -21,6 +21,7 @@ import type {
     CookieSetSettings,
     CookieScope,
 } from "@/http-router/contracts/_module-exports.js";
+import type { ByteStream } from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -129,9 +130,7 @@ export class HttpRes implements IHttpRes {
         return this;
     }
 
-    setBody(
-        content: string | ArrayBuffer | Uint8Array | AsyncIterable<Uint8Array>,
-    ): IHttpRes {
+    setBody(content: string | ArrayBuffer | Uint8Array | ByteStream): IHttpRes {
         this.body = content;
         return this;
     }

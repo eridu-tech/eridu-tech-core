@@ -5,6 +5,7 @@
 import type { IFileSize } from "@/file-size/contracts/_module-exports.js";
 import type { FileSize } from "@/file-size/implementations/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { Bytes } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration options for generating signed download URLs.
@@ -130,7 +131,7 @@ export type IReadableFile = {
      *
      * @returns The file content as bytes, or null if not found
      */
-    getBytes(): Promise<Uint8Array | null>;
+    getBytes(): Promise<Bytes | null>;
 
     /**
      * Retrieves file content as a Uint8Array (binary data).
@@ -138,7 +139,7 @@ export type IReadableFile = {
      * @returns The file content as bytes
      * @throws {KeyNotFoundFileError} If the file is not found
      */
-    getBytesOrFail(): Promise<Uint8Array>;
+    getBytesOrFail(): Promise<Bytes>;
 
     /**
      * Retrieves file content as an ArrayBuffer (standard JavaScript).
@@ -161,7 +162,7 @@ export type IReadableFile = {
      *
      * @returns A readable stream, or null if not found
      */
-    getReadableStream(): Promise<ReadableStream<Uint8Array> | null>;
+    getReadableStream(): Promise<ReadableStream<Bytes> | null>;
 
     /**
      * Retrieves file content as a standard Web Streams API ReadableStream.
@@ -170,7 +171,7 @@ export type IReadableFile = {
      * @returns A readable stream
      * @throws {KeyNotFoundFileError} If the file is not found
      */
-    getReadableStreamOrFail(): Promise<ReadableStream<Uint8Array>>;
+    getReadableStreamOrFail(): Promise<ReadableStream<Bytes>>;
 
     /**
      * Retrieves metadata about the file without downloading its content.

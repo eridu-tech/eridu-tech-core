@@ -21,6 +21,7 @@ import type {
     WritableFileContent,
     WritableFileStream,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { Bytes } from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -75,11 +76,11 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
         return (await this.getFile()).getTextOrFail();
     }
 
-    async getBytes(): Promise<Uint8Array | null> {
+    async getBytes(): Promise<Bytes | null> {
         return (await this.getFile()).getBytes();
     }
 
-    async getBytesOrFail(): Promise<Uint8Array> {
+    async getBytesOrFail(): Promise<Bytes> {
         return (await this.getFile()).getBytesOrFail();
     }
 
@@ -91,11 +92,11 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
         return (await this.getFile()).getArrayBufferOrFail();
     }
 
-    async getReadableStream(): Promise<ReadableStream<Uint8Array> | null> {
+    async getReadableStream(): Promise<ReadableStream<Bytes> | null> {
         return (await this.getFile()).getReadableStream();
     }
 
-    async getReadableStreamOrFail(): Promise<ReadableStream<Uint8Array>> {
+    async getReadableStreamOrFail(): Promise<ReadableStream<Bytes>> {
         return (await this.getFile()).getReadableStreamOrFail();
     }
 

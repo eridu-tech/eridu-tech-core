@@ -5,12 +5,12 @@
 import type {
     ISignedFileStorageAdapter,
     FileAdapterMetadata,
-    FileAdapterStream,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
     FileAdapterSignedDownloadUrlSettings,
     FileAdapterSignedUploadUrlSettings,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
 /**
  * The `NoOpFileStorageAdapter` will do nothing and is used for easily mocking {@link ISignedFileStorageAdapter | `ISignedFileStorageAdapter`} for testing.
@@ -41,11 +41,11 @@ export class NoOpFileStorageAdapter implements ISignedFileStorageAdapter {
         return Promise.resolve(false);
     }
 
-    getStream(_key: string): Promise<FileAdapterStream | null> {
+    getStream(_key: string): Promise<ByteStream | null> {
         return Promise.resolve(null);
     }
 
-    getBytes(_key: string): Promise<Uint8Array | null> {
+    getBytes(_key: string): Promise<Bytes | null> {
         return Promise.resolve(null);
     }
 

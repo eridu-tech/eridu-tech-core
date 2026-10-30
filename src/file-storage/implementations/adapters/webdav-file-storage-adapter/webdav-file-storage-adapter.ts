@@ -23,11 +23,11 @@ import type {
 import type { ICodec } from "@/codec/contracts/_module-exports.js";
 import type {
     FileAdapterMetadata,
-    FileAdapterStream,
     IFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `WebdavFileStorageAdapter`.
@@ -97,7 +97,7 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
         return readable;
     }
 
-    async getStream(key: string): Promise<FileAdapterStream | null> {
+    async getStream(key: string): Promise<ByteStream | null> {
         const path = this.keyPathMapper.toPath(key);
         if (!(await this.client.exists(path))) {
             return null;
@@ -111,7 +111,7 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
 
     private static resolveWebDavData(
         value: string | BufferLike | ResponseDataDetailed<string | BufferLike>,
-    ): Uint8Array {
+    ): Bytes {
         if (value instanceof ArrayBuffer) {
             return new Uint8Array(value);
         }
@@ -131,7 +131,7 @@ export class WebdavFileStorageAdapter implements IFileStorageAdapter {
         );
     }
 
-    async getBytes(key: string): Promise<Uint8Array | null> {
+    async getBytes(key: string): Promise<Bytes | null> {
         try {
             const path = this.keyPathMapper.toPath(key);
             const data = await this.client.getFileContents(path);

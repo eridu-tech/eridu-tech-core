@@ -32,7 +32,11 @@ import type {
     StaticFileDef,
     DynamicFileDef,
 } from "@/http-router/contracts/_module-exports.js";
-import type { InvocableFn, OneOrArray } from "@/utilities/_module-exports.js";
+import type {
+    Bytes,
+    InvocableFn,
+    OneOrArray,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for creating an {@link HttpReq} from a standard Web API `Request`.
@@ -876,7 +880,7 @@ export class HttpReq implements IHttpReq {
         return this.request.arrayBuffer();
     }
 
-    bytes(): Promise<Uint8Array> {
+    bytes(): Promise<Bytes> {
         return this.request.bytes();
     }
 

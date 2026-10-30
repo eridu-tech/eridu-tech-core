@@ -24,12 +24,13 @@ import { FsKeyPathMapper } from "@/file-storage/implementations/adapters/_shared
 import type { ICodec } from "@/codec/contracts/_module-exports.js";
 import type {
     FileAdapterMetadata,
-    FileAdapterStream,
     IFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 import type {
+    Bytes,
+    ByteStream,
     IDeinitizable,
     IInitizable,
 } from "@/utilities/_module-exports.js";
@@ -186,7 +187,7 @@ export class FsFileStorageAdapter
         return FsFileStorageAdapter.isFileFound(path);
     }
 
-    async getStream(key: string): Promise<FileAdapterStream | null> {
+    async getStream(key: string): Promise<ByteStream | null> {
         const path = this.toPath(key);
         if (!(await FsFileStorageAdapter.isFileFound(path))) {
             return null;
@@ -194,7 +195,7 @@ export class FsFileStorageAdapter
         return createReadStream(path);
     }
 
-    async getBytes(key: string): Promise<Uint8Array | null> {
+    async getBytes(key: string): Promise<Bytes | null> {
         try {
             const path = this.toPath(key);
             const file = await readFile(path);

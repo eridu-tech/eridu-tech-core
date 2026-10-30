@@ -6,6 +6,7 @@ import { fileTypeFromBuffer, fileTypeStream } from "file-type";
 
 import type { IFileStorageAdapter } from "@/file-storage/contracts/_module-exports.js";
 import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
 /**
  * Creates a plugin that infers the content type from the actual file content
@@ -24,9 +25,7 @@ import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
  * @group Plugins
  */
 export function withFileStorageInferFileTypeOnWrite(): PluginFn<IFileStorageAdapter> {
-    async function inferContentTypeFromBuffer(
-        data: Uint8Array,
-    ): Promise<string> {
+    async function inferContentTypeFromBuffer(data: Bytes): Promise<string> {
         const result = await fileTypeFromBuffer(data);
         if (result === undefined) {
             return "application/octet-stream";
@@ -34,11 +33,9 @@ export function withFileStorageInferFileTypeOnWrite(): PluginFn<IFileStorageAdap
         return result.mime;
     }
 
-    async function inferContentTypeFromStream(
-        data: AsyncIterable<Uint8Array>,
-    ): Promise<{
+    async function inferContentTypeFromStream(data: ByteStream): Promise<{
         contentType: string;
-        data: AsyncIterable<Uint8Array>;
+        data: ByteStream;
     }> {
         const stream = await fileTypeStream(ReadableStream.from(data));
         if (stream.fileType === undefined) {

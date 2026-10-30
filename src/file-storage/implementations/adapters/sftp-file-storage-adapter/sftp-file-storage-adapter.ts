@@ -18,12 +18,12 @@ import type SftpClient from "ssh2-sftp-client";
 import type { ICodec } from "@/codec/contracts/_module-exports.js";
 import type {
     FileAdapterMetadata,
-    FileAdapterStream,
     IFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 import type { IGenericPoolBase } from "@/generic-pool/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/sftp-file-storage-adapter"`
@@ -192,7 +192,7 @@ export class SftpFileStorageAdapter implements IFileStorageAdapter {
         });
     }
 
-    async getStream(key: string): Promise<FileAdapterStream | null> {
+    async getStream(key: string): Promise<ByteStream | null> {
         const filePath = this.toPath(key);
         const client = await this.pool.acquireOrFail();
 
@@ -218,7 +218,7 @@ export class SftpFileStorageAdapter implements IFileStorageAdapter {
         return readStream;
     }
 
-    async getBytes(key: string): Promise<Uint8Array | null> {
+    async getBytes(key: string): Promise<Bytes | null> {
         return await this.pool.run(async (client) => {
             try {
                 const filePath = this.toPath(key);

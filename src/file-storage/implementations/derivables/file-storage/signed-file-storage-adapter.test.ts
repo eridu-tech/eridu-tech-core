@@ -6,12 +6,12 @@ import type {
     FileAdapterMetadata,
     FileAdapterSignedDownloadUrlSettings,
     FileAdapterSignedUploadUrlSettings,
-    FileAdapterStream,
     IFileStorageAdapter,
     IFileUrlAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
 describe("class: SignedFileStorageAdapter", () => {
     let signedFileStorageAdapter: SignedFileStorageAdapter;
@@ -19,10 +19,10 @@ describe("class: SignedFileStorageAdapter", () => {
         exists(_key: string): Promise<boolean> {
             return Promise.resolve(false);
         },
-        getStream(_key: string): Promise<FileAdapterStream | null> {
+        getStream(_key: string): Promise<ByteStream | null> {
             return Promise.resolve(null);
         },
-        getBytes(_key: string): Promise<Uint8Array | null> {
+        getBytes(_key: string): Promise<Bytes | null> {
             return Promise.resolve(null);
         },
         getMetaData(_key: string): Promise<FileAdapterMetadata | null> {
@@ -140,7 +140,7 @@ describe("class: SignedFileStorageAdapter", () => {
                 contentDisposition: null,
                 cacheControl: null,
                 data: {
-                    async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                    async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                         yield Promise.resolve(
                             new Uint8Array(Buffer.from("CONTENT", "utf8")),
                         );

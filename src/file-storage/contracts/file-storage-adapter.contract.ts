@@ -2,6 +2,8 @@
  * @module FileStorage
  */
 
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
+
 /**
  * Configuration for generating temporary signed download URLs for files.
  * These settings control how the presigned download URL behaves when accessed.
@@ -151,19 +153,6 @@ export type FileAdapterMetadata = {
 };
 
 /**
- * Async iterable stream of file content chunks.
- * Each chunk is a Uint8Array representing a portion of the file.
- * Allows streaming large files without loading entire content into memory.
- *
- * Used for both reading (download) and writing (upload) operations.
- * Iterating the stream will fetch/produce chunks sequentially.
- *
- * IMPORT_PATH: `"eridu-tech/file-storage/contracts"`
- * @group Contracts
- */
-export type FileAdapterStream = AsyncIterable<Uint8Array>;
-
-/**
  * Common HTTP headers configuration for writable file operations.
  * These settings control caching, compression, and client-side behavior for files.
  *
@@ -225,7 +214,7 @@ export type WritableFileAdapterContent = WritableFileAdapterCommonSettings & {
      * Must be loaded entirely in memory before writing.
      * For large files, use WritableFileAdapterStream instead.
      */
-    data: Uint8Array;
+    data: Bytes;
 
     /**
      * Size of the complete file in bytes.
@@ -251,7 +240,7 @@ export type WritableFileAdapterStream = WritableFileAdapterCommonSettings & {
      * Each chunk is a Uint8Array produced sequentially as iteration progresses.
      * Used for large files, piped sources, or real-time content generation.
      */
-    data: FileAdapterStream;
+    data: ByteStream;
 
     /**
      * Total expected file size in bytes.
@@ -288,7 +277,7 @@ export type IFileStorageAdapter = {
      *
      * @returns Async iterable of Uint8Array chunks, or null if file not found
      */
-    getStream(key: string): Promise<FileAdapterStream | null>;
+    getStream(key: string): Promise<ByteStream | null>;
 
     /**
      * Retrieves complete file content as a byte array.
@@ -299,7 +288,7 @@ export type IFileStorageAdapter = {
      *
      * @returns Complete file bytes as Uint8Array, or null if file not found
      */
-    getBytes(key: string): Promise<Uint8Array | null>;
+    getBytes(key: string): Promise<Bytes | null>;
 
     /**
      * Retrieves file metadata (ETag, content type, size, modification date).

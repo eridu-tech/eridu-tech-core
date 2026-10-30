@@ -13,7 +13,7 @@ import type {
     CoercibleMultiStringInputs,
 } from "@/http-router/contracts/_shared.js";
 import type { IHttpFileCollection } from "@/http-router/contracts/http-file-collection.contract.js";
-import type { StrIntellisense } from "@/utilities/_module-exports.js";
+import type { Bytes, StrIntellisense } from "@/utilities/_module-exports.js";
 
 /**
  * Represents the HTTP request method: common verbs autocomplete, any string is
@@ -186,7 +186,7 @@ export type IHttpReq = AsyncIterable<unknown> & {
     /**
      * Reads the request body as a `Uint8Array`.
      */
-    bytes(): Promise<Uint8Array>;
+    bytes(): Promise<Bytes>;
 
     /**
      * Reads the request body as an `ArrayBuffer`.

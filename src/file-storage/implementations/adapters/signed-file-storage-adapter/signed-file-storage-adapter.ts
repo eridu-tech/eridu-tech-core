@@ -8,13 +8,13 @@ import type {
     FileAdapterSignedDownloadUrlSettings,
     FileAdapterSignedUploadUrlSettings,
     FileAdapterMetadata,
-    FileAdapterStream,
     IFileStorageAdapter,
     IFileUrlAdapter,
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `SignedFileStorageAdapter`.
@@ -113,11 +113,11 @@ export class SignedFileStorageAdapter implements ISignedFileStorageAdapter {
         return this.adapter.exists(key);
     }
 
-    getStream(key: string): Promise<FileAdapterStream | null> {
+    getStream(key: string): Promise<ByteStream | null> {
         return this.adapter.getStream(key);
     }
 
-    getBytes(key: string): Promise<Uint8Array | null> {
+    getBytes(key: string): Promise<Bytes | null> {
         return this.adapter.getBytes(key);
     }
 

@@ -13,7 +13,7 @@ import type {
     FileAdapterMetadata,
     IFileStorageAdapter,
 } from "@/file-storage/contracts/_module-exports.js";
-import type { Promisable } from "@/utilities/_module-exports.js";
+import type { Bytes, Promisable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/test-utilities"`
@@ -127,7 +127,7 @@ export function fileStorageAdapterTestSuite(
 
                 expect(result).toBeNull();
             });
-            test("Should return AsyncIterable<Uint8Array> when key exists", async () => {
+            test("Should return ByteStream when key exists", async () => {
                 const key = "a";
 
                 const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
@@ -413,7 +413,7 @@ export function fileStorageAdapterTestSuite(
                 const contentType = "text/plain";
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(data);
                         },
                     },
@@ -440,7 +440,7 @@ export function fileStorageAdapterTestSuite(
                 const contentType = "text/plain";
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(data);
                         },
                     },
@@ -467,7 +467,7 @@ export function fileStorageAdapterTestSuite(
                 const contentType = "text/plain";
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(data);
                         },
                     },
@@ -483,7 +483,7 @@ export function fileStorageAdapterTestSuite(
                 const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(newData);
                         },
                     },
@@ -510,7 +510,7 @@ export function fileStorageAdapterTestSuite(
                 const contentType = "text/plain";
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(data);
                         },
                     },
@@ -526,7 +526,7 @@ export function fileStorageAdapterTestSuite(
                 const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(newData);
                         },
                     },
@@ -553,7 +553,7 @@ export function fileStorageAdapterTestSuite(
                 const contentType = "text/plain";
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(data);
                         },
                     },
@@ -569,7 +569,7 @@ export function fileStorageAdapterTestSuite(
                 const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(newData);
                         },
                     },
@@ -720,7 +720,7 @@ export function fileStorageAdapterTestSuite(
                 const contentType = "application/octet-stream";
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(data);
                         },
                     },
@@ -753,7 +753,7 @@ export function fileStorageAdapterTestSuite(
                 const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                 await adapter.putStream(key, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(newData);
                         },
                     },
@@ -781,7 +781,7 @@ export function fileStorageAdapterTestSuite(
                 const contentType = "application/octet-stream";
                 await adapter.putStream(parentKey, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(parentData);
                         },
                     },
@@ -794,7 +794,7 @@ export function fileStorageAdapterTestSuite(
                 });
                 await adapter.putStream(nestedKey, {
                     data: {
-                        async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+                        async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
                             yield Promise.resolve(nestedData);
                         },
                     },

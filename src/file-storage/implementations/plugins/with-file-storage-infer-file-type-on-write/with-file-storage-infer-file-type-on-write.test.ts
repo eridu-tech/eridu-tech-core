@@ -10,8 +10,9 @@ import type {
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
-function iterableOf(chunk: Uint8Array): AsyncIterable<Uint8Array> {
+function iterableOf(chunk: Bytes): ByteStream {
     return {
         [Symbol.asyncIterator]: () => {
             let yielded = false;
@@ -100,7 +101,7 @@ describe("function: withFileStorageInferFileTypeOnWrite", () => {
                 withFileStorageInferFileTypeOnWrite(),
             );
 
-            const stream: AsyncIterable<Uint8Array> = iterableOf(zipBytes);
+            const stream: ByteStream = iterableOf(zipBytes);
             const content = {
                 data: stream,
                 fileSizeInBytes: null,
@@ -125,7 +126,7 @@ describe("function: withFileStorageInferFileTypeOnWrite", () => {
                 withFileStorageInferFileTypeOnWrite(),
             );
 
-            const stream: AsyncIterable<Uint8Array> = iterableOf(unknownBytes);
+            const stream: ByteStream = iterableOf(unknownBytes);
             const content = {
                 data: stream,
                 fileSizeInBytes: null,
@@ -142,7 +143,7 @@ describe("function: withFileStorageInferFileTypeOnWrite", () => {
                 contentType: "application/octet-stream",
             });
             const forwardedData = spy.mock.calls[0]?.[1]?.data;
-            const chunks: Array<Uint8Array> = [];
+            const chunks: Array<Bytes> = [];
             if (forwardedData !== undefined) {
                 for await (const chunk of forwardedData) {
                     chunks.push(chunk);

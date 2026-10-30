@@ -10,6 +10,7 @@ import type {
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { ByteStream } from "@/utilities/_module-exports.js";
 
 describe("function: withFileStoragePrefix", () => {
     const adapter = new NoOpFileStorageAdapter();
@@ -153,7 +154,7 @@ describe("function: withFileStoragePrefix", () => {
 
             const enhanced = withPlugin(adapter, withFileStoragePrefix(prefix));
 
-            const stream3: AsyncIterable<Uint8Array> = {
+            const stream3: ByteStream = {
                 [Symbol.asyncIterator]: () => ({
                     next: () =>
                         Promise.resolve({

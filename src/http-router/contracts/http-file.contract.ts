@@ -3,6 +3,7 @@
  */
 
 import type { FileSize } from "@/file-size/implementations/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
 /**
  * Represents a file that was uploaded as part of an HTTP request (typically via `multipart/form-data`).
@@ -12,7 +13,7 @@ import type { FileSize } from "@/file-size/implementations/_module-exports.js";
  * IMPORT_PATH: `"eridu-tech/http-router/contracts"`
  * @group Contracts
  */
-export type IHttpFile = AsyncIterable<Uint8Array> & {
+export type IHttpFile = ByteStream & {
     /**
      * Reads the file content as a UTF-8 text string.
      *
@@ -25,7 +26,7 @@ export type IHttpFile = AsyncIterable<Uint8Array> & {
      *
      * @returns A promise that resolves with the file content as bytes.
      */
-    asBytes(): Promise<Uint8Array>;
+    asBytes(): Promise<Bytes>;
 
     /**
      * Reads the file content as an `ArrayBuffer`.
@@ -35,12 +36,12 @@ export type IHttpFile = AsyncIterable<Uint8Array> & {
     asArrayBuffer(): Promise<ArrayBuffer>;
 
     /**
-     * Reads the file content as a `ReadableStream<Uint8Array>` using the Web Streams API.
+     * Reads the file content as a `ReadableStream<Bytes>` using the Web Streams API.
      * Suitable for streaming large files without loading the entire content into memory.
      *
      * @returns A promise that resolves with a readable stream of the file content.
      */
-    asReadableStream(): ReadableStream<Uint8Array>;
+    asReadableStream(): ReadableStream<Bytes>;
 
     /**
      * Returns the underlying Web API `File` object.

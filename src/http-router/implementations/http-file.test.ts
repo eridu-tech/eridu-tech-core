@@ -7,6 +7,8 @@ import { describe, expect, test, vi } from "vitest";
 import { FileSize } from "@/file-size/implementations/_module-exports.js";
 import { HttpFile } from "@/http-router/implementations/http-file.js";
 
+import type { Bytes } from "@/utilities/_module-exports.js";
+
 describe("class: HttpFile", () => {
     function createTestFile(
         name = "test.txt",
@@ -224,7 +226,7 @@ describe("class: HttpFile", () => {
             const streamSpy = vi.spyOn(file, "stream");
             const httpFile = new HttpFile(file);
 
-            const chunks: Array<Uint8Array> = [];
+            const chunks: Array<Bytes> = [];
             for await (const chunk of httpFile) {
                 chunks.push(chunk);
             }

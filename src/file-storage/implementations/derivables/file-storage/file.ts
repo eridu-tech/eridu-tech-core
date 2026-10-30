@@ -18,7 +18,10 @@ import type {
     WritableFileContent,
     FileUploadUrlOptions,
 } from "@/file-storage/contracts/_module-exports.js";
-import type { InternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
+import type {
+    Bytes,
+    InternalSerdeIdentifiable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -115,11 +118,11 @@ export class File implements IFile, InternalSerdeIdentifiable {
         return text;
     }
 
-    async getBytes(): Promise<Uint8Array | null> {
+    async getBytes(): Promise<Bytes | null> {
         return await this.adapter.getBytes(this.internalKey);
     }
 
-    async getBytesOrFail(): Promise<Uint8Array> {
+    async getBytesOrFail(): Promise<Bytes> {
         const bytes = await this.getBytes();
         if (bytes === null) {
             throw KeyNotFoundFileError.create(this.internalKey);
@@ -143,7 +146,7 @@ export class File implements IFile, InternalSerdeIdentifiable {
         return arrayBuffer;
     }
 
-    async getReadableStream(): Promise<ReadableStream<Uint8Array> | null> {
+    async getReadableStream(): Promise<ReadableStream<Bytes> | null> {
         const stream = await this.adapter.getStream(this.internalKey);
         if (stream === null) {
             return null;
@@ -151,7 +154,7 @@ export class File implements IFile, InternalSerdeIdentifiable {
         return ReadableStream.from(stream);
     }
 
-    async getReadableStreamOrFail(): Promise<ReadableStream<Uint8Array>> {
+    async getReadableStreamOrFail(): Promise<ReadableStream<Bytes>> {
         const stream = await this.getReadableStream();
         if (stream === null) {
             throw KeyNotFoundFileError.create(this.internalKey);

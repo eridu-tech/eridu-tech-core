@@ -26,12 +26,13 @@ import type {
     FileAdapterSignedUploadUrlSettings,
     FileAdapterSignedDownloadUrlSettings,
     FileAdapterMetadata,
-    FileAdapterStream,
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 import type {
+    Bytes,
+    ByteStream,
     IDeinitizable,
     IInitizable,
     Invocable,
@@ -254,7 +255,7 @@ export class S3FileStorageAdapter
         return this._exists(key);
     }
 
-    async getStream(key: string): Promise<FileAdapterStream | null> {
+    async getStream(key: string): Promise<ByteStream | null> {
         try {
             const response = await this.client.send(
                 new GetObjectCommand({
@@ -272,7 +273,7 @@ export class S3FileStorageAdapter
         }
     }
 
-    async getBytes(key: string): Promise<Uint8Array | null> {
+    async getBytes(key: string): Promise<Bytes | null> {
         try {
             const response = await this.client.send(
                 new GetObjectCommand({

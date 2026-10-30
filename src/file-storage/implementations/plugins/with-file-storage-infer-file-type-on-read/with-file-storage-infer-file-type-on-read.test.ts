@@ -10,8 +10,9 @@ import type {
     FileAdapterMetadata,
     ISignedFileStorageAdapter,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
-function iterableOf(chunk: Uint8Array): AsyncIterable<Uint8Array> {
+function iterableOf(chunk: Bytes): ByteStream {
     return {
         [Symbol.asyncIterator]: () => {
             let yielded = false;

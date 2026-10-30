@@ -11,7 +11,7 @@ import type {
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
 } from "@/file-storage/contracts/_module-exports.js";
-import type { InvocableFn } from "@/utilities/_module-exports.js";
+import type { ByteStream, InvocableFn } from "@/utilities/_module-exports.js";
 
 describe("function: withFileStorageKeyValidator", () => {
     const adapter = new NoOpFileStorageAdapter();
@@ -307,7 +307,7 @@ describe("function: withFileStorageKeyValidator", () => {
                 withFileStorageKeyValidator(succeedingKeyValidator),
             );
 
-            const stream3: AsyncIterable<Uint8Array> = {
+            const stream3: ByteStream = {
                 [Symbol.asyncIterator]: () => ({
                     next: () =>
                         Promise.resolve({
@@ -346,7 +346,7 @@ describe("function: withFileStorageKeyValidator", () => {
                 withFileStorageKeyValidator(failingKeyValidator),
             );
 
-            const stream3: AsyncIterable<Uint8Array> = {
+            const stream3: ByteStream = {
                 [Symbol.asyncIterator]: () => ({
                     next: () =>
                         Promise.resolve({

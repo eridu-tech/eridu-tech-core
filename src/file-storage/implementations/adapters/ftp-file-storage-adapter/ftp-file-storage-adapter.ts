@@ -18,12 +18,12 @@ import type { Client } from "basic-ftp";
 import type { ICodec } from "@/codec/contracts/_module-exports.js";
 import type {
     FileAdapterMetadata,
-    FileAdapterStream,
     IFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 import type { IGenericPoolBase } from "@/generic-pool/contracts/_module-exports.js";
+import type { Bytes, ByteStream } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/Ftp-file-storage-adapter"`
@@ -96,7 +96,7 @@ export type FtpFileStorageAdapterSettings = {
  * @internal
  */
 class ToBufferStream implements AsyncIterable<Buffer> {
-    constructor(private readonly data: AsyncIterable<Uint8Array>) {}
+    constructor(private readonly data: ByteStream) {}
 
     async *[Symbol.asyncIterator](): AsyncIterator<Buffer> {
         for await (const chunk of this.data) {
@@ -108,10 +108,10 @@ class ToBufferStream implements AsyncIterable<Buffer> {
 /**
  * @internal
  */
-class ToUint8ArrayStream implements AsyncIterable<Uint8Array> {
+class ToUint8ArrayStream implements ByteStream {
     constructor(private readonly data: AsyncIterable<Buffer>) {}
 
-    async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
+    async *[Symbol.asyncIterator](): AsyncIterator<Bytes> {
         for await (const chunk of this.data) {
             yield new Uint8Array(chunk);
         }
@@ -232,7 +232,7 @@ export class FtpFileStorageAdapter implements IFileStorageAdapter {
         });
     }
 
-    async getStream(key: string): Promise<FileAdapterStream | null> {
+    async getStream(key: string): Promise<ByteStream | null> {
         const client = await this.pool.acquireOrFail();
 
         let isNotFound: boolean;
@@ -259,7 +259,7 @@ export class FtpFileStorageAdapter implements IFileStorageAdapter {
         return new ToUint8ArrayStream(stream);
     }
 
-    async getBytes(key: string): Promise<Uint8Array | null> {
+    async getBytes(key: string): Promise<Bytes | null> {
         return await this.pool.run(async (client) => {
             try {
                 const path = this.toPath(key);
