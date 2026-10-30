@@ -12,7 +12,7 @@ import {
     rm,
     readdir,
 } from "node:fs/promises";
-import { join, normalize } from "node:path";
+import { join, normalize, relative } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 
@@ -75,6 +75,28 @@ export type FsFileStorageAdapterSettings = {
      */
     codec?: ICodec<string, string>;
 };
+
+/**
+ * @internal
+ */
+class FsRecursiveFileWalker implements AsyncIterable<string> {
+    constructor(private readonly path: string) {}
+
+    async *[Symbol.asyncIterator](): AsyncIterator<string> {
+        const results = await readdir(this.path, {
+            recursive: false,
+            withFileTypes: true,
+        });
+        for (const result of results) {
+            const path = join(this.path, result.name);
+            if (result.isDirectory()) {
+                yield* new FsRecursiveFileWalker(normalize(path));
+            } else {
+                yield path;
+            }
+        }
+    }
+}
 
 /**
  * The `FsFileStorageAdapter` is used for local development when persistence is needed when restarting the dev server.
@@ -274,6 +296,15 @@ export class FsFileStorageAdapter
         return this._removeMany(keys);
     }
 
+    private pathStartsWithPrefix(realPath: string, prefix: string): boolean {
+        const key = this.keyPathMapper.fromPath(
+            // On windows they left slashes \\, this.keyPathMapper.fromPath method expects left slashes
+            relative(this.location, realPath).replaceAll(/\\/g, "/"),
+        );
+
+        return key.startsWith(prefix);
+    }
+
     async removeByPrefix(prefix: string): Promise<void> {
         if (prefix === "") {
             await rm(normalize(this.location), {
@@ -283,23 +314,14 @@ export class FsFileStorageAdapter
             return;
         }
 
-        const paths = await readdir(normalize(this.location), {
-            recursive: true,
-        });
-
-        for (const path of paths) {
-            if (
-                !this.keyPathMapper
-                    .fromPath(
-                        // On windows they left slashes \\, this.keyPathMapper.fromPath method expects left slashes
-                        path.replaceAll(/\\/g, "/"),
-                    )
-                    .startsWith(prefix)
-            ) {
+        for await (const path of new FsRecursiveFileWalker(
+            normalize(this.location),
+        )) {
+            if (!this.pathStartsWithPrefix(path, prefix)) {
                 continue;
             }
             try {
-                await rm(join(this.location, path), {
+                await rm(path, {
                     recursive: true,
                 });
             } catch (error: unknown) {
