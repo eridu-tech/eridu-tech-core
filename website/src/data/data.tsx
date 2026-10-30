@@ -76,7 +76,7 @@ const EXISTING_FOUNDATION_RECORD = {
         name: "Middleware and AOP",
         icon: <Plug size="1.5rem" strokeWidth={1.5} />,
         title: <>Middleware and AOP</>,
-        link: "/docs/foundation/middleware",
+        link: "/docs/components/foundation/middleware",
         maturity: 90,
         description: (
             <>
@@ -90,7 +90,7 @@ const EXISTING_FOUNDATION_RECORD = {
         name: "DI Container",
         icon: <Box size="1.5rem" strokeWidth={1.5} />,
         title: <>DI Container</>,
-        link: "/docs/foundation/di",
+        link: "/docs/components/foundation/di",
         maturity: 90,
         description: (
             <>
@@ -103,7 +103,7 @@ const EXISTING_FOUNDATION_RECORD = {
         name: "Serde",
         icon: <ArrowLeftRight size="1.5rem" strokeWidth={1.5} />,
         title: <>Serde</>,
-        link: "/docs/foundation/serde",
+        link: "/docs/components/foundation/serde",
         maturity: 80,
         description: (
             <>
@@ -117,7 +117,7 @@ const EXISTING_FOUNDATION_RECORD = {
         name: "Execution Context",
         icon: <Zap size="1.5rem" strokeWidth={1.5} />,
         title: <>Execution Context</>,
-        link: "/docs/foundation/execution_context",
+        link: "/docs/components/foundation/execution_context",
         maturity: 90,
         description: (
             <>
@@ -131,7 +131,7 @@ const EXISTING_FOUNDATION_RECORD = {
         name: "Typed Config Access",
         icon: <Globe size="1.5rem" strokeWidth={1.5} />,
         title: <>Typed Config Access</>,
-        link: "/docs/foundation/config_accessor",
+        link: "/docs/components/foundation/config_accessor",
         maturity: 90,
         description: (
             <>
@@ -144,7 +144,7 @@ const EXISTING_FOUNDATION_RECORD = {
         name: "Typed Env Access",
         icon: <Globe size="1.5rem" strokeWidth={1.5} />,
         title: <>Typed Env Access</>,
-        link: "/docs/foundation/env_accessor",
+        link: "/docs/components/foundation/env_accessor",
         maturity: 90,
         description: (
             <>
@@ -157,7 +157,7 @@ const EXISTING_FOUNDATION_RECORD = {
         name: "Transaction Context",
         icon: <ShieldCheck size="1.5rem" strokeWidth={1.5} />,
         title: <>Transaction Context</>,
-        link: "/docs/foundation/transaction_context/transaction_context_usage",
+        link: "/docs/components/foundation/transaction_context/transaction_context_usage",
         maturity: 90,
         description: (
             <>
@@ -175,7 +175,7 @@ const EXISTING_STORAGE_RECORD = {
         name: "Cache",
         icon: <HardDrive size="1.5rem" strokeWidth={1.5} />,
         title: <>Cache</>,
-        link: "/docs/storage/cache/cache_usage",
+        link: "/docs/components/storage/cache/cache_usage",
         maturity: 90,
         description: (
             <>
@@ -188,7 +188,7 @@ const EXISTING_STORAGE_RECORD = {
         name: "File Storage",
         icon: <Database size="1.5rem" strokeWidth={1.5} />,
         title: <>File Storage</>,
-        link: "/docs/storage/file_storage/file_storage_usage",
+        link: "/docs/components/storage/file_storage/file_storage_usage",
         maturity: 90,
         description: (
             <>
@@ -206,7 +206,7 @@ const EXISTING_RELIABILITY_RECORD = {
         name: "Circuit Breaker",
         icon: <CircuitBoard size="1.5rem" strokeWidth={1.5} />,
         title: <>Circuit Breaker</>,
-        link: "/docs/reliability/circuit_breaker/circuit_breaker_usage",
+        link: "/docs/components/reliability/circuit_breaker/circuit_breaker_usage",
         maturity: 90,
         description: (
             <>
@@ -219,7 +219,7 @@ const EXISTING_RELIABILITY_RECORD = {
         name: "Rate Limiter",
         icon: <Gauge size="1.5rem" strokeWidth={1.5} />,
         title: <>Rate Limiter</>,
-        link: "/docs/reliability/rate-limiter/rate_limiter_usage",
+        link: "/docs/components/reliability/rate-limiter/rate_limiter_usage",
         maturity: 90,
         description: (
             <>
@@ -233,7 +233,7 @@ const EXISTING_RELIABILITY_RECORD = {
         name: "Resilience",
         icon: <ShieldCheck size="1.5rem" strokeWidth={1.5} />,
         title: <>Resilience</>,
-        link: "/docs/reliability/resilience",
+        link: "/docs/components/reliability/resilience",
         maturity: 90,
         description: (
             <>
@@ -250,7 +250,7 @@ const EXISTING_CONCURRENCY_RECORD = {
         name: "Lock",
         icon: <Lock size="1.5rem" strokeWidth={1.5} />,
         title: <>Lock</>,
-        link: "/docs/concurrency/lock/lock_usage",
+        link: "/docs/components/concurrency/lock/lock_usage",
         maturity: 90,
         description: (
             <>
@@ -263,7 +263,7 @@ const EXISTING_CONCURRENCY_RECORD = {
         name: "Shared Lock",
         icon: <Share2 size="1.5rem" strokeWidth={1.5} />,
         title: <>Shared Lock</>,
-        link: "/docs/concurrency/shared_lock/shared_lock_usage",
+        link: "/docs/components/concurrency/shared_lock/shared_lock_usage",
         maturity: 90,
         description: (
             <>
@@ -276,7 +276,7 @@ const EXISTING_CONCURRENCY_RECORD = {
         name: "Semaphore",
         icon: <List size="1.5rem" strokeWidth={1.5} />,
         title: <>Semaphore</>,
-        link: "/docs/concurrency/semaphore/semaphore_usage",
+        link: "/docs/components/concurrency/semaphore/semaphore_usage",
         maturity: 90,
         description: (
             <>
@@ -293,7 +293,7 @@ const EXISTING_MESSAGING_RECORD = {
         name: "Event Bus",
         icon: <Radio size="1.5rem" strokeWidth={1.5} />,
         title: <>Event Bus</>,
-        link: "/docs/messaging/event_bus/event_bus_usage",
+        link: "/docs/components/messaging/event_bus/event_bus_usage",
         maturity: 90,
         description: (
             <>
@@ -311,7 +311,7 @@ const EXISTING_WEB_RECORD = {
         name: "HTTP Router",
         icon: <GitBranch size="1.5rem" strokeWidth={1.5} />,
         title: <>HTTP Router</>,
-        link: "/docs/web/http_router/http_router_usage",
+        link: "/docs/components/web/http_router/http_router_usage",
         maturity: 90,
         description: (
             <>
@@ -329,7 +329,7 @@ const EXISTING_UTILITIES_RECORD = {
         name: "Collection",
         icon: <Layers size="1.5rem" strokeWidth={1.5} />,
         title: <>Collection</>,
-        link: "/docs/utilities/collection",
+        link: "/docs/components/utilities/collection",
         maturity: 90,
         description: (
             <>
@@ -342,7 +342,7 @@ const EXISTING_UTILITIES_RECORD = {
         name: "TimeSpan",
         icon: <Clock size="1.5rem" strokeWidth={1.5} />,
         title: <>TimeSpan</>,
-        link: "/docs/utilities/time_span",
+        link: "/docs/components/utilities/time_span",
         maturity: 90,
         description: (
             <>
@@ -356,7 +356,7 @@ const EXISTING_UTILITIES_RECORD = {
         name: "FileSize",
         icon: <HardDrive size="1.5rem" strokeWidth={1.5} />,
         title: <>FileSize</>,
-        link: "/docs/utilities/file_size",
+        link: "/docs/components/utilities/file_size",
         maturity: 90,
         description: (
             <>
@@ -369,7 +369,7 @@ const EXISTING_UTILITIES_RECORD = {
         name: "Generic Pool",
         icon: <Boxes size="1.5rem" strokeWidth={1.5} />,
         title: <>Generic Pool</>,
-        link: "/docs/utilities/generic_pool",
+        link: "/docs/components/utilities/generic_pool",
         maturity: 90,
         description: (
             <>
@@ -383,7 +383,7 @@ const EXISTING_UTILITIES_RECORD = {
         name: "Backoff Policies",
         icon: <RefreshCw size="1.5rem" strokeWidth={1.5} />,
         title: <>Backoff Policies</>,
-        link: "/docs/utilities/backoff_policies",
+        link: "/docs/components/utilities/backoff_policies",
         maturity: 90,
         description: (
             <>
@@ -396,7 +396,7 @@ const EXISTING_UTILITIES_RECORD = {
         name: "ErrorPolicy Type",
         icon: <ShieldAlert size="1.5rem" strokeWidth={1.5} />,
         title: <>ErrorPolicy Type</>,
-        link: "/docs/utilities/error_policy_type",
+        link: "/docs/components/utilities/error_policy_type",
         maturity: 90,
         description: (
             <>
@@ -410,7 +410,7 @@ const EXISTING_UTILITIES_RECORD = {
         name: "Invocable",
         icon: <SquareFunction size="1.5rem" strokeWidth={1.5} />,
         title: <>Invocable</>,
-        link: "/docs/utilities/invocable",
+        link: "/docs/components/utilities/invocable",
         maturity: 90,
         description: (
             <>
@@ -424,7 +424,7 @@ const EXISTING_UTILITIES_RECORD = {
         name: "Codec",
         icon: <ArrowLeftRight size="1.5rem" strokeWidth={1.5} />,
         title: <>Codec</>,
-        link: "/docs/utilities/codec",
+        link: "/docs/components/utilities/codec",
         maturity: 80,
         description: (
             <>
@@ -918,13 +918,13 @@ export const STORAGE_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withCacheFactory",
         title: <>withCacheFactory</>,
-        link: "/docs/storage/cache/cache_middlewares/#with_cache_factory_middleware",
+        link: "/docs/components/storage/cache/cache_middlewares/#with_cache_factory_middleware",
         description: <>Caches the wrapped function&apos;s return value.</>,
     },
     {
         name: "withInvalidationFactory",
         title: <>withInvalidationFactory</>,
-        link: "/docs/storage/cache/cache_middlewares/#with_invalidation_factory_middleware",
+        link: "/docs/components/storage/cache/cache_middlewares/#with_invalidation_factory_middleware",
         description: (
             <>Invalidates a cache entry after the wrapped function runs.</>
         ),
@@ -935,19 +935,19 @@ export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withCircuitBreakerFactory",
         title: <>withCircuitBreakerFactory</>,
-        link: "/docs/reliability/circuit_breaker/circuit_breaker_middlewares/#with_circuit_breaker_factory_middleware",
+        link: "/docs/components/reliability/circuit_breaker/circuit_breaker_middlewares/#with_circuit_breaker_factory_middleware",
         description: <>Wraps function calls with a circuit breaker.</>,
     },
     {
         name: "withRateLimiterFactory",
         title: <>withRateLimiterFactory</>,
-        link: "/docs/reliability/rate-limiter/rate_limiter_middlewares/#with_rate_limiter_factory_middleware",
+        link: "/docs/components/reliability/rate-limiter/rate_limiter_middlewares/#with_rate_limiter_factory_middleware",
         description: <>Wraps function calls with a rate limiter.</>,
     },
     {
         name: "fallback",
         title: <>fallback</>,
-        link: "/docs/reliability/resilience/#fallback",
+        link: "/docs/components/reliability/resilience/#fallback",
         description: (
             <>Returns a fallback value when the wrapped function fails.</>
         ),
@@ -955,7 +955,7 @@ export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "retry",
         title: <>retry</>,
-        link: "/docs/reliability/resilience/#retry",
+        link: "/docs/components/reliability/resilience/#retry",
         description: (
             <>
                 Retries the wrapped function up to a maximum number of attempts.
@@ -965,7 +965,7 @@ export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "retryInterval",
         title: <>retryInterval</>,
-        link: "/docs/reliability/resilience/#retry_by_interval",
+        link: "/docs/components/reliability/resilience/#retry_by_interval",
         description: (
             <>
                 Retries the wrapped function at a fixed interval until it
@@ -976,7 +976,7 @@ export const RELIABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "timeout",
         title: <>timeout</>,
-        link: "/docs/reliability/resilience/#timeout",
+        link: "/docs/components/reliability/resilience/#timeout",
         description: (
             <>
                 Rejects the wrapped function if it does not complete within a
@@ -990,19 +990,19 @@ export const CONCURRENCY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withLockFactory",
         title: <>withLockFactory</>,
-        link: "/docs/concurrency/lock/lock_middlewares/#with_lock_factory_middleware",
+        link: "/docs/components/concurrency/lock/lock_middlewares/#with_lock_factory_middleware",
         description: <>Wraps function calls with a distributed lock.</>,
     },
     {
         name: "withSemaphoreFactory",
         title: <>withSemaphoreFactory</>,
-        link: "/docs/concurrency/semaphore/semaphore_middlewares/#with_semaphore_factory_middleware",
+        link: "/docs/components/concurrency/semaphore/semaphore_middlewares/#with_semaphore_factory_middleware",
         description: <>Wraps function calls with a distributed semaphore.</>,
     },
     {
         name: "withSharedLockFactory",
         title: <>withSharedLockFactory</>,
-        link: "/docs/concurrency/shared_lock/shared_lock_middlewares/#with_shared_lock_factory_middleware",
+        link: "/docs/components/concurrency/shared_lock/shared_lock_middlewares/#with_shared_lock_factory_middleware",
         description: (
             <>Wraps function calls with a shared (reader-writer) lock.</>
         ),
@@ -1013,13 +1013,13 @@ export const MESSAGING_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withDispatchBeforeFactory",
         title: <>withDispatchBeforeFactory</>,
-        link: "/docs/messaging/event_bus/event_bus_middlewares/#with_dispatch_before_factory_middleware",
+        link: "/docs/components/messaging/event_bus/event_bus_middlewares/#with_dispatch_before_factory_middleware",
         description: <>Dispatches an event before the wrapped function runs.</>,
     },
     {
         name: "withDispatchAfterFactory",
         title: <>withDispatchAfterFactory</>,
-        link: "/docs/messaging/event_bus/event_bus_middlewares/#with_dispatch_after_factory_middleware",
+        link: "/docs/components/messaging/event_bus/event_bus_middlewares/#with_dispatch_after_factory_middleware",
         description: (
             <>Dispatches an event after the wrapped function resolves.</>
         ),
@@ -1027,7 +1027,7 @@ export const MESSAGING_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
     {
         name: "withDispatchOnErrorFactory",
         title: <>withDispatchOnErrorFactory</>,
-        link: "/docs/messaging/event_bus/event_bus_middlewares/#with_dispatch_on_error_factory_middleware",
+        link: "/docs/components/messaging/event_bus/event_bus_middlewares/#with_dispatch_on_error_factory_middleware",
         description: <>Dispatches an event when the wrapped function throws.</>,
     },
 ];

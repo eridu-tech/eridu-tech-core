@@ -1,0 +1,35 @@
+---
+sidebar_position: 0
+sidebar_label: Overview
+pagination_label: Reliability
+---
+
+import {
+    RELIABILITY_EXISTING_ITEMS,
+    RELIABILITY_MIDDLEWARE_ITEMS,
+} from "../../../src/data/data";
+import { ComponentIndex } from "../../../src/components/ComponentIndex";
+
+# Reliability
+
+<ComponentIndex
+    sections={[
+        {
+            label: "Reliability",
+            intro: "Keep your services available and responsive under load and failure.",
+            items: RELIABILITY_EXISTING_ITEMS,
+        },
+    ]}
+/>
+
+## Existing middlewares
+
+<ComponentIndex
+    sections={[
+        {
+            label: "Existing middlewares",
+            intro: "Beyond the components themselves, every component provides middleware factories for composing component behavior around your own functions. Wrap a function with use() or method with enhance() and apply any of the following middlewares.",
+            items: RELIABILITY_MIDDLEWARE_ITEMS,
+        },
+    ]}
+/>

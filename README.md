@@ -145,39 +145,39 @@ A growing collection of officially maintained components. Every component ships 
 
 ### Foundation
 
-- [**Execution Context**](https://www.eridu-tech.io/docs/foundation/execution_context) — `Near-stable` — Type-safe, composable context propagation for request IDs, user info, and tracing metadata across async boundaries — without thread-local hacks.
-- [**Transaction Context**](https://www.eridu-tech.io/docs/foundation/transaction_context/transaction_context_usage) — `Near-stable` — Coordinate database transactions across components — with support for the after-commit pattern, joining existing transactions, and pluggable adapters (Kysely, MongoDB).
-- [**Middleware and AOP**](https://www.eridu-tech.io/docs/foundation/middleware) — `Near-stable` — Composable middleware pipeline with before/after hooks, error handling — the foundation for every component's plugin system.
-- [**Serde**](https://www.eridu-tech.io/docs/foundation/serde) — `Experimental` — Serialize and deserialize data with a built-in SuperJSON adapter (Date, Map, Set, BigInt) and custom serializers — the backbone for all data interchange across the ecosystem.
-- [**Codec**](https://www.eridu-tech.io/docs/utilities/codec) — `Experimental` — Encode and decode data with a unified, type-safe interface — includes a built-in Base64 codec and lets you build custom codecs for any protocol.
-- [**Typed Config Access**](https://www.eridu-tech.io/docs/foundation/config_accessor) — `Near-stable` — Standardized type-safe access to domain configuration variables — with optional schema validation and full TypeScript inference.
-- [**Typed Env Access**](https://www.eridu-tech.io/docs/foundation/env_accessor) — `Near-stable` — Type-safe environment variable access from multiple sync/async sources with parsing, defaults, and validation — never read `process.env` raw again.
-- [**DI Container**](https://www.eridu-tech.io/docs/foundation/di) — `Near-stable` — A lightweight, type-safe dependency injection container for wiring application components without tight coupling.
+- [**Execution Context**](https://www.eridu-tech.io/docs/components/foundation/execution_context) — `Near-stable` — Type-safe, composable context propagation for request IDs, user info, and tracing metadata across async boundaries — without thread-local hacks.
+- [**Transaction Context**](https://www.eridu-tech.io/docs/components/foundation/transaction_context/transaction_context_usage) — `Near-stable` — Coordinate database transactions across components — with support for the after-commit pattern, joining existing transactions, and pluggable adapters (Kysely, MongoDB).
+- [**Middleware and AOP**](https://www.eridu-tech.io/docs/components/foundation/middleware) — `Near-stable` — Composable middleware pipeline with before/after hooks, error handling — the foundation for every component's plugin system.
+- [**Serde**](https://www.eridu-tech.io/docs/components/foundation/serde) — `Experimental` — Serialize and deserialize data with a built-in SuperJSON adapter (Date, Map, Set, BigInt) and custom serializers — the backbone for all data interchange across the ecosystem.
+- [**Codec**](https://www.eridu-tech.io/docs/components/utilities/codec) — `Experimental` — Encode and decode data with a unified, type-safe interface — includes a built-in Base64 codec and lets you build custom codecs for any protocol.
+- [**Typed Config Access**](https://www.eridu-tech.io/docs/components/foundation/config_accessor) — `Near-stable` — Standardized type-safe access to domain configuration variables — with optional schema validation and full TypeScript inference.
+- [**Typed Env Access**](https://www.eridu-tech.io/docs/components/foundation/env_accessor) — `Near-stable` — Type-safe environment variable access from multiple sync/async sources with parsing, defaults, and validation — never read `process.env` raw again.
+- [**DI Container**](https://www.eridu-tech.io/docs/components/foundation/di) — `Near-stable` — A lightweight, type-safe dependency injection container for wiring application components without tight coupling.
 
 ### Storage
 
-- [**Cache**](https://www.eridu-tech.io/docs/storage/cache/cache_usage) — `Near-stable` — Caching with pluggable stores (in-memory, Redis, etc.), TTL policies, and stampede protection.
-- [**File Storage**](https://www.eridu-tech.io/docs/storage/file_storage/file_storage_usage) — `Near-stable` — Abstract file storage with adapters for local disk, S3-compatible, and other backends — upload, stream, and serve with one API. Composable plugins add key validation, key lowercasing, and content-type inference from the file key extension or the actual file bytes (via `file-type`).
+- [**Cache**](https://www.eridu-tech.io/docs/components/storage/cache/cache_usage) — `Near-stable` — Caching with pluggable stores (in-memory, Redis, etc.), TTL policies, and stampede protection.
+- [**File Storage**](https://www.eridu-tech.io/docs/components/storage/file_storage/file_storage_usage) — `Near-stable` — Abstract file storage with adapters for local disk, S3-compatible, and other backends — upload, stream, and serve with one API. Composable plugins add key validation, key lowercasing, and content-type inference from the file key extension or the actual file bytes (via `file-type`).
 
 ### Resilience
 
-- [**Circuit Breaker**](https://www.eridu-tech.io/docs/reliability/circuit_breaker/circuit_breaker_usage) — `Near-stable` — Prevent cascading failures with configurable thresholds, half-open recovery, and custom fallback strategies.
-- [**Rate Limiter**](https://www.eridu-tech.io/docs/reliability/rate-limiter/rate_limiter_usage) — `Near-stable` — Throttle request rates with configurable limits, sliding windows, and pluggable backends — protect your services from overload.
-- [**Resilience**](https://www.eridu-tech.io/docs/reliability/resilience) — `Near-stable` — Timeout, fallback, retry, with configurable policies and backoffs.
+- [**Circuit Breaker**](https://www.eridu-tech.io/docs/components/reliability/circuit_breaker/circuit_breaker_usage) — `Near-stable` — Prevent cascading failures with configurable thresholds, half-open recovery, and custom fallback strategies.
+- [**Rate Limiter**](https://www.eridu-tech.io/docs/components/reliability/rate-limiter/rate_limiter_usage) — `Near-stable` — Throttle request rates with configurable limits, sliding windows, and pluggable backends — protect your services from overload.
+- [**Resilience**](https://www.eridu-tech.io/docs/components/reliability/resilience) — `Near-stable` — Timeout, fallback, retry, with configurable policies and backoffs.
 
 ### Concurrency
 
-- [**Lock**](https://www.eridu-tech.io/docs/concurrency/lock/lock_usage) — `Near-stable` — Distributed lock primitives with lease management, blocking and non-blocking acquisition, and automatic release.
-- [**Shared Lock**](https://www.eridu-tech.io/docs/concurrency/shared_lock/shared_lock_usage) — `Near-stable` — Read-write distributed locks for coordinating concurrent access with shared and exclusive modes.
-- [**Semaphore**](https://www.eridu-tech.io/docs/concurrency/semaphore/semaphore_usage) — `Near-stable` — Rate-limit concurrent access to shared resources with dynamic permit allocation.
+- [**Lock**](https://www.eridu-tech.io/docs/components/concurrency/lock/lock_usage) — `Near-stable` — Distributed lock primitives with lease management, blocking and non-blocking acquisition, and automatic release.
+- [**Shared Lock**](https://www.eridu-tech.io/docs/components/concurrency/shared_lock/shared_lock_usage) — `Near-stable` — Read-write distributed locks for coordinating concurrent access with shared and exclusive modes.
+- [**Semaphore**](https://www.eridu-tech.io/docs/components/concurrency/semaphore/semaphore_usage) — `Near-stable` — Rate-limit concurrent access to shared resources with dynamic permit allocation.
 
 ### Messaging
 
-- [**Event Bus**](https://www.eridu-tech.io/docs/messaging/event_bus/event_bus_usage) — `Near-stable` — Pub/sub event bus for dispatching and listening to events with pluggable transport backends — independent of underlying technology.
+- [**Event Bus**](https://www.eridu-tech.io/docs/components/messaging/event_bus/event_bus_usage) — `Near-stable` — Pub/sub event bus for dispatching and listening to events with pluggable transport backends — independent of underlying technology.
 
 ### Web
 
-- [**HTTP Router**](https://www.eridu-tech.io/docs/web/http_router/http_router_usage) — `Near-stable` — Framework-agnostic HTTP router built on the Hono router engine — implements the Winter TC fetch standard with middleware chains and typed path parameters.
+- [**HTTP Router**](https://www.eridu-tech.io/docs/components/web/http_router/http_router_usage) — `Near-stable` — Framework-agnostic HTTP router built on the Hono router engine — implements the Winter TC fetch standard with middleware chains and typed path parameters.
 
 [**View all component docs →**](https://www.eridu-tech.io/docs/getting_started)
 
