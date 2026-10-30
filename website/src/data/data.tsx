@@ -113,20 +113,6 @@ const EXISTING_FOUNDATION_RECORD = {
             </>
         ),
     } satisfies ComponentItemProps,
-    CODEC: {
-        name: "Codec",
-        icon: <ArrowLeftRight size="1.5rem" strokeWidth={1.5} />,
-        title: <>Codec</>,
-        link: "/docs/foundation/codec",
-        maturity: 80,
-        description: (
-            <>
-                Encode and decode data with a unified, type-safe interface that
-                includes a built-in Base64 codec and lets you build custom
-                codecs for any protocol.
-            </>
-        ),
-    } satisfies ComponentItemProps,
     EXECUTION_CONTEXT: {
         name: "Execution Context",
         icon: <Zap size="1.5rem" strokeWidth={1.5} />,
@@ -431,6 +417,20 @@ const EXISTING_UTILITIES_RECORD = {
                 A callable entity, either a plain function or an object exposing
                 an invoke method, so functions and class-based services flow
                 through one shared contract.
+            </>
+        ),
+    } satisfies ComponentItemProps,
+    CODEC: {
+        name: "Codec",
+        icon: <ArrowLeftRight size="1.5rem" strokeWidth={1.5} />,
+        title: <>Codec</>,
+        link: "/docs/utilities/codec",
+        maturity: 80,
+        description: (
+            <>
+                Encode and decode data with a unified, type-safe interface that
+                includes a built-in Base64 codec and lets you build custom
+                codecs for any protocol.
             </>
         ),
     } satisfies ComponentItemProps,
@@ -861,7 +861,6 @@ export const FOUNDATION_EXISTING_ITEMS: ComponentItemProps[] = [
     COMPONENT_RECORD.TRANSACTION_CONTEXT,
     COMPONENT_RECORD.MIDDLEWARE_AND_AOP,
     COMPONENT_RECORD.SERDE,
-    COMPONENT_RECORD.CODEC,
     COMPONENT_RECORD.TYPED_CONFIG_ACCESS,
     COMPONENT_RECORD.TYPED_ENV_ACCESS,
     COMPONENT_RECORD.DI_CONTAINER,
@@ -900,6 +899,7 @@ export const UTILITIES_EXISTING_ITEMS: ComponentItemProps[] = [
     COMPONENT_RECORD.BACKOFF_POLICIES,
     COMPONENT_RECORD.ERROR_POLICY_TYPE,
     COMPONENT_RECORD.INVOCABLE,
+    COMPONENT_RECORD.CODEC,
 ];
 
 export const EXISTING_ITEMS: ComponentItemProps[] = [
