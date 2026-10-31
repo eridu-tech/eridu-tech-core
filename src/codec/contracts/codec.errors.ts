@@ -10,22 +10,22 @@ import type { InferInstance } from "@/utilities/_module-exports.js";
  * IMPORT_PATH: `"eridu-tech/codec/contracts"`
  * @group Errors
  */
-export class EncodingError extends Error {
-    static create(error: unknown): EncodingError {
-        return new EncodingError(
+export class UnableToEncodeCodecError extends Error {
+    static create(error: unknown): UnableToEncodeCodecError {
+        return new UnableToEncodeCodecError(
             `Encoding error "${String(error)}" occurred`,
             error,
         );
     }
 
     /**
-     * Note: Do not instantiate `EncodingError` directly via the constructor. Use the static `create()` factory method instead.
+     * Note: Do not instantiate `UnableToEncodeCodecError` directly via the constructor. Use the static `create()` factory method instead.
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
     constructor(message: string, cause?: unknown) {
         super(message, { cause });
-        this.name = EncodingError.name;
+        this.name = UnableToEncodeCodecError.name;
     }
 }
 
@@ -35,22 +35,22 @@ export class EncodingError extends Error {
  * IMPORT_PATH: `"eridu-tech/codec/contracts"`
  * @group Errors
  */
-export class DecodingError extends Error {
-    static create(error: unknown): DecodingError {
-        return new DecodingError(
+export class UnableToDecodeCodecError extends Error {
+    static create(error: unknown): UnableToDecodeCodecError {
+        return new UnableToDecodeCodecError(
             `Decoding error "${String(error)}" occurred`,
             error,
         );
     }
 
     /**
-     * Note: Do not instantiate `DecodingError` directly via the constructor. Use the static `create()` factory method instead.
+     * Note: Do not instantiate `UnableToDecodeCodecError` directly via the constructor. Use the static `create()` factory method instead.
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
     constructor(message: string, cause?: unknown) {
         super(message, { cause });
-        this.name = DecodingError.name;
+        this.name = UnableToDecodeCodecError.name;
     }
 }
 
@@ -59,8 +59,8 @@ export class DecodingError extends Error {
  * @group Errors
  */
 export const CODEC_ERRORS = {
-    Encoding: EncodingError,
-    Decoding: DecodingError,
+    UnableToEncode: UnableToEncodeCodecError,
+    UnableToDecode: UnableToDecodeCodecError,
 } as const;
 
 /**

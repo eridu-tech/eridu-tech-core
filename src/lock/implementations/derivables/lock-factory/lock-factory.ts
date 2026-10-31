@@ -4,8 +4,10 @@
 
 import { v4 } from "uuid";
 
+import { handleUnexpectedLockAdapterError } from "@/lock/implementations/derivables/lock-factory/handle-unexpected-lock-adapter-error.js";
 import { LockSerdeTransformer } from "@/lock/implementations/derivables/lock-factory/lock-serde-transformer.js";
 import { Lock } from "@/lock/implementations/derivables/lock-factory/lock.js";
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
@@ -107,6 +109,9 @@ export type LockFactorySettings = LockFactorySettingsBase & {
 /**
  * `LockFactory` class can be derived from any {@link ILockAdapter | `ILockAdapter`}.
  *
+ * Unexpected errors thrown by the adapter are converted into the matching `UnableTo*LockError`
+ * with the original error preserved as `cause`, so `ILock` methods only reject with lock errors.
+ *
  * Note the {@link ILock | `ILock`} instances created by the `LockFactory` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
  * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
@@ -139,7 +144,18 @@ export class LockFactory implements ILockFactory, IInitizable {
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
         this.serializationId = resolveSerializationId(serializationId, adapter);
 
-        this.adapter = adapter;
+        this.adapter = withPlugin(
+            {
+                acquire: (key, lockId, ttl) =>
+                    adapter.acquire(key, lockId, ttl),
+                release: (key, lockId) => adapter.release(key, lockId),
+                forceRelease: (key) => adapter.forceRelease(key),
+                refresh: (key, lockId, ttl) =>
+                    adapter.refresh(key, lockId, ttl),
+                getState: (key) => adapter.getState(key),
+            },
+            handleUnexpectedLockAdapterError(),
+        );
     }
 
     async init(): Promise<void> {

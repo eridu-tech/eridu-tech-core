@@ -5,6 +5,10 @@ import {
     OpenCircuitBreakerError,
     CIRCUIT_BREAKER_TRIGGER,
     CIRCUIT_BREAKER_STATE,
+    UnableToGetStateCircuitBreakerError,
+    UnableToIsolateCircuitBreakerError,
+    UnableToResetCircuitBreakerError,
+    UnableToUpdateStateCircuitBreakerError,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import { DatabaseCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/_module-exports.js";
 import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementations/adapters/memory-circuit-breaker-storage-adapter/_module-exports.js";
@@ -674,6 +678,90 @@ describe("class: CircuitBreakerFactory", () => {
             const handler = vi.fn();
             await deserializedCircuitBreaker2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
+        });
+    });
+    describe("Unexpected adapter error handling:", () => {
+        function createFailingAdapter(
+            unexpectedError: Error,
+        ): ICircuitBreakerAdapter {
+            return {
+                getState: vi.fn().mockRejectedValue(unexpectedError),
+                updateState: vi.fn().mockRejectedValue(unexpectedError),
+                isolate: vi.fn().mockRejectedValue(unexpectedError),
+                trackFailure: vi.fn().mockRejectedValue(unexpectedError),
+                trackSuccess: vi.fn().mockRejectedValue(unexpectedError),
+                reset: vi.fn().mockRejectedValue(unexpectedError),
+            };
+        }
+        test("Should reject with UnableToGetStateCircuitBreakerError when adapter getState fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingCircuitBreakerFactory = new CircuitBreakerFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingCircuitBreakerFactory.init();
+
+            const promise = failingCircuitBreakerFactory.create("a").getState();
+
+            await expect(promise).rejects.toThrow(
+                UnableToGetStateCircuitBreakerError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToUpdateStateCircuitBreakerError when adapter updateState fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingCircuitBreakerFactory = new CircuitBreakerFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingCircuitBreakerFactory.init();
+
+            const promise = failingCircuitBreakerFactory
+                .create("a")
+                .runOrFail(() => Promise.resolve());
+
+            await expect(promise).rejects.toThrow(
+                UnableToUpdateStateCircuitBreakerError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToIsolateCircuitBreakerError when adapter isolate fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingCircuitBreakerFactory = new CircuitBreakerFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingCircuitBreakerFactory.init();
+
+            const promise = failingCircuitBreakerFactory.create("a").isolate();
+
+            await expect(promise).rejects.toThrow(
+                UnableToIsolateCircuitBreakerError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToResetCircuitBreakerError when adapter reset fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingCircuitBreakerFactory = new CircuitBreakerFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingCircuitBreakerFactory.init();
+
+            const promise = failingCircuitBreakerFactory.create("a").reset();
+
+            await expect(promise).rejects.toThrow(
+                UnableToResetCircuitBreakerError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
         });
     });
 });

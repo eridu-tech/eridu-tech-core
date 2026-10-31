@@ -3,8 +3,8 @@
  */
 
 import {
-    DeserializationSerdeError,
-    SerializationSerdeError,
+    UnableToDeserializeSerdeError,
+    UnableToSerializeSerdeError,
 } from "@/serde/contracts/_module-exports.js";
 
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
@@ -26,7 +26,7 @@ export class MongodbCacheAdapterSerde implements ISerde<string | number> {
             }
             return await this.serde.serialize(value);
         } catch (error: unknown) {
-            throw SerializationSerdeError.create(error);
+            throw UnableToSerializeSerdeError.create(error);
         }
     }
 
@@ -37,7 +37,7 @@ export class MongodbCacheAdapterSerde implements ISerde<string | number> {
             }
             return await this.serde.deserialize(value);
         } catch (error: unknown) {
-            throw DeserializationSerdeError.create(error);
+            throw UnableToDeserializeSerdeError.create(error);
         }
     }
 }

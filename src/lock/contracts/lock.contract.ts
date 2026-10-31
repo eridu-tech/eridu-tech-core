@@ -19,6 +19,7 @@ export type ILockStateMethods = {
      * Retrieves the current state of the lock.
      *
      * @returns The current lock state (acquired, expired, unavailable, etc.)
+     * @throws {UnableToGetStateLockError} If the lock adapter fails with an unexpected error while retrieving the lock state
      */
     getState(): Promise<ILockState>;
 
@@ -58,6 +59,8 @@ export type ILockBase = {
      * @param asyncFn - The function to execute under lock
      * @returns The return value of the function
      * @throws {FailedAcquireLockError} If the lock is already held by a different owner
+     * @throws {UnableToAcquireLockError} If the lock adapter fails with an unexpected error while acquiring the lock
+     * @throws {UnableToReleaseLockError} If the lock adapter fails with an unexpected error while releasing the lock after the function completes
      */
     runOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
@@ -67,6 +70,7 @@ export type ILockBase = {
      * Attempts to acquire the lock if not already held by another owner.
      *
      * @returns true if lock was successfully acquired, false if already held by a different owner
+     * @throws {UnableToAcquireLockError} If the lock adapter fails with an unexpected error while acquiring the lock
      */
     acquire(): Promise<boolean>;
 
@@ -75,6 +79,7 @@ export type ILockBase = {
      * Throws an error if the lock cannot be acquired.
      *
      * @throws {FailedAcquireLockError} If the lock is already held by a different owner
+     * @throws {UnableToAcquireLockError} If the lock adapter fails with an unexpected error while acquiring the lock
      */
     acquireOrFail(): Promise<void>;
 
@@ -82,6 +87,7 @@ export type ILockBase = {
      * Releases the lock if held by this owner.
      *
      * @returns true if lock was successfully released, false if not held by this owner
+     * @throws {UnableToReleaseLockError} If the lock adapter fails with an unexpected error while releasing the lock
      */
     release(): Promise<boolean>;
 
@@ -90,6 +96,7 @@ export type ILockBase = {
      * Throws an error if the lock is not held by this owner.
      *
      * @throws {FailedReleaseLockError} If the lock is not held by this owner
+     * @throws {UnableToReleaseLockError} If the lock adapter fails with an unexpected error while releasing the lock
      */
     releaseOrFail(): Promise<void>;
 
@@ -98,6 +105,7 @@ export type ILockBase = {
      * Use with caution as it can break lock guarantees.
      *
      * @returns true if the lock existed and was released, false if lock does not exist
+     * @throws {UnableToForceReleaseLockError} If the lock adapter fails with an unexpected error while force releasing the lock
      */
     forceRelease(): Promise<boolean>;
 
@@ -107,6 +115,7 @@ export type ILockBase = {
      *
      * @param ttl - New TTL duration. If not provided, uses the lock's original TTL
      * @returns true if lock was successfully refreshed, false if not held by this owner or unexpirable
+     * @throws {UnableToRefreshLockError} If the lock adapter fails with an unexpected error while refreshing the lock
      */
     refresh(ttl?: ITimeSpan): Promise<boolean>;
 
@@ -116,6 +125,7 @@ export type ILockBase = {
      *
      * @param ttl - New TTL duration. If not provided, uses the lock's original TTL
      * @throws {FailedRefreshLockError} If the lock is not held by this owner or is not expirable
+     * @throws {UnableToRefreshLockError} If the lock adapter fails with an unexpected error while refreshing the lock
      */
     refreshOrFail(ttl?: ITimeSpan): Promise<void>;
 };

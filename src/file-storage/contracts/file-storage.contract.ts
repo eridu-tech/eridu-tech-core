@@ -19,7 +19,13 @@ export type IFileFactory = {
  * @group Contracts
  */
 export type IFileStorage = IFileFactory & {
+    /**
+     * @throws {UnableToRemoveByPrefixFileError} If the file storage adapter fails with an unexpected error while removing the files
+     */
     clear(): Promise<void>;
 
+    /**
+     * @throws {UnableToRemoveManyFileError} If the file storage adapter fails with an unexpected error while removing the files
+     */
     removeMany(files: Array<IFile>): Promise<void>;
 };

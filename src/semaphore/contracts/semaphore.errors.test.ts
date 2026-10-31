@@ -5,6 +5,11 @@ import {
     FailedReleaseSemaphoreError,
     isSemaphoreError,
     LimitReachedSemaphoreError,
+    UnableToAcquireSemaphoreError,
+    UnableToForceReleaseAllSemaphoreError,
+    UnableToGetStateSemaphoreError,
+    UnableToRefreshSemaphoreError,
+    UnableToReleaseSemaphoreError,
 } from "@/semaphore/contracts/semaphore.errors.js";
 
 describe("file: semaphore.errors.ts", () => {
@@ -19,6 +24,26 @@ describe("file: semaphore.errors.ts", () => {
         });
         test("Should return true when given FailedReleaseSemaphoreError instance", () => {
             const error = FailedReleaseSemaphoreError.create("a", "slot-1");
+            expect(isSemaphoreError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToAcquireSemaphoreError instance", () => {
+            const error = UnableToAcquireSemaphoreError.create("a");
+            expect(isSemaphoreError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToReleaseSemaphoreError instance", () => {
+            const error = UnableToReleaseSemaphoreError.create("a", "slot-1");
+            expect(isSemaphoreError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToForceReleaseAllSemaphoreError instance", () => {
+            const error = UnableToForceReleaseAllSemaphoreError.create("a");
+            expect(isSemaphoreError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToRefreshSemaphoreError instance", () => {
+            const error = UnableToRefreshSemaphoreError.create("a", "slot-1");
+            expect(isSemaphoreError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToGetStateSemaphoreError instance", () => {
+            const error = UnableToGetStateSemaphoreError.create("a");
             expect(isSemaphoreError(error)).toBe(true);
         });
         test("Should return false when given a generic Error instance", () => {

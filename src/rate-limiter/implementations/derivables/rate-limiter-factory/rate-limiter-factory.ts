@@ -2,6 +2,8 @@
  * @module RateLimiter
  */
 
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
+import { handleUnexpectedRateLimiterAdapterError } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/handle-unexpected-rate-limiter-adapter-error.js";
 import { RateLimiterSerdeTransformer } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter-serde-transformer.js";
 import { RateLimiter } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
 import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
@@ -87,6 +89,9 @@ export type RateLimiterFactorySettings = RateLimiterFactorySettingsBase & {
 /**
  * The `RateLimiterFactory` class can be derived from any {@link IRateLimiterAdapter | `IRateLimiterAdapter`}.
  *
+ * Unexpected errors thrown by the adapter are converted into the matching `UnableTo*RateLimiterError`
+ * with the original error preserved as `cause`, so `IRateLimiter` methods only reject with rate limiter errors.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
  * @group Derivables
  */
@@ -107,7 +112,14 @@ export class RateLimiterFactory implements IRateLimiterFactory, IInitizable {
         } = settings;
 
         this.serializationId = resolveSerializationId(serializationId, adapter);
-        this.adapter = adapter;
+        this.adapter = withPlugin(
+            {
+                getState: (key) => adapter.getState(key),
+                updateState: (key, limit) => adapter.updateState(key, limit),
+                reset: (key) => adapter.reset(key),
+            },
+            handleUnexpectedRateLimiterAdapterError(),
+        );
         this.onlyError = onlyError;
         this.defaultErrorPolicy = defaultErrorPolicy;
         this.serde = serde;

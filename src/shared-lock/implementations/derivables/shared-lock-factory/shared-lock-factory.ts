@@ -4,7 +4,9 @@
 
 import { v4 } from "uuid";
 
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
+import { handleUnexpectedSharedLockAdapterError } from "@/shared-lock/implementations/derivables/shared-lock-factory/handle-unexpected-shared-lock-adapter-error.js";
 import { SharedLockSerdeTransformer } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock-serde-transformer.js";
 import { SharedLock } from "@/shared-lock/implementations/derivables/shared-lock-factory/shared-lock.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
@@ -107,6 +109,9 @@ export type SharedLockFactorySettings = SharedLockFactorySettingsBase & {
 /**
  * `SharedLockFactory` class can be derived from any {@link ISharedLockAdapter | `ISharedLockAdapter`}.
  *
+ * Unexpected errors thrown by the adapter are converted into the matching `UnableTo*` error
+ * with the original error preserved as `cause`, so `ISharedLock` methods only reject with shared lock errors.
+ *
  * Note the {@link ISharedLock | `ISharedLock`} instances created by the `SharedLockFactory` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
  * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
@@ -139,7 +144,25 @@ export class SharedLockFactory implements ISharedLockFactory, IInitizable {
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
         this.serializationId = resolveSerializationId(serializationId, adapter);
 
-        this.adapter = adapter;
+        this.adapter = withPlugin(
+            {
+                acquireWriter: (key, lockId, ttl) =>
+                    adapter.acquireWriter(key, lockId, ttl),
+                releaseWriter: (key, lockId) =>
+                    adapter.releaseWriter(key, lockId),
+                refreshWriter: (key, lockId, ttl) =>
+                    adapter.refreshWriter(key, lockId, ttl),
+                acquireReader: (readerSettings) =>
+                    adapter.acquireReader(readerSettings),
+                releaseReader: (key, slotId) =>
+                    adapter.releaseReader(key, slotId),
+                refreshReader: (key, slotId, ttl) =>
+                    adapter.refreshReader(key, slotId, ttl),
+                forceRelease: (key) => adapter.forceRelease(key),
+                getState: (key) => adapter.getState(key),
+            },
+            handleUnexpectedSharedLockAdapterError(),
+        );
     }
 
     async init(): Promise<void> {

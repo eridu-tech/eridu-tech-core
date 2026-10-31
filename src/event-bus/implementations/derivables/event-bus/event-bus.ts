@@ -2,6 +2,7 @@
  * @module EventBus
  */
 
+import { handleUnexpectedEventBusAdapterError } from "@/event-bus/implementations/derivables/event-bus/handle-unexpected-event-bus-adapter-error.js";
 import { ListenerStore } from "@/event-bus/implementations/derivables/event-bus/listener-store.js";
 import { withEventBusSchema } from "@/event-bus/implementations/derivables/event-bus/with-event-bus-schema.js";
 import { withListenerTracking } from "@/event-bus/implementations/plugins/_module-exports.js";
@@ -91,6 +92,9 @@ export type EventBusSettings<TEventMap extends BaseEventMap = BaseEventMap> =
 /**
  * `EventBus` class can be derived from any {@link IEventBusAdapter | `IEventBusAdapter`}.
  *
+ * Unexpected errors thrown by the adapter are converted into the matching `UnableTo*EventBusError`
+ * with the original error preserved as `cause`, so `IEventBus` methods only reject with event bus errors.
+ *
  * IMPORT_PATH: `"eridu-tech/event-bus"`
  * @group Derivables
  */
@@ -117,13 +121,23 @@ export class EventBus<
             shouldValidateListeners = true,
         } = settings;
 
-        this.adapter = adapter;
+        this.adapter = withPlugin(
+            {
+                dispatch: (eventName, eventData) =>
+                    adapter.dispatch(eventName, eventData),
+                addListener: (eventName, listener) =>
+                    adapter.addListener(eventName, listener),
+                removeListener: (eventName, listener) =>
+                    adapter.removeListener(eventName, listener),
+            } satisfies IEventBusAdapter,
+            handleUnexpectedEventBusAdapterError(),
+        );
         if (eventMapSchema !== undefined) {
             const plugin = withEventBusSchema({
                 eventMapSchema,
                 shouldValidateListeners,
             });
-            this.adapter = withPlugin(adapter, [
+            this.adapter = withPlugin(this.adapter, [
                 shouldValidateListeners ? withListenerTracking(plugin) : plugin,
             ]);
         }

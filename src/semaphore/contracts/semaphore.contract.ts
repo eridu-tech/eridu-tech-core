@@ -19,6 +19,7 @@ export type ISemaphoreStateMethods = {
      * Retrieves the current state of the semaphore.
      *
      * @returns The current semaphore state (available slots, acquired slots, expiration status, etc.)
+     * @throws {UnableToGetStateSemaphoreError} If the semaphore adapter fails with an unexpected error while retrieving the semaphore state
      */
     getState(): Promise<ISemaphoreState>;
 
@@ -63,6 +64,8 @@ export type ISemaphoreBase = {
      * @param asyncFn - The function to execute under semaphore protection
      * @returns The return value of the function
      * @throws {LimitReachedSemaphoreError} If all slots are already acquired
+     * @throws {UnableToAcquireSemaphoreError} If the semaphore adapter fails with an unexpected error while acquiring a slot
+     * @throws {UnableToReleaseSemaphoreError} If the semaphore adapter fails with an unexpected error while releasing the slot after the function completes
      */
     runOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
@@ -72,6 +75,7 @@ export type ISemaphoreBase = {
      * Attempts to acquire a semaphore slot if the limit is not reached.
      *
      * @returns true if a slot was successfully acquired, false if the limit is reached
+     * @throws {UnableToAcquireSemaphoreError} If the semaphore adapter fails with an unexpected error while acquiring a slot
      */
     acquire(): Promise<boolean>;
 
@@ -80,6 +84,7 @@ export type ISemaphoreBase = {
      * Throws an error if a slot cannot be acquired.
      *
      * @throws {LimitReachedSemaphoreError} If all slots are already acquired
+     * @throws {UnableToAcquireSemaphoreError} If the semaphore adapter fails with an unexpected error while acquiring a slot
      */
     acquireOrFail(): Promise<void>;
 
@@ -87,6 +92,7 @@ export type ISemaphoreBase = {
      * Releases the currently held semaphore slot.
      *
      * @returns true if a slot was successfully released, false if no slot was held
+     * @throws {UnableToReleaseSemaphoreError} If the semaphore adapter fails with an unexpected error while releasing the slot
      */
     release(): Promise<boolean>;
 
@@ -95,6 +101,7 @@ export type ISemaphoreBase = {
      * Throws an error if no slot is currently held.
      *
      * @throws {FailedReleaseSemaphoreError} If no slot is held
+     * @throws {UnableToReleaseSemaphoreError} If the semaphore adapter fails with an unexpected error while releasing the slot
      */
     releaseOrFail(): Promise<void>;
 
@@ -103,6 +110,7 @@ export type ISemaphoreBase = {
      * Use with caution as it can break semaphore guarantees.
      *
      * @returns true if slots existed and were released, false if already empty
+     * @throws {UnableToForceReleaseAllSemaphoreError} If the semaphore adapter fails with an unexpected error while force releasing the slots
      */
     forceReleaseAll(): Promise<boolean>;
 
@@ -112,6 +120,7 @@ export type ISemaphoreBase = {
      *
      * @param ttl - New TTL duration. If not provided, uses the semaphore's original TTL
      * @returns true if the slot was successfully refreshed, false if not currently held
+     * @throws {UnableToRefreshSemaphoreError} If the semaphore adapter fails with an unexpected error while refreshing the slot
      */
     refresh(ttl?: ITimeSpan): Promise<boolean>;
 
@@ -121,6 +130,7 @@ export type ISemaphoreBase = {
      *
      * @param ttl - New TTL duration. If not provided, uses the semaphore's original TTL
      * @throws {FailedRefreshSemaphoreError} If no slot is held or slot is not expirable
+     * @throws {UnableToRefreshSemaphoreError} If the semaphore adapter fails with an unexpected error while refreshing the slot
      */
     refreshOrFail(ttl?: ITimeSpan): Promise<void>;
 };

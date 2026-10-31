@@ -4,6 +4,12 @@ import {
     isCircuitBreakerError,
     IsolatedCircuitBreakerError,
     OpenCircuitBreakerError,
+    UnableToGetStateCircuitBreakerError,
+    UnableToIsolateCircuitBreakerError,
+    UnableToResetCircuitBreakerError,
+    UnableToTrackFailureCircuitBreakerError,
+    UnableToTrackSuccessCircuitBreakerError,
+    UnableToUpdateStateCircuitBreakerError,
 } from "@/circuit-breaker/contracts/circuit-breaker.errors.js";
 
 describe("file: circuit-breaker.errors.ts", () => {
@@ -14,6 +20,30 @@ describe("file: circuit-breaker.errors.ts", () => {
         });
         test("Should return true when given IsolatedCircuitBreakerError instance", () => {
             const error = IsolatedCircuitBreakerError.create("a");
+            expect(isCircuitBreakerError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToGetStateCircuitBreakerError instance", () => {
+            const error = UnableToGetStateCircuitBreakerError.create("a");
+            expect(isCircuitBreakerError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToUpdateStateCircuitBreakerError instance", () => {
+            const error = UnableToUpdateStateCircuitBreakerError.create("a");
+            expect(isCircuitBreakerError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToIsolateCircuitBreakerError instance", () => {
+            const error = UnableToIsolateCircuitBreakerError.create("a");
+            expect(isCircuitBreakerError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToTrackFailureCircuitBreakerError instance", () => {
+            const error = UnableToTrackFailureCircuitBreakerError.create("a");
+            expect(isCircuitBreakerError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToTrackSuccessCircuitBreakerError instance", () => {
+            const error = UnableToTrackSuccessCircuitBreakerError.create("a");
+            expect(isCircuitBreakerError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToResetCircuitBreakerError instance", () => {
+            const error = UnableToResetCircuitBreakerError.create("a");
             expect(isCircuitBreakerError(error)).toBe(true);
         });
         test("Should return false when given a generic Error instance", () => {
