@@ -664,7 +664,9 @@
         "release": "npm run build && npx changeset publish",
         "commit": "npx git-cz",
         "code-stats:source": "npx sloc ./src -e \"\\.test(-suite)?\\.ts$\"",
-        "code-stats:tests": "npx sloc ./src -i \"\\.test(-suite)?\\.ts$\""
+        "code-stats:tests": "npx sloc ./src -i \"\\.test(-suite)?\\.ts$\"",
+        "code-quality:report": "npx ast-metrics analyze ./src",
+        "code-quality:lint": "npx ast-metrics lint ./src"
     },
     "devDependencies": {
         "@aws-sdk/client-s3": "^3.1102.0",
@@ -686,6 +688,7 @@
         "@typescript-eslint/eslint-plugin": "^8.66.0",
         "@typescript-eslint/parser": "^8.66.0",
         "@vitest/eslint-plugin": "^1.0.3",
+        "ast-metrics": "^0.43.1",
         "basic-ftp": "^6.2.3",
         "better-sqlite3": "^13.0.2",
         "commitizen": "^4.3.2",
@@ -727,13 +730,13 @@
         "@aws-sdk/client-s3": "^3.1102.0",
         "@aws-sdk/s3-request-presigner": "^3.1102.0",
         "@types/ssh2-sftp-client": "^9.0.6",
+        "basic-ftp": "^6.2.0",
         "hono": "^4.13.0",
         "ioredis": "^6.0.0",
         "kysely": "^0.29.0",
         "mongodb": "^7.5.0",
         "ssh2-sftp-client": "^12.1.0",
-        "webdav": "^5.11.0",
-        "basic-ftp": "^6.2.0"
+        "webdav": "^5.11.0"
     },
     "peerDependenciesMeta": {
         "ioredis": {

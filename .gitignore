@@ -3,3 +3,4 @@ dist
 docs
 !website/docs
 *.tsbuildinfo
+.code-quality-report
