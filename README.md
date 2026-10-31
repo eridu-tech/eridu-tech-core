@@ -145,7 +145,7 @@ A growing collection of officially maintained components. Every component ships 
 
 ### Foundation
 
-- [**Execution Context**](https://www.eridu-tech.io/docs/components/foundation/execution_context) — `Near-stable` — Type-safe, composable context propagation for request IDs, user info, and tracing metadata across async boundaries — without thread-local hacks.
+- [**Execution Context**](https://www.eridu-tech.io/docs/components/foundation/execution_context/execution_context_usage) — `Near-stable` — Type-safe, composable context propagation for request IDs, user info, and tracing metadata across async boundaries — without thread-local hacks.
 - [**Transaction Context**](https://www.eridu-tech.io/docs/components/foundation/transaction_context/transaction_context_usage) — `Near-stable` — Coordinate database transactions across components — with support for the after-commit pattern, joining existing transactions, and pluggable adapters (Kysely, MongoDB).
 - [**Middleware and AOP**](https://www.eridu-tech.io/docs/components/foundation/middleware) — `Near-stable` — Composable middleware pipeline with before/after hooks, error handling — the foundation for every component's plugin system.
 - [**Serde**](https://www.eridu-tech.io/docs/components/foundation/serde) — `Experimental` — Serialize and deserialize data with a built-in SuperJSON adapter (Date, Map, Set, BigInt) and custom serializers — the backbone for all data interchange across the ecosystem.

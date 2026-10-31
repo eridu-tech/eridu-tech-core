@@ -1,12 +1,18 @@
 ---
 sidebar_position: 1
+sidebar_label: Usage
+pagination_label: ExecutionContext usage
 tags:
-    - Utilities
+    - ExecutionContext
+    - Usage
+    - Context
 keywords:
-    - Utilities
+    - ExecutionContext
+    - Usage
+    - Context
 ---
 
-# ExecutionContext
+# ExecutionContext usage
 
 The `eridu-tech/execution-context` module provides a type-safe, composable, and environment-agnostic way to store and propagate contextual data (such as request IDs, user info, or tracing metadata) across async boundaries and function calls. `IExecutionContext` uses symbols internally for reliable context isolation.
 

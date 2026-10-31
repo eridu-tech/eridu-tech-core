@@ -279,6 +279,10 @@
             "types": "./dist/execution-context/contracts/_module-exports.d.ts",
             "import": "./dist/execution-context/contracts/_module-exports.js"
         },
+        "./execution-context/di": {
+            "types": "./dist/execution-context/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/execution-context/implementations/derivables/di/_module-exports.js"
+        },
         "./execution-context/als-execution-context-adapter": {
             "types": "./dist/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.d.ts",
             "import": "./dist/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js"

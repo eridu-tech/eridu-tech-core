@@ -117,7 +117,7 @@ const EXISTING_FOUNDATION_RECORD = {
         name: "Execution Context",
         icon: <Zap size="1.5rem" strokeWidth={1.5} />,
         title: <>Execution Context</>,
-        link: "/docs/components/foundation/execution_context",
+        link: "/docs/components/foundation/execution_context/execution_context_usage",
         maturity: 90,
         description: (
             <>
