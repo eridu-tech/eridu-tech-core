@@ -91,6 +91,95 @@ export class FailedReleaseReaderSemaphoreError extends Error {
 }
 
 /**
+ * The error is thrown when the underlying shared-lock adapter fails with an unexpected error while acquiring a reader slot.
+ * The original adapter error is preserved in the `cause` property.
+ *
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export class UnableToAcquireReaderSemaphoreError extends Error {
+    static create(
+        key: string,
+        cause?: unknown,
+    ): UnableToAcquireReaderSemaphoreError {
+        return new UnableToAcquireReaderSemaphoreError(
+            `Unable to acquire reader slot of key "${key}"`,
+            cause,
+        );
+    }
+
+    /**
+     * Note: Do not instantiate `UnableToAcquireReaderSemaphoreError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
+        this.name = UnableToAcquireReaderSemaphoreError.name;
+    }
+}
+
+/**
+ * The error is thrown when the underlying shared-lock adapter fails with an unexpected error while releasing a reader slot.
+ * The original adapter error is preserved in the `cause` property.
+ *
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export class UnableToReleaseReaderSemaphoreError extends Error {
+    static create(
+        key: string,
+        slotId: string,
+        cause?: unknown,
+    ): UnableToReleaseReaderSemaphoreError {
+        return new UnableToReleaseReaderSemaphoreError(
+            `Unable to release reader slot "${slotId}" of key "${key}"`,
+            cause,
+        );
+    }
+
+    /**
+     * Note: Do not instantiate `UnableToReleaseReaderSemaphoreError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
+        this.name = UnableToReleaseReaderSemaphoreError.name;
+    }
+}
+
+/**
+ * The error is thrown when the underlying shared-lock adapter fails with an unexpected error while refreshing a reader slot.
+ * The original adapter error is preserved in the `cause` property.
+ *
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export class UnableToRefreshReaderSemaphoreError extends Error {
+    static create(
+        key: string,
+        slotId: string,
+        cause?: unknown,
+    ): UnableToRefreshReaderSemaphoreError {
+        return new UnableToRefreshReaderSemaphoreError(
+            `Unable to refresh reader slot "${slotId}" of key "${key}"`,
+            cause,
+        );
+    }
+
+    /**
+     * Note: Do not instantiate `UnableToRefreshReaderSemaphoreError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
+        this.name = UnableToRefreshReaderSemaphoreError.name;
+    }
+}
+
+/**
  * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
  * @group Errors
  */
@@ -98,6 +187,9 @@ export const READER_SEMAPHORE_ERRORS = {
     ReachedLimitReader: LimitReachedReaderSemaphoreError,
     FailedRefreshReader: FailedRefreshReaderSemaphoreError,
     FailedReleaseReader: FailedReleaseReaderSemaphoreError,
+    UnableToAcquireReader: UnableToAcquireReaderSemaphoreError,
+    UnableToReleaseReader: UnableToReleaseReaderSemaphoreError,
+    UnableToRefreshReader: UnableToRefreshReaderSemaphoreError,
 } as const;
 
 /**
@@ -207,6 +299,96 @@ export class FailedRefreshWriterLockError extends Error {
 }
 
 /**
+ * The error is thrown when the underlying shared-lock adapter fails with an unexpected error while acquiring a writer lock.
+ * The original adapter error is preserved in the `cause` property.
+ *
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export class UnableToAcquireWriterLockError extends Error {
+    static create(
+        key: string,
+        lockId: string,
+        cause?: unknown,
+    ): UnableToAcquireWriterLockError {
+        return new UnableToAcquireWriterLockError(
+            `Unable to acquire writer lock on key "${key}" by owner "${lockId}"`,
+            cause,
+        );
+    }
+
+    /**
+     * Note: Do not instantiate `UnableToAcquireWriterLockError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
+        this.name = UnableToAcquireWriterLockError.name;
+    }
+}
+
+/**
+ * The error is thrown when the underlying shared-lock adapter fails with an unexpected error while releasing a writer lock.
+ * The original adapter error is preserved in the `cause` property.
+ *
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export class UnableToReleaseWriterLockError extends Error {
+    static create(
+        key: string,
+        lockId: string,
+        cause?: unknown,
+    ): UnableToReleaseWriterLockError {
+        return new UnableToReleaseWriterLockError(
+            `Unable to release writer lock on key "${key}" by owner "${lockId}"`,
+            cause,
+        );
+    }
+
+    /**
+     * Note: Do not instantiate `UnableToReleaseWriterLockError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
+        this.name = UnableToReleaseWriterLockError.name;
+    }
+}
+
+/**
+ * The error is thrown when the underlying shared-lock adapter fails with an unexpected error while refreshing a writer lock.
+ * The original adapter error is preserved in the `cause` property.
+ *
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export class UnableToRefreshWriterLockError extends Error {
+    static create(
+        key: string,
+        lockId: string,
+        cause?: unknown,
+    ): UnableToRefreshWriterLockError {
+        return new UnableToRefreshWriterLockError(
+            `Unable to refresh writer lock on key "${key}" by owner "${lockId}"`,
+            cause,
+        );
+    }
+
+    /**
+     * Note: Do not instantiate `UnableToRefreshWriterLockError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
+        this.name = UnableToRefreshWriterLockError.name;
+    }
+}
+
+/**
  * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
  * @group Errors
  */
@@ -214,6 +396,9 @@ export const WRITER_LOCK_ERRORS = {
     FailedAcquireWriter: FailedAcquireWriterLockError,
     FailedReleaseWriter: FailedReleaseWriterLockError,
     FailedRefreshWriter: FailedRefreshWriterLockError,
+    UnableToAcquireWriter: UnableToAcquireWriterLockError,
+    UnableToReleaseWriter: UnableToReleaseWriterLockError,
+    UnableToRefreshWriter: UnableToRefreshWriterLockError,
 } as const;
 
 /**
@@ -240,12 +425,72 @@ export function isWriterLockError(
 }
 
 /**
+ * The error is thrown when the underlying shared-lock adapter fails with an unexpected error while force releasing the shared lock.
+ * The original adapter error is preserved in the `cause` property.
+ *
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export class UnableToForceReleaseSharedLockError extends Error {
+    static create(
+        key: string,
+        cause?: unknown,
+    ): UnableToForceReleaseSharedLockError {
+        return new UnableToForceReleaseSharedLockError(
+            `Unable to force release shared lock on key "${key}"`,
+            cause,
+        );
+    }
+
+    /**
+     * Note: Do not instantiate `UnableToForceReleaseSharedLockError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
+        this.name = UnableToForceReleaseSharedLockError.name;
+    }
+}
+
+/**
+ * The error is thrown when the underlying shared-lock adapter fails with an unexpected error while retrieving the state of a shared lock.
+ * The original adapter error is preserved in the `cause` property.
+ *
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export class UnableToGetStateSharedLockError extends Error {
+    static create(
+        key: string,
+        cause?: unknown,
+    ): UnableToGetStateSharedLockError {
+        return new UnableToGetStateSharedLockError(
+            `Unable to get state of shared lock with key "${key}"`,
+            cause,
+        );
+    }
+
+    /**
+     * Note: Do not instantiate `UnableToGetStateSharedLockError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
+        this.name = UnableToGetStateSharedLockError.name;
+    }
+}
+
+/**
  * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
  * @group Errors
  */
 export const SHARED_LOCK_ERRORS = {
     ...READER_SEMAPHORE_ERRORS,
     ...WRITER_LOCK_ERRORS,
+    UnableToForceRelease: UnableToForceReleaseSharedLockError,
+    UnableToGetState: UnableToGetStateSharedLockError,
 } as const;
 
 /**
@@ -263,5 +508,10 @@ export type AllSharedLockErrors = InferInstance<
 export function isSharedLockError(
     value: unknown,
 ): value is AllSharedLockErrors {
-    return isReaderSemaphoreError(value) || isWriterLockError(value);
+    return (
+        isReaderSemaphoreError(value) ||
+        isWriterLockError(value) ||
+        value instanceof UnableToForceReleaseSharedLockError ||
+        value instanceof UnableToGetStateSharedLockError
+    );
 }

@@ -1,11 +1,12 @@
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
+import { UnableToAcquireWriterLockError } from "@/shared-lock/contracts/_module-exports.js";
 import { KyselySharedLockAdapter } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
 import { MemorySharedLockAdapter } from "@/shared-lock/implementations/adapters/memory-shared-lock-adapter/_module-exports.js";
 import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module-exports.js";
@@ -132,6 +133,54 @@ describe("class: SharedLockFactory", () => {
             const result = await deserializeLock2.acquireWriter();
 
             expect(result).toBe(true);
+        });
+    });
+    describe("Unexpected adapter error handling:", () => {
+        test("Should reject with UnableToAcquireWriterLockError when adapter acquireWriter fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const adapter = new MemorySharedLockAdapter();
+            vi.spyOn(adapter, "acquireWriter").mockRejectedValue(
+                unexpectedError,
+            );
+            const sharedLockFactory = new SharedLockFactory({ adapter });
+            await sharedLockFactory.init();
+
+            const promise = sharedLockFactory
+                .create("a", { ttl: null, limit: 1 })
+                .acquireWriter();
+
+            await expect(promise).rejects.toThrow(
+                UnableToAcquireWriterLockError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToAcquireWriterLockError when deserialized lock acquireWriter fails", async () => {
+            const serde = new SuperJsonSerde();
+            const unexpectedError = new Error("Unexpected adapter error");
+            const adapter = new MemorySharedLockAdapter();
+            vi.spyOn(adapter, "acquireWriter").mockRejectedValue(
+                unexpectedError,
+            );
+            const sharedLockFactory = new SharedLockFactory({ adapter, serde });
+            await sharedLockFactory.init();
+
+            const deserializedLock = await serde.deserialize<ISharedLock>(
+                await serde.serialize(
+                    sharedLockFactory.create("a", { ttl: null, limit: 1 }),
+                ),
+            );
+            const promise = deserializedLock.acquireWriter();
+
+            await expect(promise).rejects.toThrow(
+                UnableToAcquireWriterLockError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
         });
     });
 });
