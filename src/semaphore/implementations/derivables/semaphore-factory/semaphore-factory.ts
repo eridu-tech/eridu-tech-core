@@ -4,6 +4,8 @@
 
 import { v4 } from "uuid";
 
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
+import { handleUnexpectedSemaphoreAdapterError } from "@/semaphore/implementations/derivables/semaphore-factory/handle-unexpected-semaphore-adapter-error.js";
 import { SemaphoreSerdeTransformer } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore-serde-transformer.js";
 import { Semaphore } from "@/semaphore/implementations/derivables/semaphore-factory/semaphore.js";
 import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
@@ -108,6 +110,9 @@ export type SemaphoreFactorySettings = SemaphoreFactorySettingsBase & {
 /**
  * `SemaphoreFactory` class can be derived from any {@link ISemaphoreAdapter | `ISemaphoreAdapter`}.
  *
+ * Unexpected errors thrown by the adapter are converted into the matching `UnableTo*SemaphoreError`
+ * with the original error preserved as `cause`, so `ISemaphore` methods only reject with semaphore errors.
+ *
  * Note the {@link ISemaphore | `ISemaphore`} instances created by the `SemaphoreFactory` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
  * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
@@ -140,7 +145,17 @@ export class SemaphoreFactory implements ISemaphoreFactory, IInitizable {
             defaultTtl === null ? null : TimeSpan.fromTimeSpan(defaultTtl);
         this.serializationId = resolveSerializationId(serializationId, adapter);
 
-        this.adapter = adapter;
+        this.adapter = withPlugin(
+            {
+                acquire: (acquireSettings) => adapter.acquire(acquireSettings),
+                release: (key, slotId) => adapter.release(key, slotId),
+                forceReleaseAll: (key) => adapter.forceReleaseAll(key),
+                refresh: (key, slotId, ttl) =>
+                    adapter.refresh(key, slotId, ttl),
+                getState: (key) => adapter.getState(key),
+            },
+            handleUnexpectedSemaphoreAdapterError(),
+        );
     }
 
     async init(): Promise<void> {
