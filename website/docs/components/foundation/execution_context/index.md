@@ -75,6 +75,10 @@ The library includes several contracts that separate concerns for different use 
 - `IContext`: Adds all mutation methods (put, update, remove, etc.) for full context management.
 - `IExecutionContextBase`: Adds execution boundary methods (run, bind) for context propagation and isolation.
 - `IExecutionContext`: Combines all of the above for complete context management and execution.
+- `IAsyncReadableContext`: Async read-only access to context values.
+- `IAsyncContext`: Adds all async mutation methods, returning `IAsyncContextChain`.
+- `IAsyncExecutionContextBase`: Adds the async `run` execution boundary method.
+- `IAsyncExecutionContext`: Combines the async read, write and execution contracts.
 
 #### `IExecutionContextBase`
 
@@ -103,6 +107,16 @@ The library includes several contracts that separate concerns for different use 
 - `get(token)` — Retrieves a value or null if not found.
 - `getOr(token, defaultValue)` — Retrieves a value or returns the provided default if not found.
 - `getOrFail(token)` — Retrieves a value or throws if not found.
+
+## Async execution context
+
+`AsyncExecutionContext` is the async counterpart of `ExecutionContext`. It follows the same patterns, but every read returns a `Promise`, every mutation returns an `IAsyncContextChain`, and `run` accepts async invocables:
+
+```ts file=./samples/async-execution-context.ts
+
+```
+
+`IAsyncContextChain` exposes the full `IAsyncContext` API and is also a `PromiseLike<void>`, so an entire chain of mutations can be awaited.
 
 ## Further information
 
