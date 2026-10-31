@@ -1,19 +1,19 @@
 import { describe, expect, test } from "vitest";
 
 import {
-    DecodingError,
-    EncodingError,
+    UnableToDecodeCodecError,
+    UnableToEncodeCodecError,
     isCodecError,
 } from "@/codec/contracts/codec.errors.js";
 
 describe("file: codec.errors.ts", () => {
     describe("function: isCodecError", () => {
-        test("Should return true when given EncodingError instance", () => {
-            const error = EncodingError.create("boom");
+        test("Should return true when given UnableToEncodeCodecError instance", () => {
+            const error = UnableToEncodeCodecError.create("boom");
             expect(isCodecError(error)).toBe(true);
         });
-        test("Should return true when given DecodingError instance", () => {
-            const error = DecodingError.create("boom");
+        test("Should return true when given UnableToDecodeCodecError instance", () => {
+            const error = UnableToDecodeCodecError.create("boom");
             expect(isCodecError(error)).toBe(true);
         });
         test("Should return false when given a generic Error instance", () => {

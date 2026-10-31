@@ -3,8 +3,8 @@
  */
 
 import {
-    EncodingError,
-    DecodingError,
+    UnableToEncodeCodecError,
+    UnableToDecodeCodecError,
 } from "@/codec/contracts/_module-exports.js";
 
 import type { ICodec } from "@/codec/contracts/_module-exports.js";
@@ -18,7 +18,7 @@ export class Base64UrlCodec implements ICodec<string, string> {
         try {
             return Buffer.from(decodedValue).toString("base64url");
         } catch (error: unknown) {
-            throw EncodingError.create(error);
+            throw UnableToEncodeCodecError.create(error);
         }
     }
 
@@ -26,7 +26,7 @@ export class Base64UrlCodec implements ICodec<string, string> {
         try {
             return Buffer.from(encodedValue, "base64url").toString("utf8");
         } catch (error: unknown) {
-            throw DecodingError.create(error);
+            throw UnableToDecodeCodecError.create(error);
         }
     }
 }
