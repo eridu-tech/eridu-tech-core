@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
     BlockedRateLimiterError,
     RATE_LIMITER_STATE,
+    UnableToGetStateRateLimiterError,
+    UnableToResetRateLimiterError,
+    UnableToUpdateStateRateLimiterError,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import { DatabaseRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/database-rate-limiter-adapter/_module-exports.js";
 import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-storage-adapter/_module-exports.js";
@@ -538,6 +541,74 @@ describe("class: RateLimiterFactory", () => {
             const handler = vi.fn();
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
+        });
+    });
+    describe("Unexpected adapter error handling:", () => {
+        function createFailingAdapter(
+            unexpectedError: Error,
+        ): IRateLimiterAdapter {
+            return {
+                getState: vi.fn().mockRejectedValue(unexpectedError),
+                updateState: vi.fn().mockRejectedValue(unexpectedError),
+                reset: vi.fn().mockRejectedValue(unexpectedError),
+            };
+        }
+        test("Should reject with UnableToGetStateRateLimiterError when adapter getState fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingRateLimiterFactory = new RateLimiterFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingRateLimiterFactory.init();
+
+            const promise = failingRateLimiterFactory
+                .create("a", { limit: 1 })
+                .getState();
+
+            await expect(promise).rejects.toThrow(
+                UnableToGetStateRateLimiterError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToUpdateStateRateLimiterError when adapter updateState fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingRateLimiterFactory = new RateLimiterFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingRateLimiterFactory.init();
+
+            const promise = failingRateLimiterFactory
+                .create("a", { limit: 1 })
+                .runOrFail(() => Promise.resolve());
+
+            await expect(promise).rejects.toThrow(
+                UnableToUpdateStateRateLimiterError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToResetRateLimiterError when adapter reset fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingRateLimiterFactory = new RateLimiterFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingRateLimiterFactory.init();
+
+            const promise = failingRateLimiterFactory
+                .create("a", { limit: 1 })
+                .reset();
+
+            await expect(promise).rejects.toThrow(
+                UnableToResetRateLimiterError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
         });
     });
 });

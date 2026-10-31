@@ -3,6 +3,9 @@ import { describe, expect, test } from "vitest";
 import {
     BlockedRateLimiterError,
     isRateLimiterError,
+    UnableToGetStateRateLimiterError,
+    UnableToResetRateLimiterError,
+    UnableToUpdateStateRateLimiterError,
 } from "@/rate-limiter/contracts/rate-limiter.errors.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
@@ -18,6 +21,18 @@ describe("file: rate-limiter.errors.ts", () => {
                 },
                 "a",
             );
+            expect(isRateLimiterError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToGetStateRateLimiterError instance", () => {
+            const error = UnableToGetStateRateLimiterError.create("a");
+            expect(isRateLimiterError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToUpdateStateRateLimiterError instance", () => {
+            const error = UnableToUpdateStateRateLimiterError.create("a");
+            expect(isRateLimiterError(error)).toBe(true);
+        });
+        test("Should return true when given UnableToResetRateLimiterError instance", () => {
+            const error = UnableToResetRateLimiterError.create("a");
             expect(isRateLimiterError(error)).toBe(true);
         });
         test("Should return false when given a generic Error instance", () => {
