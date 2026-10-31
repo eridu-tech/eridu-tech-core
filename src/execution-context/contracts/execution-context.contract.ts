@@ -146,13 +146,14 @@ export type PutDecrementSettings = DecrementSettings & {
 };
 
 /**
- * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
  *
  * Read-only contract for accessing execution context values.
  *
  * This contract provides methods to retrieve values stored in the execution context.
  * It does not allow modifications, making it suitable for passing as a read-only view
  * of the context to functions that should only inspect values, not modify them.
+ *
+ * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
  */
 export type IReadableContext = {
     /**
@@ -227,7 +228,6 @@ export type IReadableContext = {
 };
 
 /**
- * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
  *
  * Read-write contract for managing execution context values.
  *
@@ -235,6 +235,8 @@ export type IReadableContext = {
  * values from the execution context. All methods return IContext to enable method chaining.
  * It supports various operations: basic put/update/remove, numeric increment/decrement,
  * array push, and conditional operations.
+ *
+ * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
  */
 export type IContext = IReadableContext & {
     /**
@@ -404,12 +406,13 @@ export type IContext = IReadableContext & {
 };
 
 /**
- * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
  *
  * Base contract for execution context operations.
  *
  * Provides methods for executing code within an execution context,
  * ensuring context values are accessible during execution.
+ *
+ * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
  */
 export type IExecutionContextBase = {
     /**
@@ -442,13 +445,14 @@ export type IExecutionContextBase = {
 };
 
 /**
- * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
  *
  * Complete execution context contract combining execution capabilities with context management.
  *
  * Combines IExecutionContextBase (for running code with context) and IContext (for reading/writing values).
  * This is the primary contract for working with execution contexts in most scenarios.
  * It allows you to manage context values and execute code within that context.
+ *
+ * IMPORT_PATH: `"eridu-tech/execution-context/contracts"`
  */
 export type IExecutionContext = IExecutionContextBase & IContext;
 
