@@ -4,6 +4,8 @@
 
 import { FileSerdeTransformer } from "@/file-storage/implementations/derivables/file-storage/file-serde-transformer.js";
 import { File } from "@/file-storage/implementations/derivables/file-storage/file.js";
+import { handleUnexpectedFileStorageAdapterError } from "@/file-storage/implementations/derivables/file-storage/handle-unexpected-file-storage-adapter-error.js";
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import {
     CORE,
@@ -89,6 +91,9 @@ export type FileStorageSettings = FileStorageSettingsBase & {
 /**
  * `FileStorage` class can be derived from any {@link ISignedFileStorageAdapter | `ISignedFileStorageAdapter`}.
  *
+ * Unexpected errors thrown by the adapter are converted into the matching `UnableTo*FileError`
+ * with the original error preserved as `cause`, so `IFile` and `IFileStorage` methods only reject with file storage errors.
+ *
  * Note the {@link IFile | `IFile`} instances created by the `FileStorage` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
  * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
@@ -120,7 +125,28 @@ export class FileStorage implements IFileStorage, IInitizable {
         this.defaultContentEncoding = defaultContentEncoding;
         this.defaultCacheControl = defaultCacheControl;
         this.defaultContentLanguage = defaultContentLanguage;
-        this.adapter = adapter;
+        this.adapter = withPlugin(
+            {
+                getPublicUrl: (key) => adapter.getPublicUrl(key),
+                getSignedDownloadUrl: (key, downloadSettings) =>
+                    adapter.getSignedDownloadUrl(key, downloadSettings),
+                getSignedUploadUrl: (key, uploadSettings) =>
+                    adapter.getSignedUploadUrl(key, uploadSettings),
+                exists: (key) => adapter.exists(key),
+                getStream: (key) => adapter.getStream(key),
+                getBytes: (key) => adapter.getBytes(key),
+                getMetaData: (key) => adapter.getMetaData(key),
+                put: (key, content) => adapter.put(key, content),
+                putStream: (key, stream) => adapter.putStream(key, stream),
+                copy: (source, destination) =>
+                    adapter.copy(source, destination),
+                move: (source, destination) =>
+                    adapter.move(source, destination),
+                removeMany: (keys) => adapter.removeMany(keys),
+                removeByPrefix: (prefix) => adapter.removeByPrefix(prefix),
+            },
+            handleUnexpectedFileStorageAdapterError(),
+        );
         this.serde = serde;
         this.serializationId = resolveSerializationId(serializationId, adapter);
     }

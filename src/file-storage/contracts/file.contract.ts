@@ -114,6 +114,7 @@ export type IReadableFile = {
      * Retrieves file content as a UTF-8 text string.
      *
      * @returns The file content as text, or null if not found
+     * @throws {UnableToGetBytesFileError} If the file storage adapter fails with an unexpected error while reading the file
      */
     getText(): Promise<string | null>;
 
@@ -122,6 +123,7 @@ export type IReadableFile = {
      *
      * @returns The file content as text
      * @throws {KeyNotFoundFileError} If the file is not found
+     * @throws {UnableToGetBytesFileError} If the file storage adapter fails with an unexpected error while reading the file
      */
     getTextOrFail(): Promise<string>;
 
@@ -129,6 +131,7 @@ export type IReadableFile = {
      * Retrieves file content as a Uint8Array (binary data).
      *
      * @returns The file content as bytes, or null if not found
+     * @throws {UnableToGetBytesFileError} If the file storage adapter fails with an unexpected error while reading the file
      */
     getBytes(): Promise<Uint8Array | null>;
 
@@ -137,6 +140,7 @@ export type IReadableFile = {
      *
      * @returns The file content as bytes
      * @throws {KeyNotFoundFileError} If the file is not found
+     * @throws {UnableToGetBytesFileError} If the file storage adapter fails with an unexpected error while reading the file
      */
     getBytesOrFail(): Promise<Uint8Array>;
 
@@ -144,6 +148,7 @@ export type IReadableFile = {
      * Retrieves file content as an ArrayBuffer (standard JavaScript).
      *
      * @returns The file content as ArrayBuffer, or null if not found
+     * @throws {UnableToGetBytesFileError} If the file storage adapter fails with an unexpected error while reading the file
      */
     getArrayBuffer(): Promise<ArrayBuffer | null>;
 
@@ -152,6 +157,7 @@ export type IReadableFile = {
      *
      * @returns The file content as ArrayBuffer
      * @throws {KeyNotFoundFileError} If the file is not found
+     * @throws {UnableToGetBytesFileError} If the file storage adapter fails with an unexpected error while reading the file
      */
     getArrayBufferOrFail(): Promise<ArrayBuffer>;
 
@@ -160,6 +166,7 @@ export type IReadableFile = {
      * Suitable for streaming large files without loading entire content into memory.
      *
      * @returns A readable stream, or null if not found
+     * @throws {UnableToGetStreamFileError} If the file storage adapter fails with an unexpected error while reading the file stream
      */
     getReadableStream(): Promise<ReadableStream<Uint8Array> | null>;
 
@@ -169,6 +176,7 @@ export type IReadableFile = {
      *
      * @returns A readable stream
      * @throws {KeyNotFoundFileError} If the file is not found
+     * @throws {UnableToGetStreamFileError} If the file storage adapter fails with an unexpected error while reading the file stream
      */
     getReadableStreamOrFail(): Promise<ReadableStream<Uint8Array>>;
 
@@ -176,6 +184,7 @@ export type IReadableFile = {
      * Retrieves metadata about the file without downloading its content.
      *
      * @returns File metadata (ETag, content type, size, modification time), or null if not found
+     * @throws {UnableToGetMetaDataFileError} If the file storage adapter fails with an unexpected error while reading the file metadata
      */
     getMetadata(): Promise<FileMetadata | null>;
 
@@ -184,6 +193,7 @@ export type IReadableFile = {
      *
      * @returns File metadata (ETag, content type, size, modification time)
      * @throws {KeyNotFoundFileError} If the file is not found
+     * @throws {UnableToGetMetaDataFileError} If the file storage adapter fails with an unexpected error while reading the file metadata
      */
     getMetadataOrFail(): Promise<FileMetadata>;
 
@@ -191,6 +201,7 @@ export type IReadableFile = {
      * Checks if this file exists in storage.
      *
      * @returns true if the file exists, false otherwise
+     * @throws {UnableToExistsFileError} If the file storage adapter fails with an unexpected error while checking whether the file exists
      */
     exists(): Promise<boolean>;
 
@@ -198,6 +209,7 @@ export type IReadableFile = {
      * Checks if this file does not exist in storage.
      *
      * @returns true if the file does not exist, false if it exists
+     * @throws {UnableToExistsFileError} If the file storage adapter fails with an unexpected error while checking whether the file exists
      */
     missing(): Promise<boolean>;
 
@@ -207,6 +219,7 @@ export type IReadableFile = {
      *
      * @returns The public URL
      * @throws Error if the file is not found or not publicly accessible
+     * @throws {UnableToGetPublicUrlFileError} If the file storage adapter fails with an unexpected error while generating the public URL
      */
     getPublicUrl(): Promise<string>;
 
@@ -217,6 +230,7 @@ export type IReadableFile = {
      * @param options - Download URL configuration options (TTL, content-type, content-disposition)
      * @returns A signed URL
      * @throws Error if the file is not found
+     * @throws {UnableToGetSignedDownloadUrlFileError} If the file storage adapter fails with an unexpected error while generating the signed download URL
      */
     getSignedDownloadUrl(options?: FileDownloadUrlOptions): Promise<string>;
 };
@@ -285,25 +299,45 @@ export type WritableFileStream = WritableFileCommonSettings & {
  * @group Contracts
  */
 export type IFile = IReadableFile & {
+    /**
+     * @throws {UnableToPutFileError} If the file storage adapter fails with an unexpected error while writing the file
+     */
     put(content: WritableFileContent): Promise<void>;
 
+    /**
+     * @throws {UnableToPutStreamFileError} If the file storage adapter fails with an unexpected error while writing the file stream
+     */
     putStream(stream: WritableFileStream): Promise<void>;
 
+    /**
+     * @throws {UnableToRemoveManyFileError} If the file storage adapter fails with an unexpected error while removing the file
+     */
     remove(): Promise<void>;
 
+    /**
+     * @throws {UnableToCopyFileError} If the file storage adapter fails with an unexpected error while copying the file
+     */
     copy(destination: string): Promise<boolean>;
 
     /**
      * @throws {KeyNotFoundFileError}
+     * @throws {UnableToCopyFileError} If the file storage adapter fails with an unexpected error while copying the file
      */
     copyOrFail(destination: string): Promise<void>;
 
+    /**
+     * @throws {UnableToMoveFileError} If the file storage adapter fails with an unexpected error while moving the file
+     */
     move(destination: string): Promise<boolean>;
 
     /**
      * @throws {KeyNotFoundFileError}
+     * @throws {UnableToMoveFileError} If the file storage adapter fails with an unexpected error while moving the file
      */
     moveOrFail(destination: string): Promise<void>;
 
+    /**
+     * @throws {UnableToGetSignedUploadUrlFileError} If the file storage adapter fails with an unexpected error while generating the signed upload URL
+     */
     getSignedUploadUrl(options?: FileUploadUrlOptions): Promise<string>;
 };

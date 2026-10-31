@@ -1,7 +1,9 @@
 /* eslint-disable no-shadow */
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { UnableToGetBytesFileError } from "@/file-storage/contracts/_module-exports.js";
 import { MemoryFileStorageAdapter } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js";
+import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/_module-exports.js";
 import { SignedFileStorageAdapter } from "@/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js";
 import { FileStorage } from "@/file-storage/implementations/derivables/file-storage/file-storage.js";
 import {
@@ -244,6 +246,42 @@ describe("class: FileStorage", () => {
             const result = await deserializeFile2.exists();
 
             expect(result).toBe(true);
+        });
+    });
+    describe("Unexpected adapter error handling:", () => {
+        test("Should reject with UnableToGetBytesFileError when adapter getBytes fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const adapter = new NoOpFileStorageAdapter();
+            vi.spyOn(adapter, "getBytes").mockRejectedValue(unexpectedError);
+            const fileStorage = new FileStorage({ adapter });
+            await fileStorage.init();
+
+            const promise = fileStorage.create("a").getBytes();
+
+            await expect(promise).rejects.toThrow(UnableToGetBytesFileError);
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToGetBytesFileError when deserialized file getBytes fails", async () => {
+            const serde = new SuperJsonSerde();
+            const unexpectedError = new Error("Unexpected adapter error");
+            const adapter = new NoOpFileStorageAdapter();
+            vi.spyOn(adapter, "getBytes").mockRejectedValue(unexpectedError);
+            const fileStorage = new FileStorage({ adapter, serde });
+            await fileStorage.init();
+
+            const deserializedFile = await serde.deserialize<IFile>(
+                await serde.serialize(fileStorage.create("a")),
+            );
+            const promise = deserializedFile.getBytes();
+
+            await expect(promise).rejects.toThrow(UnableToGetBytesFileError);
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
         });
     });
 });
