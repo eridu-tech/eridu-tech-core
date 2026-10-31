@@ -5,6 +5,8 @@
 import { CIRCUIT_BREAKER_TRIGGER } from "@/circuit-breaker/contracts/_module-exports.js";
 import { CircuitBreakerSerdeTransformer } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-serde-transformer.js";
 import { CircuitBreaker } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker.js";
+import { handleUnexpectedCircuitBreakerAdapterError } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/handle-unexpected-circuit-breaker-adapter-error.js";
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
@@ -129,6 +131,9 @@ export type CircuitBreakerFactorySettings =
 /**
  * `CircuitBreakerFactory` class can be derived from any {@link ICircuitBreakerAdapter | `ICircuitBreakerAdapter`}.
  *
+ * Unexpected errors thrown by the adapter are converted into the matching `UnableTo*CircuitBreakerError`
+ * with the original error preserved as `cause`, so `ICircuitBreaker` methods only reject with circuit breaker errors.
+ *
  * Note the {@link ICircuitBreaker | `ICircuitBreaker`} instances created by the `CircuitBreakerFactory` class are serializable and deserializable,
  * allowing them to be seamlessly transferred across different servers, processes, and databases.
  * This can be done directly using {@link ISerdeRegister | `ISerderRegister`} or indirectly through components that rely on {@link ISerdeRegister | `ISerderRegister`} internally.
@@ -162,7 +167,17 @@ export class CircuitBreakerFactory
 
         this.waitUntil = waitUntil;
         this.enableAsyncTracking = enableAsyncTracking;
-        this.adapter = adapter;
+        this.adapter = withPlugin(
+            {
+                getState: (key) => adapter.getState(key),
+                updateState: (key) => adapter.updateState(key),
+                isolate: (key) => adapter.isolate(key),
+                trackFailure: (key) => adapter.trackFailure(key),
+                trackSuccess: (key) => adapter.trackSuccess(key),
+                reset: (key) => adapter.reset(key),
+            },
+            handleUnexpectedCircuitBreakerAdapterError(),
+        );
         this.defaultSlowCallTime = TimeSpan.fromTimeSpan(defaultSlowCallTime);
         this.defaultTrigger = defaultTrigger;
         this.defaultErrorPolicy = defaultErrorPolicy;

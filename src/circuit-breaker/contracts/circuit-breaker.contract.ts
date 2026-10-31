@@ -17,6 +17,7 @@ export type ICircuitBreakerStateMethods = {
      * Retrieves the current state of the circuit breaker.
      *
      * @returns The current state (CLOSED, OPEN, HALF_OPEN, or ISOLATED)
+     * @throws {UnableToGetStateCircuitBreakerError} If the circuit breaker adapter fails with an unexpected error while retrieving the state
      */
     getState(): Promise<CircuitBreakerState>;
 
@@ -44,6 +45,9 @@ export type ICircuitBreaker = ICircuitBreakerStateMethods & {
      * @param asyncFn - The function to execute under circuit breaker protection
      * @returns The return value of the function
      * @throws {OpenCircuitBreakerError} If the circuit breaker is in OPEN or ISOLATED state
+     * @throws {UnableToUpdateStateCircuitBreakerError} If the circuit breaker adapter fails with an unexpected error while updating the state
+     * @throws {UnableToTrackFailureCircuitBreakerError} If the circuit breaker adapter fails with an unexpected error while tracking a failure
+     * @throws {UnableToTrackSuccessCircuitBreakerError} If the circuit breaker adapter fails with an unexpected error while tracking a success
      */
     runOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
@@ -53,12 +57,16 @@ export type ICircuitBreaker = ICircuitBreakerStateMethods & {
      * Manually transitions the circuit breaker to ISOLATED state.
      * When isolated, all requests are blocked until explicitly reset.
      * Use this to prevent all traffic to a failing downstream service.
+     *
+     * @throws {UnableToIsolateCircuitBreakerError} If the circuit breaker adapter fails with an unexpected error while isolating the circuit breaker
      */
     isolate(): Promise<void>;
 
     /**
      * Resets the circuit breaker to its initial CLOSED state.
      * Clears failure counts and allows normal traffic flow to resume.
+     *
+     * @throws {UnableToResetCircuitBreakerError} If the circuit breaker adapter fails with an unexpected error while resetting the circuit breaker
      */
     reset(): Promise<void>;
 };
