@@ -5,8 +5,8 @@
 import SuperJson from "@eridu-tech/superjson";
 
 import {
-    DeserializationSerdeError,
-    SerializationSerdeError,
+    UnableToDeserializeSerdeError,
+    UnableToSerializeSerdeError,
 } from "@/serde/contracts/_module-exports.js";
 import { resolveOneOrMoreStr } from "@/utilities/_module-exports.js";
 
@@ -32,7 +32,7 @@ export class SuperJsonSerde implements IFlexibleSerde<string> {
         try {
             return await this.superJson.stringify(value);
         } catch (error: unknown) {
-            throw SerializationSerdeError.create(error);
+            throw UnableToSerializeSerdeError.create(error);
         }
     }
 
@@ -40,7 +40,7 @@ export class SuperJsonSerde implements IFlexibleSerde<string> {
         try {
             return await this.superJson.parse(serializedValue);
         } catch (error: unknown) {
-            throw DeserializationSerdeError.create(error);
+            throw UnableToDeserializeSerdeError.create(error);
         }
     }
 

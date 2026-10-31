@@ -8,22 +8,22 @@
  * IMPORT_PATH: `"eridu-tech/serde/contracts"`
  * @group Errors
  */
-export class SerializationSerdeError extends Error {
-    static create(error: unknown): SerializationSerdeError {
-        return new SerializationSerdeError(
+export class UnableToSerializeSerdeError extends Error {
+    static create(error: unknown): UnableToSerializeSerdeError {
+        return new UnableToSerializeSerdeError(
             `Serialization error "${String(error)}" occurred`,
             error,
         );
     }
 
     /**
-     * Note: Do not instantiate `SerializationSerdeError` directly via the constructor. Use the static `create()` factory method instead.
+     * Note: Do not instantiate `UnableToSerializeSerdeError` directly via the constructor. Use the static `create()` factory method instead.
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
     constructor(message: string, cause?: unknown) {
         super(message, { cause });
-        this.name = SerializationSerdeError.name;
+        this.name = UnableToSerializeSerdeError.name;
     }
 }
 
@@ -33,22 +33,22 @@ export class SerializationSerdeError extends Error {
  * IMPORT_PATH: `"eridu-tech/serde/contracts"`
  * @group Errors
  */
-export class DeserializationSerdeError extends Error {
-    static create(error: unknown): DeserializationSerdeError {
-        return new DeserializationSerdeError(
+export class UnableToDeserializeSerdeError extends Error {
+    static create(error: unknown): UnableToDeserializeSerdeError {
+        return new UnableToDeserializeSerdeError(
             `Deserialization error "${String(error)}" occurred`,
             error,
         );
     }
 
     /**
-     * Note: Do not instantiate `DeserializationSerdeError` directly via the constructor. Use the static `create()` factory method instead.
+     * Note: Do not instantiate `UnableToDeserializeSerdeError` directly via the constructor. Use the static `create()` factory method instead.
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
     constructor(message: string, cause?: unknown) {
         super(message, { cause });
-        this.name = DeserializationSerdeError.name;
+        this.name = UnableToDeserializeSerdeError.name;
     }
 }
 
@@ -57,8 +57,8 @@ export class DeserializationSerdeError extends Error {
  * @group Errors
  */
 export const SERDE_ERRORS = {
-    Serialization: SerializationSerdeError,
-    Deserialization: DeserializationSerdeError,
+    UnableToSerialize: UnableToSerializeSerdeError,
+    UnableToDeserialize: UnableToDeserializeSerdeError,
 } as const;
 
 /**
@@ -66,7 +66,7 @@ export const SERDE_ERRORS = {
  * @group Errors
  */
 export type AllSerdeErrors =
-    SerializationSerdeError | DeserializationSerdeError;
+    UnableToSerializeSerdeError | UnableToDeserializeSerdeError;
 
 /**
  * IMPORT_PATH: `"eridu-tech/serde/contracts"`
