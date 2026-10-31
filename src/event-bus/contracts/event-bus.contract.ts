@@ -80,6 +80,7 @@ export type IEventListenable<TEventMap extends BaseEventMap = BaseEventMap> = {
      * @param eventNames - Single event name or array of event names to subscribe to
      * @param listener - Callback function or object to invoke when events are dispatched
      * @throws {ValidationError} Inside the listener
+     * @throws {UnableToAddListenerEventBusError} If the event bus adapter fails with an unexpected error while adding the listener
      */
     addListener<TEventName extends keyof TEventMap>(
         eventNames: OneOrArray<TEventName>,
@@ -94,6 +95,7 @@ export type IEventListenable<TEventMap extends BaseEventMap = BaseEventMap> = {
      * @param eventNames - Single event name or array of event names to unsubscribe from
      * @param listener - The listener callback to remove
      * @throws {ValidationError} Inside the listener
+     * @throws {UnableToRemoveListenerEventBusError} If the event bus adapter fails with an unexpected error while removing the listener
      */
     removeListener<TEventName extends keyof TEventMap>(
         eventNames: OneOrArray<TEventName>,
@@ -107,6 +109,7 @@ export type IEventListenable<TEventMap extends BaseEventMap = BaseEventMap> = {
      * @param eventName - The event name to subscribe to
      * @param listener - Callback function or object to invoke when the event is dispatched
      * @throws {ValidationError} Inside the listener
+     * @throws {UnableToAddListenerEventBusError} If the event bus adapter fails with an unexpected error while adding the listener
      */
     listenOnce<TEventName extends keyof TEventMap>(
         eventName: TEventName,
@@ -121,6 +124,7 @@ export type IEventListenable<TEventMap extends BaseEventMap = BaseEventMap> = {
      * @param eventName - The event name to wait for
      * @returns A Promise that resolves with the event when it is dispatched
      * @throws {ValidationError}
+     * @throws {UnableToAddListenerEventBusError} If the event bus adapter fails with an unexpected error while adding the listener
      */
     asPromise<TEventName extends keyof TEventMap>(
         eventName: TEventName,
@@ -135,6 +139,7 @@ export type IEventListenable<TEventMap extends BaseEventMap = BaseEventMap> = {
      * @param listener - Callback function or object to invoke when the event is dispatched
      * @returns A cleanup function that removes the listener when called
      * @throws {ValidationError} Inside the listener
+     * @throws {UnableToAddListenerEventBusError} If the event bus adapter fails with an unexpected error while adding the listener
      */
     subscribeOnce<TEventName extends keyof TEventMap>(
         eventName: TEventName,
@@ -145,6 +150,8 @@ export type IEventListenable<TEventMap extends BaseEventMap = BaseEventMap> = {
      * The `subscribe` method is used for listening to one or more {@link BaseEvent | `BaseEvent`} and it returns a cleanup function that removes listener when called.
      * The same listener can only be added once for a specific event. Adding the same listener multiple times will have no effect and nothing will occur.
      * @throws {ValidationError} Inside the listener
+     * @throws {UnableToAddListenerEventBusError} If the event bus adapter fails with an unexpected error while adding the listener
+     * @throws {UnableToRemoveListenerEventBusError} If the event bus adapter fails with an unexpected error while removing the listener through the returned cleanup function
      */
     subscribe<TEventName extends keyof TEventMap>(
         eventNames: OneOrArray<TEventName>,
@@ -162,6 +169,7 @@ export type IEventDispatcher<TEventMap extends BaseEventMap = BaseEventMap> = {
     /**
      * The `dispatch` method is used for dispatching a {@link BaseEvent | `BaseEvent`}.
      * @throws {ValidationError}
+     * @throws {UnableToDispatchEventBusError} If the event bus adapter fails with an unexpected error while dispatching the event
      */
     dispatch<TEventName extends keyof TEventMap>(
         eventName: TEventName,
