@@ -20,7 +20,7 @@ The `eridu-tech/di` component provides an Inversion of Control (IoC) container f
 
 ### Initial Configuration
 
-To begin using the DI container, create a `Container` instance and provide an [`IExecutionContext`](/docs/components/foundation/execution_context):
+To begin using the DI container, create a `Container` instance and provide an [`IExecutionContext`](/docs/components/foundation/execution_context/execution_context_usage):
 
 ```ts file=./samples/container.ts
 
@@ -123,7 +123,7 @@ Use `registerFactory()` to register a **Singleton**, **Scoped**, or **Transient*
 
 - **`deps`** — The dependencies required by the service, defined as a record where each value is a **token** identifying a dependency. Pass an empty object literal `{}` if the service has no dependencies.
 
-- **`factory`** — [`invocable`](/docs/components/utilities/invocable) (function or object with `invoke` method) that creates and returns the service instance. It receives a record of resolved dependencies as its first argument and the [`execution context`](/docs/components/foundation/execution_context) as its second argument. The factory can also be `async` and return a `Promise`.
+- **`factory`** — [`invocable`](/docs/components/utilities/invocable) (function or object with `invoke` method) that creates and returns the service instance. It receives a record of resolved dependencies as its first argument and the [`execution context`](/docs/components/foundation/execution_context/execution_context_usage) as its second argument. The factory can also be `async` and return a `Promise`.
 
 - **`lifetime`** — The lifetime of the service. Must be either `LIFETIME.SINGLETON`, `LIFETIME.TRANSIENT` or `LIFETIME.SCOPED`.
 
