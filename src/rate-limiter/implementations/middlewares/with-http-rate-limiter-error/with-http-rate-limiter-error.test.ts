@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
     defaultHttpRouterAdapter,
     HttpRouter,
-} from "@/http-router/implementations/http-router.js";
+} from "@/http-router/implementations/_module-exports.js";
 import {
     BlockedRateLimiterError,
     UnableToGetStateRateLimiterError,
