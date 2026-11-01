@@ -13,7 +13,7 @@ import { bindHttpFactory } from "@/http-router/implementations/di/bind-http-fact
 import {
     HttpRouter,
     defaultHttpRouterAdapter,
-} from "@/http-router/implementations/http-router.js";
+} from "@/http-router/implementations/http-router/http-router.js";
 
 import type { HttpHandlerFn } from "@/http-router/contracts/_module-exports.js";
 
