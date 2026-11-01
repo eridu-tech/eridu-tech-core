@@ -1,9 +1,3 @@
-/*
- * The handler args expose stateless response helpers (`text`, ...) that are
- * documented to be destructured, which reads as an unbound method reference.
- */
-/* eslint-disable @typescript-eslint/unbound-method */
-
 import { describe, expect, test } from "vitest";
 
 import { Container } from "@/di/implementations/eager/_module-exports.js";

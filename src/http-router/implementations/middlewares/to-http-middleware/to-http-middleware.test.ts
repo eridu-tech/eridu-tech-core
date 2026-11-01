@@ -1,9 +1,3 @@
-/*
- * Handler args expose stateless response helpers (`text`, `json`, ...) that are
- * documented to be destructured, which is a stylistic-only concern in a test.
- */
-/* eslint-disable @typescript-eslint/unbound-method */
-
 import { describe, expect, test, vi } from "vitest";
 
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
@@ -50,9 +44,9 @@ describe("function: toHttpMiddleware", () => {
     describe("When registered as router middleware", () => {
         test("Should run before and after the endpoint handler", async () => {
             const order: Array<string> = [];
-            const middleware: ConvertibleMiddleware = async ({ next }) => {
+            const middleware: ConvertibleMiddleware = async (args) => {
                 order.push("before");
-                const response = await next();
+                const response = await args.next();
                 order.push("after");
                 return response;
             };
@@ -73,8 +67,8 @@ describe("function: toHttpMiddleware", () => {
             expect(await response.text()).toBe("ok");
         });
         test("Should allow the middleware to modify the response built by the handler", async () => {
-            const middleware: ConvertibleMiddleware = async ({ next }) => {
-                const response = await next();
+            const middleware: ConvertibleMiddleware = async (args) => {
+                const response = await args.next();
                 return response.setHeader("X-Converted", "yes");
             };
             const router = createRouter();
@@ -133,8 +127,8 @@ describe("function: toHttpMiddleware", () => {
 
     describe("When registered as endpoint middleware", () => {
         test("Should only run for the endpoint it is registered on", async () => {
-            const middleware: ConvertibleMiddleware = async ({ next }) => {
-                const response = await next();
+            const middleware: ConvertibleMiddleware = async (args) => {
+                const response = await args.next();
                 return response.setHeader("X-Endpoint", "yes");
             };
             const converted = vi.fn(toHttpMiddleware(middleware));
@@ -160,9 +154,9 @@ describe("function: toHttpMiddleware", () => {
             const order: Array<string> = [];
             const router = createRouter();
             const record = (label: string): HttpMiddlewareFn => {
-                const middleware: ConvertibleMiddleware = async ({ next }) => {
+                const middleware: ConvertibleMiddleware = async (args) => {
                     order.push(`${label}:before`);
-                    const response = await next();
+                    const response = await args.next();
                     order.push(`${label}:after`);
                     return response;
                 };
@@ -302,8 +296,8 @@ describe("function: toHttpMiddleware", () => {
             expect(names).toEqual(["namedMiddleware"]);
         });
         test("Should ignore arguments passed to the converted `next`", async () => {
-            const middleware: ConvertibleMiddleware = ({ next }) =>
-                next([{} as HttpHandlerIncomingArgs]);
+            const middleware: ConvertibleMiddleware = (args) =>
+                args.next([{} as HttpHandlerIncomingArgs]);
             const router = createRouter();
             router.use(toHttpMiddleware(middleware));
             router.endpoint({
@@ -319,7 +313,7 @@ describe("function: toHttpMiddleware", () => {
             );
         });
         test("Should resolve with the response built by the endpoint handler", async () => {
-            const middleware: ConvertibleMiddleware = ({ next }) => next();
+            const middleware: ConvertibleMiddleware = (args) => args.next();
             const router = createRouter();
             router.use(toHttpMiddleware(middleware));
             router.endpoint({
