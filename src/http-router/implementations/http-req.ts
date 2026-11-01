@@ -576,7 +576,7 @@ export class HttpReq implements IHttpReq {
             throw HttpError.create({
                 message: error.message,
                 status: "400",
-                payload: error.issues,
+                details: error.issues,
             });
         }
     }
@@ -802,7 +802,7 @@ export class HttpReq implements IHttpReq {
             throw HttpError.create({
                 message: error.message,
                 status: "400",
-                payload: error.issues,
+                details: error.issues,
             });
         }
     }

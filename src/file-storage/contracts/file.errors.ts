@@ -12,7 +12,11 @@ import type { InferInstance } from "@/utilities/_module-exports.js";
  */
 export class KeyNotFoundFileError extends Error {
     static create(key: string, cause?: unknown): KeyNotFoundFileError {
-        return new KeyNotFoundFileError(`Key "${key}" is not found`, cause);
+        return new KeyNotFoundFileError(
+            key,
+            `Key "${key}" is not found`,
+            cause,
+        );
     }
 
     /**
@@ -20,7 +24,11 @@ export class KeyNotFoundFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = KeyNotFoundFileError.name;
     }
@@ -33,8 +41,12 @@ export class KeyNotFoundFileError extends Error {
  * @group Errors
  */
 export class InvalidKeyFileError extends Error {
-    static create(message: string, cause?: unknown): InvalidKeyFileError {
-        return new InvalidKeyFileError(message, cause);
+    static create(
+        key: string,
+        message: string,
+        cause?: unknown,
+    ): InvalidKeyFileError {
+        return new InvalidKeyFileError(key, message, cause);
     }
 
     /**
@@ -42,7 +54,11 @@ export class InvalidKeyFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = InvalidKeyFileError.name;
     }
@@ -58,6 +74,7 @@ export class InvalidKeyFileError extends Error {
 export class UnableToGetPublicUrlFileError extends Error {
     static create(key: string, cause?: unknown): UnableToGetPublicUrlFileError {
         return new UnableToGetPublicUrlFileError(
+            key,
             `Unable to get public url of file with key "${key}"`,
             cause,
         );
@@ -68,7 +85,11 @@ export class UnableToGetPublicUrlFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetPublicUrlFileError.name;
     }
@@ -87,6 +108,7 @@ export class UnableToGetSignedDownloadUrlFileError extends Error {
         cause?: unknown,
     ): UnableToGetSignedDownloadUrlFileError {
         return new UnableToGetSignedDownloadUrlFileError(
+            key,
             `Unable to get signed download url of file with key "${key}"`,
             cause,
         );
@@ -97,7 +119,11 @@ export class UnableToGetSignedDownloadUrlFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetSignedDownloadUrlFileError.name;
     }
@@ -116,6 +142,7 @@ export class UnableToGetSignedUploadUrlFileError extends Error {
         cause?: unknown,
     ): UnableToGetSignedUploadUrlFileError {
         return new UnableToGetSignedUploadUrlFileError(
+            key,
             `Unable to get signed upload url of file with key "${key}"`,
             cause,
         );
@@ -126,7 +153,11 @@ export class UnableToGetSignedUploadUrlFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetSignedUploadUrlFileError.name;
     }
@@ -142,6 +173,7 @@ export class UnableToGetSignedUploadUrlFileError extends Error {
 export class UnableToExistsFileError extends Error {
     static create(key: string, cause?: unknown): UnableToExistsFileError {
         return new UnableToExistsFileError(
+            key,
             `Unable to check existence of file with key "${key}"`,
             cause,
         );
@@ -152,7 +184,11 @@ export class UnableToExistsFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToExistsFileError.name;
     }
@@ -168,6 +204,7 @@ export class UnableToExistsFileError extends Error {
 export class UnableToGetStreamFileError extends Error {
     static create(key: string, cause?: unknown): UnableToGetStreamFileError {
         return new UnableToGetStreamFileError(
+            key,
             `Unable to get stream of file with key "${key}"`,
             cause,
         );
@@ -178,7 +215,11 @@ export class UnableToGetStreamFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetStreamFileError.name;
     }
@@ -194,6 +235,7 @@ export class UnableToGetStreamFileError extends Error {
 export class UnableToGetBytesFileError extends Error {
     static create(key: string, cause?: unknown): UnableToGetBytesFileError {
         return new UnableToGetBytesFileError(
+            key,
             `Unable to get bytes of file with key "${key}"`,
             cause,
         );
@@ -204,7 +246,11 @@ export class UnableToGetBytesFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetBytesFileError.name;
     }
@@ -220,6 +266,7 @@ export class UnableToGetBytesFileError extends Error {
 export class UnableToGetMetaDataFileError extends Error {
     static create(key: string, cause?: unknown): UnableToGetMetaDataFileError {
         return new UnableToGetMetaDataFileError(
+            key,
             `Unable to get metadata of file with key "${key}"`,
             cause,
         );
@@ -230,7 +277,11 @@ export class UnableToGetMetaDataFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetMetaDataFileError.name;
     }
@@ -246,6 +297,7 @@ export class UnableToGetMetaDataFileError extends Error {
 export class UnableToPutFileError extends Error {
     static create(key: string, cause?: unknown): UnableToPutFileError {
         return new UnableToPutFileError(
+            key,
             `Unable to put file with key "${key}"`,
             cause,
         );
@@ -256,7 +308,11 @@ export class UnableToPutFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToPutFileError.name;
     }
@@ -272,6 +328,7 @@ export class UnableToPutFileError extends Error {
 export class UnableToPutStreamFileError extends Error {
     static create(key: string, cause?: unknown): UnableToPutStreamFileError {
         return new UnableToPutStreamFileError(
+            key,
             `Unable to put stream of file with key "${key}"`,
             cause,
         );
@@ -282,7 +339,11 @@ export class UnableToPutStreamFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToPutStreamFileError.name;
     }
@@ -302,6 +363,8 @@ export class UnableToCopyFileError extends Error {
         cause?: unknown,
     ): UnableToCopyFileError {
         return new UnableToCopyFileError(
+            source,
+            destination,
             `Unable to copy file from "${source}" to "${destination}"`,
             cause,
         );
@@ -312,7 +375,12 @@ export class UnableToCopyFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly source: string,
+        readonly destination: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToCopyFileError.name;
     }
@@ -332,6 +400,8 @@ export class UnableToMoveFileError extends Error {
         cause?: unknown,
     ): UnableToMoveFileError {
         return new UnableToMoveFileError(
+            source,
+            destination,
             `Unable to move file from "${source}" to "${destination}"`,
             cause,
         );
@@ -342,7 +412,12 @@ export class UnableToMoveFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly source: string,
+        readonly destination: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToMoveFileError.name;
     }
@@ -361,6 +436,7 @@ export class UnableToRemoveManyFileError extends Error {
         cause?: unknown,
     ): UnableToRemoveManyFileError {
         return new UnableToRemoveManyFileError(
+            keys,
             `Unable to remove files with keys "${keys.join(", ")}"`,
             cause,
         );
@@ -371,7 +447,11 @@ export class UnableToRemoveManyFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly keys: Array<string>,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToRemoveManyFileError.name;
     }
@@ -390,6 +470,7 @@ export class UnableToRemoveByPrefixFileError extends Error {
         cause?: unknown,
     ): UnableToRemoveByPrefixFileError {
         return new UnableToRemoveByPrefixFileError(
+            prefix,
             `Unable to remove files with prefix "${prefix}"`,
             cause,
         );
@@ -400,7 +481,11 @@ export class UnableToRemoveByPrefixFileError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly prefix: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToRemoveByPrefixFileError.name;
     }
@@ -410,9 +495,7 @@ export class UnableToRemoveByPrefixFileError extends Error {
  * IMPORT_PATH: `"eridu-tech/file-storage/contracts"`
  * @group Errors
  */
-export const FILE_STORAGE_ERRORS = {
-    KeyNotFound: KeyNotFoundFileError,
-    InvalidKey: InvalidKeyFileError,
+export const UNABLE_FILE_STORAGE_ERRORS = {
     UnableToGetPublicUrl: UnableToGetPublicUrlFileError,
     UnableToGetSignedDownloadUrl: UnableToGetSignedDownloadUrlFileError,
     UnableToGetSignedUploadUrl: UnableToGetSignedUploadUrlFileError,
@@ -426,6 +509,39 @@ export const FILE_STORAGE_ERRORS = {
     UnableToMove: UnableToMoveFileError,
     UnableToRemoveMany: UnableToRemoveManyFileError,
     UnableToRemoveByPrefix: UnableToRemoveByPrefixFileError,
+} as const;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/file-storage/contracts"`
+ * @group Errors
+ */
+export type AllUnableFileErrors = InferInstance<
+    (typeof UNABLE_FILE_STORAGE_ERRORS)[keyof typeof UNABLE_FILE_STORAGE_ERRORS]
+>;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/file-storage/contracts"`
+ * @group Errors
+ */
+export function isUnableToFileError(
+    value: unknown,
+): value is AllUnableFileErrors {
+    for (const errorClass of Object.values(UNABLE_FILE_STORAGE_ERRORS)) {
+        if (value instanceof errorClass) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * IMPORT_PATH: `"eridu-tech/file-storage/contracts"`
+ * @group Errors
+ */
+export const FILE_STORAGE_ERRORS = {
+    KeyNotFound: KeyNotFoundFileError,
+    InvalidKey: InvalidKeyFileError,
+    ...UNABLE_FILE_STORAGE_ERRORS,
 } as const;
 
 /**

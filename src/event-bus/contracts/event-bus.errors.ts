@@ -17,6 +17,7 @@ export class UnableToDispatchEventBusError extends Error {
         cause?: unknown,
     ): UnableToDispatchEventBusError {
         return new UnableToDispatchEventBusError(
+            eventName,
             `Unable to dispatch event "${eventName}"`,
             cause,
         );
@@ -27,7 +28,11 @@ export class UnableToDispatchEventBusError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly eventName: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToDispatchEventBusError.name;
     }
@@ -46,6 +51,7 @@ export class UnableToAddListenerEventBusError extends Error {
         cause?: unknown,
     ): UnableToAddListenerEventBusError {
         return new UnableToAddListenerEventBusError(
+            eventName,
             `Unable to add listener for event "${eventName}"`,
             cause,
         );
@@ -56,7 +62,11 @@ export class UnableToAddListenerEventBusError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly eventName: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToAddListenerEventBusError.name;
     }
@@ -75,6 +85,7 @@ export class UnableToRemoveListenerEventBusError extends Error {
         cause?: unknown,
     ): UnableToRemoveListenerEventBusError {
         return new UnableToRemoveListenerEventBusError(
+            eventName,
             `Unable to remove listener for event "${eventName}"`,
             cause,
         );
@@ -85,7 +96,11 @@ export class UnableToRemoveListenerEventBusError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly eventName: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToRemoveListenerEventBusError.name;
     }

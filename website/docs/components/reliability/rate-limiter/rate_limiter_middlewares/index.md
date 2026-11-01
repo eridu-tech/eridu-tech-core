@@ -47,6 +47,32 @@ Here is a complete list of settings for the [`withRateLimiter`](https://eridu-te
 | `onlyError`   | `boolean`                        | When `true`, only failed (errored) invocations count toward the rate limit. Defaults to `false`                                      |
 | `errorPolicy` | `ErrorPolicy`                    | Determines which errors count toward the rate limit. Defaults to treating all errors as failures                                     |
 
+## withHttpRateLimiterError middleware {#with_http_rate_limiter_error_middleware}
+
+The `withHttpRateLimiterError` middleware converts every rate-limiter error thrown by the wrapped endpoint or downstream middleware into an `HttpError`, so the request fails with a meaningful status code instead of a generic `500`. Errors that are not rate-limiter errors are rethrown untouched, and the original error is preserved as the `cause`.
+
+### Usage
+
+```ts file=./samples/with-http-rate-limiter-error.ts
+
+```
+
+### Status codes
+
+| Errors                                                                                                     | Status |
+| ---------------------------------------------------------------------------------------------------------- | ------ |
+| `BlockedRateLimiterError`                                                                                  | `429`  |
+| `UnableToGetStateRateLimiterError`, `UnableToUpdateStateRateLimiterError`, `UnableToResetRateLimiterError` | `503`  |
+
+A `429` response means the rate limiter is blocking requests until the quota resets. The response carries the standard rate-limit headers:
+
+| Header        | Meaning                                  |
+| ------------- | ---------------------------------------- |
+| `RateLimit`   | The request quota for the current policy |
+| `Retry-After` | How many seconds to wait before retrying |
+
+A `503` response means the rate-limiter adapter failed, so the same request can be retried later.
+
 ## Further information
 
 For further information refer to [`eridu-tech/rate-limiter`](https://eridu-tech.github.io/eridu-tech-core/modules/RateLimiter.html) API docs.
