@@ -4,7 +4,7 @@
 
 import { describe, expect, test } from "vitest";
 
-import { withPrefix } from "@/http-router/implementations/with-prefix.js";
+import { withPrefix } from "@/http-router/implementations/derivables/http-router/with-prefix.js";
 
 describe("function: withPrefix", () => {
     describe("When every path is made only of slashes:", () => {

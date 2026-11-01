@@ -15,28 +15,46 @@ import type {
 } from "@/utilities/_module-exports.js";
 
 /**
- * The arguments passed to a request handler function or object.
- * Unlike middleware, handlers do not receive a `next` function.
+ * Arguments used to build the outgoing response: the response builder plus the
+ * helpers that fill it in (`text`, `json`, `notFound`, ...).
  *
  * IMPORT_PATH: `"eridu-tech/http-router/contracts"`
  * @group Contracts
  */
-export type HttpHandlerArgs = IHttpResHelpers & {
+export type HttpHandlerOutgoingArgs = IHttpResHelpers & {
+    /**
+     * The outgoing HTTP response builder.
+     */
+    res: IHttpRes;
+};
+
+/**
+ * Arguments describing the incoming request: the request itself and the
+ * execution context shared across its lifecycle.
+ *
+ * IMPORT_PATH: `"eridu-tech/http-router/contracts"`
+ * @group Contracts
+ */
+export type HttpHandlerIncomingArgs = {
     /**
      * The incoming HTTP request.
      */
     req: IHttpReq;
 
     /**
-     * The outgoing HTTP response builder.
-     */
-    res: IHttpRes;
-
-    /**
      * The shared execution context for the request lifecycle.
      */
     context: IContext;
 };
+
+/**
+ * The arguments passed to a request handler function or object.
+ * Unlike middleware, handlers do not receive a `next` function.
+ *
+ * IMPORT_PATH: `"eridu-tech/http-router/contracts"`
+ * @group Contracts
+ */
+export type HttpHandlerArgs = HttpHandlerIncomingArgs & HttpHandlerOutgoingArgs;
 
 /**
  * An invocable object that handles an HTTP request.

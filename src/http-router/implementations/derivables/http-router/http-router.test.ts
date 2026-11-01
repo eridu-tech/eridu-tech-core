@@ -18,14 +18,14 @@ import { HttpError } from "@/http-router/contracts/_module-exports.js";
 import {
     HttpRouter,
     defaultHttpRouterAdapter,
-} from "@/http-router/implementations/http-router.js";
+} from "@/http-router/implementations/derivables/http-router/http-router.js";
 
 import type {
     IHttpRouter,
     WinterTcMiddleware,
     WinterTcRequestHandler,
 } from "@/http-router/contracts/_module-exports.js";
-import type { HttpRouterSettings } from "@/http-router/implementations/http-router.js";
+import type { HttpRouterSettings } from "@/http-router/implementations/derivables/http-router/http-router.js";
 
 const USER = contextToken<string>("USER");
 const REQUEST_ID = contextToken<string>("REQUEST_ID");
@@ -1307,7 +1307,7 @@ describe("class: HttpRouter", () => {
             const body = await readJson<Record<string, unknown>>(response);
             expect(body["name"]).toBe("HttpError");
             expect(body["status"]).toBe("400");
-            expect(Array.isArray(body["payload"])).toBe(true);
+            expect(Array.isArray(body["details"])).toBe(true);
         });
         test("Return a 400 HttpError response listing the issues when path parameters fail schema validation", async () => {
             const instance = createRouter();
@@ -1325,7 +1325,7 @@ describe("class: HttpRouter", () => {
             expect(response.status).toBe(400);
             const body = await readJson<Record<string, unknown>>(response);
             expect(body["status"]).toBe("400");
-            expect(Array.isArray(body["payload"])).toBe(true);
+            expect(Array.isArray(body["details"])).toBe(true);
         });
         test("Return a 400 HttpError response listing the issues when request headers fail schema validation", async () => {
             const instance = createRouter();
@@ -1345,7 +1345,7 @@ describe("class: HttpRouter", () => {
             expect(response.status).toBe(400);
             const body = await readJson<Record<string, unknown>>(response);
             expect(body["status"]).toBe("400");
-            expect(Array.isArray(body["payload"])).toBe(true);
+            expect(Array.isArray(body["details"])).toBe(true);
         });
         test("Return a 400 HttpError response listing the issues when cookies fail schema validation", async () => {
             const instance = createRouter();
@@ -1363,7 +1363,7 @@ describe("class: HttpRouter", () => {
             expect(response.status).toBe(400);
             const body = await readJson<Record<string, unknown>>(response);
             expect(body["status"]).toBe("400");
-            expect(Array.isArray(body["payload"])).toBe(true);
+            expect(Array.isArray(body["details"])).toBe(true);
         });
         test("Return a 400 HttpError response listing the issues when search parameters fail schema validation", async () => {
             const instance = createRouter();
@@ -1381,7 +1381,7 @@ describe("class: HttpRouter", () => {
             expect(response.status).toBe(400);
             const body = await readJson<Record<string, unknown>>(response);
             expect(body["status"]).toBe("400");
-            expect(Array.isArray(body["payload"])).toBe(true);
+            expect(Array.isArray(body["details"])).toBe(true);
         });
         test("Expose form fields through req.fields() including repeated field names as arrays", async () => {
             const instance = createRouter();
@@ -1426,7 +1426,7 @@ describe("class: HttpRouter", () => {
             expect(response.status).toBe(400);
             const body = await readJson<Record<string, unknown>>(response);
             expect(body["status"]).toBe("400");
-            expect(Array.isArray(body["payload"])).toBe(true);
+            expect(Array.isArray(body["details"])).toBe(true);
         });
         test("Expose uploaded files through req.files() as file collections keyed by the file field name", async () => {
             const instance = createRouter();
@@ -2968,7 +2968,7 @@ describe("class: HttpRouter", () => {
                             .setStatus(203)
                             .setStatusText("Non-Authoritative")
                             .setHeader("X-Header", "value")
-                            .setBody("payload"),
+                            .setBody("details"),
                 });
 
                 const response = await instance.fetch(
@@ -2978,7 +2978,7 @@ describe("class: HttpRouter", () => {
                 expect(response.status).toBe(203);
                 expect(response.statusText).toBe("Non-Authoritative");
                 expect(response.headers.get("x-header")).toBe("value");
-                expect(await response.text()).toBe("payload");
+                expect(await response.text()).toBe("details");
             });
             test("Await the promise returned by an asynchronous handler before building the final Web API Response", async () => {
                 const instance = createRouter();
@@ -3054,7 +3054,7 @@ describe("class: HttpRouter", () => {
                     name: "HttpError",
                     status: "403",
                     message: "Forbidden",
-                    payload: { reason: "no-access" },
+                    details: { reason: "no-access" },
                 });
             });
             test("Omit the payload property from the HttpError response body when the HttpError was created without a payload", async () => {
@@ -3080,7 +3080,7 @@ describe("class: HttpRouter", () => {
                     status: "409",
                     message: "Conflict",
                 });
-                expect("payload" in body).toBe(false);
+                expect("details" in body).toBe(false);
             });
             test("Set the HttpError headers on the response", async () => {
                 const instance = createRouter();

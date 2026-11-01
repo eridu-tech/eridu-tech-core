@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { httpResHelpers } from "@/http-router/implementations/http-res-helpers.js";
+import { httpResHelpers } from "@/http-router/implementations/derivables/http-router/http-res-helpers.js";
 
 describe("object: httpResHelpers", () => {
     describe("method: text", () => {

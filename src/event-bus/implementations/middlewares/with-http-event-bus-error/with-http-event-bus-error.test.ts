@@ -9,7 +9,7 @@ import { withHttpEventBusError } from "@/event-bus/implementations/middlewares/w
 import {
     defaultHttpRouterAdapter,
     HttpRouter,
-} from "@/http-router/implementations/_module-exports.js";
+} from "@/http-router/implementations/derivables/_module-exports.js";
 
 import type { AllEventBusErrors } from "@/event-bus/contracts/_module-exports.js";
 import type { IHttpRouter } from "@/http-router/contracts/_module-exports.js";

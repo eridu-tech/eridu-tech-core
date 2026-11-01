@@ -4,7 +4,7 @@
 
 import { describe, expect, test, vi } from "vitest";
 
-import { MiddlewareBuilder } from "@/http-router/implementations/middleware-builder.js";
+import { MiddlewareBuilder } from "@/http-router/implementations/derivables/http-router/middleware-builder.js";
 
 import type { HttpMiddleware } from "@/http-router/contracts/_module-exports.js";
 

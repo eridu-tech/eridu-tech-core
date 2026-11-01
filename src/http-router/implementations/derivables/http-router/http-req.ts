@@ -4,8 +4,8 @@
 
 import { TO_BYTES } from "@/file-size/contracts/_module-exports.js";
 import { HttpError } from "@/http-router/contracts/_module-exports.js";
-import { HttpFileCollection } from "@/http-router/implementations/http-file-collection.js";
-import { HttpFile } from "@/http-router/implementations/http-file.js";
+import { HttpFileCollection } from "@/http-router/implementations/derivables/http-router/http-file-collection.js";
+import { HttpFile } from "@/http-router/implementations/derivables/http-router/http-file.js";
 import {
     callInvocable,
     isInvocable,

@@ -287,7 +287,7 @@ export type IHttpResHelpers = {
      * @param res - The source `Response` object to copy from.
      * @returns The response builder holding the copied response.
      */
-    fromWebRes(res: Response): IHttpRes;
+    fromWebRes: (res: Response) => IHttpRes;
 
     /**
      * Replaces the response with a plain-text body and
@@ -295,7 +295,7 @@ export type IHttpResHelpers = {
      *
      * @param content - The text content.
      */
-    text(content: string): IHttpRes;
+    text: (content: string) => IHttpRes;
 
     /**
      * Replaces the response with an HTML body and
@@ -303,7 +303,7 @@ export type IHttpResHelpers = {
      *
      * @param content - The HTML content.
      */
-    html(content: string): IHttpRes;
+    html: (content: string) => IHttpRes;
 
     /**
      * Replaces the response with a JSON body and
@@ -315,16 +315,16 @@ export type IHttpResHelpers = {
      *   validated against the schema and only valid data is serialized.
      *   Omit to skip validation.
      */
-    json<TData>(
+    json: <TData>(
         content: TData,
         schema?: StandardSchemaV1<unknown, TData>,
-    ): IHttpRes;
+    ) => IHttpRes;
 
     /**
      * Replaces the response with a 404 Not Found HTML body and
      * `Content-Type: text/html`.
      */
-    notFound(): IHttpRes;
+    notFound: () => IHttpRes;
 
     /**
      * Replaces the response with a temporary redirect (HTTP 302)
@@ -332,7 +332,7 @@ export type IHttpResHelpers = {
      *
      * @param url - The redirect destination.
      */
-    redirect(url: string): IHttpRes;
+    redirect: (url: string) => IHttpRes;
 
     /**
      * Replaces the response with a permanent redirect (HTTP 301)
@@ -340,5 +340,5 @@ export type IHttpResHelpers = {
      *
      * @param url - The redirect destination.
      */
-    permanentRedirect(url: string): IHttpRes;
+    permanentRedirect: (url: string) => IHttpRes;
 };
