@@ -15,7 +15,7 @@ import {
 import { HttpRes } from "@/http-router/implementations/http-router/http-res.js";
 import { HttpRouterBase } from "@/http-router/implementations/http-router/http-router-base.js";
 import { withPrefix } from "@/http-router/implementations/http-router/with-prefix.js";
-import { use } from "@/http-router/middlewares/_module-exports.js";
+import { use } from "@/http-router/implementations/middlewares/_module-exports.js";
 import {
     callInvocable,
     isInvocable,

@@ -340,8 +340,8 @@
             "import": "./dist/http-router/implementations/di/_module-exports.js"
         },
         "./http-router/middlewares": {
-            "types": "./dist/http-router/middlewares/_module-exports.d.ts",
-            "import": "./dist/http-router/middlewares/_module-exports.js"
+            "types": "./dist/http-router/implementations/middlewares/_module-exports.d.ts",
+            "import": "./dist/http-router/implementations/middlewares/_module-exports.js"
         },
         "./lock": {
             "types": "./dist/lock/implementations/derivables/_module-exports.d.ts",

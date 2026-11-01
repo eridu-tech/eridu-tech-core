@@ -11,7 +11,7 @@ import {
     defaultHttpRouterAdapter,
     HttpRouter,
 } from "@/http-router/implementations/http-router/http-router.js";
-import { toHttpMiddleware } from "@/http-router/middlewares/to-http-middleware/to-http-middleware.js";
+import { toHttpMiddleware } from "@/http-router/implementations/middlewares/to-http-middleware/to-http-middleware.js";
 import {
     withAfterHook,
     withBeforeHook,
