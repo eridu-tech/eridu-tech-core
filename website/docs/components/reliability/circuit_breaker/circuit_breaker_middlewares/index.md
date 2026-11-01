@@ -47,6 +47,25 @@ Here is a complete list of settings for the [`withCircuitBreaker`](https://eridu
 | `trigger`      | `CircuitBreakerTrigger`          | Optional custom trigger that determines when the circuit should open. Defaults to the built-in trigger                                         |
 | `slowCallTime` | `ITimeSpan`                      | Optional duration above which a call is considered slow. Exceeding it counts toward opening the circuit (if configured in the trigger)         |
 
+## withHttpCircuitBreakerError middleware {#with_http_circuit_breaker_error_middleware}
+
+The `withHttpCircuitBreakerError` middleware converts every circuit-breaker error thrown by the wrapped endpoint or downstream middleware into an `HttpError`, so the request fails with a meaningful status code instead of a generic `500`. Errors that are not circuit-breaker errors are rethrown untouched, and the original error is preserved as the `cause`.
+
+### Usage
+
+```ts file=./samples/with-http-circuit-breaker-error.ts
+
+```
+
+### Status codes
+
+| Errors                                                                                                                                                                                                                                          | Status |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `OpenCircuitBreakerError`, `IsolatedCircuitBreakerError`                                                                                                                                                                                        | `503`  |
+| `UnableToGetStateCircuitBreakerError`, `UnableToUpdateStateCircuitBreakerError`, `UnableToIsolateCircuitBreakerError`, `UnableToTrackFailureCircuitBreakerError`, `UnableToTrackSuccessCircuitBreakerError`, `UnableToResetCircuitBreakerError` | `503`  |
+
+Every circuit-breaker error means the circuit is not accepting calls or the underlying adapter failed, so they all map to `503` and the same request can be retried later. The original error is preserved as the `cause`, and no identifiers are exposed in the response body.
+
 ## Further information
 
 For further information refer to [`eridu-tech/circuit-breaker`](https://eridu-tech.github.io/eridu-tech-core/modules/CircuitBreaker.html) API docs.
