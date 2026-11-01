@@ -238,15 +238,22 @@ export class HttpRouter implements IHttpRouter {
                 .buildWebRes();
         }
 
-        return httpResHelpers
+        const response = httpResHelpers
             .json({
                 name: error.name,
                 status: error.status,
                 message: error.message,
-                payload: error.payload,
+                payload: error.details,
             })
-            .setStatus(error.status)
-            .buildWebRes();
+            .setStatus(error.status);
+
+        for (const [key, value] of Object.entries(error.headers)) {
+            if (value !== undefined) {
+                response.setHeader(key, value);
+            }
+        }
+
+        return response.buildWebRes();
     }
 
     private static resolveRoute(

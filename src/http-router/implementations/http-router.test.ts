@@ -3040,7 +3040,7 @@ describe("class: HttpRouter", () => {
                         throw HttpError.create({
                             status: "403",
                             message: "Forbidden",
-                            payload: { reason: "no-access" },
+                            details: { reason: "no-access" },
                         });
                     },
                 });
@@ -3081,6 +3081,27 @@ describe("class: HttpRouter", () => {
                     message: "Conflict",
                 });
                 expect("payload" in body).toBe(false);
+            });
+            test("Set the HttpError headers on the response", async () => {
+                const instance = createRouter();
+                instance.endpoint({
+                    url: "/http-error-headers",
+                    method: ["GET"],
+                    handler: () => {
+                        throw HttpError.create({
+                            status: "429",
+                            message: "Too many requests",
+                            headers: { "Retry-After": "30" },
+                        });
+                    },
+                });
+
+                const response = await instance.fetch(
+                    request("/http-error-headers"),
+                );
+
+                expect(response.status).toBe(429);
+                expect(response.headers.get("Retry-After")).toBe("30");
             });
             test("Return a 500 response when a middleware throws a value that is not an HttpError", async () => {
                 const instance = createRouter();
