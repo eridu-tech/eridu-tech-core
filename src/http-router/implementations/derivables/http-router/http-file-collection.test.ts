@@ -5,8 +5,8 @@
 import { describe, expect, test } from "vitest";
 
 import { HttpError } from "@/http-router/contracts/_module-exports.js";
-import { HttpFileCollection } from "@/http-router/implementations/http-router/http-file-collection.js";
-import { HttpFile } from "@/http-router/implementations/http-router/http-file.js";
+import { HttpFileCollection } from "@/http-router/implementations/derivables/http-router/http-file-collection.js";
+import { HttpFile } from "@/http-router/implementations/derivables/http-router/http-file.js";
 
 import type { IHttpFile } from "@/http-router/contracts/_module-exports.js";
 

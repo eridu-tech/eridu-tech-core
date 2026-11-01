@@ -1,8 +1,8 @@
 /**
  * @module HttpRouter
  */
-import { MiddlewareBuilder } from "@/http-router/implementations/http-router/middleware-builder.js";
-import { withPrefix } from "@/http-router/implementations/http-router/with-prefix.js";
+import { MiddlewareBuilder } from "@/http-router/implementations/derivables/http-router/middleware-builder.js";
+import { withPrefix } from "@/http-router/implementations/derivables/http-router/with-prefix.js";
 import {
     callInvocable,
     isInvocable,
@@ -18,7 +18,7 @@ import type {
     IHttpEndpoint,
     IHttpRouterBase,
 } from "@/http-router/contracts/_module-exports.js";
-import type { RouterEntry } from "@/http-router/implementations/http-router/types.js";
+import type { RouterEntry } from "@/http-router/implementations/derivables/http-router/types.js";
 
 const DEFAULT_METHODS: Array<HttpMethod> = [
     "CONNECT",

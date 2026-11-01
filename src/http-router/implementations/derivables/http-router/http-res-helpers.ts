@@ -2,7 +2,7 @@
  * @module HttpRouter
  */
 
-import { HttpRes } from "@/http-router/implementations/http-router/http-res.js";
+import { HttpRes } from "@/http-router/implementations/derivables/http-router/http-res.js";
 import { validateSync } from "@/utilities/_module-exports.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";

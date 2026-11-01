@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { FileSize } from "@/file-size/implementations/_module-exports.js";
 import { HttpError } from "@/http-router/contracts/_module-exports.js";
-import { HttpReq } from "@/http-router/implementations/http-router/http-req.js";
+import { HttpReq } from "@/http-router/implementations/derivables/http-router/http-req.js";
 
 describe("class: HttpReq", () => {
     describe("static method: fromWebReq", () => {

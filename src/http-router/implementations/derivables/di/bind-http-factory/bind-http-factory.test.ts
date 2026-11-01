@@ -3,11 +3,11 @@ import { describe, expect, test } from "vitest";
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { bindHttpFactory } from "@/http-router/implementations/di/bind-http-factory/bind-http-factory.js";
+import { bindHttpFactory } from "@/http-router/implementations/derivables/di/bind-http-factory/bind-http-factory.js";
 import {
     HttpRouter,
     defaultHttpRouterAdapter,
-} from "@/http-router/implementations/http-router/http-router.js";
+} from "@/http-router/implementations/derivables/http-router/http-router.js";
 
 import type { HttpHandlerFn } from "@/http-router/contracts/_module-exports.js";
 

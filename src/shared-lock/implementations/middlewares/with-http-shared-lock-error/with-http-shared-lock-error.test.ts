@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
     defaultHttpRouterAdapter,
     HttpRouter,
-} from "@/http-router/implementations/http-router/_module-exports.js";
+} from "@/http-router/implementations/derivables/_module-exports.js";
 import {
     FailedAcquireWriterLockError,
     FailedRefreshReaderSemaphoreError,

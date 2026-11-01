@@ -18,14 +18,14 @@ import { HttpError } from "@/http-router/contracts/_module-exports.js";
 import {
     HttpRouter,
     defaultHttpRouterAdapter,
-} from "@/http-router/implementations/http-router/http-router.js";
+} from "@/http-router/implementations/derivables/http-router/http-router.js";
 
 import type {
     IHttpRouter,
     WinterTcMiddleware,
     WinterTcRequestHandler,
 } from "@/http-router/contracts/_module-exports.js";
-import type { HttpRouterSettings } from "@/http-router/implementations/http-router/http-router.js";
+import type { HttpRouterSettings } from "@/http-router/implementations/derivables/http-router/http-router.js";
 
 const USER = contextToken<string>("USER");
 const REQUEST_ID = contextToken<string>("REQUEST_ID");

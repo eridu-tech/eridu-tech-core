@@ -4,11 +4,11 @@ import { LIFETIME, genericToken } from "@/di/contracts/_module-exports.js";
 import { Container } from "@/di/implementations/eager/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { bindHttpMiddlewareFactory } from "@/http-router/implementations/di/bind-http-middleware-factory/bind-http-middleware-factory.js";
+import { bindHttpMiddlewareFactory } from "@/http-router/implementations/derivables/di/bind-http-middleware-factory/bind-http-middleware-factory.js";
 import {
     HttpRouter,
     defaultHttpRouterAdapter,
-} from "@/http-router/implementations/http-router/http-router.js";
+} from "@/http-router/implementations/derivables/http-router/http-router.js";
 import { UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type {

@@ -14,7 +14,7 @@ import { withHttpCircuitBreakerError } from "@/circuit-breaker/implementations/m
 import {
     defaultHttpRouterAdapter,
     HttpRouter,
-} from "@/http-router/implementations/http-router/_module-exports.js";
+} from "@/http-router/implementations/derivables/_module-exports.js";
 
 import type { AllCircuitBreakerErrors } from "@/circuit-breaker/contracts/_module-exports.js";
 import type { IHttpRouter } from "@/http-router/contracts/_module-exports.js";

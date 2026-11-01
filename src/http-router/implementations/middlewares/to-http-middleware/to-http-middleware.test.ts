@@ -4,7 +4,7 @@ import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import {
     defaultHttpRouterAdapter,
     HttpRouter,
-} from "@/http-router/implementations/http-router/http-router.js";
+} from "@/http-router/implementations/derivables/_module-exports.js";
 import { toHttpMiddleware } from "@/http-router/implementations/middlewares/to-http-middleware/to-http-middleware.js";
 import {
     withAfterHook,
