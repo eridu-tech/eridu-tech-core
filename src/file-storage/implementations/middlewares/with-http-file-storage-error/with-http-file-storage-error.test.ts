@@ -31,7 +31,6 @@ type TestData = {
     status: number;
     message: string;
     error: AllFileErrors;
-    payload: Record<string, unknown>;
 };
 
 function createRouter(): IHttpRouter {
@@ -61,105 +60,90 @@ describe("file: with-http-file-storage-error.ts", () => {
                 status: 400,
                 message: "File key is invalid",
                 error: InvalidKeyFileError.create("a", "invalid key"),
-                payload: { key: "a" },
             },
             {
                 name: "KeyNotFoundFileError",
                 status: 404,
                 message: "File not found",
                 error: KeyNotFoundFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToGetPublicUrlFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToGetPublicUrlFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToGetSignedDownloadUrlFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToGetSignedDownloadUrlFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToGetSignedUploadUrlFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToGetSignedUploadUrlFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToExistsFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToExistsFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToGetStreamFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToGetStreamFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToGetBytesFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToGetBytesFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToGetMetaDataFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToGetMetaDataFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToPutFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToPutFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToPutStreamFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToPutStreamFileError.create("a"),
-                payload: { key: "a" },
             },
             {
                 name: "UnableToCopyFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToCopyFileError.create("source-1", "dest-1"),
-                payload: { source: "source-1", destination: "dest-1" },
             },
             {
                 name: "UnableToMoveFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToMoveFileError.create("source-1", "dest-1"),
-                payload: { source: "source-1", destination: "dest-1" },
             },
             {
                 name: "UnableToRemoveManyFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToRemoveManyFileError.create(["a", "b"]),
-                payload: { keys: ["a", "b"] },
             },
             {
                 name: "UnableToRemoveByPrefixFileError",
                 status: 503,
                 message: "File storage adapter failed",
                 error: UnableToRemoveByPrefixFileError.create("prefix-1"),
-                payload: { prefix: "prefix-1" },
             },
         ];
 
@@ -173,7 +157,6 @@ describe("file: with-http-file-storage-error.ts", () => {
                     name: "HttpError",
                     status: String(testCase.status),
                     message: testCase.message,
-                    payload: testCase.payload,
                 });
             },
         );
