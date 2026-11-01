@@ -1,1 +1,2 @@
+export * from "@/rate-limiter/implementations/middlewares/with-http-rate-limiter-error/_module.js";
 export * from "@/rate-limiter/implementations/middlewares/with-rate-limiter-factory/_module.js";
