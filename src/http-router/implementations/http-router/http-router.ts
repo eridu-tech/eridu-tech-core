@@ -243,7 +243,7 @@ export class HttpRouter implements IHttpRouter {
                 name: error.name,
                 status: error.status,
                 message: error.message,
-                payload: error.details,
+                details: error.details,
             })
             .setStatus(error.status);
 

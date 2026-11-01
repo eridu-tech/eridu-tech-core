@@ -21,7 +21,7 @@ import { withHttpFileStorageError } from "@/file-storage/implementations/middlew
 import {
     defaultHttpRouterAdapter,
     HttpRouter,
-} from "@/http-router/implementations/_module-exports.js";
+} from "@/http-router/implementations/http-router/_module-exports.js";
 
 import type { AllFileErrors } from "@/file-storage/contracts/_module-exports.js";
 import type { IHttpRouter } from "@/http-router/contracts/_module-exports.js";

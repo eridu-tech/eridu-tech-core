@@ -364,8 +364,8 @@
             "import": "./dist/generic-pool/contracts/_module-exports.js"
         },
         "./http-router": {
-            "types": "./dist/http-router/implementations/_module-exports.d.ts",
-            "import": "./dist/http-router/implementations/_module-exports.js"
+            "types": "./dist/http-router/implementations/http-router/_module-exports.d.ts",
+            "import": "./dist/http-router/implementations/http-router/_module-exports.js"
         },
         "./http-router/contracts": {
             "types": "./dist/http-router/contracts/_module-exports.d.ts",
