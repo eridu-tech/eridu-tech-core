@@ -7,3 +7,4 @@ website/.docusaurus
 website/.build
 !website/docs
 *.tsbuildinfo
+.code-quality-report
