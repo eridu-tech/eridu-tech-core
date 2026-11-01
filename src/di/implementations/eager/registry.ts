@@ -41,7 +41,7 @@ export class Registry<T> {
 
     getOrThrow(token: DiToken): T {
         if (!this.has(token)) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Token not found in registry: "${tokenToString(
                     token,
                 )}". No value is registered for this token.`,
@@ -51,7 +51,7 @@ export class Registry<T> {
         const value = this.get(token);
 
         if (value === null) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Token not found in registry: "${tokenToString(
                     token,
                 )}". No value is registered for this token.`,

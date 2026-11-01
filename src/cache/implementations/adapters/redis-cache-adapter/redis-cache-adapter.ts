@@ -11,8 +11,6 @@ import type { Redis, Result } from "ioredis";
 
 import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
 import type { InvocableFn, Promisable } from "@/utilities/_module-exports.js";
 
 declare module "ioredis" {
@@ -52,7 +50,7 @@ export type RedisCacheAdapterSettings = {
 };
 
 /**
- * To utilize the `RedisCacheAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package and supply a {@link ISerde | `ISerde`}, with adapter like {@link SuperJsonSerdeAdapter | `SuperJsonSerdeAdapter`}.
+ * To utilize the `RedisCacheAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package and supply a {@link ISerde | `ISerde`}, with adapter like {@link SuperJsonSerde | `SuperJsonSerde`}.
  *
  * IMPORT_PATH: `"eridu-tech/cache/redis-cache-adapter"`
  * @group Adapters
@@ -113,7 +111,7 @@ export class RedisCacheAdapter<
         valueToAdd: InvocableFn<[], Promisable<TType>>,
         ttl: Date | null,
     ): Promise<TType> {
-        const serializedValue = this.serde.serialize(valueToAdd());
+        const serializedValue = await this.serde.serialize(valueToAdd());
         const ttlInMs = ttl?.getTime() ?? -1;
         const result = await this.database.eridu_cache_get_or_add(
             key,
@@ -155,21 +153,21 @@ export class RedisCacheAdapter<
         if (value === null) {
             return null;
         }
-        return this.serde.deserialize(value);
+        return await this.serde.deserialize(value);
     }
 
     async add(key: string, value: TType, ttl: Date | null): Promise<boolean> {
         if (ttl === null) {
             const result = await this.database.set(
                 key,
-                this.serde.serialize(value),
+                await this.serde.serialize(value),
                 "NX",
             );
             return result === "OK";
         }
         const result = await this.database.set(
             key,
-            this.serde.serialize(value),
+            await this.serde.serialize(value),
             "PXAT",
             ttl.getTime(),
             "NX",
@@ -181,14 +179,14 @@ export class RedisCacheAdapter<
         if (ttl === null) {
             const result = await this.database.set(
                 key,
-                this.serde.serialize(value),
+                await this.serde.serialize(value),
                 "GET",
             );
             return result !== null;
         }
         const result = await this.database.set(
             key,
-            this.serde.serialize(value),
+            await this.serde.serialize(value),
             "PXAT",
             ttl.getTime(),
             "GET",
@@ -199,7 +197,7 @@ export class RedisCacheAdapter<
     async update(key: string, value: TType): Promise<boolean> {
         const result = await this.database.set(
             key,
-            this.serde.serialize(value),
+            await this.serde.serialize(value),
             "XX",
         );
         return result === "OK";
@@ -209,7 +207,7 @@ export class RedisCacheAdapter<
         try {
             const redisResult = await this.database.eridu_cache_increment(
                 key,
-                this.serde.serialize(value),
+                await this.serde.serialize(value),
             );
             const keyExists = redisResult === 1;
             return keyExists;

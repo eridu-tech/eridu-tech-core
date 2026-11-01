@@ -1,0 +1,71 @@
+---
+sidebar_position: 7
+sidebar_label: Middlewares
+pagination_label: CircuitBreaker middlewares
+tags:
+    - CircuitBreaker
+    - Middlewares
+    - AOP
+keywords:
+    - CircuitBreaker
+    - Middlewares
+    - AOP
+---
+
+# CircuitBreaker middlewares
+
+## Initial configuration
+
+To begin using the circuit-breaker middlewares, you'll need to create and configure a `CircuitBreakerFactoryResolver` instance:
+
+```ts file=./samples/circuit-breaker.ts
+
+```
+
+## withCircuitBreakerFactory middleware {#with_circuit_breaker_factory_middleware}
+
+The CircuitBreaker middleware wraps function calls with a circuit-breaker, providing fault tolerance for distributed systems. Each unique key (derived from the function's arguments) gets its own circuit instance. When the circuit is **open**, the wrapped function is not called and an error is thrown instead, preventing cascading failures.
+
+### Usage
+
+```ts file=./samples/with-circuit-breaker.ts
+
+```
+
+Calling `withCircuitBreaker()` directly uses the resolver's default adapter (`memory`). Use `withCircuitBreaker.use("redis")` to run the wrapped function through a specific registered adapter.
+
+:::info
+Here is a complete list of settings for the [`withCircuitBreaker`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.WithCircuitBreakerSettings.html) function.
+:::
+
+### Settings
+
+| Option         | Type                             | Description                                                                                                                                    |
+| -------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`          | `Invocable<TParameters, string>` | A function that produces a unique identifier for the circuit from the wrapped function's arguments. Each unique key gets its own circuit state |
+| `errorPolicy`  | `ErrorPolicy`                    | Determines which errors count toward opening the circuit. Defaults to treating all errors as failures                                          |
+| `trigger`      | `CircuitBreakerTrigger`          | Optional custom trigger that determines when the circuit should open. Defaults to the built-in trigger                                         |
+| `slowCallTime` | `ITimeSpan`                      | Optional duration above which a call is considered slow. Exceeding it counts toward opening the circuit (if configured in the trigger)         |
+
+## withHttpCircuitBreakerError middleware {#with_http_circuit_breaker_error_middleware}
+
+The `withHttpCircuitBreakerError` middleware converts every circuit-breaker error thrown by the wrapped endpoint or downstream middleware into an `HttpError`, so the request fails with a meaningful status code instead of a generic `500`. Errors that are not circuit-breaker errors are rethrown untouched, and the original error is preserved as the `cause`.
+
+### Usage
+
+```ts file=./samples/with-http-circuit-breaker-error.ts
+
+```
+
+### Status codes
+
+| Errors                                                                                                                                                                                                                                          | Status |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `OpenCircuitBreakerError`, `IsolatedCircuitBreakerError`                                                                                                                                                                                        | `503`  |
+| `UnableToGetStateCircuitBreakerError`, `UnableToUpdateStateCircuitBreakerError`, `UnableToIsolateCircuitBreakerError`, `UnableToTrackFailureCircuitBreakerError`, `UnableToTrackSuccessCircuitBreakerError`, `UnableToResetCircuitBreakerError` | `503`  |
+
+Every circuit-breaker error means the circuit is not accepting calls or the underlying adapter failed, so they all map to `503` and the same request can be retried later. The original error is preserved as the `cause`, and no identifiers are exposed in the response body.
+
+## Further information
+
+For further information refer to [`eridu-tech/circuit-breaker`](https://eridu-tech.github.io/eridu-tech-core/modules/CircuitBreaker.html) API docs.

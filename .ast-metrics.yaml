@@ -1,0 +1,68 @@
+# AST Metrics configuration file
+# This file is used to configure AST Metrics
+# You can find more information at https://github.com/ast-metrics/ast-metrics/
+
+# Sources to analyze. You can add multiple sources
+sources:
+  - ./src
+
+# Exclude patterns (list of regular expressions. When a file matches one of these patterns, it is not analyzed)
+exclude:
+  - /node_modules/
+  - '\.test\.ts$'
+  - '\.test-suite\.ts$'
+
+# Extra file extensions per language (added to built-in defaults)
+# extensions:
+#   php: [".inc", ".module", ".install", ".theme"]
+
+# Reports to generate
+reports:
+  html: ./.code-quality-report/report
+  markdown: ./.code-quality-report/report.md
+  # The summary printed on the standard output. It is enabled by default, and
+  # is what you get when no other report is asked for
+  # summary: false
+
+# Requirements. If a file does not meet these requirements, it will be reported
+requirements:
+  # Files matching these patterns are excluded from requirement checks
+  # exclude:
+  #   - /tests/
+  # Path to a baseline file used to ignore pre-existing violations. Generate
+  # it with "ast-metrics baseline". Defaults to .ast-metrics-baseline.yaml
+  # when that file exists, so this is usually unnecessary.
+  # baseline: .ast-metrics-baseline.yaml
+  rules:
+    architecture:
+      # Coupling between components
+      coupling:
+        forbidden:
+          # Fails if a Model is used in a Controller
+          # Regular expressions are used
+          - from: "Model"
+            to: "Controller"
+      # max_afferent_coupling: 10
+      # max_efferent_coupling: 10
+      # min_maintainability: 70
+      # Communities: the groups of classes that depend on each other more
+      # than on the rest of the code, read from the dependency graph.
+      # Fail when two communities depend on each other, and when more than
+      # 20% of the dependencies cross from one community to another.
+      # no_community_cycles: true
+      # max_community_cross_share: 20
+      # Freeze the architecture: fail on every dependency crossing from one
+      # community to another. Run "ast-metrics baseline" once to accept the
+      # current ones, only new crossings fail afterwards.
+      # no_cross_community_dependencies: true
+
+    volume:
+      # Maximum number of lines of code per file
+      max_loc: 600
+      # max_logical_loc: 60
+      # max_loc_by_method: 30
+      # max_logical_loc_by_method: 20
+
+    complexity:
+      # Maximum cyclomatic complexity
+      max_cyclomatic: 10

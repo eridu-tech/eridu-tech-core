@@ -42,9 +42,33 @@ import path from "path";
 const webpackEsmTweaksPlugin: PluginModule = () => {
     const docusaurusGeneratedDir = path.resolve(__dirname, ".docusaurus");
 
+    // Plain-code samples rendered on the landing page (see `src/data/home-tabs.ts`).
+    const rawSamplesDir = path.resolve(__dirname, "src/data/home-samples");
+
     return {
         name: "webpack-esm-tweaks-plugin",
-        configureWebpack() {
+        configureWebpack(config) {
+            // Docusaurus routes every `.ts` file — `?raw` query included —
+            // through Babel, which would return transpiled JS instead of the
+            // original source. Opt the samples folder out of that rule so the
+            // `asset/source` rule below can serve the untouched file text.
+            for (const rule of config.module?.rules ?? []) {
+                if (
+                    !rule ||
+                    typeof rule !== "object" ||
+                    !(rule.test instanceof RegExp) ||
+                    rule.test.source !== /\.[jt]sx?$/i.source
+                ) {
+                    continue;
+                }
+
+                const previousExclude = rule.exclude;
+                rule.exclude = (modulePath: string): boolean =>
+                    modulePath.startsWith(rawSamplesDir) ||
+                    (typeof previousExclude === "function" &&
+                        previousExclude(modulePath));
+            }
+
             return {
                 resolve: {
                     extensionAlias: {
@@ -57,6 +81,12 @@ const webpackEsmTweaksPlugin: PluginModule = () => {
                             test: /\.js$/,
                             include: [docusaurusGeneratedDir],
                             type: "javascript/auto",
+                        },
+                        {
+                            test: /\.ts$/,
+                            include: [rawSamplesDir],
+                            resourceQuery: /raw/,
+                            type: "asset/source",
                         },
                     ],
                 },

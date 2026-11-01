@@ -1,12 +1,12 @@
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
+import { UnableToAcquireWriterLockError } from "@/shared-lock/contracts/_module-exports.js";
 import { KyselySharedLockAdapter } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
 import { MemorySharedLockAdapter } from "@/shared-lock/implementations/adapters/memory-shared-lock-adapter/_module-exports.js";
 import { SharedLockFactory } from "@/shared-lock/implementations/derivables/_module-exports.js";
@@ -24,12 +24,13 @@ import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapt
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: SharedLockFactory", () => {
-    function createSharedLockFactory() {
-        const serde = new Serde(new SuperJsonSerdeAdapter());
+    async function createSharedLockFactory() {
+        const serde = new SuperJsonSerde();
         const sharedLockFactory = new SharedLockFactory({
             serde,
             adapter: new MemorySharedLockAdapter(),
         });
+        await sharedLockFactory.init();
         return { sharedLockFactory, serde };
     }
 
@@ -69,7 +70,7 @@ describe("class: SharedLockFactory", () => {
     }
     describe("Serde tests:", () => {
         test("Should differentiate between different adapters", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
             const limit = 4;
@@ -79,7 +80,9 @@ describe("class: SharedLockFactory", () => {
                 adapter: adapter1,
                 serde,
             });
+            await sharedLockFactory1.init();
             const lock1 = sharedLockFactory1.create(key, { ttl, limit });
+
             await lock1.acquireWriter();
 
             const adapter2 = new KyselySharedLockAdapter({
@@ -90,42 +93,94 @@ describe("class: SharedLockFactory", () => {
                 adapter: adapter2,
                 serde,
             });
-
+            await sharedLockFactory2.init();
             const lock2 = sharedLockFactory2.create(key, { ttl, limit });
-            const deserializeLock2 = serde.deserialize<ISharedLock>(
-                serde.serialize(lock2),
+
+            const deserializeLock2 = await serde.deserialize<ISharedLock>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquireWriter();
 
             expect(result).toBe(true);
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+        test("Should differentiate between different serializationIds", async () => {
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
             const limit = 4;
 
             const sharedLockFactory1 = new SharedLockFactory({
                 adapter: new MemorySharedLockAdapter(),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
+            await sharedLockFactory1.init();
             const lock1 = sharedLockFactory1.create(key, { ttl, limit });
+
             await lock1.acquireWriter();
 
             const sharedLockFactory2 = new SharedLockFactory({
                 adapter: new MemorySharedLockAdapter(),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
-
+            await sharedLockFactory2.init();
             const lock2 = sharedLockFactory2.create(key, { ttl, limit });
-            const deserializeLock2 = serde.deserialize<ISharedLock>(
-                serde.serialize(lock2),
+
+            const deserializeLock2 = await serde.deserialize<ISharedLock>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquireWriter();
 
             expect(result).toBe(true);
+        });
+    });
+    describe("Unexpected adapter error handling:", () => {
+        test("Should reject with UnableToAcquireWriterLockError when adapter acquireWriter fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const adapter = new MemorySharedLockAdapter();
+            vi.spyOn(adapter, "acquireWriter").mockRejectedValue(
+                unexpectedError,
+            );
+            const sharedLockFactory = new SharedLockFactory({ adapter });
+            await sharedLockFactory.init();
+
+            const promise = sharedLockFactory
+                .create("a", { ttl: null, limit: 1 })
+                .acquireWriter();
+
+            await expect(promise).rejects.toThrow(
+                UnableToAcquireWriterLockError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToAcquireWriterLockError when deserialized lock acquireWriter fails", async () => {
+            const serde = new SuperJsonSerde();
+            const unexpectedError = new Error("Unexpected adapter error");
+            const adapter = new MemorySharedLockAdapter();
+            vi.spyOn(adapter, "acquireWriter").mockRejectedValue(
+                unexpectedError,
+            );
+            const sharedLockFactory = new SharedLockFactory({ adapter, serde });
+            await sharedLockFactory.init();
+
+            const deserializedLock = await serde.deserialize<ISharedLock>(
+                await serde.serialize(
+                    sharedLockFactory.create("a", { ttl: null, limit: 1 }),
+                ),
+            );
+            const promise = deserializedLock.acquireWriter();
+
+            await expect(promise).rejects.toThrow(
+                UnableToAcquireWriterLockError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
         });
     });
 });

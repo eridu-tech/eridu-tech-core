@@ -1,0 +1,68 @@
+---
+sidebar_position: 5
+sidebar_label: Middlewares
+pagination_label: Cache middlewares
+tags:
+    - Cache
+    - Middlewares
+    - AOP
+keywords:
+    - Cache
+    - Middlewares
+    - AOP
+---
+
+# Cache middlewares
+
+## Initial configuration
+
+To begin using the cache middlewares, you'll need to create and configure a `CacheResolver` instance:
+
+```ts file=./samples/cache.ts
+
+```
+
+## withCacheFactory middleware {#with_cache_factory_middleware}
+
+The Cache middleware intercepts function calls and caches their return values using a configurable cache store. When the wrapped function is invoked, the middleware derives a cache key from the function's arguments. If the key exists in the cache, the cached value is returned immediately without executing the function. Otherwise, the function runs, its result is stored in the cache, and the result is returned.
+
+### Usage
+
+```ts file=./samples/with-cache-factory.ts
+
+```
+
+Calling `withCache()` directly uses the resolver's default adapter (`memory`). Use `withCache.use("redis")` to run the wrapped function through a specific registered adapter.
+
+:::info
+Here is a complete list of settings for the [`withCache`](https://eridu-tech.github.io/eridu-tech-core/types/Cache.WithCacheSettings.html) function.
+:::
+
+## withInvalidationFactory middleware {#with_invalidation_factory_middleware}
+
+The Cache invalidation middleware intercepts function calls and invalidates a cache entry after the wrapped function has been invoked. The cache key is derived from the function's arguments via the `key` setting. After the wrapped function runs, the `shouldInvalidate` setting decides whether to invalidate based on the function's arguments and return value; when it returns `true` (the default), the cache entry is removed from the selected cache adapter.
+
+This is useful for write-invalidation caching patterns, where stale cached data must be cleared after a mutation.
+
+### Usage
+
+```ts file=./samples/with-invalidation.ts
+
+```
+
+Use `withInvalidation()` to invalidate through the resolver's default adapter (`memory` in this example), or `withInvalidation.use("redis")({ ... })` to select a specific adapter.
+
+:::info
+Here is a complete list of settings for the [`withInvalidation`](https://eridu-tech.github.io/eridu-tech-core/types/Cache.WithInvalidationSettings.html) function.
+:::
+
+### Settings
+
+| Option             | Type                                                            | Description                                                                                                                                         |
+| ------------------ | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`              | `Invocable<TParameters, string>`                                | A function (or invocable object) that produces the cache key from the wrapped function's arguments                                                  |
+| `shouldInvalidate` | `Invocable<[args: TParameters, returnValue: TReturn], boolean>` | Determines whether to invalidate the cache entry after the wrapped function runs, based on its arguments and return value. Defaults to `() => true` |
+
+## Further information
+
+For further information refer to [`eridu-tech/cache`](https://eridu-tech.github.io/eridu-tech-core/modules/Cache.html) API docs.

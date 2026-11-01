@@ -11,15 +11,15 @@ import type {
  * @internal
  */
 export class NoOpFileUrlAdapter implements IFileUrlAdapter {
-    getPublicUrl(_key: string): Promise<string | null> {
-        return Promise.resolve(null);
+    getPublicUrl(_key: string): Promise<string> {
+        return Promise.resolve("");
     }
 
     getSignedDownloadUrl(
         _key: string,
         _settings: FileAdapterSignedDownloadUrlSettings,
-    ): Promise<string | null> {
-        return Promise.resolve(null);
+    ): Promise<string> {
+        return Promise.resolve("");
     }
 
     getSignedUploadUrl(

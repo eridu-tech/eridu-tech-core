@@ -3,7 +3,7 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { DeserializationSerdeError } from "@/serde/contracts/serde.errors.js";
+import { UnableToDeserializeSerdeError } from "@/serde/contracts/serde.errors.js";
 
 /**
  * Deserializer contract for converting serialized data back to runtime values.
@@ -31,7 +31,7 @@ export type IDeserializer<TSerializedValue = unknown> = {
      * @template TValue - The type of value being deserialized to
      * @param serializedValue - The serialized representation to deserialize
      * @returns The deserialized runtime value
-     * @throws {DeserializationSerdeError} If deserialization fails (invalid format, type mismatch, etc.)
+     * @throws {UnableToDeserializeSerdeError} If deserialization fails (invalid format, type mismatch, etc.)
      */
-    deserialize<TValue>(serializedValue: TSerializedValue): TValue;
+    deserialize<TValue>(serializedValue: TSerializedValue): Promise<TValue>;
 };

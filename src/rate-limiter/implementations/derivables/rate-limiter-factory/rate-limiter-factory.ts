@@ -2,14 +2,15 @@
  * @module RateLimiter
  */
 
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
+import { handleUnexpectedRateLimiterAdapterError } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/handle-unexpected-rate-limiter-adapter-error.js";
 import { RateLimiterSerdeTransformer } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter-serde-transformer.js";
 import { RateLimiter } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter.js";
-import { NoOpSerdeAdapter } from "@/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { NoOpSerde } from "@/serde/implementations/no-op-serde/_module-exports.js";
 import {
     CORE,
-    defaultWaitUntil,
     resolveOneOrMore,
+    resolveSerializationId,
 } from "@/utilities/_module-exports.js";
 
 import type {
@@ -21,8 +22,8 @@ import type {
 import type { ISerdeRegister } from "@/serde/contracts/_module-exports.js";
 import type {
     ErrorPolicy,
+    IInitizable,
     OneOrMore,
-    WaitUntil,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -32,6 +33,17 @@ import type {
  * @group Derivables
  */
 export type RateLimiterFactorySettingsBase = {
+    /**
+     * Optional prefix used to scope the serde transformer name for this rate limiter.
+     * This keeps multiple adapters with the same constructor name distinct.
+     *
+     * @default
+     * ```ts
+     * getConstructorName(adapter)
+     * ```
+     */
+    serializationId?: string;
+
     /**
      * You can set the default `ErrorPolicy`
      *
@@ -52,29 +64,12 @@ export type RateLimiterFactorySettingsBase = {
      * You can pass an {@link ISerdeRegister | `ISerderRegister`} instance to the {@link RateLimiterFactory | `RateLimiterFactory`} to register the rate limiter's serialization and deserialization logic for the provided adapter.
      * @default
      * ```ts
-     * import { Serde } from "eridu-tech/serde";
-     * import { NoOpSerdeAdapter } from "eridu-tech/serde/no-op-serde-adapter";
+     * import { NoOpSerde } from "eridu-tech/serde/no-op-serde";
      *
-     * new Serde(new NoOpSerdeAdapter())
+     * new NoOpSerde()
      * ```
      */
     serde?: OneOrMore<ISerdeRegister>;
-
-    /**
-     * The serde transformer name used to identify rate-limiter serializers and deserializers when there are adapters with the same name.
-     * @default ""
-     */
-    serdeTransformerName?: string;
-
-    /**
-     * You can pass the `waitUntil` function to handle background promises.
-     * This is required when working with environments like Cloudflare Workers or Vercel Functions to ensure tasks complete after the response is sent.
-     * @default
-     * ```ts
-     * import { defaultWaitUntil } from "eridu-tech/utilities"
-     * ```
-     */
-    waitUntil?: WaitUntil;
 };
 
 /**
@@ -94,47 +89,53 @@ export type RateLimiterFactorySettings = RateLimiterFactorySettingsBase & {
 /**
  * The `RateLimiterFactory` class can be derived from any {@link IRateLimiterAdapter | `IRateLimiterAdapter`}.
  *
+ * Unexpected errors thrown by the adapter are converted into the matching `UnableTo*RateLimiterError`
+ * with the original error preserved as `cause`, so `IRateLimiter` methods only reject with rate limiter errors.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter"`
  * @group Derivables
  */
-export class RateLimiterFactory implements IRateLimiterFactory {
+export class RateLimiterFactory implements IRateLimiterFactory, IInitizable {
     private readonly adapter: IRateLimiterAdapter;
     private readonly onlyError: boolean;
     private readonly defaultErrorPolicy: ErrorPolicy;
     private readonly serde: OneOrMore<ISerdeRegister>;
-    private readonly serdeTransformerName: string;
-    private readonly waitUntil: WaitUntil;
+    private readonly serializationId: string;
 
     constructor(settings: RateLimiterFactorySettings) {
         const {
             adapter,
             onlyError = false,
             defaultErrorPolicy = () => true,
-            serde = new Serde(new NoOpSerdeAdapter()),
-            serdeTransformerName = "",
-            waitUntil = defaultWaitUntil,
+            serde = new NoOpSerde(),
+            serializationId,
         } = settings;
 
-        this.waitUntil = waitUntil;
-        this.serdeTransformerName = serdeTransformerName;
-        this.adapter = adapter;
+        this.serializationId = resolveSerializationId(serializationId, adapter);
+        this.adapter = withPlugin(
+            {
+                getState: (key) => adapter.getState(key),
+                updateState: (key, limit) => adapter.updateState(key, limit),
+                reset: (key) => adapter.reset(key),
+            },
+            handleUnexpectedRateLimiterAdapterError(),
+        );
         this.onlyError = onlyError;
         this.defaultErrorPolicy = defaultErrorPolicy;
         this.serde = serde;
-        this.registerToSerde();
     }
 
-    private registerToSerde(): void {
+    async init(): Promise<void> {
         const transformer = new RateLimiterSerdeTransformer({
-            waitUntil: this.waitUntil,
             adapter: this.adapter,
             onlyError: this.onlyError,
             errorPolicy: this.defaultErrorPolicy,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
+        return Promise.resolve();
     }
 
     create(
@@ -148,12 +149,11 @@ export class RateLimiterFactory implements IRateLimiterFactory {
         } = settings;
         return new RateLimiter({
             limit,
-            waitUntil: this.waitUntil,
             adapter: this.adapter,
             key,
             errorPolicy,
             onlyError,
-            serdeTransformerName: this.serdeTransformerName,
+            serializationId: this.serializationId,
         });
     }
 }

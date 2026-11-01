@@ -2,21 +2,29 @@
  * @module FileStorage
  */
 
-import { createReadStream, createWriteStream } from "node:fs";
-import * as fs from "node:fs/promises";
-import { join, normalize } from "node:path";
+import { createReadStream, createWriteStream, statSync } from "node:fs";
+import {
+    stat,
+    writeFile,
+    readFile,
+    copyFile,
+    mkdir,
+    rm,
+    readdir,
+} from "node:fs/promises";
+import { join, normalize, relative } from "node:path";
 import { pipeline } from "node:stream/promises";
+import { fileURLToPath } from "node:url";
 
 import etag from "etag";
 
-import { Base64Codec } from "@/codec/implementations/base-64-codec/_module-exports.js";
-import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module-exports.js";
+import { Base64UrlCodec } from "@/codec/implementations/base-64-url-codec/_module-exports.js";
+import { FsKeyPathMapper } from "@/file-storage/implementations/adapters/_shared/_module.js";
 
 import type { ICodec } from "@/codec/contracts/_module-exports.js";
 import type {
     FileAdapterMetadata,
     FileAdapterStream,
-    FileWriteEnum,
     IFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
@@ -35,27 +43,63 @@ import type {
  */
 export type FsFileStorageAdapterSettings = {
     /**
+     * Root folder where all files are stored.
+     *
      * @default
      * ```ts
-     * new URL('./uploads', import.meta.url)
+     * import { fileURLToPath } from "node:url";
+     *
+     * fileURLToPath(new URL('./uploads', import.meta.url))
      * ```
      */
     location?: string;
 
     /**
+     * Character that splits a key into segments (`"a/b"` → `"a"`, `"b"`).
+     * Each segment becomes a folder, so long keys avoid the file name length
+     * limit.
+     *
+     * @default "/"
+     */
+    delimiter?: string;
+
+    /**
+     * Codec that encodes each key segment into a safe file name and back. The
+     * default base64url allows characters like `":"` or `"*"` and stops keys
+     * such as `"../secret"` from escaping the root folder.
+     *
      * @default
      * ```ts
-     * import { Base64Codec } from "eridu-tech/codec/base-64-codec"
-     *
-     * new Base64Codec()
+     * new Base64UrlCodec()
      * ```
      */
     codec?: ICodec<string, string>;
 };
 
 /**
+ * @internal
+ */
+class FsRecursiveFileWalker implements AsyncIterable<string> {
+    constructor(private readonly path: string) {}
+
+    async *[Symbol.asyncIterator](): AsyncIterator<string> {
+        const results = await readdir(this.path, {
+            recursive: false,
+            withFileTypes: true,
+        });
+        for (const result of results) {
+            const path = join(this.path, result.name);
+            if (result.isDirectory()) {
+                yield* new FsRecursiveFileWalker(normalize(path));
+            } else {
+                yield path;
+            }
+        }
+    }
+}
+
+/**
  * The `FsFileStorageAdapter` is used for local development when persistence is needed when restarting the dev server.
- * Note `FsFileStorageAdapter` lacks nested folder support. A flat hierarchy is used, requiring filename encoding/decoding.
  *
  * IMPORT_PATH: `"eridu-tech/file-storage/fs-file-storage-adapter"`
  * @group Adapters
@@ -63,40 +107,47 @@ export type FsFileStorageAdapterSettings = {
 export class FsFileStorageAdapter
     implements IFileStorageAdapter, IDeinitizable, IInitizable
 {
-    private readonly codec: ICodec<string, string>;
     private readonly location: string;
+    private readonly keyPathMapper: FsKeyPathMapper;
 
-    constructor(settings: FsFileStorageAdapterSettings = {}) {
+    constructor(settings: FsFileStorageAdapterSettings) {
         const {
-            codec = new Base64Codec(),
-            location = new URL("./uploads", import.meta.url).toString(),
+            location = fileURLToPath(new URL("./uploads", import.meta.url)),
+            delimiter = "/",
+            codec = new Base64UrlCodec(),
         } = settings;
         this.location = location;
-        this.codec = codec;
+        this.keyPathMapper = new FsKeyPathMapper(delimiter, codec);
     }
 
     /**
      * Creates the root foolder where the files will be saved.
      */
     async init(): Promise<void> {
-        try {
-            await fs.mkdir(this.location);
-        } catch {
-            /* EMPTY */
+        const dirStat = statSync(this.location, {
+            throwIfNoEntry: false,
+        });
+        if (dirStat?.isDirectory() === true) {
+            return;
         }
+
+        await mkdir(this.location);
     }
 
     /**
      * Removes the root foolder where the files are saved.
      */
     async deInit(): Promise<void> {
-        try {
-            await fs.rm(this.location, {
-                recursive: true,
-            });
-        } catch {
-            /* EMPTY */
+        const dirStat = statSync(this.location, {
+            throwIfNoEntry: false,
+        });
+        if (dirStat?.isDirectory() !== true) {
+            return;
         }
+
+        await rm(this.location, {
+            recursive: true,
+        });
     }
 
     private static isFileNotFoundError(error: unknown): boolean {
@@ -108,19 +159,10 @@ export class FsFileStorageAdapter
         );
     }
 
-    private static isFileFoundError(error: unknown): boolean {
-        return (
-            error instanceof Error &&
-            "code" in error &&
-            typeof error.code === "string" &&
-            error.code === "EEXIST"
-        );
-    }
-
-    private static async isFileFound(key: string): Promise<boolean> {
+    private static async isFileFound(path: string): Promise<boolean> {
         try {
-            const stat = await fs.stat(key);
-            return stat.isFile();
+            const fileStat = await stat(path);
+            return fileStat.isFile();
         } catch (error: unknown) {
             if (FsFileStorageAdapter.isFileNotFoundError(error)) {
                 return false;
@@ -129,27 +171,33 @@ export class FsFileStorageAdapter
         }
     }
 
-    private normalizeKey(key: string): string {
-        return join(this.location, this.codec.encode(key));
+    private toPath(key: string): string {
+        return normalize(join(this.location, this.keyPathMapper.toPath(key)));
+    }
+
+    private toDirectoryPath(key: string): string {
+        return normalize(
+            join(this.location, this.keyPathMapper.toDirectoryPath(key)),
+        );
     }
 
     async exists(key: string): Promise<boolean> {
-        const normalizeKey = this.normalizeKey(key);
-        return FsFileStorageAdapter.isFileFound(normalizeKey);
+        const path = this.toPath(key);
+        return FsFileStorageAdapter.isFileFound(path);
     }
 
     async getStream(key: string): Promise<FileAdapterStream | null> {
-        const normalizeKey = this.normalizeKey(key);
-        if (!(await FsFileStorageAdapter.isFileFound(normalizeKey))) {
+        const path = this.toPath(key);
+        if (!(await FsFileStorageAdapter.isFileFound(path))) {
             return null;
         }
-        return createReadStream(normalizeKey);
+        return createReadStream(path);
     }
 
     async getBytes(key: string): Promise<Uint8Array | null> {
         try {
-            const normalizeKey = this.normalizeKey(key);
-            const file = await fs.readFile(normalizeKey);
+            const path = this.toPath(key);
+            const file = await readFile(path);
             return new Uint8Array(file);
         } catch (error: unknown) {
             if (FsFileStorageAdapter.isFileNotFoundError(error)) {
@@ -161,14 +209,14 @@ export class FsFileStorageAdapter
 
     async getMetaData(key: string): Promise<FileAdapterMetadata | null> {
         try {
-            const normalizeKey = this.normalizeKey(key);
-            const stat = await fs.stat(normalizeKey);
+            const path = this.toPath(key);
+            const pathStat = await stat(path);
             return {
-                etag: etag(stat),
+                etag: etag(pathStat),
                 contentType: null,
-                fileSizeInBytes: stat.size,
-                updatedAt: stat.mtime,
-            } satisfies FileAdapterMetadata;
+                fileSizeInBytes: pathStat.size,
+                updatedAt: pathStat.mtime,
+            };
         } catch (error: unknown) {
             if (FsFileStorageAdapter.isFileNotFoundError(error)) {
                 return null;
@@ -177,143 +225,34 @@ export class FsFileStorageAdapter
         }
     }
 
-    async add(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        try {
-            const normalizeKey = this.normalizeKey(key);
-            await fs.writeFile(normalizeKey, content.data, {
-                flag: "wx",
-            });
-            return true;
-        } catch (error: unknown) {
-            if (FsFileStorageAdapter.isFileFoundError(error)) {
-                return false;
-            }
-            throw error;
-        }
-    }
-
-    async addStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        try {
-            const normalizeKey = this.normalizeKey(key);
-            const writeStream = createWriteStream(normalizeKey, {
-                flags: "wx",
-            });
-            await pipeline(stream.data, writeStream);
-            return true;
-        } catch (error: unknown) {
-            if (FsFileStorageAdapter.isFileFoundError(error)) {
-                return false;
-            }
-            throw error;
-        }
-    }
-
-    async update(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        try {
-            const normalizeKey = this.normalizeKey(key);
-            await fs.writeFile(normalizeKey, content.data, {
-                flag: "r+",
-            });
-            return true;
-        } catch (error: unknown) {
-            if (FsFileStorageAdapter.isFileNotFoundError(error)) {
-                return false;
-            }
-
-            throw error;
-        }
-    }
-
-    async updateStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        try {
-            const normalizeKey = this.normalizeKey(key);
-            const writeStream = createWriteStream(normalizeKey, {
-                flags: "r+",
-            });
-            await pipeline(stream.data, writeStream);
-            return true;
-        } catch (error: unknown) {
-            if (FsFileStorageAdapter.isFileNotFoundError(error)) {
-                return false;
-            }
-            throw error;
-        }
-    }
-
-    async put(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        const normalizeKey = this.normalizeKey(key);
-        const isFound = await FsFileStorageAdapter.isFileFound(normalizeKey);
-        await fs.writeFile(normalizeKey, content.data);
-        return isFound;
+    async put(key: string, content: WritableFileAdapterContent): Promise<void> {
+        await mkdir(this.toDirectoryPath(key), {
+            recursive: true,
+        });
+        await writeFile(this.toPath(key), content.data);
     }
 
     async putStream(
         key: string,
         stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        const normalizeKey = this.normalizeKey(key);
-        const isFound = await FsFileStorageAdapter.isFileFound(normalizeKey);
-        const writeStream = createWriteStream(normalizeKey);
+    ): Promise<void> {
+        await mkdir(this.toDirectoryPath(key), {
+            recursive: true,
+        });
+        const writeStream = createWriteStream(this.toPath(key));
         await pipeline(stream.data, writeStream);
-        return isFound;
     }
 
-    private async _copy(
-        source: string,
-        destination: string,
-    ): Promise<FileWriteEnum> {
+    private async _copy(source: string, destination: string): Promise<boolean> {
         try {
-            const normalizeSource = this.normalizeKey(source);
-            const normalizeDestination = this.normalizeKey(destination);
-            await fs.copyFile(
-                normalizeSource,
-                normalizeDestination,
-                fs.constants.COPYFILE_EXCL,
-            );
-            return FILE_WRITE_ENUM.SUCCESS;
-        } catch (error: unknown) {
-            // The source does not exists
-            if (FsFileStorageAdapter.isFileNotFoundError(error)) {
-                return FILE_WRITE_ENUM.NOT_FOUND;
-            }
-            // The destination does already exists
-            if (FsFileStorageAdapter.isFileFoundError(error)) {
-                return FILE_WRITE_ENUM.KEY_EXISTS;
-            }
-            throw error;
-        }
-    }
-
-    async copy(source: string, destination: string): Promise<FileWriteEnum> {
-        return this._copy(source, destination);
-    }
-
-    private async _copyAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
-        try {
-            const normalizeSource = this.normalizeKey(source);
-            const normalizeDestination = this.normalizeKey(destination);
-            await fs.copyFile(normalizeSource, normalizeDestination);
+            const sourcePath = this.toPath(source);
+            const destinationPath = this.toPath(destination);
+            await mkdir(this.toDirectoryPath(destination), {
+                recursive: true,
+            });
+            await copyFile(sourcePath, destinationPath);
             return true;
         } catch (error: unknown) {
-            // The source does not exists
             if (FsFileStorageAdapter.isFileNotFoundError(error)) {
                 return false;
             }
@@ -321,76 +260,75 @@ export class FsFileStorageAdapter
         }
     }
 
-    async copyAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
-        return this._copyAndReplace(source, destination);
+    async copy(source: string, destination: string): Promise<boolean> {
+        return this._copy(source, destination);
     }
 
-    private async _removeMany(keys: Array<string>): Promise<boolean> {
+    private async _removeMany(keys: Array<string>): Promise<void> {
         const promises = [
             ...new Set(
                 keys.map((key) => {
-                    return this.normalizeKey(key);
+                    return this.toPath(key);
                 }),
             ),
-        ].map(async (normalizeKey) => {
+        ].map(async (path) => {
             try {
-                await fs.rm(normalizeKey);
-                return true;
+                await rm(path);
             } catch (error: unknown) {
                 if (FsFileStorageAdapter.isFileNotFoundError(error)) {
-                    return false;
+                    return;
                 }
                 throw error;
             }
         });
-        const results = await Promise.all(promises);
-        for (const result of results) {
-            if (result) {
-                return true;
-            }
-        }
-        return false;
+        await Promise.all(promises);
     }
 
-    async move(source: string, destination: string): Promise<FileWriteEnum> {
-        const result = await this._copy(source, destination);
-        if (result === FILE_WRITE_ENUM.SUCCESS) {
-            await this._removeMany([source]);
-        }
-        return result;
-    }
-
-    async moveAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
-        const hasMoved = await this.copyAndReplace(source, destination);
+    async move(source: string, destination: string): Promise<boolean> {
+        const hasMoved = await this._copy(source, destination);
         if (hasMoved) {
             await this._removeMany([source]);
         }
         return hasMoved;
     }
 
-    async removeMany(keys: Array<string>): Promise<boolean> {
+    async removeMany(keys: Array<string>): Promise<void> {
         return this._removeMany(keys);
     }
 
+    private pathStartsWithPrefix(realPath: string, prefix: string): boolean {
+        const key = this.keyPathMapper.fromPath(
+            // On windows they left slashes \\, this.keyPathMapper.fromPath method expects left slashes
+            relative(this.location, realPath).replaceAll(/\\/g, "/"),
+        );
+
+        return key.startsWith(prefix);
+    }
+
     async removeByPrefix(prefix: string): Promise<void> {
-        const encodedFiles = await fs.readdir(normalize(this.location), {
-            recursive: true,
-        });
-        for (const encodedFile of encodedFiles) {
-            const decodedFile = this.codec.decode(encodedFile);
-            if (!decodedFile.startsWith(prefix)) {
+        if (prefix === "") {
+            await rm(normalize(this.location), {
+                recursive: true,
+            });
+
+            return;
+        }
+
+        for await (const path of new FsRecursiveFileWalker(
+            normalize(this.location),
+        )) {
+            if (!this.pathStartsWithPrefix(path, prefix)) {
                 continue;
             }
             try {
-                await fs.rm(this.normalizeKey(decodedFile));
-            } catch {
-                /* EMPTY */
+                await rm(path, {
+                    recursive: true,
+                });
+            } catch (error: unknown) {
+                if (FsFileStorageAdapter.isFileNotFoundError(error)) {
+                    continue;
+                }
+                throw error;
             }
         }
     }

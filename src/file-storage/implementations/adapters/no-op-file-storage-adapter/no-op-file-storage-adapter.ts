@@ -2,13 +2,10 @@
  * @module FileStorage
  */
 
-import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module-exports.js";
-
 import type {
     ISignedFileStorageAdapter,
     FileAdapterMetadata,
     FileAdapterStream,
-    FileWriteEnum,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
     FileAdapterSignedDownloadUrlSettings,
@@ -22,15 +19,15 @@ import type {
  * @group Adapters
  */
 export class NoOpFileStorageAdapter implements ISignedFileStorageAdapter {
-    getPublicUrl(_key: string): Promise<string | null> {
-        return Promise.resolve(null);
+    getPublicUrl(_key: string): Promise<string> {
+        return Promise.resolve("");
     }
 
     getSignedDownloadUrl(
         _key: string,
         _settings: FileAdapterSignedDownloadUrlSettings,
-    ): Promise<string | null> {
-        return Promise.resolve(null);
+    ): Promise<string> {
+        return Promise.resolve("");
     }
 
     getSignedUploadUrl(
@@ -56,60 +53,24 @@ export class NoOpFileStorageAdapter implements ISignedFileStorageAdapter {
         return Promise.resolve(null);
     }
 
-    add(_key: string, _content: WritableFileAdapterContent): Promise<boolean> {
+    put(_key: string, _content: WritableFileAdapterContent): Promise<void> {
+        return Promise.resolve();
+    }
+
+    putStream(_key: string, _stream: WritableFileAdapterStream): Promise<void> {
+        return Promise.resolve();
+    }
+
+    copy(_source: string, _destination: string): Promise<boolean> {
         return Promise.resolve(true);
     }
 
-    addStream(
-        _key: string,
-        _stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
+    move(_source: string, _destination: string): Promise<boolean> {
         return Promise.resolve(true);
     }
 
-    update(
-        _key: string,
-        _content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        return Promise.resolve(true);
-    }
-
-    updateStream(
-        _key: string,
-        _stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        return Promise.resolve(true);
-    }
-
-    put(_key: string, _content: WritableFileAdapterContent): Promise<boolean> {
-        return Promise.resolve(true);
-    }
-
-    putStream(
-        _key: string,
-        _stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        return Promise.resolve(true);
-    }
-
-    copy(_source: string, _destination: string): Promise<FileWriteEnum> {
-        return Promise.resolve(FILE_WRITE_ENUM.SUCCESS);
-    }
-
-    copyAndReplace(_source: string, _destination: string): Promise<boolean> {
-        return Promise.resolve(true);
-    }
-
-    move(_source: string, _destination: string): Promise<FileWriteEnum> {
-        return Promise.resolve(FILE_WRITE_ENUM.SUCCESS);
-    }
-
-    moveAndReplace(_source: string, _destination: string): Promise<boolean> {
-        return Promise.resolve(true);
-    }
-
-    removeMany(_keys: Array<string>): Promise<boolean> {
-        return Promise.resolve(true);
+    removeMany(_keys: Array<string>): Promise<void> {
+        return Promise.resolve();
     }
 
     removeByPrefix(_prefix: string): Promise<void> {

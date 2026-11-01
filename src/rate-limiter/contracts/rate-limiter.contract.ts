@@ -21,6 +21,7 @@ export type IRateLimiterStateMethods = {
      * Retrieves the current state of the rate limiter.
      *
      * @returns The current rate limiter state (allowed, blocked, expired, etc.)
+     * @throws {UnableToGetStateRateLimiterError} If the rate limiter adapter fails with an unexpected error while retrieving the state
      */
     getState(): Promise<RateLimiterState>;
 
@@ -52,6 +53,7 @@ export type IRateLimiter = IRateLimiterStateMethods & {
      * @param asyncFn - The function to execute if rate limit allows
      * @returns The return value of the function
      * @throws {BlockedRateLimiterError} If the rate limiter has reached its limit
+     * @throws {UnableToUpdateStateRateLimiterError} If the rate limiter adapter fails with an unexpected error while updating the state
      */
     runOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
@@ -60,6 +62,8 @@ export type IRateLimiter = IRateLimiterStateMethods & {
     /**
      * Resets the rate limiter to its initial state.
      * Clears the request count and allows a fresh quota of requests.
+     *
+     * @throws {UnableToResetRateLimiterError} If the rate limiter adapter fails with an unexpected error while resetting the rate limiter
      */
     reset(): Promise<void>;
 };

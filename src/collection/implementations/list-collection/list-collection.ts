@@ -380,12 +380,12 @@ export class ListCollection<TInput = unknown> implements ICollection<TInput> {
             isEven = this.array.length % 2 === 0,
             a = nbrs[index];
         if (a === undefined) {
-            throw new UnexpectedError("Is in invalid state");
+            throw UnexpectedError.create("Is in invalid state");
         }
         const b = nbrs[index - 1];
         if (isEven) {
             if (b === undefined) {
-                throw new UnexpectedError("Is in invalid state");
+                throw UnexpectedError.create("Is in invalid state");
             }
             return ((a + b) / 2) as Extract<TInput, number>;
         }

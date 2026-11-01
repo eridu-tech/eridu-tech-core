@@ -327,7 +327,7 @@ export class TransactionContext<
                 propagation,
             );
         }
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             "run() was called with a propagation mode but no asyncInvocable",
         );
     }

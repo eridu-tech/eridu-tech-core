@@ -1,5 +1,297 @@
 # @daiso-tech/core
 
+## 0.72.0
+
+### Minor Changes
+
+- 2e7f9a1: Removed `SingleResourcePool` from `eridu-tech/generic-pool` because it was not needed.
+
+    `SingleResourcePool` existed to give exactly one caller access to a client at a time, but the same behaviour is already covered by the other pool implementations, so it added no value of its own. Use `QueuePool` when concurrent callers must each borrow a resource, or `NoOpPool` when a client is already exclusive.
+
+    ### Breaking changes
+    - `eridu-tech/generic-pool` no longer exports `SingleResourcePool` or its `SinglePoolSettings` type, so imports of those names no longer resolve.
+
+## 0.71.0
+
+### Minor Changes
+
+- 006a5dc: The file-storage contracts now expose a single upsert write path and non-nullable URLs.
+
+    - `IFileStorageAdapter.put()` and `IFileStorageAdapter.putStream()` return `Promise<void>` instead of a boolean indicating whether the file already existed.
+    - `IFileStorageAdapter.copy()` and `IFileStorageAdapter.move()` return `Promise<boolean>` and overwrite the destination when it exists, replacing the previous enum-based `copy()`/`move()` and the separate `copyAndReplace()`/`moveAndReplace()` methods.
+    - `IFileStorageAdapter.removeMany()` and `IFileStorage.removeMany()` return `Promise<void>`.
+    - `IFileUrlAdapter.getPublicUrl()` and `IFileUrlAdapter.getSignedDownloadUrl()` return `Promise<string>` and report failures by throwing instead of returning `null`.
+    - `IReadableFile.getPublicUrl()` and `IReadableFile.getSignedDownloadUrl()` follow the same non-nullable contract, returning a URL or throwing when the file is not found or public access is unsupported.
+    - `IFile.put()`, `IFile.putStream()` and `IFile.remove()` return `Promise<void>`.
+    - `IFile.copyOrFail()` and `IFile.moveOrFail()` no longer throw `KeyExistsFileError`, since `copy()` and `move()` overwrite the destination.
+    - `file-storage-adapter.contract.ts` is re-exported as types only from `eridu-tech/file-storage/contracts`.
+
+    ### Breaking changes
+    - Removed `IFileStorageAdapter.add()`, `addStream()`, `update()` and `updateStream()`; use `put()`/`putStream()`, which upsert.
+    - Removed `IFileStorageAdapter.copyAndReplace()` and `moveAndReplace()`; `copy()` and `move()` now overwrite existing destinations.
+    - Removed the `FILE_WRITE_ENUM` constant and `FileWriteEnum` type.
+    - Removed `IFile.add()`, `addOrFail()`, `addStream()`, `addStreamOrFail()`, `update()`, `updateOrFail()`, `updateStream()`, `updateStreamOrFail()` and `removeOrFail()`; use `put()`/`putStream()` and `remove()`.
+    - Removed `IFile.copyAndReplace()`, `copyAndReplaceOrFail()`, `moveAndReplace()` and `moveAndReplaceOrFail()`; use `copy()`/`move()` or their `*OrFail` variants, which now replace the destination.
+    - `IFile.getPublicUrl()` and `IFile.getSignedDownloadUrl()` no longer return `null`; the `getPublicUrlOrFail()` and `getSignedDownloadUrlOrFail()` variants were removed.
+    - Removed `KeyExistsFileError`; `FILE_STORAGE_ERRORS` no longer contains a `KeyExists` entry.
+
+- 8f0cce5: `FsFileStorageAdapter` now stores files in a safe, collision-free folder layout.
+
+    - Key segments become nested folders (`"a/b"` → `<location>/N/S_<a>/K/S_<b>`), so `"a"` and `"a/b"` can coexist and long keys stay under the file name limit.
+    - New `codec` setting (base64url by default) encodes each segment, so unsafe characters work and `"../secret"` cannot escape the root folder.
+    - `copy()` creates the destination folders, and `removeByPrefix("")` deletes the root folder.
+    - `init()`/`deInit()` are idempotent and no longer swallow filesystem errors.
+
+- 13f7aac: New `FtpFileStorageAdapter` for storing files on an FTP server, available from `eridu-tech/file-storage/ftp-file-storage-adapter`.
+
+    - The `pool` setting accepts an `IGenericPoolBase<Client>`: an `IGenericPool` (for example `QueuePool` or `SingleResourcePool`) is borrowed from and released on every operation, so concurrent calls do not share one connection.
+    - `FtpFactory` is an `IResourceFactory<Client>` for those pools. It opens and logs in with `accessSettings`, applies `timeout` (default `30000`) and `clientSettings`, closes the connection on destroy, and validates idle connections with `pwd()`. A custom `clientFactory` replaces the whole connect step, so use it when connections need custom setup, such as upgrading to FTPS.
+    - `ftpPool()` combines the factory with an optional `poolFactory` into a ready-to-use pool.
+    - Keys map to nested folders under `location` (default `"/"`), split by `delimiter` (default `"/"`), and each segment is encoded with `codec` (default `Base64UrlCodec`). Unsafe characters work and keys such as `"../secret"` cannot escape the root folder.
+    - `pathType` selects POSIX or win32 path handling and defaults to `PATH_TYPE.POSIX`.
+    - Implements the full `IFileStorageAdapter` contract, including `putStream()`, `copy()`, `move()`, `removeMany()` and `removeByPrefix()`. `getMetaData()` returns an `etag` derived from the remote size and modification time, and a missing file resolves to `null`/`false` instead of throwing.
+
+    Requires `basic-ftp` as an optional peer dependency.
+
+- 7de51c5: New `generic-pool` component for reusing expensive resources such as database connections or SFTP clients.
+
+    - `eridu-tech/generic-pool/contracts` exposes the `IResourceFactory`, `IGenericPoolBase`, and `IGenericPool` `Poolable` types.
+    - `QueuePool` creates resources through an `IResourceFactory` and queues callers in FIFO order when none are idle. The pool size is bounded by `maxResources` (default `10`) and the wait queue by `maxWaitSize` (default `null`, meaning unbounded).
+    - Resource recycling goes through `IResourceFactory.validate()`, so an unusable resource is destroyed and replaced instead of being handed to the next caller.
+    - `SingleResourcePool` lets exactly one caller use a client at a time, queueing the rest up to `maxWaitSize`.
+    - `NoOpPool` hands the same client to every caller and ignores releases, which is useful when a client is already exclusive.
+    - `acquireOrFail()` rejects with `UnableToAcquireError` when the pool is closed or the wait queue is full.
+    - `eridu-tech/generic-pool` re-exports the implementations, and `eridu-tech/generic-pool/contracts` re-exports the types and errors.
+
+- 7de51c5: New `SftpFileStorageAdapter` for storing files on an SFTP server, available from `eridu-tech/file-storage/sftp-file-storage-adapter`.
+
+    - The `pool` setting accepts a `IGenericPoolBase<SftpClient>`: an `IGenericPool` (for example `QueuePool` or `SingleResourcePool`) is borrowed from and released on every operation, so concurrent calls do not share one connection.
+    - `SftpFactory` is an `IResourceFactory<SftpClient>` for those pools. It connects with `SftpClient.ConnectOptions`, ends the connection on destroy, and validates idle connections with `cwd()`.
+    - Keys map to nested folders under `location` (default `"/"`), split by `delimiter` (default `"/"`), and each segment is encoded with `codec` (default `Base64UrlCodec`). Unsafe characters work and keys such as `"../secret"` cannot escape the root folder.
+    - `pathType` selects POSIX or win32 path handling and defaults to `PATH_TYPE.POSIX`.
+    - Implements the full `IFileStorageAdapter` contract, including `putStream()`, `copy()`, `move()`, `removeMany()` and `removeByPrefix()`.
+
+    Requires `ssh2-sftp-client` as a peer dependency.
+
+## 0.70.1
+
+### Patch Changes
+
+- cebeb81: Added `.use(adapter)` support to `withInvalidationFactory`, `withDispatchBeforeFactory`, `withDispatchAfterFactory`, and `withDispatchOnErrorFactory`. Each middleware can now use a specific registered cache or event-bus adapter. Calling the factory directly continues to use the resolver's configured default adapter.
+
+## 0.70.0
+
+### Minor Changes
+
+- b3f8250: Updated `CacheResolver` to initialize and retain adapter-specific caches. Call `init()` before selecting a cache adapter.
+
+    The cache DI entrypoint now exposes `ProxyCacheResolver` as a directly constructible class that resolves the registered resolver lazily from the container. This removes the extra DI factory helper from setup.
+
+    ### Breaking changes
+    - Replace `cacheResolverDiFactory(container, token)` with `new ProxyCacheResolver({ container, resolverToken })`.
+    - Import `ProxyCacheResolver` from `eridu-tech/cache/di`; the proxy is now a public class constructed with one settings object.
+
+- b3f8250: `CircuitBreakerFactoryResolver` now initializes its adapter-specific factories during `init()`; call it before selecting a factory. The database-specific resolver implementation was removed in favor of the generic adapter resolver.
+
+    The circuit-breaker factory now uses the async-capable serde contract and defaults to `NoOpSerde`. Supply `SuperJsonSerde` or another serde explicitly when serialized circuit breakers must be transformed across a boundary.
+
+    The circuit-breaker DI entrypoint exposes `ProxyCircuitBreakerFactoryResolver` as a directly constructible class that resolves the registered resolver lazily from the container. Construct the proxy directly instead of going through a separate DI factory helper.
+
+    ### Breaking changes
+    - Replace `circuitBreakerFactoryResolverDiFactory(container, token)` with `new ProxyCircuitBreakerFactoryResolver({ container, resolverToken })`.
+    - Import `ProxyCircuitBreakerFactoryResolver` from `eridu-tech/circuit-breaker/di`; the proxy is now a public class constructed with one settings object.
+
+- 73abed6: `EventBusResolver` now creates and retains one event bus per registered adapter during `init()`. Register listeners with `addListener()` before the application starts; each listener is attached to every configured adapter. `use()` returns a dispatcher for the selected adapter and uses `defaultAdapter` when no adapter name is supplied.
+
+    The new `ProxyEventBusResolver` is available from `eridu-tech/event-bus/di`. It resolves the registered resolver from the DI container and returns lightweight dispatchers. Register the resolver as a singleton, and call the proxy's `addListener()` before `container.init()`.
+
+    ### Breaking changes
+    - `IEventBusResolver.use()` now returns `IEventDispatcher` rather than a listenable `IEventBus`; register listeners on the resolver with `addListener()`.
+    - `EventBusResolver.setEventMapType()` and `setEventMapSchema()` were removed. Configure the event map type and schema when constructing the resolver.
+
+- b3f8250: `FileStorageResolver` initializes and retains its adapter-specific storage instances during `init()`; call it before selecting a storage adapter.
+
+    File serialization now uses the async-capable serde contract and defaults to `NoOpSerde`. Supply `SuperJsonSerde` or another serde explicitly when file objects must be transformed across a serialization boundary.
+
+    The file-storage DI entrypoint exposes `ProxyFileStorageResolver` as a directly constructible class that resolves the registered resolver lazily from the container. Construct the proxy directly instead of going through a separate DI factory helper.
+
+    ### Breaking changes
+    - Replace `fileStorageResolverDiFactory(container, token)` with `new ProxyFileStorageResolver({ container, resolverToken })`.
+    - Import `ProxyFileStorageResolver` from `eridu-tech/file-storage/di`; the proxy is now a public class constructed with one settings object.
+
+- b3f8250: `LockFactoryResolver` initializes and retains an adapter-specific factory for each registered adapter during `init()`; call it before selecting a factory.
+
+    Lock serialization now uses the async-capable serde contract and defaults to `NoOpSerde`. Supply `SuperJsonSerde` or another serde explicitly when locks must be transformed across a serialization boundary.
+
+    The lock DI entrypoint exposes `ProxyLockFactoryResolver` as a directly constructible class that resolves the registered resolver lazily from the container, eliminating the separate DI factory helper. Proxy settings support the default TTL and lock ID generator.
+
+    ### Breaking changes
+    - Replace `lockFactoryResolverDiFactory(container, token)` with `new ProxyLockFactoryResolver({ container, resolverToken })`.
+    - Import `ProxyLockFactoryResolver` from `eridu-tech/lock/di`; the proxy is now a public class constructed with one settings object.
+
+- b3f8250: `RateLimiterFactoryResolver` initializes and retains adapter-specific factories during `init()`; call it before selecting a factory. The database-specific resolver implementation was removed in favor of the generic adapter resolver.
+
+    Rate-limiter serialization now uses the async-capable serde contract and defaults to `NoOpSerde`. Supply `SuperJsonSerde` or another serde explicitly when rate limiters must be transformed across a serialization boundary.
+
+    The rate-limiter DI entrypoint exposes `ProxyRateLimiterFactoryResolver` as a directly constructible class that resolves the registered resolver lazily from the container. Construct the proxy directly instead of going through a separate DI factory helper.
+
+    ### Breaking changes
+    - Replace `rateLimiterFactoryResolverDiFactory(container, token)` with `new ProxyRateLimiterFactoryResolver({ container, resolverToken })`.
+    - Import `ProxyRateLimiterFactoryResolver` from `eridu-tech/rate-limiter/di`; the proxy is now a public class constructed with one settings object.
+
+- b3f8250: `SemaphoreFactoryResolver` initializes and retains adapter-specific factories during `init()`; call it before selecting a factory.
+
+    Semaphore serialization now uses the async-capable serde contract and defaults to `NoOpSerde`. Supply `SuperJsonSerde` or another serde explicitly when semaphores must be transformed across a serialization boundary.
+
+    The semaphore DI entrypoint exposes `ProxySemaphoreFactoryResolver` as a directly constructible class that resolves the registered resolver lazily from the container, eliminating the separate DI factory helper. Proxy settings support the default TTL and slot ID generator.
+
+    ### Breaking changes
+    - Replace `semaphoreFactoryResolverDiFactory(container, token)` with `new ProxySemaphoreFactoryResolver({ container, resolverToken })`.
+    - Import `ProxySemaphoreFactoryResolver` from `eridu-tech/semaphore/di`; the proxy is now a public class constructed with one settings object.
+
+- b3f8250: `SharedLockFactoryResolver` initializes and retains adapter-specific factories during `init()`; call it before selecting a factory.
+
+    Shared-lock serialization now uses the async-capable serde contract and defaults to `NoOpSerde`. Supply `SuperJsonSerde` or another serde explicitly when shared locks must be transformed across a serialization boundary.
+
+    The shared-lock DI entrypoint exposes `ProxySharedLockFactoryResolver` as a directly constructible class that resolves the registered resolver lazily from the container, eliminating the separate DI factory helper. Proxy settings support the default TTL and lock ID generator.
+
+    ### Breaking changes
+    - Replace `sharedLockFactoryResolverDiFactory(container, token)` with `new ProxySharedLockFactoryResolver({ container, resolverToken })`.
+    - Import `ProxySharedLockFactoryResolver` from `eridu-tech/shared-lock/di`; the proxy is now a public class constructed with one settings object.
+
+- eed533b: Added an `eridu-tech/transaction-context/di` entrypoint that exports the directly constructible `ProxyTransactionContextResolver` class.
+
+    `ProxyTransactionContextResolver` implements `ITransactionContextResolver` and resolves the registered `TransactionContextResolver` from a dependency-injection container. The `resolverToken` is resolved through the container on every operation with `IServiceResolver.resolveOrFail`, so the proxy can be constructed at any point and every lifetime is supported: singleton and transient registrations can be used once `IContainer.init()` has been awaited, while scoped registrations are resolved per operation and must be used inside `IContainer.run()`.
+
+    ```ts
+    import { TransactionContextResolver } from "eridu-tech/transaction-context";
+    import { ProxyTransactionContextResolver } from "eridu-tech/transaction-context/di";
+
+    const transactionContextResolver = new TransactionContextResolver({
+        adapters: { primary: adapter },
+        defaultAdapter: "primary",
+        executionContext,
+    });
+    container.registerValue({
+        token: TransactionContextResolver,
+        value: transactionContextResolver,
+    });
+
+    const transactionContext = new ProxyTransactionContextResolver({
+        container,
+        resolverToken: TransactionContextResolver,
+    });
+
+    await container.init();
+
+    await transactionContext.run(async () => {
+        // delegates to the resolved TransactionContextResolver
+    });
+    ```
+
+    `run()` and `afterCommit()` resolve the registered resolver and delegate to it. `use(adapterName?)` returns a lightweight `ITransactionRunner` whose `run()` resolves the registered resolver the first time it is invoked.
+
+    ### Notes
+    - Configure the proxy with a `ProxyTransactionContextResolverSettings` object (`container` and `resolverToken`).
+    - Follows the same pattern as the other `Proxy*` classes exported from the `*/di` entrypoints (see `proxy-resolver-di-helpers`).
+
+- b3f8250: Updated `TransactionContextResolver` to initialize and retain a transaction context for each registered adapter. Call `init()` before selecting an adapter or registering after-commit hooks.
+- 40afa5d: Added `TransactionContextResolver` for dynamically selecting between registered transaction adapters.
+
+    `TransactionContextResolver` registers named transaction adapters and resolves one into an `ITransactionRunner` through `use(adapterName?)`. Because `ITransactionContextResolver` extends `ITransactionHooks`, the returned runner exposes `run()` while the resolver itself exposes `afterCommit()`.
+
+    ```ts
+    import { TransactionContextResolver } from "eridu-tech/transaction-context";
+
+    const transactionContextResolver = new TransactionContextResolver({
+        adapters: { primary: adapter },
+        defaultAdapter: "primary",
+        executionContext,
+    });
+
+    await transactionContextResolver.use().run(async () => {
+        // ...
+    });
+    ```
+
+    - `use(adapterName?)` resolves the named adapter to an `ITransactionRunner`, defaulting to `defaultAdapter`. It throws `DefaultAdapterNotDefinedError` when no name is given and no default is configured, and `UnregisteredAdapterError` for an unknown name.
+    - `eridu-tech/transaction-context` exports `TransactionContextResolver` and `TransactionContextResolverSettings`, and `eridu-tech/transaction-context/contracts` exports the `ITransactionContextResolver` contract.
+
+    Reworked the `withTransactionFactory` middleware to the same resolver-based pattern as the other middleware factories:
+
+    - `withTransactionFactory(transactionContextResolver)` now takes a `RunTransactionResolver` (a narrowed form of `ITransactionContextResolver`) and returns a `WithTransaction` that is also a `WithTransactionResolver`.
+    - Calling the returned factory uses the resolver's default adapter; `withTransaction.use("adapter")` runs the wrapped function through a specific registered adapter.
+    - The propagation mode moved into a `WithTransactionSettings` object and still defaults to `TRANSACTION_PROPAGATION.REQUIRED`.
+    - `eridu-tech/transaction-context/middlewares` exports `RunTransactionResolver`, `WithTransaction`, `WithTransactionSettings` and `WithTransactionResolver`.
+
+    ```ts
+    import { withTransactionFactory } from "eridu-tech/transaction-context/middlewares";
+
+    const withTransaction = withTransactionFactory(transactionContextResolver);
+
+    const createUserInTransaction = use(createUser, withTransaction());
+
+    const createUserInExistingTransaction = use(
+        createUser,
+        withTransaction({ propagation: TRANSACTION_PROPAGATION.MANDATORY }),
+    );
+
+    const createUserOnPrimary = use(
+        createUser,
+        withTransaction.use("primary")(),
+    );
+    ```
+
+    ### Breaking changes
+    - `withTransactionFactory` now takes a transaction context resolver instead of a single transaction context, and returns a callable middleware factory with an additional `use(adapter?)` method.
+    - The propagation mode is passed in a settings object — `withTransaction({ propagation })` — instead of as the factory's positional argument. `withTransaction(TRANSACTION_PROPAGATION.MANDATORY)` no longer compiles.
+
+    ### Notes
+    - The `eridu-tech/transaction-context/di` entrypoint exports `ProxyTransactionContextResolver`, which wraps this resolver, resolves it lazily through the container, and supports every lifetime (see `transaction-context-di-proxy`).
+    - `MultiTransactionHooks` (`transaction-context/implementations/derivables/multi-transaction-hooks`) is internal: it is marked `@internal`, is not exported from any public entrypoint, and is therefore excluded from the generated API documentation. It backs `TransactionContextResolver.afterCommit()` by forwarding a registered hook to every registered adapter that currently has an active transaction.
+
+## 0.69.0
+
+### Minor Changes
+
+- 1fae1d7: Added a dependency-injection aware controller binder to the `eridu-tech/http-router/di` entrypoint.
+
+    `bindHttpFactory(container)` returns a binder that turns a controller method into an `HttpHandlerFn`. The binder takes the controller's token and the name of one of its handler methods, resolves the controller from the container for each request, and invokes the bound method:
+
+    ```ts
+    import { bindHttpFactory } from "eridu-tech/http-router/di";
+    import type { HttpHandlerFn } from "eridu-tech/http-router/contracts";
+
+    class UsersController {
+        getUser: HttpHandlerFn = ({ text }) => text("Hi from UsersController");
+    }
+
+    const bindHttp = bindHttpFactory(container);
+
+    router.endpoint({
+        method: "GET",
+        url: "/users/:id",
+        handler: bindHttp(UsersController, "getUser"),
+    });
+    ```
+
+    - `eridu-tech/http-router/di` exports `bindHttpFactory`.
+    - The binder resolves the controller with `container.resolveOrFail` on every request, so the controller's lifetime follows its container registration.
+    - The resulting handler throws `UnexpectedError` when the bound member is not invocable.
+
+- 1fae1d7: Removed the request-scoping HTTP middleware and the `REQUEST` token from the `eridu-tech/http-router/di` entrypoint.
+
+    `registerRequest(container)` declared the `REQUEST` token as a dynamic token and returned an `HttpMiddlewareFn` that ran the rest of the request inside `container.run()`, with the incoming `IHttpReq` registered under `REQUEST`. It was removed because it will be rewritten using the new DI module component. `registerRequest`, the `REQUEST` token and their tests are removed.
+
+    ### Breaking changes
+    - `eridu-tech/http-router/di` no longer exports `registerRequest`.
+    - `eridu-tech/http-router/di` no longer exports the `REQUEST` token (`DiToken<IHttpReq>`).
+    - Registering the middleware with `router.use(registerRequest(container))` or resolving `REQUEST` from the container no longer compiles.
+
+    ### Migration
+
+    The request-scoping middleware is planned to be reintroduced, rewritten using the new DI module component. Until then, no replacement is available.
+
 ## 0.68.0
 
 ### Minor Changes

@@ -1,42 +1,95 @@
 import {
     HeadBucketCommand,
     NotFound,
-    PutBucketPolicyCommand,
+    PutBucketWebsiteCommand,
     S3Client,
 } from "@aws-sdk/client-s3";
-import { MinioContainer } from "@testcontainers/minio";
-import { Wait } from "testcontainers";
+import { GenericContainer, Wait } from "testcontainers";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { S3FileStorageAdapter } from "@/file-storage/implementations/adapters/s3-file-storage-adapter/_module-exports.js";
 import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { StartedMinioContainer } from "@testcontainers/minio";
+import type { StartedTestContainer } from "testcontainers";
 
 const timeout = TimeSpan.fromMinutes(2);
+
+const GARAGE_IMAGE = "dxflrs/garage:v2.4.1";
+const S3_PORT = 3900;
+const WEB_PORT = 3902;
+const BUCKET = "files";
+const ACCESS_KEY_ID = "GK0123456789abcdef0123456789abcdef";
+const SECRET_ACCESS_KEY =
+    "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
+
+// Garage requires a configuration file, the `--single-node` and
+// `--default-bucket` flags create the cluster layout, the access key and the
+// bucket used by the tests.
+const GARAGE_CONFIG = `
+metadata_dir = "/tmp/meta"
+data_dir = "/tmp/data"
+db_engine = "sqlite"
+
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+rpc_secret = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+[s3_api]
+s3_region = "garage"
+api_bind_addr = "[::]:${String(S3_PORT)}"
+
+[s3_web]
+bind_addr = "[::]:${String(WEB_PORT)}"
+root_domain = ".web.garage.localhost"
+index = "index.html"
+`;
+
 describe("class: S3FileStorageAdapter", () => {
     let client: S3Client;
     let adapter_: S3FileStorageAdapter;
-    let startedContainer: StartedMinioContainer;
+    let startedContainer: StartedTestContainer;
     beforeEach(async () => {
-        startedContainer = await new MinioContainer(
-            "minio/minio:RELEASE.2025-09-07T16-13-09Z",
-        )
-            .withWaitStrategy(Wait.forLogMessage(/.*API: http:\/\/.*/))
+        startedContainer = await new GenericContainer(GARAGE_IMAGE)
+            .withCopyContentToContainer([
+                { content: GARAGE_CONFIG, target: "/etc/garage.toml" },
+            ])
+            .withEnvironment({
+                GARAGE_DEFAULT_ACCESS_KEY: ACCESS_KEY_ID,
+                GARAGE_DEFAULT_SECRET_KEY: SECRET_ACCESS_KEY,
+                GARAGE_DEFAULT_BUCKET: BUCKET,
+            })
+            .withExposedPorts(S3_PORT, WEB_PORT)
+            .withCommand([
+                "/garage",
+                "server",
+                "--single-node",
+                "--default-bucket",
+            ])
+            .withWaitStrategy(
+                Wait.forLogMessage(
+                    /S3 API server listening on/,
+                ).withStartupTimeout(timeout.toMilliseconds()),
+            )
             .start();
         client = new S3Client({
-            endpoint: startedContainer.getConnectionUrl(),
-            region: "us-east-1",
+            endpoint: `http://${startedContainer.getHost()}:${String(startedContainer.getMappedPort(S3_PORT))}`,
+            region: "garage",
             credentials: {
-                accessKeyId: startedContainer.getUsername(),
-                secretAccessKey: startedContainer.getPassword(),
+                accessKeyId: ACCESS_KEY_ID,
+                secretAccessKey: SECRET_ACCESS_KEY,
             },
             forcePathStyle: true,
+            // Garage rejects presigned uploads when the SDK attaches a
+            // precomputed checksum for the empty body.
+            requestChecksumCalculation: "WHEN_REQUIRED",
+            responseChecksumValidation: "WHEN_REQUIRED",
         });
         adapter_ = new S3FileStorageAdapter({
             client,
-            bucket: "files",
+            bucket: BUCKET,
             serverSideEncryption: null,
         });
     }, timeout.toMilliseconds());
@@ -55,61 +108,12 @@ describe("class: S3FileStorageAdapter", () => {
         describe,
     });
     describe("method: getPublicUrl", () => {
-        test("Should return null when key doesnt exists", async () => {
-            const bucket = "files";
+        test("Should return string when key doesnt exists", async () => {
             const adapter = new S3FileStorageAdapter({
                 client,
-                bucket,
+                bucket: BUCKET,
             });
             await adapter.init();
-            await client.send(
-                new PutBucketPolicyCommand({
-                    Bucket: bucket,
-                    Policy: JSON.stringify({
-                        Version: "2012-10-17",
-                        Statement: [
-                            {
-                                Sid: "PublicRead",
-                                Effect: "Allow",
-                                Principal: "*",
-                                Action: ["s3:GetObject"],
-                                Resource: [`arn:aws:s3:::${bucket}/*`],
-                            },
-                        ],
-                    }),
-                }),
-            );
-
-            const key = "a";
-            const result = await adapter.getPublicUrl(key);
-
-            expect(result).toBeNull();
-        });
-        test("Should return string when key doesnt exists when enableAccurateGetPublicUrl setting is false", async () => {
-            const bucket = "files";
-            const adapter = new S3FileStorageAdapter({
-                client,
-                bucket,
-                enableAccurateGetPublicUrl: false,
-            });
-            await adapter.init();
-            await client.send(
-                new PutBucketPolicyCommand({
-                    Bucket: bucket,
-                    Policy: JSON.stringify({
-                        Version: "2012-10-17",
-                        Statement: [
-                            {
-                                Sid: "PublicRead",
-                                Effect: "Allow",
-                                Principal: "*",
-                                Action: ["s3:GetObject"],
-                                Resource: [`arn:aws:s3:::${bucket}/*`],
-                            },
-                        ],
-                    }),
-                }),
-            );
 
             const key = "a";
             const result = await adapter.getPublicUrl(key);
@@ -117,33 +121,27 @@ describe("class: S3FileStorageAdapter", () => {
             expect(result).toBeTypeOf("string");
         });
         test("Should return file data when key exists", async () => {
-            const bucket = "files";
+            // Garage supports neither bucket policies nor anonymous S3
+            // requests, a bucket is exposed publicly by serving it as a
+            // website on its own domain.
             const adapter = new S3FileStorageAdapter({
                 client,
-                bucket,
+                bucket: BUCKET,
+                cdnUrl: `http://${BUCKET}.web.garage.localhost:${String(startedContainer.getMappedPort(WEB_PORT))}`,
             });
             await adapter.init();
             await client.send(
-                new PutBucketPolicyCommand({
-                    Bucket: bucket,
-                    Policy: JSON.stringify({
-                        Version: "2012-10-17",
-                        Statement: [
-                            {
-                                Sid: "PublicRead",
-                                Effect: "Allow",
-                                Principal: "*",
-                                Action: ["s3:GetObject"],
-                                Resource: [`arn:aws:s3:::${bucket}/*`],
-                            },
-                        ],
-                    }),
+                new PutBucketWebsiteCommand({
+                    Bucket: BUCKET,
+                    WebsiteConfiguration: {
+                        IndexDocument: { Suffix: "index.html" },
+                    },
                 }),
             );
 
             const key = "a";
             const data = new Uint8Array(Buffer.from("CONTENT"));
-            await adapter.add(key, {
+            await adapter.put(key, {
                 cacheControl: null,
                 contentDisposition: null,
                 contentEncoding: null,
@@ -153,9 +151,6 @@ describe("class: S3FileStorageAdapter", () => {
                 data,
             });
             const url = await adapter.getPublicUrl(key);
-            if (url === null) {
-                throw new Error("url is null");
-            }
 
             const response = await fetch(url);
             const retrievedData = new Uint8Array(await response.arrayBuffer());
@@ -163,31 +158,11 @@ describe("class: S3FileStorageAdapter", () => {
         });
     });
     describe("method: getSignedDownloadUrl", () => {
-        test("Should return null when key doesnt exists", async () => {
+        test("Should return string when key doesnt exists", async () => {
             const bucket = "files";
             const adapter = new S3FileStorageAdapter({
                 client,
                 bucket,
-            });
-            await adapter.init();
-
-            const key = "a";
-            const contentType = "text/plain";
-            const contentDisposition = "inline";
-            const result = await adapter.getSignedDownloadUrl(key, {
-                expirationInSeconds: 5000,
-                contentType,
-                contentDisposition,
-            });
-
-            expect(result).toBeNull();
-        });
-        test("Should return string when key doesnt exists when enableAccurateGetSignedDownloadUrl setting is false", async () => {
-            const bucket = "files";
-            const adapter = new S3FileStorageAdapter({
-                client,
-                bucket,
-                enableAccurateGetSignedDownloadUrl: false,
             });
             await adapter.init();
 
@@ -213,7 +188,7 @@ describe("class: S3FileStorageAdapter", () => {
             const key = "a";
             const data = new Uint8Array(Buffer.from("CONTENT"));
             const contentType = "text/plain";
-            await adapter.add(key, {
+            await adapter.put(key, {
                 cacheControl: null,
                 contentDisposition: null,
                 contentEncoding: null,
@@ -228,9 +203,6 @@ describe("class: S3FileStorageAdapter", () => {
                 contentType,
                 contentDisposition,
             });
-            if (url === null) {
-                throw new Error("url is null");
-            }
 
             const response = await fetch(url);
             expect(response.headers.get("content-type")).toBe(contentType);
@@ -277,7 +249,7 @@ describe("class: S3FileStorageAdapter", () => {
             const key = "a";
             const data = new Uint8Array(Buffer.from("CONTENT"));
             const contentType = "text/plain";
-            await adapter.add(key, {
+            await adapter.put(key, {
                 data,
                 fileSizeInBytes: data.byteLength,
                 contentType,
@@ -299,226 +271,6 @@ describe("class: S3FileStorageAdapter", () => {
 
             const bytes = await adapter.getBytes(key);
             expect(bytes).toEqual(newData);
-        });
-    });
-    describe("method: put", () => {
-        test("Should return true when doesnt key exists and enableAccuratePut setting is false", async () => {
-            const bucket = "files";
-            const adapter = new S3FileStorageAdapter({
-                client,
-                bucket,
-                enableAccuratePut: false,
-            });
-            await adapter.init();
-
-            const key = "a";
-
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/octet-stream";
-            const result = await adapter.put(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-
-            expect(result).toBe(true);
-        });
-        test("Should persist data when key doesnt exist and enableAccuratePut setting is false", async () => {
-            const bucket = "files";
-            const adapter = new S3FileStorageAdapter({
-                client,
-                bucket,
-                enableAccuratePut: false,
-            });
-            await adapter.init();
-
-            const key = "a";
-
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/octet-stream";
-            await adapter.put(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-
-            const result = await adapter.getBytes(key);
-            expect(result).toEqual(data);
-        });
-        test("Should return true when key exists and enableAccuratePut setting is false", async () => {
-            const bucket = "files";
-            const adapter = new S3FileStorageAdapter({
-                client,
-                bucket,
-                enableAccuratePut: false,
-            });
-            await adapter.init();
-
-            const key = "a";
-
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/octet-stream";
-            await adapter.add(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-
-            const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const result = await adapter.put(key, {
-                data: newData,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-
-            expect(result).toBe(true);
-        });
-        test("Should persist data when key exist and enableAccuratePut setting is false", async () => {
-            const bucket = "files";
-            const adapter = new S3FileStorageAdapter({
-                client,
-                bucket,
-                enableAccuratePut: false,
-            });
-            await adapter.init();
-
-            const key = "a";
-
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/octet-stream";
-            await adapter.add(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-
-            const newData = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            await adapter.put(key, {
-                data: newData,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-
-            const result = await adapter.getBytes(key);
-            expect(result).toEqual(newData);
-        });
-    });
-    describe("method: removeMany", () => {
-        test("Should return true when all keys does not exists", async () => {
-            const bucket = "files";
-            const adapter = new S3FileStorageAdapter({
-                client,
-                bucket,
-                enableAccurateRemoveMany: false,
-            });
-            await adapter.init();
-
-            const result = await adapter.removeMany(["a", "b", "c"]);
-
-            expect(result).toBe(true);
-        });
-        test("Should return true when one key exists", async () => {
-            const bucket = "files";
-            const adapter = new S3FileStorageAdapter({
-                client,
-                bucket,
-                enableAccurateRemoveMany: false,
-            });
-            await adapter.init();
-
-            const key = "a";
-
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/octet-stream";
-            await adapter.add(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-
-            const result = await adapter.removeMany([key, "b", "c"]);
-
-            expect(result).toBe(true);
-        });
-        test("Should persist removal of the keys that exists", async () => {
-            const bucket = "files";
-            const adapter = new S3FileStorageAdapter({
-                client,
-                bucket,
-                enableAccurateRemoveMany: false,
-            });
-            await adapter.init();
-
-            const data1 = new Uint8Array(Buffer.from("CONTENT_A", "utf8"));
-            const contentType = "application/octet-stream";
-            await adapter.add("a", {
-                data: data1,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data1.length,
-            });
-
-            const data2 = new Uint8Array(Buffer.from("CONTENT_B", "utf8"));
-            await adapter.add("b", {
-                data: data2,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data2.length,
-            });
-
-            const data3 = new Uint8Array(Buffer.from("CONTENT_C", "utf8"));
-            await adapter.add("c", {
-                data: data3,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data3.length,
-            });
-
-            await adapter.removeMany(["a", "b"]);
-
-            const result = [
-                await adapter.getBytes("a"),
-                await adapter.getBytes("b"),
-                await adapter.getBytes("c"),
-            ];
-            expect(result).toEqual([null, null, data3]);
         });
     });
     describe("method: init", () => {

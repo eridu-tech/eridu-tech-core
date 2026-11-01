@@ -56,60 +56,6 @@ export function withFileStorageInferFileTypeOnWrite(): PluginFn<IFileStorageAdap
     return (adapter, enhance) => {
         enhance(
             adapter,
-            "add",
-            async ({ args: [key, { data, ...restContent }], next }) => {
-                return next([
-                    key,
-                    {
-                        data,
-                        ...restContent,
-                        contentType: await inferContentTypeFromBuffer(data),
-                    },
-                ]);
-            },
-        );
-        enhance(
-            adapter,
-            "addStream",
-            async ({ args: [key, { data, ...restContent }], next }) => {
-                return next([
-                    key,
-                    {
-                        ...restContent,
-                        ...(await inferContentTypeFromStream(data)),
-                    },
-                ]);
-            },
-        );
-        enhance(
-            adapter,
-            "update",
-            async ({ args: [key, { data, ...restContent }], next }) => {
-                return next([
-                    key,
-                    {
-                        data,
-                        ...restContent,
-                        contentType: await inferContentTypeFromBuffer(data),
-                    },
-                ]);
-            },
-        );
-        enhance(
-            adapter,
-            "updateStream",
-            async ({ args: [key, { data, ...restContent }], next }) => {
-                return next([
-                    key,
-                    {
-                        ...restContent,
-                        ...(await inferContentTypeFromStream(data)),
-                    },
-                ]);
-            },
-        );
-        enhance(
-            adapter,
             "put",
             async ({ args: [key, { data, ...restContent }], next }) => {
                 return next([

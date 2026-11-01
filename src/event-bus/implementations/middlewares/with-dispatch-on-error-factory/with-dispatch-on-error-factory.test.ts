@@ -12,7 +12,10 @@ describe("function: withDispatchOnErrorFactory", () => {
     const eventDispatcher = new EventBus({
         adapter,
     });
-    const withDispatchOnError = withDispatchOnErrorFactory(eventDispatcher);
+    const eventBusResolver = {
+        use: vi.fn((_adapter?: "primary" | "secondary") => eventDispatcher),
+    };
+    const withDispatchOnError = withDispatchOnErrorFactory(eventBusResolver);
 
     afterEach(() => {
         vi.clearAllMocks();
@@ -217,5 +220,25 @@ describe("function: withDispatchOnErrorFactory", () => {
 
         expect(payload).toHaveBeenCalledOnce();
         expect(dispatch).not.toHaveBeenCalled();
+    });
+
+    test("Should dispatch using the selected event bus adapter", async () => {
+        const dispatch = vi.spyOn(adapter, "dispatch");
+        const wrapped = use(
+            (): Promise<void> => Promise.reject(new Error("boom")),
+            withDispatchOnError.use("secondary")({
+                type: "user.created",
+                payload: () => ({ userId: "42" }),
+            }),
+        );
+
+        await expect(wrapped()).rejects.toThrow("boom");
+
+        expect(eventBusResolver.use).toHaveBeenCalledExactlyOnceWith(
+            "secondary",
+        );
+        expect(dispatch).toHaveBeenCalledExactlyOnceWith("user.created", {
+            userId: "42",
+        });
     });
 });

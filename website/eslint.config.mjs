@@ -14,6 +14,10 @@ export default tseslint.config(
             "node_modules/**",
             "og-assets/**",
             "static/**",
+            // Landing page code samples: partial, illustrative snippets that
+            // reference the reader's own app modules, so they are rendered
+            // verbatim rather than compiled.
+            "src/data/home-samples/**",
         ],
     },
 

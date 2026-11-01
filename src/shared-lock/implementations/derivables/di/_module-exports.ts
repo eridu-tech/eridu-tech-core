@@ -1,1 +1,1 @@
-export * from "@/shared-lock/implementations/derivables/di/shared-lock-factory-resolver-di-factory/_module.js";
+export * from "@/shared-lock/implementations/derivables/di/proxy-shared-lock-factory-resolver/_module.js";

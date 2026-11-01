@@ -99,8 +99,8 @@ export function sharedLockFactorySerdeTestSuite(
                 ttl,
                 limit,
             });
-            const deserializedSharedLock = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock),
+            const deserializedSharedLock = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock),
             );
             const result = await deserializedSharedLock.getState();
 
@@ -120,8 +120,8 @@ export function sharedLockFactorySerdeTestSuite(
             await sharedLock.acquireWriter();
             await delayWithBuffer(ttl);
 
-            const deserializedSharedLock = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock),
+            const deserializedSharedLock = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock),
             );
             const result = await deserializedSharedLock.getState();
 
@@ -149,9 +149,10 @@ export function sharedLockFactorySerdeTestSuite(
 
             await sharedLock2.forceRelease();
 
-            const deserializedSharedLock1 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock1),
-            );
+            const deserializedSharedLock1 =
+                await serde.deserialize<ISharedLock>(
+                    await serde.serialize(sharedLock1),
+                );
             const result = await deserializedSharedLock1.getState();
 
             expect(result).toEqual({
@@ -178,9 +179,10 @@ export function sharedLockFactorySerdeTestSuite(
 
             await sharedLock2.forceRelease();
 
-            const deserializedSharedLock1 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock1),
-            );
+            const deserializedSharedLock1 =
+                await serde.deserialize<ISharedLock>(
+                    await serde.serialize(sharedLock1),
+                );
             const result = await deserializedSharedLock1.getState();
 
             expect(result).toEqual({
@@ -208,9 +210,10 @@ export function sharedLockFactorySerdeTestSuite(
             await sharedLock1.releaseWriter();
             await sharedLock2.releaseWriter();
 
-            const deserializedSharedLock2 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock2),
-            );
+            const deserializedSharedLock2 =
+                await serde.deserialize<ISharedLock>(
+                    await serde.serialize(sharedLock2),
+                );
             const result = await deserializedSharedLock2.getState();
 
             expect(result).toEqual({
@@ -228,8 +231,8 @@ export function sharedLockFactorySerdeTestSuite(
             });
             await sharedLock.acquireWriter();
 
-            const deserializedSharedLock = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock),
+            const deserializedSharedLock = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock),
             );
             const state = await deserializedSharedLock.getState();
 
@@ -249,8 +252,8 @@ export function sharedLockFactorySerdeTestSuite(
             });
             await sharedLock.acquireWriter();
 
-            const deserializedSharedLock = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock),
+            const deserializedSharedLock = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock),
             );
             const state = await deserializedSharedLock.getState();
 
@@ -283,9 +286,10 @@ export function sharedLockFactorySerdeTestSuite(
                 ttl,
                 limit,
             });
-            const deserializedSharedLock2 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock2),
-            );
+            const deserializedSharedLock2 =
+                await serde.deserialize<ISharedLock>(
+                    await serde.serialize(sharedLock2),
+                );
             const state = await deserializedSharedLock2.getState();
 
             expect(state).toEqual({
@@ -302,8 +306,8 @@ export function sharedLockFactorySerdeTestSuite(
                 limit,
                 ttl,
             });
-            const deserializedSemaphore = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock),
+            const deserializedSemaphore = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock),
             );
 
             const result = await deserializedSemaphore.getState();
@@ -321,8 +325,8 @@ export function sharedLockFactorySerdeTestSuite(
                 ttl,
                 limit,
             });
-            const deserializedSemaphore = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock),
+            const deserializedSemaphore = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock),
             );
             await deserializedSemaphore.acquireReader();
             await delayWithBuffer(ttl);
@@ -349,8 +353,8 @@ export function sharedLockFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserializedSemaphore2 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock2),
+            const deserializedSemaphore2 = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock2),
             );
             await deserializedSemaphore2.acquireReader();
 
@@ -378,8 +382,8 @@ export function sharedLockFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserialziedSemaphore2 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock2),
+            const deserialziedSemaphore2 = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock2),
             );
             await deserialziedSemaphore2.acquireReader();
 
@@ -408,8 +412,8 @@ export function sharedLockFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserialziedSemaphore2 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock2),
+            const deserialziedSemaphore2 = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock2),
             );
 
             const state = await deserialziedSemaphore2.getState();
@@ -438,8 +442,8 @@ export function sharedLockFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserializedSemaphore2 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock2),
+            const deserializedSemaphore2 = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock2),
             );
             await deserializedSemaphore2.acquireReader();
             await delayWithBuffer(ttl2);
@@ -474,8 +478,8 @@ export function sharedLockFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserializedSemaphore2 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock2),
+            const deserializedSemaphore2 = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock2),
             );
             await deserializedSemaphore2.acquireReader();
 
@@ -506,8 +510,8 @@ export function sharedLockFactorySerdeTestSuite(
                 ttl: ttl2,
                 limit,
             });
-            const deserializedSemaphore2 = serde.deserialize<ISharedLock>(
-                serde.serialize(sharedLock2),
+            const deserializedSemaphore2 = await serde.deserialize<ISharedLock>(
+                await serde.serialize(sharedLock2),
             );
             await delayWithBuffer(ttl2);
 

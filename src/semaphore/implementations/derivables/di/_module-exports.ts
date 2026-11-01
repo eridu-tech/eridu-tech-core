@@ -1,1 +1,1 @@
-export * from "@/semaphore/implementations/derivables/di/semaphore-factory-resolver-di-factory/_module.js";
+export * from "@/semaphore/implementations/derivables/di/proxy-semaphore-factory-resolver/_module.js";

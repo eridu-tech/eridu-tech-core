@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { CIRCUIT_BREAKER_TRIGGER } from "@/circuit-breaker/contracts/_module-exports.js";
 import { NoOpCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/no-op-circuit-breaker-adapter/_module-exports.js";
@@ -18,6 +18,9 @@ describe("function: withCircuitBreakerFactory", () => {
             defaultAdapter: "memory",
         });
 
+    beforeAll(async () => {
+        await circuitBreakerFactoryResolver.init();
+    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();

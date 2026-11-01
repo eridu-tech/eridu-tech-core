@@ -18,7 +18,6 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import { FILE_WRITE_ENUM } from "@/file-storage/contracts/_module-exports.js";
 import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type { S3Client, ServerSideEncryption } from "@aws-sdk/client-s3";
@@ -28,7 +27,6 @@ import type {
     FileAdapterSignedDownloadUrlSettings,
     FileAdapterMetadata,
     FileAdapterStream,
-    FileWriteEnum,
     ISignedFileStorageAdapter,
     WritableFileAdapterContent,
     WritableFileAdapterStream,
@@ -80,34 +78,6 @@ export type S3FileStorageAdapterSettings = {
     serverSideEncryption?: ServerSideEncryption | null;
 
     /**
-     * If false the `put` method of {@link ISignedFileStorageAdapter | `ISignedFileStorageAdapter`} will perform one database call and thereby always return true even when the file doesnt exists.
-     * Note the fewer S3 API calls the cheaper it will be when using AWS S3.
-     * @default true
-     */
-    enableAccuratePut?: boolean;
-
-    /**
-     * If false the `getSignedDownloadUrl` method of {@link ISignedFileStorageAdapter | `ISignedFileStorageAdapter`} will perfom one database call and therby always return string even when the file doesnt exists.
-     * Note the fewer S3 API calls the cheaper it will be when using AWS S3.
-     * @default true
-     */
-    enableAccurateGetSignedDownloadUrl?: boolean;
-
-    /**
-     * If false the `getPublicUrl` method of {@link ISignedFileStorageAdapter | `ISignedFileStorageAdapter`} will perfom one database call and therby always return string even when the file doesnt exists.
-     * Note the fewer S3 API calls the cheaper it will be when using AWS S3.
-     * @default true
-     */
-    enableAccurateGetPublicUrl?: boolean;
-
-    /**
-     * When `false`, `removeMany` will skip verifying whether each key exists before deletion, reducing API calls at the cost of accuracy.
-     * Note the fewer S3 API calls the cheaper it will be when using AWS S3.
-     * @default true
-     */
-    enableAccurateRemoveMany?: boolean;
-
-    /**
      * Define a custom public url generator for creating public and signed URLs.
      *
      * @default
@@ -156,10 +126,6 @@ export class S3FileStorageAdapter
     private readonly bucket: string;
     private readonly cdnUrl: string | null;
     private readonly serverSideEncryption: ServerSideEncryption | undefined;
-    private readonly enableAccuratePut: boolean;
-    private readonly enableAccurateGetSignedDownloadUrl: boolean;
-    private readonly enableAccurateGetPublicUrl: boolean;
-    private readonly enableAccurateRemoveMany: boolean;
     private readonly publicUrlGenerator: S3FilePublicUrlGenerator;
 
     constructor(settings: S3FileStorageAdapterSettings) {
@@ -168,10 +134,6 @@ export class S3FileStorageAdapter
             bucket,
             cdnUrl = null,
             serverSideEncryption = null,
-            enableAccurateGetSignedDownloadUrl = true,
-            enableAccuratePut = true,
-            enableAccurateGetPublicUrl = true,
-            enableAccurateRemoveMany = true,
             publicUrlGenerator = defaultPublicUrlGenerator,
         } = settings;
 
@@ -179,11 +141,6 @@ export class S3FileStorageAdapter
         this.bucket = bucket;
         this.cdnUrl = cdnUrl;
         this.serverSideEncryption = serverSideEncryption ?? undefined;
-        this.enableAccurateGetSignedDownloadUrl =
-            enableAccurateGetSignedDownloadUrl;
-        this.enableAccuratePut = enableAccuratePut;
-        this.enableAccurateGetPublicUrl = enableAccurateGetPublicUrl;
-        this.enableAccurateRemoveMany = enableAccurateRemoveMany;
         this.publicUrlGenerator = publicUrlGenerator;
     }
 
@@ -229,10 +186,7 @@ export class S3FileStorageAdapter
         }
     }
 
-    async getPublicUrl(key: string): Promise<string | null> {
-        if (this.enableAccurateGetPublicUrl && !(await this._exists(key))) {
-            return null;
-        }
+    async getPublicUrl(key: string): Promise<string> {
         if (this.cdnUrl !== null) {
             return new URL(key, this.cdnUrl).toString();
         }
@@ -247,13 +201,7 @@ export class S3FileStorageAdapter
     async getSignedDownloadUrl(
         key: string,
         settings: FileAdapterSignedDownloadUrlSettings,
-    ): Promise<string | null> {
-        if (
-            this.enableAccurateGetSignedDownloadUrl &&
-            !(await this._exists(key))
-        ) {
-            return null;
-        }
+    ): Promise<string> {
         return await getSignedUrl(
             this.client,
             new GetObjectCommand({
@@ -315,7 +263,7 @@ export class S3FileStorageAdapter
                 }),
             );
             if (response.Body === undefined) {
-                throw new UnexpectedError("response.Body is undefined");
+                throw UnexpectedError.create("response.Body is undefined");
             }
             return response.Body.transformToWebStream();
         } catch (error: unknown) {
@@ -333,7 +281,7 @@ export class S3FileStorageAdapter
                 }),
             );
             if (response.Body === undefined) {
-                throw new UnexpectedError("response.Body is undefined");
+                throw UnexpectedError.create("response.Body is undefined");
             }
             return await response.Body.transformToByteArray();
         } catch (error: unknown) {
@@ -351,18 +299,22 @@ export class S3FileStorageAdapter
                 }),
             );
             if (response.ETag === undefined) {
-                throw new UnexpectedError("response.ETag is undefined");
+                throw UnexpectedError.create("response.ETag is undefined");
             }
             if (response.ContentType === undefined) {
-                throw new UnexpectedError("response.ContentType is undefined");
+                throw UnexpectedError.create(
+                    "response.ContentType is undefined",
+                );
             }
             if (response.ContentLength === undefined) {
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     "response.ContentLength is undefined",
                 );
             }
             if (response.LastModified === undefined) {
-                throw new UnexpectedError("response.LastModified is undefined");
+                throw UnexpectedError.create(
+                    "response.LastModified is undefined",
+                );
             }
             return {
                 etag: response.ETag,
@@ -373,32 +325,6 @@ export class S3FileStorageAdapter
         } catch (error: unknown) {
             S3FileStorageAdapter.throwUnlessS3StatusError(error, 404);
             return null;
-        }
-    }
-
-    async add(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        try {
-            await this.client.send(
-                new PutObjectCommand({
-                    ServerSideEncryption: this.serverSideEncryption,
-                    Bucket: this.bucket,
-                    Key: key,
-                    Body: content.data,
-                    IfNoneMatch: "*",
-                    ContentType: content.contentType,
-                    CacheControl: content.cacheControl ?? undefined,
-                    ContentDisposition: content.contentDisposition ?? undefined,
-                    ContentEncoding: content.contentEncoding ?? undefined,
-                    ContentLanguage: content.contentLanguage ?? undefined,
-                }),
-            );
-            return true;
-        } catch (error: unknown) {
-            S3FileStorageAdapter.throwUnlessS3StatusError(error, 412);
-            return false;
         }
     }
 
@@ -414,132 +340,7 @@ export class S3FileStorageAdapter
         };
     }
 
-    async addStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        try {
-            await this.client.send(
-                new PutObjectCommand({
-                    ServerSideEncryption: this.serverSideEncryption,
-                    Bucket: this.bucket,
-                    Key: key,
-                    ...(await S3FileStorageAdapter.resolveStreamSettings(
-                        stream,
-                    )),
-                    IfNoneMatch: "*",
-                    ContentType: stream.contentType,
-                    CacheControl: stream.cacheControl ?? undefined,
-                    ContentDisposition: stream.contentDisposition ?? undefined,
-                    ContentEncoding: stream.contentEncoding ?? undefined,
-                    ContentLanguage: stream.contentLanguage ?? undefined,
-                }),
-            );
-            return true;
-        } catch (error: unknown) {
-            S3FileStorageAdapter.throwUnlessS3StatusError(error, 412);
-            return false;
-        }
-    }
-
-    async update(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        try {
-            await this.client.send(
-                new PutObjectCommand({
-                    ServerSideEncryption: this.serverSideEncryption,
-                    Bucket: this.bucket,
-                    Key: key,
-                    Body: content.data,
-                    IfMatch: "*",
-                    ContentType: content.contentType,
-                    CacheControl: content.cacheControl ?? undefined,
-                    ContentDisposition: content.contentDisposition ?? undefined,
-                    ContentEncoding: content.contentEncoding ?? undefined,
-                    ContentLanguage: content.contentLanguage ?? undefined,
-                }),
-            );
-            return true;
-        } catch (error: unknown) {
-            S3FileStorageAdapter.throwUnlessS3StatusError(error, 404);
-            return false;
-        }
-    }
-
-    async updateStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        try {
-            await this.client.send(
-                new PutObjectCommand({
-                    ServerSideEncryption: this.serverSideEncryption,
-                    Bucket: this.bucket,
-                    Key: key,
-                    ...(await S3FileStorageAdapter.resolveStreamSettings(
-                        stream,
-                    )),
-                    IfMatch: "*",
-                    ContentType: stream.contentType,
-                    CacheControl: stream.cacheControl ?? undefined,
-                    ContentDisposition: stream.contentDisposition ?? undefined,
-                    ContentEncoding: stream.contentEncoding ?? undefined,
-                    ContentLanguage: stream.contentLanguage ?? undefined,
-                }),
-            );
-            return true;
-        } catch (error: unknown) {
-            S3FileStorageAdapter.throwUnlessS3StatusError(error, 404);
-            return false;
-        }
-    }
-
-    private async accuratePut(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        try {
-            await this.client.send(
-                new PutObjectCommand({
-                    ServerSideEncryption: this.serverSideEncryption,
-                    Bucket: this.bucket,
-                    Key: key,
-                    Body: content.data,
-                    IfNoneMatch: "*",
-                    ContentType: content.contentType,
-                    CacheControl: content.cacheControl ?? undefined,
-                    ContentDisposition: content.contentDisposition ?? undefined,
-                    ContentEncoding: content.contentEncoding ?? undefined,
-                    ContentLanguage: content.contentLanguage ?? undefined,
-                }),
-            );
-            return false;
-        } catch (error: unknown) {
-            S3FileStorageAdapter.throwUnlessS3StatusError(error, 412);
-
-            await this.client.send(
-                new PutObjectCommand({
-                    ServerSideEncryption: this.serverSideEncryption,
-                    Bucket: this.bucket,
-                    Key: key,
-                    Body: content.data,
-                    ContentType: content.contentType,
-                    CacheControl: content.cacheControl ?? undefined,
-                    ContentDisposition: content.contentDisposition ?? undefined,
-                    ContentEncoding: content.contentEncoding ?? undefined,
-                    ContentLanguage: content.contentLanguage ?? undefined,
-                }),
-            );
-            return true;
-        }
-    }
-
-    private async unaccuratePut(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
+    async put(key: string, content: WritableFileAdapterContent): Promise<void> {
         await this.client.send(
             new PutObjectCommand({
                 ServerSideEncryption: this.serverSideEncryption,
@@ -553,110 +354,28 @@ export class S3FileStorageAdapter
                 ContentLanguage: content.contentLanguage ?? undefined,
             }),
         );
-        return true;
-    }
-
-    async put(
-        key: string,
-        content: WritableFileAdapterContent,
-    ): Promise<boolean> {
-        if (!this.enableAccuratePut) {
-            return await this.unaccuratePut(key, content);
-        }
-
-        return await this.accuratePut(key, content);
-    }
-
-    private async accuratePutStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        const exists = await this._exists(key);
-        await this.client.send(
-            new PutObjectCommand({
-                ServerSideEncryption: this.serverSideEncryption,
-                Bucket: this.bucket,
-                Key: key,
-                ...(await S3FileStorageAdapter.resolveStreamSettings(stream)),
-                ContentType: stream.contentType,
-                CacheControl: stream.cacheControl ?? undefined,
-                ContentDisposition: stream.contentDisposition ?? undefined,
-                ContentEncoding: stream.contentEncoding ?? undefined,
-                ContentLanguage: stream.contentLanguage ?? undefined,
-            }),
-        );
-        return exists;
-    }
-
-    private async unaccuratePutStream(
-        key: string,
-        stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        await this.client.send(
-            new PutObjectCommand({
-                ServerSideEncryption: this.serverSideEncryption,
-                Bucket: this.bucket,
-                Key: key,
-                ...(await S3FileStorageAdapter.resolveStreamSettings(stream)),
-                ContentType: stream.contentType,
-                CacheControl: stream.cacheControl ?? undefined,
-                ContentDisposition: stream.contentDisposition ?? undefined,
-                ContentEncoding: stream.contentEncoding ?? undefined,
-                ContentLanguage: stream.contentLanguage ?? undefined,
-            }),
-        );
-        return true;
     }
 
     async putStream(
         key: string,
         stream: WritableFileAdapterStream,
-    ): Promise<boolean> {
-        if (!this.enableAccuratePut) {
-            return await this.unaccuratePutStream(key, stream);
-        }
-
-        return await this.accuratePutStream(key, stream);
+    ): Promise<void> {
+        await this.client.send(
+            new PutObjectCommand({
+                ServerSideEncryption: this.serverSideEncryption,
+                Bucket: this.bucket,
+                Key: key,
+                ...(await S3FileStorageAdapter.resolveStreamSettings(stream)),
+                ContentType: stream.contentType,
+                CacheControl: stream.cacheControl ?? undefined,
+                ContentDisposition: stream.contentDisposition ?? undefined,
+                ContentEncoding: stream.contentEncoding ?? undefined,
+                ContentLanguage: stream.contentLanguage ?? undefined,
+            }),
+        );
     }
 
-    private async _copy(
-        source: string,
-        destination: string,
-    ): Promise<FileWriteEnum> {
-        const sourceExists = await this._exists(source);
-        if (!sourceExists) {
-            return FILE_WRITE_ENUM.NOT_FOUND;
-        }
-
-        const destinationExists = await this._exists(destination);
-        if (destinationExists) {
-            return FILE_WRITE_ENUM.KEY_EXISTS;
-        }
-
-        try {
-            await this.client.send(
-                new CopyObjectCommand({
-                    ServerSideEncryption: this.serverSideEncryption,
-                    Bucket: this.bucket,
-                    Key: destination,
-                    CopySource: `${this.bucket}/${source}`,
-                }),
-            );
-            return FILE_WRITE_ENUM.SUCCESS;
-        } catch (error: unknown) {
-            S3FileStorageAdapter.throwUnlessS3StatusError(error, 404);
-            return FILE_WRITE_ENUM.NOT_FOUND;
-        }
-    }
-
-    async copy(source: string, destination: string): Promise<FileWriteEnum> {
-        return this._copy(source, destination);
-    }
-
-    private async _copyAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
+    private async _copy(source: string, destination: string): Promise<boolean> {
         try {
             await this.client.send(
                 new CopyObjectCommand({
@@ -673,46 +392,19 @@ export class S3FileStorageAdapter
         }
     }
 
-    async copyAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
-        return this._copyAndReplace(source, destination);
+    async copy(source: string, destination: string): Promise<boolean> {
+        return this._copy(source, destination);
     }
 
-    async move(source: string, destination: string): Promise<FileWriteEnum> {
-        const result = await this._copy(source, destination);
-        if (result === FILE_WRITE_ENUM.SUCCESS) {
-            await this._removeMany([source]);
-        }
-        return result;
-    }
-
-    async moveAndReplace(
-        source: string,
-        destination: string,
-    ): Promise<boolean> {
-        const hasMoved = await this._copyAndReplace(source, destination);
+    async move(source: string, destination: string): Promise<boolean> {
+        const hasMoved = await this._copy(source, destination);
         if (hasMoved) {
             await this._removeMany([source]);
         }
         return hasMoved;
     }
 
-    private async _removeMany(keys: Array<string>): Promise<boolean> {
-        if (!this.enableAccurateRemoveMany) {
-            await this.client.send(
-                new DeleteObjectsCommand({
-                    Bucket: this.bucket,
-                    Delete: {
-                        Objects: keys.map((key) => ({ Key: key })),
-                    },
-                }),
-            );
-            return true;
-        }
-
-        const results = await Promise.all(keys.map((key) => this._exists(key)));
+    private async _removeMany(keys: Array<string>): Promise<void> {
         await this.client.send(
             new DeleteObjectsCommand({
                 Bucket: this.bucket,
@@ -721,15 +413,9 @@ export class S3FileStorageAdapter
                 },
             }),
         );
-        for (const result of results) {
-            if (result) {
-                return true;
-            }
-        }
-        return false;
     }
 
-    async removeMany(keys: Array<string>): Promise<boolean> {
+    async removeMany(keys: Array<string>): Promise<void> {
         return this._removeMany(keys);
     }
 

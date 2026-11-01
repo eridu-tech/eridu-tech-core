@@ -1,10 +1,11 @@
 import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { UnableToAcquireLockError } from "@/lock/contracts/_module-exports.js";
 import { KyselyLockAdapter } from "@/lock/implementations/adapters/kysely-lock-adapter/_module-exports.js";
 import { MemoryLockAdapter } from "@/lock/implementations/adapters/memory-lock-adapter/_module-exports.js";
 import { LockFactory } from "@/lock/implementations/derivables/_module-exports.js";
@@ -12,8 +13,7 @@ import {
     lockFactorySerdeTestSuite,
     lockFactoryTestSuite,
 } from "@/lock/implementations/test-utilities/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
@@ -24,12 +24,13 @@ import type { KyselyLockTables } from "@/lock/implementations/adapters/kysely-lo
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: LockFactory", () => {
-    function createLockFactory() {
-        const serde = new Serde(new SuperJsonSerdeAdapter());
+    async function createLockFactory() {
+        const serde = new SuperJsonSerde();
         const lockFactory = new LockFactory({
             serde,
             adapter: new MemoryLockAdapter(),
         });
+        await lockFactory.init();
         return {
             lockFactory,
             serde,
@@ -71,7 +72,7 @@ describe("class: LockFactory", () => {
     }
     describe("Serde tests:", () => {
         test("Should differentiate between different adapters that have same namespace", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
 
@@ -80,7 +81,9 @@ describe("class: LockFactory", () => {
                 adapter: adapter1,
                 serde,
             });
+            await lockFactory1.init();
             const lock1 = lockFactory1.create(key, { ttl });
+
             await lock1.acquire();
 
             const adapter2 = new KyselyLockAdapter({
@@ -91,41 +94,81 @@ describe("class: LockFactory", () => {
                 adapter: adapter2,
                 serde,
             });
+            await lockFactory2.init();
 
             const lock2 = lockFactory2.create(key, { ttl });
-            const deserializeLock2 = serde.deserialize<ILock>(
-                serde.serialize(lock2),
+            const deserializeLock2 = await serde.deserialize<ILock>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquire();
 
             expect(result).toBe(true);
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+        test("Should differentiate between different serializationIds", async () => {
+            const serde = new SuperJsonSerde();
             const key = "a";
             const ttl = null;
 
             const lockFactory1 = new LockFactory({
                 adapter: new MemoryLockAdapter(),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
+            await lockFactory1.init();
             const lock1 = lockFactory1.create(key, { ttl });
+
             await lock1.acquire();
 
             const lockFactory2 = new LockFactory({
                 adapter: new MemoryLockAdapter(),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
-
+            await lockFactory2.init();
             const lock2 = lockFactory2.create(key, { ttl });
-            const deserializeLock2 = serde.deserialize<ILock>(
-                serde.serialize(lock2),
+
+            const deserializeLock2 = await serde.deserialize<ILock>(
+                await serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquire();
 
             expect(result).toBe(true);
+        });
+    });
+    describe("Unexpected adapter error handling:", () => {
+        test("Should reject with UnableToAcquireLockError when adapter acquire fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const adapter = new MemoryLockAdapter();
+            vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
+            const lockFactory = new LockFactory({ adapter });
+            await lockFactory.init();
+
+            const promise = lockFactory.create("a", { ttl: null }).acquire();
+
+            await expect(promise).rejects.toThrow(UnableToAcquireLockError);
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToAcquireLockError when deserialized lock acquire fails", async () => {
+            const serde = new SuperJsonSerde();
+            const unexpectedError = new Error("Unexpected adapter error");
+            const adapter = new MemoryLockAdapter();
+            vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
+            const lockFactory = new LockFactory({ adapter, serde });
+            await lockFactory.init();
+
+            const deserializedLock = await serde.deserialize<ILock>(
+                await serde.serialize(lockFactory.create("a", { ttl: null })),
+            );
+            const promise = deserializedLock.acquire();
+
+            await expect(promise).rejects.toThrow(UnableToAcquireLockError);
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
         });
     });
 });

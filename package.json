@@ -1,7 +1,7 @@
 {
     "name": "eridu-tech",
     "private": false,
-    "version": "0.68.0",
+    "version": "0.72.0",
     "author": "Yousif Abdulkarim",
     "license": "Apache-2.0",
     "type": "module",
@@ -143,6 +143,10 @@
             "types": "./dist/codec/implementations/base-64-codec/_module-exports.d.ts",
             "import": "./dist/codec/implementations/base-64-codec/_module-exports.js"
         },
+        "./codec/base-64-url-codec": {
+            "types": "./dist/codec/implementations/base-64-url-codec/_module-exports.d.ts",
+            "import": "./dist/codec/implementations/base-64-url-codec/_module-exports.js"
+        },
         "./circuit-breaker": {
             "types": "./dist/circuit-breaker/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/circuit-breaker/implementations/derivables/_module-exports.js"
@@ -235,6 +239,10 @@
             "types": "./dist/event-bus/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/event-bus/implementations/derivables/_module-exports.js"
         },
+        "./event-bus/di": {
+            "types": "./dist/event-bus/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/event-bus/implementations/derivables/di/_module-exports.js"
+        },
         "./event-bus/middlewares": {
             "types": "./dist/event-bus/implementations/middlewares/_module-exports.d.ts",
             "import": "./dist/event-bus/implementations/middlewares/_module-exports.js"
@@ -271,6 +279,10 @@
             "types": "./dist/execution-context/contracts/_module-exports.d.ts",
             "import": "./dist/execution-context/contracts/_module-exports.js"
         },
+        "./execution-context/di": {
+            "types": "./dist/execution-context/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/execution-context/implementations/derivables/di/_module-exports.js"
+        },
         "./execution-context/als-execution-context-adapter": {
             "types": "./dist/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.d.ts",
             "import": "./dist/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js"
@@ -295,6 +307,10 @@
             "types": "./dist/file-storage/implementations/derivables/di/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/derivables/di/_module-exports.js"
         },
+        "./file-storage/middlewares": {
+            "types": "./dist/file-storage/implementations/middlewares/_module-exports.d.ts",
+            "import": "./dist/file-storage/implementations/middlewares/_module-exports.js"
+        },
         "./file-storage/plugins": {
             "types": "./dist/file-storage/implementations/plugins/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/plugins/_module-exports.js"
@@ -306,6 +322,10 @@
         "./file-storage/fs-file-storage-adapter": {
             "types": "./dist/file-storage/implementations/adapters/fs-file-storage-adapter/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/adapters/fs-file-storage-adapter/_module-exports.js"
+        },
+        "./file-storage/ftp-file-storage-adapter": {
+            "types": "./dist/file-storage/implementations/adapters/ftp-file-storage-adapter/_module-exports.d.ts",
+            "import": "./dist/file-storage/implementations/adapters/ftp-file-storage-adapter/_module-exports.js"
         },
         "./file-storage/memory-file-storage-adapter": {
             "types": "./dist/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.d.ts",
@@ -319,13 +339,29 @@
             "types": "./dist/file-storage/implementations/adapters/s3-file-storage-adapter/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/adapters/s3-file-storage-adapter/_module-exports.js"
         },
+        "./file-storage/sftp-file-storage-adapter": {
+            "types": "./dist/file-storage/implementations/adapters/sftp-file-storage-adapter/_module-exports.d.ts",
+            "import": "./dist/file-storage/implementations/adapters/sftp-file-storage-adapter/_module-exports.js"
+        },
         "./file-storage/signed-file-storage-adapter": {
             "types": "./dist/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/adapters/signed-file-storage-adapter/_module-exports.js"
         },
+        "./file-storage/webdav-file-storage-adapter": {
+            "types": "./dist/file-storage/implementations/adapters/webdav-file-storage-adapter/_module-exports.d.ts",
+            "import": "./dist/file-storage/implementations/adapters/webdav-file-storage-adapter/_module-exports.js"
+        },
         "./file-storage/test-utilities": {
             "types": "./dist/file-storage/implementations/test-utilities/_module-exports.d.ts",
             "import": "./dist/file-storage/implementations/test-utilities/_module-exports.js"
+        },
+        "./generic-pool": {
+            "types": "./dist/generic-pool/implementations/_module-exports.d.ts",
+            "import": "./dist/generic-pool/implementations/_module-exports.js"
+        },
+        "./generic-pool/contracts": {
+            "types": "./dist/generic-pool/contracts/_module-exports.d.ts",
+            "import": "./dist/generic-pool/contracts/_module-exports.js"
         },
         "./http-router": {
             "types": "./dist/http-router/implementations/_module-exports.d.ts",
@@ -499,29 +535,17 @@
             "types": "./dist/semaphore/implementations/test-utilities/_module-exports.d.ts",
             "import": "./dist/semaphore/implementations/test-utilities/_module-exports.js"
         },
-        "./serde": {
-            "types": "./dist/serde/implementations/derivables/_module-exports.d.ts",
-            "import": "./dist/serde/implementations/derivables/_module-exports.js"
-        },
         "./serde/contracts": {
             "types": "./dist/serde/contracts/_module-exports.d.ts",
             "import": "./dist/serde/contracts/_module-exports.js"
         },
-        "./serde/no-op-serde-adapter": {
-            "types": "./dist/serde/implementations/adapters/no-op-serde-adapter/_module-exports.d.ts",
-            "import": "./dist/serde/implementations/adapters/no-op-serde-adapter/_module-exports.js"
+        "./serde/super-json-serde": {
+            "types": "./dist/serde/implementations/super-json-serde/_module-exports.d.ts",
+            "import": "./dist/serde/implementations/super-json-serde/_module-exports.js"
         },
-        "./serde/required-serde-adapter": {
-            "types": "./dist/serde/implementations/adapters/required-serde-adapter/_module-exports.d.ts",
-            "import": "./dist/serde/implementations/adapters/required-serde-adapter/_module-exports.js"
-        },
-        "./serde/super-json-serde-adapter": {
-            "types": "./dist/serde/implementations/adapters/super-json-serde-adapter/_module-exports.d.ts",
-            "import": "./dist/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js"
-        },
-        "./serde/test-utilities": {
-            "types": "./dist/serde/implementations/test-utilities/_module-exports.d.ts",
-            "import": "./dist/serde/implementations/test-utilities/_module-exports.js"
+        "./serde/no-op-serde": {
+            "types": "./dist/serde/implementations/no-op-serde/_module-exports.d.ts",
+            "import": "./dist/serde/implementations/no-op-serde/_module-exports.js"
         },
         "./shared-lock": {
             "types": "./dist/shared-lock/implementations/derivables/_module-exports.d.ts",
@@ -578,6 +602,10 @@
         "./transaction-context": {
             "types": "./dist/transaction-context/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/transaction-context/implementations/derivables/_module-exports.js"
+        },
+        "./transaction-context/di": {
+            "types": "./dist/transaction-context/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/transaction-context/implementations/derivables/di/_module-exports.js"
         },
         "./transaction-context/middlewares": {
             "types": "./dist/transaction-context/implementations/middlewares/_module-exports.d.ts",
@@ -640,7 +668,9 @@
         "release": "npm run build && npx changeset publish",
         "commit": "npx git-cz",
         "code-stats:source": "npx sloc ./src -e \"\\.test(-suite)?\\.ts$\"",
-        "code-stats:tests": "npx sloc ./src -i \"\\.test(-suite)?\\.ts$\""
+        "code-stats:tests": "npx sloc ./src -i \"\\.test(-suite)?\\.ts$\"",
+        "code-quality:report": "npx ast-metrics analyze ./src",
+        "code-quality:lint": "npx ast-metrics lint ./src"
     },
     "devDependencies": {
         "@aws-sdk/client-s3": "^3.1102.0",
@@ -648,7 +678,6 @@
         "@changesets/cli": "^2.31.1",
         "@standard-schema/spec": "^1.1.0",
         "@testcontainers/mariadb": "^12.1.0",
-        "@testcontainers/minio": "^12.0.4",
         "@testcontainers/mongodb": "^12.0.4",
         "@testcontainers/mysql": "^12.1.0",
         "@testcontainers/postgresql": "^12.0.4",
@@ -658,10 +687,13 @@
         "@types/mime-types": "^3.0.1",
         "@types/node": "^26.1.2",
         "@types/pg": "^8.20.3",
+        "@types/ssh2-sftp-client": "^9.0.6",
         "@types/uuid": "^11.0.0",
         "@typescript-eslint/eslint-plugin": "^8.66.0",
         "@typescript-eslint/parser": "^8.66.0",
         "@vitest/eslint-plugin": "^1.0.3",
+        "ast-metrics": "^0.43.1",
+        "basic-ftp": "^6.2.3",
         "better-sqlite3": "^13.0.2",
         "commitizen": "^4.3.2",
         "cz-conventional-changelog": "^3.3.0",
@@ -686,6 +718,7 @@
         "publint": "^0.3.22",
         "rimraf": "^6.1.3",
         "sloc": "^0.3.2",
+        "ssh2-sftp-client": "^12.1.1",
         "testcontainers": "^12.0.4",
         "tsc-alias": "^1.9.1",
         "tsx": "^4.23.5",
@@ -694,15 +727,20 @@
         "typescript": "^6.0.3",
         "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.1.10",
+        "webdav": "^5.11.0",
         "zod": "^4.4.3"
     },
     "peerDependencies": {
+        "@aws-sdk/client-s3": "^3.1102.0",
+        "@aws-sdk/s3-request-presigner": "^3.1102.0",
+        "@types/ssh2-sftp-client": "^9.0.6",
+        "basic-ftp": "^6.2.0",
+        "hono": "^4.13.0",
         "ioredis": "^6.0.0",
         "kysely": "^0.29.0",
         "mongodb": "^7.5.0",
-        "hono": "^4.13.0",
-        "@aws-sdk/client-s3": "^3.1102.0",
-        "@aws-sdk/s3-request-presigner": "^3.1102.0"
+        "ssh2-sftp-client": "^12.1.0",
+        "webdav": "^5.11.0"
     },
     "peerDependenciesMeta": {
         "ioredis": {
@@ -722,15 +760,27 @@
         },
         "@aws-sdk/s3-request-presigner": {
             "optional": true
+        },
+        "webdav": {
+            "optional": true
+        },
+        "@types/ssh2-sftp-client": {
+            "optional": true
+        },
+        "ssh2-sftp-client": {
+            "optional": true
+        },
+        "basic-ftp": {
+            "optional": true
         }
     },
     "dependencies": {
+        "@eridu-tech/superjson": "^2.2.5",
         "@lukeed/ms": "^2.0.2",
         "escape-string-regexp": "^5.0.0",
         "etag": "^1.8.1",
         "file-type": "^22.0.1",
         "mime-types": "^3.0.2",
-        "superjson": "^2.2.6",
         "type-fest": "^5.8.0",
         "uuid": "^14.0.1"
     }

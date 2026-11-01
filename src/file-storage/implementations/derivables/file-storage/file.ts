@@ -4,11 +4,7 @@
 
 import { TO_BYTES } from "@/file-size/contracts/_module-exports.js";
 import { FileSize } from "@/file-size/implementations/_module-exports.js";
-import {
-    KeyExistsFileError,
-    KeyNotFoundFileError,
-    FILE_WRITE_ENUM,
-} from "@/file-storage/contracts/_module-exports.js";
+import { KeyNotFoundFileError } from "@/file-storage/contracts/_module-exports.js";
 import { resolveFileContent } from "@/file-storage/implementations/derivables/file-storage/resolve-file-content.js";
 import { ResolveFileStream } from "@/file-storage/implementations/derivables/file-storage/resolve-file-stream.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
@@ -22,6 +18,7 @@ import type {
     WritableFileContent,
     FileUploadUrlOptions,
 } from "@/file-storage/contracts/_module-exports.js";
+import type { InternalSerdeIdentifiable } from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -30,7 +27,7 @@ export type FileSettings = {
     originalKey: string;
     adapter: ISignedFileStorageAdapter;
     key: string;
-    serdeTransformerName: string;
+    serializationId?: string;
     defaultContentDisposition: string | null;
     defaultContentEncoding: string | null;
     defaultCacheControl: string | null;
@@ -48,14 +45,19 @@ export type ISerializedFile = {
 /**
  * @internal
  */
-export class File implements IFile {
+export const FILE_CLASS_TAG = Symbol("File");
+
+/**
+ * @internal
+ */
+export class File implements IFile, InternalSerdeIdentifiable {
     /**
      * @internal
      */
-    static internalSerialize(deserializedValue: File): ISerializedFile {
+    static internalSerialize(deserializedValue: IFile): ISerializedFile {
         return {
             version: "1",
-            key: deserializedValue.internalKey,
+            key: deserializedValue.key,
         };
     }
 
@@ -63,7 +65,7 @@ export class File implements IFile {
 
     private readonly adapter: ISignedFileStorageAdapter;
     private readonly internalKey: string;
-    private readonly serdeTransformerName: string;
+    private readonly serializationId: string;
     private readonly defaultContentDisposition: string | null;
     private readonly defaultContentEncoding: string | null;
     private readonly defaultCacheControl: string | null;
@@ -73,7 +75,7 @@ export class File implements IFile {
         const {
             adapter,
             key,
-            serdeTransformerName,
+            serializationId,
             defaultContentDisposition,
             defaultContentEncoding,
             defaultCacheControl,
@@ -82,19 +84,19 @@ export class File implements IFile {
 
         this.adapter = adapter;
         this.internalKey = key;
-        this.serdeTransformerName = serdeTransformerName;
+        this.serializationId = serializationId ?? "";
         this.defaultContentDisposition = defaultContentDisposition;
         this.defaultContentEncoding = defaultContentEncoding;
         this.defaultCacheControl = defaultCacheControl;
         this.defaultContentLanguage = defaultContentLanguage;
     }
 
-    internalGetSerdeTransformerName(): string {
-        return this.serdeTransformerName;
+    internalClassTag(): symbol {
+        return FILE_CLASS_TAG;
     }
 
-    internalGetAdapter(): ISignedFileStorageAdapter {
-        return this.adapter;
+    internalSerializationId(): string {
+        return this.serializationId;
     }
 
     async getText(): Promise<string | null> {
@@ -186,10 +188,10 @@ export class File implements IFile {
         return !(await this.exists());
     }
 
-    async add(content: WritableFileContent): Promise<boolean> {
+    async put(content: WritableFileContent): Promise<void> {
         const { data, contentType = File.DEFAULT_CONTENT_TYPE } = content;
         const resolvedData = resolveFileContent(data);
-        return await this.adapter.add(this.internalKey, {
+        await this.adapter.put(this.internalKey, {
             data: resolvedData,
             contentType,
             contentDisposition: this.defaultContentDisposition,
@@ -200,21 +202,13 @@ export class File implements IFile {
         });
     }
 
-    async addOrFail(content: WritableFileContent): Promise<void> {
-        const hasAdded = await this.add(content);
-        if (!hasAdded) {
-            throw KeyExistsFileError.create(this.internalKey);
-        }
-    }
-
-    async addStream(stream: WritableFileStream): Promise<boolean> {
+    async putStream(stream: WritableFileStream): Promise<void> {
         const {
             data,
             fileSize = null,
             contentType = File.DEFAULT_CONTENT_TYPE,
         } = stream;
-
-        return await this.adapter.addStream(this.internalKey, {
+        await this.adapter.putStream(this.internalKey, {
             data: new ResolveFileStream(data),
             fileSizeInBytes: fileSize?.[TO_BYTES]() ?? null,
             contentType,
@@ -225,162 +219,34 @@ export class File implements IFile {
         });
     }
 
-    async addStreamOrFail(stream: WritableFileStream): Promise<void> {
-        const hasAdded = await this.addStream(stream);
-        if (!hasAdded) {
-            throw KeyExistsFileError.create(this.internalKey);
-        }
-    }
-
-    async update(content: WritableFileContent): Promise<boolean> {
-        const { data, contentType = File.DEFAULT_CONTENT_TYPE } = content;
-        const resolvedData = resolveFileContent(data);
-        return await this.adapter.update(this.internalKey, {
-            data: resolvedData,
-            contentType,
-            contentDisposition: this.defaultContentDisposition,
-            contentEncoding: this.defaultContentEncoding,
-            cacheControl: this.defaultCacheControl,
-            contentLanguage: this.defaultContentLanguage,
-            fileSizeInBytes: resolvedData.length,
-        });
-    }
-
-    async updateOrFail(content: WritableFileContent): Promise<void> {
-        const hasUpdated = await this.update(content);
-        if (!hasUpdated) {
-            throw KeyNotFoundFileError.create(this.internalKey);
-        }
-    }
-
-    async updateStream(stream: WritableFileStream): Promise<boolean> {
-        const {
-            data,
-            fileSize = null,
-            contentType = File.DEFAULT_CONTENT_TYPE,
-        } = stream;
-        return await this.adapter.updateStream(this.internalKey, {
-            data: new ResolveFileStream(data),
-            fileSizeInBytes: fileSize?.[TO_BYTES]() ?? null,
-            contentType,
-            contentDisposition: this.defaultContentDisposition,
-            contentEncoding: this.defaultContentEncoding,
-            cacheControl: this.defaultCacheControl,
-            contentLanguage: this.defaultContentLanguage,
-        });
-    }
-
-    async updateStreamOrFail(stream: WritableFileStream): Promise<void> {
-        const hasUpdated = await this.updateStream(stream);
-        if (!hasUpdated) {
-            throw KeyNotFoundFileError.create(this.internalKey);
-        }
-    }
-
-    async put(content: WritableFileContent): Promise<boolean> {
-        const { data, contentType = File.DEFAULT_CONTENT_TYPE } = content;
-        const resolvedData = resolveFileContent(data);
-        return await this.adapter.put(this.internalKey, {
-            data: resolvedData,
-            contentType,
-            contentDisposition: this.defaultContentDisposition,
-            contentEncoding: this.defaultContentEncoding,
-            cacheControl: this.defaultCacheControl,
-            contentLanguage: this.defaultContentLanguage,
-            fileSizeInBytes: resolvedData.length,
-        });
-    }
-
-    async putStream(stream: WritableFileStream): Promise<boolean> {
-        const {
-            data,
-            fileSize = null,
-            contentType = File.DEFAULT_CONTENT_TYPE,
-        } = stream;
-        return await this.adapter.putStream(this.internalKey, {
-            data: new ResolveFileStream(data),
-            fileSizeInBytes: fileSize?.[TO_BYTES]() ?? null,
-            contentType,
-            contentDisposition: this.defaultContentDisposition,
-            contentEncoding: this.defaultContentEncoding,
-            cacheControl: this.defaultCacheControl,
-            contentLanguage: this.defaultContentLanguage,
-        });
-    }
-
-    async remove(): Promise<boolean> {
-        return await this.adapter.removeMany([this.internalKey]);
-    }
-
-    async removeOrFail(): Promise<void> {
-        const hasFound = await this.remove();
-        if (!hasFound) {
-            throw KeyNotFoundFileError.create(this.internalKey);
-        }
+    async remove(): Promise<void> {
+        await this.adapter.removeMany([this.internalKey]);
     }
 
     async copy(destination: string): Promise<boolean> {
-        const result = await this.adapter.copy(this.internalKey, destination);
-        return result === FILE_WRITE_ENUM.SUCCESS;
+        return await this.adapter.copy(this.internalKey, destination);
     }
 
     async copyOrFail(destination: string): Promise<void> {
-        const result = await this.adapter.copy(this.internalKey, destination);
-        if (result === FILE_WRITE_ENUM.KEY_EXISTS) {
-            throw KeyExistsFileError.create(this.internalKey);
-        }
-        if (result === FILE_WRITE_ENUM.NOT_FOUND) {
-            throw KeyNotFoundFileError.create(this.internalKey);
-        }
-    }
-
-    async copyAndReplace(destination: string): Promise<boolean> {
-        return await this.adapter.copyAndReplace(this.internalKey, destination);
-    }
-
-    async copyAndReplaceOrFail(destination: string): Promise<void> {
-        const hasCopied = await this.copyAndReplace(destination);
+        const hasCopied = await this.copy(destination);
         if (!hasCopied) {
             throw KeyNotFoundFileError.create(this.internalKey);
         }
     }
 
     async move(destination: string): Promise<boolean> {
-        const result = await this.adapter.move(this.internalKey, destination);
-        return result === FILE_WRITE_ENUM.SUCCESS;
+        return await this.adapter.move(this.internalKey, destination);
     }
 
     async moveOrFail(destination: string): Promise<void> {
-        const result = await this.adapter.move(this.internalKey, destination);
-        if (result === FILE_WRITE_ENUM.KEY_EXISTS) {
-            throw KeyExistsFileError.create(this.internalKey);
-        }
-        if (result === FILE_WRITE_ENUM.NOT_FOUND) {
-            throw KeyNotFoundFileError.create(this.internalKey);
-        }
-    }
-
-    async moveAndReplace(destination: string): Promise<boolean> {
-        return await this.adapter.moveAndReplace(this.internalKey, destination);
-    }
-
-    async moveAndReplaceOrFail(destination: string): Promise<void> {
-        const hasCopied = await this.moveAndReplace(destination);
+        const hasCopied = await this.move(destination);
         if (!hasCopied) {
             throw KeyNotFoundFileError.create(this.internalKey);
         }
     }
 
-    async getPublicUrl(): Promise<string | null> {
+    async getPublicUrl(): Promise<string> {
         return await this.adapter.getPublicUrl(this.internalKey);
-    }
-
-    async getPublicUrlOrFail(): Promise<string> {
-        const url = await this.getPublicUrl();
-        if (url === null) {
-            throw KeyNotFoundFileError.create(this.internalKey);
-        }
-        return url;
     }
 
     async getSignedUploadUrl(
@@ -398,7 +264,7 @@ export class File implements IFile {
 
     async getSignedDownloadUrl(
         options: FileDownloadUrlOptions = {},
-    ): Promise<string | null> {
+    ): Promise<string> {
         const {
             ttl: expiration = TimeSpan.fromMinutes(10),
             contentType = File.DEFAULT_CONTENT_TYPE,
@@ -409,16 +275,6 @@ export class File implements IFile {
             contentType,
             contentDisposition,
         });
-    }
-
-    async getSignedDownloadUrlOrFail(
-        options?: FileDownloadUrlOptions,
-    ): Promise<string> {
-        const url = await this.getSignedDownloadUrl(options);
-        if (url === null) {
-            throw KeyNotFoundFileError.create(this.internalKey);
-        }
-        return url;
     }
 
     get key(): string {

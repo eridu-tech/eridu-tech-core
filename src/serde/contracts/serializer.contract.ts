@@ -2,7 +2,7 @@
  * @module Serde
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { SerializationSerdeError } from "@/serde/contracts/serde.errors.js";
+import { UnableToSerializeSerdeError } from "@/serde/contracts/serde.errors.js";
 
 /**
  * Serializer contract for converting values to a serialized representation.
@@ -30,7 +30,7 @@ export type ISerializer<TSerializedValue = unknown> = {
      * @template TValue - The type of value being serialized
      * @param value - The value to serialize (must be plain data, not custom class instances)
      * @returns The serialized representation of the value
-     * @throws {SerializationSerdeError} If serialization fails (circular references, unsupported types, etc.)
+     * @throws {UnableToSerializeSerdeError} If serialization fails (circular references, unsupported types, etc.)
      */
-    serialize<TValue>(value: TValue): TSerializedValue;
+    serialize<TValue>(value: TValue): Promise<TSerializedValue>;
 };

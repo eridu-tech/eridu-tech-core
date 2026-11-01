@@ -9,13 +9,16 @@ describe("function: withInvalidationFactory", () => {
     const cache = new Cache<string>({
         adapter: new NoOpCacheAdapter(),
     });
+    const cacheResolver = {
+        use: vi.fn((_adapter?: "memory" | "secondary") => cache),
+    };
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
     });
     test("Should remove the key derived from the arguments before invoking the wrapped function", async () => {
         const spy = vi.spyOn(cache, "remove");
-        const withInvalidation = withInvalidationFactory(cache);
+        const withInvalidation = withInvalidationFactory(cacheResolver);
         const innerFn = vi.fn((id: string): Promise<string> => {
             return Promise.resolve(`value-${id}`);
         });
@@ -35,7 +38,7 @@ describe("function: withInvalidationFactory", () => {
     });
     test("Should remove the key after calling the wrapped function", async () => {
         const spy = vi.spyOn(cache, "remove");
-        const withInvalidation = withInvalidationFactory(cache);
+        const withInvalidation = withInvalidationFactory(cacheResolver);
         const innerFn = vi.fn((_id: string): Promise<void> =>
             Promise.resolve(),
         );
@@ -57,7 +60,7 @@ describe("function: withInvalidationFactory", () => {
     });
     test("Should derive the key from multiple wrapped function arguments", async () => {
         const spy = vi.spyOn(cache, "remove");
-        const withInvalidation = withInvalidationFactory(cache);
+        const withInvalidation = withInvalidationFactory(cacheResolver);
         const innerFn = vi.fn(
             (_userId: string, _postId: string): Promise<void> =>
                 Promise.resolve(),
@@ -77,7 +80,7 @@ describe("function: withInvalidationFactory", () => {
     });
     test("Should pass through the wrapped function's arguments and return value", async () => {
         const spy = vi.spyOn(cache, "remove");
-        const withInvalidation = withInvalidationFactory(cache);
+        const withInvalidation = withInvalidationFactory(cacheResolver);
         const innerFn = vi.fn((a: string, b: string): Promise<string> =>
             Promise.resolve(`${a}-${b}`),
         );
@@ -94,5 +97,21 @@ describe("function: withInvalidationFactory", () => {
         expect(result).toBe("2-3");
         expect(spy).toHaveBeenCalledExactlyOnceWith("2:3");
         expect(innerFn).toHaveBeenCalledExactlyOnceWith("2", "3");
+    });
+
+    test("Should invalidate using the selected cache adapter", async () => {
+        const spy = vi.spyOn(cache, "remove");
+        const withInvalidation = withInvalidationFactory(cacheResolver);
+        const innerFn = vi.fn((): Promise<void> => Promise.resolve());
+
+        await use(
+            innerFn,
+            withInvalidation.use("secondary")({
+                key: () => "cache:key",
+            }),
+        )();
+
+        expect(cacheResolver.use).toHaveBeenCalledExactlyOnceWith("secondary");
+        expect(spy).toHaveBeenCalledExactlyOnceWith("cache:key");
     });
 });

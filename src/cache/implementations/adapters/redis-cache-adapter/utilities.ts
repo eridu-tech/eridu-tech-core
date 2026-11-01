@@ -43,7 +43,7 @@ function escapeRedisChars(value: string): string {
         (chunk) => {
             const item = replacements[chunk];
             if (item === undefined) {
-                throw new UnexpectedError("Encounterd none existing field");
+                throw UnexpectedError.create("Encounterd none existing field");
             }
             return item;
         },

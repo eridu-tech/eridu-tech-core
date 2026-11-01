@@ -1,0 +1,4 @@
+import { fileStorage } from "./file-storage-resolver-di-factory.js";
+
+// Uses the adapter configured as the default (memory)
+await fileStorage.create("file.txt").put({ data: "Text file content" });

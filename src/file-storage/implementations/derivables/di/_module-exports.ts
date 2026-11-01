@@ -1,1 +1,1 @@
-export * from "@/file-storage/implementations/derivables/di/file-storage-resolver-di-factory/_module.js";
+export * from "@/file-storage/implementations/derivables/di/proxy-file-storage-resolver/_module.js";

@@ -7,7 +7,7 @@ import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type {
     BaseEventMap,
-    IEventDispatcher,
+    IEventBusResolver,
 } from "@/event-bus/contracts/_module-exports.js";
 import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 import type { Invocable } from "@/utilities/_module-exports.js";
@@ -74,12 +74,51 @@ export type WithDispatchAfterSettings<
 };
 
 /**
+ * A middleware factory that dispatches an event after the wrapped function
+ * resolves.
+ *
+ * IMPORT_PATH: `"eridu-tech/event-bus/middlewares"`
+ * @group Middlewares
+ */
+export type WithDispatchAfter<TEventMap extends BaseEventMap = BaseEventMap> = <
+    TEventName extends keyof TEventMap,
+    TParameters extends Array<unknown>,
+    TReturn,
+>(
+    settings: WithDispatchAfterSettings<
+        TEventMap,
+        TEventName,
+        TParameters,
+        TReturn
+    >,
+) => MiddlewareFn<TParameters, Promise<TReturn>>;
+
+/**
+ * Resolver-facing API returned by {@link withDispatchAfterFactory}.
+ *
+ * IMPORT_PATH: `"eridu-tech/event-bus/middlewares"`
+ * @group Middlewares
+ */
+export type WithDispatchAfterResolver<
+    TAdapters extends string = string,
+    TEventMap extends BaseEventMap = BaseEventMap,
+> = {
+    /**
+     * Selects the adapter the returned middleware factory uses.
+     *
+     * @param adapter - The adapter to use. Defaults to the resolver's default
+     * adapter.
+     */
+    use(adapter?: TAdapters): WithDispatchAfter<TEventMap>;
+};
+
+/**
  * Creates a middleware factory that dispatches an event **after** the wrapped
  * function resolves.
  *
  * When the wrapped function completes, the middleware resolves the event payload
  * from the function's arguments and return value and dispatches the configured event
- * on the provided event dispatcher, and then returns the wrapped function's result
+ * on the selected event bus, and then returns the wrapped function's result
  * unchanged. If the payload resolves to `undefined` (or doesn't return a value), no event is dispatched and the
  * wrapped function's result is returned unchanged.
  *
@@ -87,34 +126,39 @@ export type WithDispatchAfterSettings<
  * recording the outcome of a function.
  *
  * @typeParam TEventMap - The event map of the event dispatcher.
- * @param eventDispatcher - The event dispatcher used to dispatch the event.
- * @returns A function that accepts {@link WithDispatchAfterSettings} and returns
- *          a middleware.
+ * @typeParam TAdapters - Union type of the registered adapter names.
+ * @param eventBusResolver - The resolver used to select the event bus adapter.
+ * @returns A {@link WithDispatchAfter} that is also a
+ *          {@link WithDispatchAfterResolver}.
  *
  * IMPORT_PATH: `"eridu-tech/event-bus/middlewares"`
  * @group Middlewares
  */
 export function withDispatchAfterFactory<
     TEventMap extends BaseEventMap = BaseEventMap,
->(eventDispatcher: IEventDispatcher<TEventMap>) {
-    return <
-        TEventName extends keyof TEventMap,
-        TParameters extends Array<unknown>,
-        TReturn,
-    >(
-        settings: WithDispatchAfterSettings<
-            TEventMap,
-            TEventName,
-            TParameters,
-            TReturn
-        >,
-    ): MiddlewareFn<TParameters, Promise<TReturn>> => {
-        const { type, payload } = settings;
-        return withAfterHook<TParameters, TReturn>((args, returnValue) => {
-            const event = callInvocable(payload, { args, returnValue });
-            if (event !== null) {
-                void eventDispatcher.dispatch(type, event);
-            }
-        });
+    TAdapters extends string = string,
+>(
+    eventBusResolver: Pick<IEventBusResolver<TAdapters, TEventMap>, "use">,
+): WithDispatchAfter<TEventMap> &
+    WithDispatchAfterResolver<TAdapters, TEventMap> {
+    const withDispatchAfterResolver: WithDispatchAfterResolver<
+        TAdapters,
+        TEventMap
+    >["use"] = function use(adapter?: TAdapters): WithDispatchAfter<TEventMap> {
+        return (settings) => {
+            const { type, payload } = settings;
+            return withAfterHook((args, returnValue) => {
+                const event = callInvocable(payload, { args, returnValue });
+                if (event !== null) {
+                    void eventBusResolver.use(adapter).dispatch(type, event);
+                }
+            });
+        };
     };
+
+    const middleware =
+        withDispatchAfterResolver() as WithDispatchAfter<TEventMap> &
+            WithDispatchAfterResolver<TAdapters, TEventMap>;
+    middleware.use = withDispatchAfterResolver;
+    return middleware;
 }

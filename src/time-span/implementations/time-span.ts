@@ -145,7 +145,7 @@ export class TimeSpan implements ITimeSpan, IComparable<ITimeSpan> {
     static fromStr(timeAsStr: string): TimeSpan {
         const timeInMs = parse(timeAsStr);
         if (timeInMs === undefined) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 "Passed in invalid string format to TimeSpan.fromStr",
             );
         }

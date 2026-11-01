@@ -304,7 +304,7 @@ export class Container implements IContainer {
                         };
                     }
 
-                    throw new UnexpectedError(
+                    throw UnexpectedError.create(
                         `Dependency "${tokenToString(dep)}" of transient node "${tokenToString(nodeId)}" is neither singleton, scoped, nor transient.`,
                         {
                             token: dep,
@@ -519,7 +519,7 @@ export class Container implements IContainer {
             this.depsOnInit(depsOrListener, listener);
             return;
         }
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             "The onInit method expects a listener, or a deps record together with a listener.",
         );
     }
@@ -558,7 +558,7 @@ export class Container implements IContainer {
             this.depOnDeInit(depsOrListener, listener);
             return;
         }
-        throw new UnexpectedError(
+        throw UnexpectedError.create(
             "The onDeInit method expects a listener, or a deps record together with a listener.",
         );
     }
@@ -701,7 +701,7 @@ export class Container implements IContainer {
             settings.lifetime !== LIFETIME.SINGLETON &&
             (settings.onDeInit !== undefined || settings.onInit !== undefined)
         ) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Service hooks (onInit/onDeInit) are only supported for singleton services, but token "${tokenToString(settings.token)}" was registered with the "${settings.lifetime}" lifetime.`,
             );
         }
@@ -790,7 +790,7 @@ export class Container implements IContainer {
         }
 
         if (tokenExistInIsolatedRegistry && !tokenExistInGraph) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Non Dynamic Token "${tokenToString(token)}" exists in the registry but is missing from the graph. This indicates an internal inconsistency: the graph should always contain every registered non dynamic token.`,
                 { token },
             );
@@ -808,7 +808,7 @@ export class Container implements IContainer {
         if (this.graphManager.isDynamic(token)) {
             return this.resolveDynamic(token);
         }
-        throw new UnexpectedError("unknown type");
+        throw UnexpectedError.create("unknown type");
     }
 
     // internal resolver. Do not care if called inside DynamicServiceProvider unlike public
@@ -850,7 +850,7 @@ export class Container implements IContainer {
     > {
         await Promise.resolve();
         if (!this.graphManager.isSingleton(token)) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Excepted token to exist in graph and be singleton`,
                 {
                     token,
@@ -883,7 +883,7 @@ export class Container implements IContainer {
         | { success: false; explanation: CanNotResolveServiceDiErrorCreateData }
     > {
         if (!this.graphManager.isTransient(token)) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Excepted token to exist in graph and be transient`,
                 {
                     token,
@@ -937,7 +937,7 @@ export class Container implements IContainer {
         await Promise.resolve();
 
         if (!this.graphManager.isScoped(token)) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Excepted token to exist in graph and be scoped`,
                 {
                     token,
@@ -1004,7 +1004,7 @@ export class Container implements IContainer {
     > {
         await Promise.resolve();
         if (!this.graphManager.isDynamic(token)) {
-            throw new UnexpectedError(
+            throw UnexpectedError.create(
                 `Excepted token to exist in graph and be dynamic`,
                 {
                     token,

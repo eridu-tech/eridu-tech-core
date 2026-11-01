@@ -3,17 +3,18 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
     BlockedRateLimiterError,
     RATE_LIMITER_STATE,
+    UnableToGetStateRateLimiterError,
+    UnableToResetRateLimiterError,
+    UnableToUpdateStateRateLimiterError,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import { DatabaseRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/database-rate-limiter-adapter/_module-exports.js";
 import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-storage-adapter/_module-exports.js";
 import { RateLimiterFactory } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter-factory.js";
 import { FixedWindowLimiter } from "@/rate-limiter/implementations/policies/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/_module-exports.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type {
-    IRateLimiterFactory,
     RateLimiterExpiredState,
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
@@ -25,29 +26,30 @@ import type {
 describe("class: RateLimiterFactory", () => {
     const adapter: IRateLimiterAdapter = {
         getState(_key: string): Promise<IRateLimiterAdapterState | null> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         updateState(
             _key: string,
             _limit: number,
         ): Promise<IRateLimiterAdapterState> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         reset(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
     };
     const KEY = "a";
 
     class UnexpectedErrorA extends Error {}
 
-    let rateLimiterFactory: IRateLimiterFactory;
-    beforeEach(() => {
+    let rateLimiterFactory: RateLimiterFactory;
+    beforeEach(async () => {
         vi.resetAllMocks();
         vi.clearAllMocks();
         rateLimiterFactory = new RateLimiterFactory({
             adapter,
         });
+        await rateLimiterFactory.init();
     });
 
     describe("API tests:", () => {
@@ -73,7 +75,7 @@ describe("class: RateLimiterFactory", () => {
                                 onlyError: true,
                             })
                             .runOrFail(() => {
-                                throw new UnexpectedErrorA("Unexpected error");
+                                throw new Error("Unexpected error");
                             });
                     } catch (error: unknown) {
                         if (!(error instanceof UnexpectedErrorA)) {
@@ -125,7 +127,7 @@ describe("class: RateLimiterFactory", () => {
                                 onlyError: true,
                             })
                             .runOrFail(() => {
-                                throw new UnexpectedErrorA("Unexpected error");
+                                throw new Error("Unexpected error");
                             });
                     } catch (error: unknown) {
                         if (!(error instanceof UnexpectedErrorA)) {
@@ -205,7 +207,7 @@ describe("class: RateLimiterFactory", () => {
                                 onlyError: false,
                             })
                             .runOrFail(() => {
-                                throw new UnexpectedErrorA("Unexpected error");
+                                throw new Error("Unexpected error");
                             });
                     } catch (error: unknown) {
                         if (!(error instanceof UnexpectedErrorA)) {
@@ -257,7 +259,7 @@ describe("class: RateLimiterFactory", () => {
                                 onlyError: false,
                             })
                             .runOrFail(() => {
-                                throw new UnexpectedErrorA("Unexpected error");
+                                throw new Error("Unexpected error");
                             });
                     } catch (error: unknown) {
                         if (!(error instanceof UnexpectedErrorA)) {
@@ -435,7 +437,7 @@ describe("class: RateLimiterFactory", () => {
                 }
             }
 
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const rateLimiterPolicy = new FixedWindowLimiter({
                 window: TimeSpan.fromMinutes(1),
@@ -450,9 +452,11 @@ describe("class: RateLimiterFactory", () => {
                 ),
                 serde,
             });
+            await rateLimiterFactory1.init();
             const rateLimiter1 = rateLimiterFactory1.create(key, {
                 limit: 1,
             });
+
             try {
                 await rateLimiter1.runOrFail(() => {
                     return Promise.reject(
@@ -472,19 +476,21 @@ describe("class: RateLimiterFactory", () => {
                 }),
                 serde,
             });
+            await rateLimiterFactory2.init();
             const rateLimiter2 = rateLimiterFactory2.create(key, {
                 limit: 1,
             });
 
-            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
-                serde.serialize(rateLimiter2),
-            );
+            const deserializedRateLimiter2 =
+                await serde.deserialize<IRateLimiter>(
+                    await serde.serialize(rateLimiter2),
+                );
             const handler = vi.fn();
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+        test("Should differentiate between different serializationIds", async () => {
+            const serde = new SuperJsonSerde();
             const key = "a";
             const rateLimiterPolicy = new FixedWindowLimiter({
                 window: TimeSpan.fromMinutes(1),
@@ -495,12 +501,14 @@ describe("class: RateLimiterFactory", () => {
                     adapter: new MemoryRateLimiterStorageAdapter(),
                     rateLimiterPolicy,
                 }),
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
+            await rateLimiterFactory1.init();
             const rateLimiter1 = rateLimiterFactory1.create(key, {
                 limit: 1,
             });
+
             try {
                 await rateLimiter1.runOrFail(() => {
                     return Promise.reject(
@@ -518,19 +526,89 @@ describe("class: RateLimiterFactory", () => {
                     adapter: new MemoryRateLimiterStorageAdapter(),
                     rateLimiterPolicy,
                 }),
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
+            await rateLimiterFactory2.init();
             const rateLimiter2 = rateLimiterFactory2.create(key, {
                 limit: 1,
             });
 
-            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
-                serde.serialize(rateLimiter2),
-            );
+            const deserializedRateLimiter2 =
+                await serde.deserialize<IRateLimiter>(
+                    await serde.serialize(rateLimiter2),
+                );
             const handler = vi.fn();
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
+        });
+    });
+    describe("Unexpected adapter error handling:", () => {
+        function createFailingAdapter(
+            unexpectedError: Error,
+        ): IRateLimiterAdapter {
+            return {
+                getState: vi.fn().mockRejectedValue(unexpectedError),
+                updateState: vi.fn().mockRejectedValue(unexpectedError),
+                reset: vi.fn().mockRejectedValue(unexpectedError),
+            };
+        }
+        test("Should reject with UnableToGetStateRateLimiterError when adapter getState fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingRateLimiterFactory = new RateLimiterFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingRateLimiterFactory.init();
+
+            const promise = failingRateLimiterFactory
+                .create("a", { limit: 1 })
+                .getState();
+
+            await expect(promise).rejects.toThrow(
+                UnableToGetStateRateLimiterError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToUpdateStateRateLimiterError when adapter updateState fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingRateLimiterFactory = new RateLimiterFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingRateLimiterFactory.init();
+
+            const promise = failingRateLimiterFactory
+                .create("a", { limit: 1 })
+                .runOrFail(() => Promise.resolve());
+
+            await expect(promise).rejects.toThrow(
+                UnableToUpdateStateRateLimiterError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToResetRateLimiterError when adapter reset fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingRateLimiterFactory = new RateLimiterFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingRateLimiterFactory.init();
+
+            const promise = failingRateLimiterFactory
+                .create("a", { limit: 1 })
+                .reset();
+
+            await expect(promise).rejects.toThrow(
+                UnableToResetRateLimiterError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
         });
     });
 });

@@ -44,7 +44,7 @@ export function bindHttpFactory(container: IContainer) {
             ] as HttpHandler;
 
             if (!isInvocable(handler)) {
-                throw new UnexpectedError(
+                throw UnexpectedError.create(
                     `Controller method "${String(method)}" is not invocable`,
                 );
             }

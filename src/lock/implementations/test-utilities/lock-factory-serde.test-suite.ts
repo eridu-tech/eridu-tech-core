@@ -94,8 +94,8 @@ export function lockFactorySerdeTestSuite(
             const lock = lockFactory.create(key, {
                 ttl,
             });
-            const deserializedLock = serde.deserialize<ILock>(
-                serde.serialize(lock),
+            const deserializedLock = await serde.deserialize<ILock>(
+                await serde.serialize(lock),
             );
             const result = await deserializedLock.getState();
 
@@ -113,8 +113,8 @@ export function lockFactorySerdeTestSuite(
             await lock.acquire();
             await delayWithBuffer(ttl);
 
-            const deserializedLock = serde.deserialize<ILock>(
-                serde.serialize(lock),
+            const deserializedLock = await serde.deserialize<ILock>(
+                await serde.serialize(lock),
             );
             const result = await deserializedLock.getState();
 
@@ -139,8 +139,8 @@ export function lockFactorySerdeTestSuite(
 
             await lock2.forceRelease();
 
-            const deserializedLock1 = serde.deserialize<ILock>(
-                serde.serialize(lock1),
+            const deserializedLock1 = await serde.deserialize<ILock>(
+                await serde.serialize(lock1),
             );
             const result = await deserializedLock1.getState();
 
@@ -166,8 +166,8 @@ export function lockFactorySerdeTestSuite(
             await lock1.release();
             await lock2.release();
 
-            const deserializedLock2 = serde.deserialize<ILock>(
-                serde.serialize(lock2),
+            const deserializedLock2 = await serde.deserialize<ILock>(
+                await serde.serialize(lock2),
             );
             const result = await deserializedLock2.getState();
 
@@ -183,8 +183,8 @@ export function lockFactorySerdeTestSuite(
             });
             await lock.acquire();
 
-            const deserializedLock = serde.deserialize<ILock>(
-                serde.serialize(lock),
+            const deserializedLock = await serde.deserialize<ILock>(
+                await serde.serialize(lock),
             );
             const state = await deserializedLock.getState();
 
@@ -205,8 +205,8 @@ export function lockFactorySerdeTestSuite(
             });
             await lock.acquire();
 
-            const deserializedLock = serde.deserialize<ILock>(
-                serde.serialize(lock),
+            const deserializedLock = await serde.deserialize<ILock>(
+                await serde.serialize(lock),
             );
             const state = await deserializedLock.getState();
 
@@ -226,8 +226,8 @@ export function lockFactorySerdeTestSuite(
             const lock2 = lockFactory.create(key, {
                 ttl,
             });
-            const deserializedLock2 = serde.deserialize<ILock>(
-                serde.serialize(lock2),
+            const deserializedLock2 = await serde.deserialize<ILock>(
+                await serde.serialize(lock2),
             );
             const state = await deserializedLock2.getState();
 

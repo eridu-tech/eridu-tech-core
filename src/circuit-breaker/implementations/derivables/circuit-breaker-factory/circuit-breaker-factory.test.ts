@@ -5,20 +5,22 @@ import {
     OpenCircuitBreakerError,
     CIRCUIT_BREAKER_TRIGGER,
     CIRCUIT_BREAKER_STATE,
+    UnableToGetStateCircuitBreakerError,
+    UnableToIsolateCircuitBreakerError,
+    UnableToResetCircuitBreakerError,
+    UnableToUpdateStateCircuitBreakerError,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import { DatabaseCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/_module-exports.js";
 import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementations/adapters/memory-circuit-breaker-storage-adapter/_module-exports.js";
 import { CircuitBreakerFactory } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-factory.js";
 import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
-import { SuperJsonSerdeAdapter } from "@/serde/implementations/adapters/super-json-serde-adapter/_module-exports.js";
-import { Serde } from "@/serde/implementations/derivables/serde.js";
+import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { delay } from "@/utilities/_module-exports.js";
 
 import type {
     CircuitBreakerStateTransition,
     ICircuitBreakerAdapter,
-    ICircuitBreakerFactory,
     CircuitBreakerState,
     ICircuitBreaker,
 } from "@/circuit-breaker/contracts/_module-exports.js";
@@ -26,37 +28,38 @@ import type {
 describe("class: CircuitBreakerFactory", () => {
     const adapter: ICircuitBreakerAdapter = {
         getState(_key: string): Promise<CircuitBreakerState> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         updateState(_key: string): Promise<CircuitBreakerStateTransition> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         isolate(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         trackFailure(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         trackSuccess(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
         reset(_key: string): Promise<void> {
-            throw new UnexpectedErrorA("Function not implemented.");
+            throw new Error("Function not implemented.");
         },
     };
     const KEY = "A";
 
-    let circuitBreakerFactory: ICircuitBreakerFactory;
+    let circuitBreakerFactory: CircuitBreakerFactory;
     const slowCallTime = TimeSpan.fromMilliseconds(50);
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.resetAllMocks();
         vi.clearAllMocks();
         circuitBreakerFactory = new CircuitBreakerFactory({
             adapter,
-            serde: new Serde(new SuperJsonSerdeAdapter()),
+            serde: new SuperJsonSerde(),
             defaultSlowCallTime: slowCallTime,
             enableAsyncTracking: false,
         });
+        await circuitBreakerFactory.init();
     });
 
     class UnexpectedErrorA extends Error {}
@@ -573,7 +576,7 @@ describe("class: CircuitBreakerFactory", () => {
                 }
             }
 
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+            const serde = new SuperJsonSerde();
             const key = "a";
             const circuitBreakerPolicy = new ConsecutiveBreaker({
                 failureThreshold: 1,
@@ -590,7 +593,9 @@ describe("class: CircuitBreakerFactory", () => {
                 enableAsyncTracking: false,
                 serde,
             });
+            await circuitBreakerFactory1.init();
             const circuitBreaker1 = circuitBreakerFactory1.create(key);
+
             try {
                 await circuitBreaker1.runOrFail(() => {
                     return Promise.reject(
@@ -611,18 +616,19 @@ describe("class: CircuitBreakerFactory", () => {
                 enableAsyncTracking: false,
                 serde,
             });
+            await circuitBreakerFactory2.init();
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =
-                serde.deserialize<ICircuitBreaker>(
-                    serde.serialize(circuitBreaker2),
+                await serde.deserialize<ICircuitBreaker>(
+                    await serde.serialize(circuitBreaker2),
                 );
             const handler = vi.fn();
             await deserializedCircuitBreaker2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
         });
-        test("Should differentiate between different serdeTransformerNames", async () => {
-            const serde = new Serde(new SuperJsonSerdeAdapter());
+        test("Should differentiate between different serializationIds", async () => {
+            const serde = new SuperJsonSerde();
             const key = "a";
             const circuitBreakerPolicy = new ConsecutiveBreaker({
                 failureThreshold: 1,
@@ -635,10 +641,12 @@ describe("class: CircuitBreakerFactory", () => {
                     circuitBreakerPolicy,
                 }),
                 enableAsyncTracking: false,
-                serdeTransformerName: "adapter1",
+                serializationId: "adapter1",
                 serde,
             });
+            await circuitBreakerFactory1.init();
             const circuitBreaker1 = circuitBreakerFactory1.create(key);
+
             try {
                 await circuitBreaker1.runOrFail(() => {
                     return Promise.reject(
@@ -657,18 +665,103 @@ describe("class: CircuitBreakerFactory", () => {
                     circuitBreakerPolicy,
                 }),
                 enableAsyncTracking: false,
-                serdeTransformerName: "adapter2",
+                serializationId: "adapter2",
                 serde,
             });
+            await circuitBreakerFactory2.init();
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =
-                serde.deserialize<ICircuitBreaker>(
-                    serde.serialize(circuitBreaker2),
+                await serde.deserialize<ICircuitBreaker>(
+                    await serde.serialize(circuitBreaker2),
                 );
             const handler = vi.fn();
             await deserializedCircuitBreaker2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
+        });
+    });
+    describe("Unexpected adapter error handling:", () => {
+        function createFailingAdapter(
+            unexpectedError: Error,
+        ): ICircuitBreakerAdapter {
+            return {
+                getState: vi.fn().mockRejectedValue(unexpectedError),
+                updateState: vi.fn().mockRejectedValue(unexpectedError),
+                isolate: vi.fn().mockRejectedValue(unexpectedError),
+                trackFailure: vi.fn().mockRejectedValue(unexpectedError),
+                trackSuccess: vi.fn().mockRejectedValue(unexpectedError),
+                reset: vi.fn().mockRejectedValue(unexpectedError),
+            };
+        }
+        test("Should reject with UnableToGetStateCircuitBreakerError when adapter getState fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingCircuitBreakerFactory = new CircuitBreakerFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingCircuitBreakerFactory.init();
+
+            const promise = failingCircuitBreakerFactory.create("a").getState();
+
+            await expect(promise).rejects.toThrow(
+                UnableToGetStateCircuitBreakerError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToUpdateStateCircuitBreakerError when adapter updateState fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingCircuitBreakerFactory = new CircuitBreakerFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingCircuitBreakerFactory.init();
+
+            const promise = failingCircuitBreakerFactory
+                .create("a")
+                .runOrFail(() => Promise.resolve());
+
+            await expect(promise).rejects.toThrow(
+                UnableToUpdateStateCircuitBreakerError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToIsolateCircuitBreakerError when adapter isolate fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingCircuitBreakerFactory = new CircuitBreakerFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingCircuitBreakerFactory.init();
+
+            const promise = failingCircuitBreakerFactory.create("a").isolate();
+
+            await expect(promise).rejects.toThrow(
+                UnableToIsolateCircuitBreakerError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
+        });
+        test("Should reject with UnableToResetCircuitBreakerError when adapter reset fails", async () => {
+            const unexpectedError = new Error("Unexpected adapter error");
+            const failingCircuitBreakerFactory = new CircuitBreakerFactory({
+                adapter: createFailingAdapter(unexpectedError),
+            });
+            await failingCircuitBreakerFactory.init();
+
+            const promise = failingCircuitBreakerFactory.create("a").reset();
+
+            await expect(promise).rejects.toThrow(
+                UnableToResetCircuitBreakerError,
+            );
+            await expect(promise).rejects.toHaveProperty(
+                "cause",
+                unexpectedError,
+            );
         });
     });
 });

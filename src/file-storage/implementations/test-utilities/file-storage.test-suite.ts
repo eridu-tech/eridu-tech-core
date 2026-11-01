@@ -3,10 +3,7 @@
  */
 
 import { FileSize } from "@/file-size/implementations/_module-exports.js";
-import {
-    KeyExistsFileError,
-    KeyNotFoundFileError,
-} from "@/file-storage/contracts/_module-exports.js";
+import { KeyNotFoundFileError } from "@/file-storage/contracts/_module-exports.js";
 import {
     isBytesArrayEqualityTester,
     resolveStream,
@@ -78,7 +75,7 @@ export function fileStorageTestSuite(
                     const text = "CONTENT";
                     const data = new Uint8Array(Buffer.from(text, "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.getText();
 
                     expect(result).toEqual(text);
@@ -100,7 +97,7 @@ export function fileStorageTestSuite(
                     const text = "CONTENT";
                     const data = new Uint8Array(Buffer.from(text, "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.getTextOrFail();
 
                     expect(result).toEqual(text);
@@ -121,7 +118,7 @@ export function fileStorageTestSuite(
 
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.getBytes();
 
                     expect(result).toEqual(data);
@@ -142,7 +139,7 @@ export function fileStorageTestSuite(
 
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.getBytesOrFail();
 
                     expect(result).toEqual(data);
@@ -163,7 +160,7 @@ export function fileStorageTestSuite(
 
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.getArrayBuffer();
 
                     expect(result).toEqual(data);
@@ -184,7 +181,7 @@ export function fileStorageTestSuite(
 
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.getArrayBufferOrFail();
 
                     expect(result).toEqual(data);
@@ -205,7 +202,7 @@ export function fileStorageTestSuite(
 
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await resolveStream(
                         await file.getReadableStream(),
                     );
@@ -228,7 +225,7 @@ export function fileStorageTestSuite(
 
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await resolveStream(
                         await file.getReadableStreamOrFail(),
                     );
@@ -250,7 +247,7 @@ export function fileStorageTestSuite(
                             "utf8",
                         ),
                     );
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.getMetadata();
 
                     expect(result).toEqual({
@@ -276,13 +273,13 @@ export function fileStorageTestSuite(
                 test("Should return metadata with a valid updatedAt after add method followed by update method", async () => {
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create("a.txt");
-                    await file.add({ data });
+                    await file.put({ data });
 
                     const newContentType = "application/octet-stream";
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await file.update({
+                    await file.put({
                         data: newData,
                         contentType: newContentType,
                     });
@@ -304,7 +301,7 @@ export function fileStorageTestSuite(
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await file.update({
+                    await file.put({
                         data: newData,
                         contentType: newContentType,
                     });
@@ -339,10 +336,10 @@ export function fileStorageTestSuite(
                         updatedAt: expect.any(Date) as Date,
                     } satisfies FileMetadata);
                 });
-                test("Should return initial metadata with a null updatedAt after addStream method", async () => {
+                test("Should return initial metadata with a null updatedAt after putStream method", async () => {
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create("a.txt");
-                    await file.addStream({
+                    await file.putStream({
                         data: {
                             async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                                 yield Promise.resolve(data);
@@ -377,10 +374,10 @@ export function fileStorageTestSuite(
                         updatedAt: expect.any(Date) as Date,
                     } satisfies FileMetadata);
                 });
-                test("Should return metadata with a valid updatedAt after addStream method followed by updateStream method", async () => {
+                test("Should return metadata with a valid updatedAt after putStream method followed by putStream method", async () => {
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create("a.txt");
-                    await file.addStream({
+                    await file.putStream({
                         data: {
                             async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                                 yield Promise.resolve(data);
@@ -392,7 +389,7 @@ export function fileStorageTestSuite(
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await file.updateStream({
+                    await file.putStream({
                         data: {
                             async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                                 yield Promise.resolve(newData);
@@ -409,7 +406,7 @@ export function fileStorageTestSuite(
                         updatedAt: expect.any(Date) as Date,
                     } satisfies FileMetadata);
                 });
-                test("Should return metadata with a valid updatedAt after putStream method followed by updateStream method", async () => {
+                test("Should return metadata with a valid updatedAt after putStream method followed by putStream method", async () => {
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
@@ -424,7 +421,7 @@ export function fileStorageTestSuite(
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await file.updateStream({
+                    await file.putStream({
                         data: {
                             async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                                 yield Promise.resolve(newData);
@@ -488,7 +485,7 @@ export function fileStorageTestSuite(
                             "utf8",
                         ),
                     );
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.getMetadataOrFail();
 
                     expect(result).toEqual({
@@ -514,13 +511,13 @@ export function fileStorageTestSuite(
                 test("Should return metadata with a valid updatedAt after add method followed by update method", async () => {
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create("a.txt");
-                    await file.add({ data });
+                    await file.put({ data });
 
                     const newContentType = "application/octet-stream";
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await file.update({
+                    await file.put({
                         data: newData,
                         contentType: newContentType,
                     });
@@ -542,7 +539,7 @@ export function fileStorageTestSuite(
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await file.update({
+                    await file.put({
                         data: newData,
                         contentType: newContentType,
                     });
@@ -577,10 +574,10 @@ export function fileStorageTestSuite(
                         updatedAt: expect.any(Date) as Date,
                     } satisfies FileMetadata);
                 });
-                test("Should return initial metadata with a null updatedAt after addStream method", async () => {
+                test("Should return initial metadata with a null updatedAt after putStream method", async () => {
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create("a.txt");
-                    await file.addStream({
+                    await file.putStream({
                         data: {
                             async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                                 yield Promise.resolve(data);
@@ -615,10 +612,10 @@ export function fileStorageTestSuite(
                         updatedAt: expect.any(Date) as Date,
                     } satisfies FileMetadata);
                 });
-                test("Should return metadata with a valid updatedAt after addStream method followed by updateStream method", async () => {
+                test("Should return metadata with a valid updatedAt after putStream method followed by putStream method", async () => {
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create("a.txt");
-                    await file.addStream({
+                    await file.putStream({
                         data: {
                             async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                                 yield Promise.resolve(data);
@@ -630,7 +627,7 @@ export function fileStorageTestSuite(
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await file.updateStream({
+                    await file.putStream({
                         data: {
                             async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                                 yield Promise.resolve(newData);
@@ -647,7 +644,7 @@ export function fileStorageTestSuite(
                         updatedAt: expect.any(Date) as Date,
                     } satisfies FileMetadata);
                 });
-                test("Should return metadata with a valid updatedAt after putStream method followed by updateStream method", async () => {
+                test("Should return metadata with a valid updatedAt after putStream method followed by putStream method", async () => {
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create("a.txt");
                     await file.putStream({
@@ -662,7 +659,7 @@ export function fileStorageTestSuite(
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await file.updateStream({
+                    await file.putStream({
                         data: {
                             async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
                                 yield Promise.resolve(newData);
@@ -728,7 +725,7 @@ export function fileStorageTestSuite(
                     const buffer = Buffer.from("CONTENT", "utf8");
                     const data = new Uint8Array(buffer);
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.exists();
 
                     expect(result).toBe(true);
@@ -750,561 +747,13 @@ export function fileStorageTestSuite(
                     const buffer = Buffer.from("CONTENT", "utf8");
                     const data = new Uint8Array(buffer);
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
                     const result = await file.missing();
 
                     expect(result).toBe(false);
                 });
             });
-            describe("method: add", () => {
-                test("Should return true when key does not exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = await fileStorage.create(key).add({ data });
-
-                    expect(result).toBe(true);
-                });
-                test("Should return false when key exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("NEW_CONTENT", "utf8"),
-                    );
-                    const result = await file.add({ data: newData });
-
-                    expect(result).toBe(false);
-                });
-                test("Should persist data when key does not exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(data);
-                });
-                test("Should not persist data when key exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("NEW_CONTENT", "utf8"),
-                    );
-                    await file.add({ data: newData });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(data);
-                });
-            });
-            describe("method: addOrFail", () => {
-                test("Should not throw error when key does not exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = fileStorage.create(key).addOrFail({ data });
-
-                    await expect(result).resolves.toBeUndefined();
-                });
-                test("Should throw KeyExistsFileError when key exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.addOrFail({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("NEW_CONTENT", "utf8"),
-                    );
-                    const result = file.addOrFail({ data: newData });
-
-                    await expect(result).rejects.toThrow(KeyExistsFileError);
-                });
-                test("Should persist data when key does not exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.addOrFail({ data });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(data);
-                });
-                test("Should not persist data when key exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.addOrFail({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("NEW_CONTENT", "utf8"),
-                    );
-                    try {
-                        await file.addOrFail({ data: newData });
-                    } catch (error: unknown) {
-                        if (!(error instanceof KeyExistsFileError)) {
-                            throw error;
-                        }
-                    }
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(data);
-                });
-            });
-            describe("method: addStream", () => {
-                test("Should return true when key does not exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = await fileStorage.create(key).addStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    expect(result).toBe(true);
-                });
-                test("Should return false when key exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.addStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("NEW_CONTENT", "utf8"),
-                    );
-                    const result = await file.addStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(newData);
-                            },
-                        },
-                    });
-
-                    expect(result).toBe(false);
-                });
-                test("Should persist data when key does not exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.addStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(data);
-                });
-                test("Should not persist data when key exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.addStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("NEW_CONTENT", "utf8"),
-                    );
-                    await file.addStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(newData);
-                            },
-                        },
-                    });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(data);
-                });
-            });
-            describe("method: addStreamOrFail", () => {
-                test("Should not throw error when key does not exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = fileStorage.create(key).addStreamOrFail({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    await expect(result).resolves.toBeUndefined();
-                });
-                test("Should throw KeyExistsFileError when key exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.addStreamOrFail({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("NEW_CONTENT", "utf8"),
-                    );
-                    const result = file.addStreamOrFail({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(newData);
-                            },
-                        },
-                    });
-
-                    await expect(result).rejects.toThrow(KeyExistsFileError);
-                });
-                test("Should persist data when key does not exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.addStreamOrFail({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(data);
-                });
-                test("Should not persist data when key exists", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.addStreamOrFail({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("NEW_CONTENT", "utf8"),
-                    );
-                    try {
-                        await file.addStreamOrFail({
-                            data: {
-                                async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                    yield Promise.resolve(newData);
-                                },
-                            },
-                        });
-                    } catch (error: unknown) {
-                        if (!(error instanceof KeyExistsFileError)) {
-                            throw error;
-                        }
-                    }
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(data);
-                });
-            });
-            describe("method: update", () => {
-                test("Should return false when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = await fileStorage.create(key).update({
-                        data,
-                    });
-
-                    expect(result).toBe(false);
-                });
-                test("Should not persist data when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.update({ data });
-
-                    const result = await file.getBytes();
-                    expect(result).toBeNull();
-                });
-                test("Should return true when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const result = await file.update({ data: newData });
-
-                    expect(result).toBe(true);
-                });
-                test("Should persist data when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    await file.update({ data: newData });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(newData);
-                });
-            });
-            describe("method: updateOrFail", () => {
-                test("Should throw KeyNotFoundFileError when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = fileStorage.create(key).updateOrFail({
-                        data,
-                    });
-
-                    await expect(result).rejects.toThrow(KeyNotFoundFileError);
-                });
-                test("Should not persist data when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    try {
-                        await file.updateOrFail({ data });
-                    } catch (error: unknown) {
-                        if (!(error instanceof KeyNotFoundFileError)) {
-                            throw error;
-                        }
-                    }
-
-                    const result = await file.getBytes();
-                    expect(result).toBeNull();
-                });
-                test("Should not throw error when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const result = file.updateOrFail({ data: newData });
-
-                    await expect(result).resolves.toBeUndefined();
-                });
-                test("Should persist data when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    await file.updateOrFail({ data: newData });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(newData);
-                });
-            });
-            describe("method: updateStream", () => {
-                test("Should return false when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = await fileStorage.create(key).updateStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    expect(result).toBe(false);
-                });
-                test("Should not persist data when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.updateStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    const result = await file.getBytes();
-                    expect(result).toBeNull();
-                });
-                test("Should return true when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const result = await file.updateStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(newData);
-                            },
-                        },
-                    });
-
-                    expect(result).toBe(true);
-                });
-                test("Should persist data when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    await file.updateStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(newData);
-                            },
-                        },
-                    });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(newData);
-                });
-            });
-            describe("method: updateStreamOrFail", () => {
-                test("Should throw KeyNotFoundFileError when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = fileStorage.create(key).updateStreamOrFail({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    await expect(result).rejects.toThrow(KeyNotFoundFileError);
-                });
-                test("Should not persist data when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    try {
-                        await file.updateStreamOrFail({
-                            data: {
-                                async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                    yield Promise.resolve(data);
-                                },
-                            },
-                        });
-                    } catch (error: unknown) {
-                        if (!(error instanceof KeyNotFoundFileError)) {
-                            throw error;
-                        }
-                    }
-
-                    const result = await file.getBytes();
-                    expect(result).toBeNull();
-                });
-                test("Should not throw error when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const result = file.updateStreamOrFail({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(newData);
-                            },
-                        },
-                    });
-
-                    await expect(result).resolves.toBeUndefined();
-                });
-                test("Should persist data when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    await file.updateStreamOrFail({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(newData);
-                            },
-                        },
-                    });
-
-                    const result = await file.getBytes();
-                    expect(result).toEqual(newData);
-                });
-            });
             describe("method: put", () => {
-                test("Should return false when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = await fileStorage.create(key).put({ data });
-
-                    expect(result).toBe(false);
-                });
                 test("Should persist data when key doesnt exist", async () => {
                     const key = "a";
 
@@ -1315,26 +764,12 @@ export function fileStorageTestSuite(
                     const result = await file.getBytes();
                     expect(result).toEqual(data);
                 });
-                test("Should return true when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const result = await file.put({ data: newData });
-
-                    expect(result).toBe(true);
-                });
                 test("Should persist data when key exist", async () => {
                     const key = "a";
 
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
 
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
@@ -1346,20 +781,6 @@ export function fileStorageTestSuite(
                 });
             });
             describe("method: putStream", () => {
-                test("Should return false when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const result = await fileStorage.create(key).putStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(data);
-                            },
-                        },
-                    });
-
-                    expect(result).toBe(false);
-                });
                 test("Should persist data when key doesnt exist", async () => {
                     const key = "a";
 
@@ -1376,32 +797,12 @@ export function fileStorageTestSuite(
                     const result = await file.getBytes();
                     expect(result).toEqual(data);
                 });
-                test("Should return true when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const newData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const result = await file.putStream({
-                        data: {
-                            async *[Symbol.asyncIterator](): AsyncIterator<Uint8Array> {
-                                yield Promise.resolve(newData);
-                            },
-                        },
-                    });
-
-                    expect(result).toBe(true);
-                });
                 test("Should persist data when key exist", async () => {
                     const key = "a";
 
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
 
                     const newData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
@@ -1419,64 +820,14 @@ export function fileStorageTestSuite(
                 });
             });
             describe("method: remove", () => {
-                test("Should return false when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const result = await fileStorage.create(key).remove();
-
-                    expect(result).toBe(false);
-                });
-                test("Should return true when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const result = await file.remove();
-
-                    expect(result).toBe(true);
-                });
                 test("Should persit removal when key exist", async () => {
                     const key = "a";
 
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
                     const file = fileStorage.create(key);
-                    await file.add({ data });
+                    await file.put({ data });
 
                     await file.remove();
-
-                    const result = await file.getBytes();
-                    expect(result).toBeNull();
-                });
-            });
-            describe("method: removeOrFail", () => {
-                test("Should throw KeyNotFoundFileError when key doesnt exist", async () => {
-                    const key = "a";
-
-                    const result = fileStorage.create(key).removeOrFail();
-
-                    await expect(result).rejects.toThrow(KeyNotFoundFileError);
-                });
-                test("Should not throw error when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    const result = file.removeOrFail();
-
-                    await expect(result).resolves.toBeUndefined();
-                });
-                test("Should persit removal when key exist", async () => {
-                    const key = "a";
-
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const file = fileStorage.create(key);
-                    await file.add({ data });
-
-                    await file.removeOrFail();
 
                     const result = await file.getBytes();
                     expect(result).toBeNull();
@@ -1498,7 +849,7 @@ export function fileStorageTestSuite(
 
                     const destination = "c";
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    await fileStorage.create(destination).add({
+                    await fileStorage.create(destination).put({
                         data,
                     });
 
@@ -1508,13 +859,13 @@ export function fileStorageTestSuite(
 
                     expect(result).toBe(false);
                 });
-                test("Should return false when source exists and destination exists", async () => {
+                test("Should return true when source exists and destination exists", async () => {
                     const source = "a";
                     const sourceData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -1522,21 +873,21 @@ export function fileStorageTestSuite(
                     const destinationData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await fileStorage.create(destination).add({
+                    await fileStorage.create(destination).put({
                         data: destinationData,
                     });
 
                     const result = await sourceFile.copy(destination);
 
-                    expect(result).toBe(false);
+                    expect(result).toBe(true);
                 });
-                test("Should not persist when source exists and destination exists", async () => {
+                test("Should persist when source exists and destination exists", async () => {
                     const source = "a";
                     const sourceData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -1545,14 +896,14 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const destinationFile = fileStorage.create(destination);
-                    await destinationFile.add({
+                    await destinationFile.put({
                         data: destinationData,
                     });
 
                     await sourceFile.copy(destination);
 
                     const result = await destinationFile.getBytes();
-                    expect(result).toEqual(destinationData);
+                    expect(result).toEqual(sourceData);
                 });
                 test("Should return true when source exists and destination does not exists", async () => {
                     const source = "a";
@@ -1560,7 +911,7 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -1575,7 +926,7 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -1604,7 +955,7 @@ export function fileStorageTestSuite(
 
                     const destination = "c";
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    await fileStorage.create(destination).add({
+                    await fileStorage.create(destination).put({
                         data,
                     });
 
@@ -1614,231 +965,13 @@ export function fileStorageTestSuite(
 
                     await expect(result).rejects.toThrow(KeyNotFoundFileError);
                 });
-                test("Should throw KeyExistsFileError when source exists and destination exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const destinationData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    await fileStorage.create(destination).add({
-                        data: destinationData,
-                    });
-
-                    const result = sourceFile.copyOrFail(destination);
-
-                    await expect(result).rejects.toThrow(KeyExistsFileError);
-                });
-                test("Should not persist when source exists and destination exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const destinationData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const destinationFile = fileStorage.create(destination);
-                    await destinationFile.add({
-                        data: destinationData,
-                    });
-
-                    try {
-                        await sourceFile.copyOrFail(destination);
-                    } catch (error: unknown) {
-                        if (!(error instanceof KeyExistsFileError)) {
-                            throw error;
-                        }
-                    }
-
-                    const result = await destinationFile.getBytes();
-                    expect(result).toEqual(destinationData);
-                });
-                test("Should not throw error when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const result = sourceFile.copyOrFail(destination);
-
-                    await expect(result).resolves.toBeUndefined();
-                });
-                test("Should persist data when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    await sourceFile.copyOrFail(destination);
-
-                    const result = await fileStorage
-                        .create(destination)
-                        .getBytes();
-                    expect(result).toEqual(sourceData);
-                });
-            });
-            describe("method: copyAndReplace", () => {
-                test("Should return false when source does not exists and destination does not exists", async () => {
-                    const noneExistingSource = "a";
-                    const noneExistingDestination = "c";
-
-                    const result = await fileStorage
-                        .create(noneExistingSource)
-                        .copyAndReplace(noneExistingDestination);
-
-                    expect(result).toBe(false);
-                });
-                test("Should return false when source does not exists and destination exists", async () => {
-                    const noneExistingSource = "a";
-
-                    const destination = "c";
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    await fileStorage.create(destination).add({
-                        data,
-                    });
-
-                    const result = await fileStorage
-                        .create(noneExistingSource)
-                        .copyAndReplace(destination);
-
-                    expect(result).toBe(false);
-                });
-                test("Should return true when source exists and destination exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const destinationData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    await fileStorage.create(destination).add({
-                        data: destinationData,
-                    });
-
-                    const result = await sourceFile.copyAndReplace(destination);
-
-                    expect(result).toBe(true);
-                });
-                test("Should persist when source exists and destination exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const destinationData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const destinationFile = fileStorage.create(destination);
-                    await destinationFile.add({
-                        data: destinationData,
-                    });
-
-                    await sourceFile.copyAndReplace(destination);
-
-                    const result = await destinationFile.getBytes();
-                    expect(result).toEqual(sourceData);
-                });
-                test("Should return true when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const result = await sourceFile.copyAndReplace(destination);
-
-                    expect(result).toBe(true);
-                });
-                test("Should persist data when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    await sourceFile.copyAndReplace(destination);
-
-                    const result = await fileStorage
-                        .create(destination)
-                        .getBytes();
-                    expect(result).toEqual(sourceData);
-                });
-            });
-            describe("method: copyAndReplaceOrFail", () => {
-                test("Should throw KeyNotFoundFileError when source does not exists and destination does not exists", async () => {
-                    const noneExistingSource = "a";
-                    const noneExistingDestination = "c";
-
-                    const result = fileStorage
-                        .create(noneExistingSource)
-                        .copyAndReplaceOrFail(noneExistingDestination);
-
-                    await expect(result).rejects.toThrow(KeyNotFoundFileError);
-                });
-                test("Should throw KeyNotFoundFileError when source does not exists and destination exists", async () => {
-                    const noneExistingSource = "a";
-
-                    const destination = "c";
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    await fileStorage.create(destination).add({
-                        data,
-                    });
-
-                    const result = fileStorage
-                        .create(noneExistingSource)
-                        .copyAndReplaceOrFail(destination);
-
-                    await expect(result).rejects.toThrow(KeyNotFoundFileError);
-                });
                 test("Should not throw error when source exists and destination exists", async () => {
                     const source = "a";
                     const sourceData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -1846,11 +979,11 @@ export function fileStorageTestSuite(
                     const destinationData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await fileStorage.create(destination).add({
+                    await fileStorage.create(destination).put({
                         data: destinationData,
                     });
 
-                    const result = sourceFile.copyAndReplaceOrFail(destination);
+                    const result = sourceFile.copyOrFail(destination);
 
                     await expect(result).resolves.toBeUndefined();
                 });
@@ -1860,7 +993,7 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -1869,11 +1002,11 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const destinationFile = fileStorage.create(destination);
-                    await destinationFile.add({
+                    await destinationFile.put({
                         data: destinationData,
                     });
 
-                    await sourceFile.copyAndReplaceOrFail(destination);
+                    await sourceFile.copyOrFail(destination);
 
                     const result = await destinationFile.getBytes();
                     expect(result).toEqual(sourceData);
@@ -1884,12 +1017,12 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
                     const destination = "c";
-                    const result = sourceFile.copyAndReplaceOrFail(destination);
+                    const result = sourceFile.copyOrFail(destination);
 
                     await expect(result).resolves.toBeUndefined();
                 });
@@ -1899,12 +1032,12 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
                     const destination = "c";
-                    await sourceFile.copyAndReplaceOrFail(destination);
+                    await sourceFile.copyOrFail(destination);
 
                     const result = await fileStorage
                         .create(destination)
@@ -1928,7 +1061,7 @@ export function fileStorageTestSuite(
 
                     const destination = "c";
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    await fileStorage.create(destination).add({
+                    await fileStorage.create(destination).put({
                         data,
                     });
 
@@ -1938,13 +1071,13 @@ export function fileStorageTestSuite(
 
                     expect(result).toBe(false);
                 });
-                test("Should return false when source exists and destination exists", async () => {
+                test("Should return true when source exists and destination exists", async () => {
                     const source = "a";
                     const sourceData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -1952,21 +1085,21 @@ export function fileStorageTestSuite(
                     const destinationData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await fileStorage.create(destination).add({
+                    await fileStorage.create(destination).put({
                         data: destinationData,
                     });
 
                     const result = await sourceFile.move(destination);
 
-                    expect(result).toBe(false);
+                    expect(result).toBe(true);
                 });
-                test("Should not persist when source exists and destination exists", async () => {
+                test("Should persist when source exists and destination exists", async () => {
                     const source = "a";
                     const sourceData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -1975,14 +1108,14 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const destinationFile = fileStorage.create(destination);
-                    await destinationFile.add({
+                    await destinationFile.put({
                         data: destinationData,
                     });
 
                     await sourceFile.move(destination);
 
                     const result = await destinationFile.getBytes();
-                    expect(result).toEqual(destinationData);
+                    expect(result).toEqual(sourceData);
                 });
                 test("Should return true when source exists and destination does not exists", async () => {
                     const source = "a";
@@ -1990,7 +1123,7 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -2005,7 +1138,7 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -2022,15 +1155,15 @@ export function fileStorageTestSuite(
                     const sourceData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    const souceFile = fileStorage.create(source);
-                    await souceFile.add({
+                    const sourceFile = fileStorage.create(source);
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
                     const destination = "c";
-                    await souceFile.move(destination);
+                    await sourceFile.move(destination);
 
-                    const result = await souceFile.getBytes();
+                    const result = await sourceFile.getBytes();
                     expect(result).toBeNull();
                 });
             });
@@ -2050,7 +1183,7 @@ export function fileStorageTestSuite(
 
                     const destination = "c";
                     const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    await fileStorage.create(destination).add({
+                    await fileStorage.create(destination).put({
                         data,
                     });
 
@@ -2060,263 +1193,13 @@ export function fileStorageTestSuite(
 
                     await expect(result).rejects.toThrow(KeyNotFoundFileError);
                 });
-                test("Should throw KeyExistsFileError when source exists and destination exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const destinationData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    await fileStorage.create(destination).add({
-                        data: destinationData,
-                    });
-
-                    const result = sourceFile.moveOrFail(destination);
-
-                    await expect(result).rejects.toThrow(KeyExistsFileError);
-                });
-                test("Should not persist when source exists and destination exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const destinationData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const destinationFile = fileStorage.create(destination);
-                    await destinationFile.add({
-                        data: destinationData,
-                    });
-
-                    try {
-                        await sourceFile.moveOrFail(destination);
-                    } catch (error: unknown) {
-                        if (!(error instanceof KeyExistsFileError)) {
-                            throw error;
-                        }
-                    }
-
-                    const result = await destinationFile.getBytes();
-                    expect(result).toEqual(destinationData);
-                });
-                test("Should not throw error when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const result = sourceFile.moveOrFail(destination);
-
-                    await expect(result).resolves.toBeUndefined();
-                });
-                test("Should persist data when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    await sourceFile.moveOrFail(destination);
-
-                    const result = await fileStorage
-                        .create(destination)
-                        .getBytes();
-                    expect(result).toEqual(sourceData);
-                });
-                test("Should remove source when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    await sourceFile.moveOrFail(destination);
-
-                    const result = await sourceFile.getBytes();
-                    expect(result).toBeNull();
-                });
-            });
-            describe("method: moveAndReplace", () => {
-                test("Should return false when source does not exists and destination does not exists", async () => {
-                    const noneExistingSource = "a";
-                    const noneExistingDestination = "c";
-
-                    const result = await fileStorage
-                        .create(noneExistingSource)
-                        .moveAndReplace(noneExistingDestination);
-
-                    expect(result).toBe(false);
-                });
-                test("Should return false when source does not exists and destination exists", async () => {
-                    const noneExistingSource = "a";
-
-                    const destination = "c";
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    await fileStorage.create(destination).add({
-                        data,
-                    });
-
-                    const result = await fileStorage
-                        .create(noneExistingSource)
-                        .moveAndReplace(destination);
-
-                    expect(result).toBe(false);
-                });
-                test("Should return true when source exists and destination exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const destinationData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    await fileStorage.create(destination).add({
-                        data: destinationData,
-                    });
-
-                    const result = await sourceFile.moveAndReplace(destination);
-
-                    expect(result).toBe(true);
-                });
-                test("Should persist when source exists and destination exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const destinationData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const destinationFile = fileStorage.create(destination);
-                    await destinationFile.add({
-                        data: destinationData,
-                    });
-
-                    await sourceFile.moveAndReplace(destination);
-
-                    const result = await destinationFile.getBytes();
-                    expect(result).toEqual(sourceData);
-                });
-                test("Should return true when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    const result = await sourceFile.moveAndReplace(destination);
-
-                    expect(result).toBe(true);
-                });
-                test("Should persist data when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    await sourceFile.moveAndReplace(destination);
-
-                    const result = await fileStorage
-                        .create(destination)
-                        .getBytes();
-                    expect(result).toEqual(sourceData);
-                });
-                test("Should remove source when source exists and destination does not exists", async () => {
-                    const source = "a";
-                    const sourceData = new Uint8Array(
-                        Buffer.from("CONTENT", "utf8"),
-                    );
-                    const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
-                        data: sourceData,
-                    });
-
-                    const destination = "c";
-                    await sourceFile.moveAndReplace(destination);
-
-                    const result = await sourceFile.getBytes();
-                    expect(result).toBeNull();
-                });
-            });
-            describe("method: moveAndReplaceOrFail", () => {
-                test("Should throw KeyNotFoundFileError when source does not exists and destination does not exists", async () => {
-                    const noneExistingSource = "a";
-                    const noneExistingDestination = "c";
-
-                    const result = fileStorage
-                        .create(noneExistingSource)
-                        .moveAndReplaceOrFail(noneExistingDestination);
-
-                    await expect(result).rejects.toThrow(KeyNotFoundFileError);
-                });
-                test("Should throw KeyNotFoundFileError when source does not exists and destination exists", async () => {
-                    const noneExistingSource = "a";
-
-                    const destination = "c";
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    await fileStorage.create(destination).add({
-                        data,
-                    });
-
-                    const result = fileStorage
-                        .create(noneExistingSource)
-                        .moveAndReplaceOrFail(destination);
-
-                    await expect(result).rejects.toThrow(KeyNotFoundFileError);
-                });
                 test("Should not throw error when source exists and destination exists", async () => {
                     const source = "a";
                     const sourceData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -2324,11 +1207,11 @@ export function fileStorageTestSuite(
                     const destinationData = new Uint8Array(
                         Buffer.from("CONTENT", "utf8"),
                     );
-                    await fileStorage.create(destination).add({
+                    await fileStorage.create(destination).put({
                         data: destinationData,
                     });
 
-                    const result = sourceFile.moveAndReplaceOrFail(destination);
+                    const result = sourceFile.moveOrFail(destination);
 
                     await expect(result).resolves.toBeUndefined();
                 });
@@ -2338,7 +1221,7 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
@@ -2347,11 +1230,11 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const destinationFile = fileStorage.create(destination);
-                    await destinationFile.add({
+                    await destinationFile.put({
                         data: destinationData,
                     });
 
-                    await sourceFile.moveAndReplaceOrFail(destination);
+                    await sourceFile.moveOrFail(destination);
 
                     const result = await destinationFile.getBytes();
                     expect(result).toEqual(sourceData);
@@ -2362,12 +1245,12 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
                     const destination = "c";
-                    const result = sourceFile.moveAndReplaceOrFail(destination);
+                    const result = sourceFile.moveOrFail(destination);
 
                     await expect(result).resolves.toBeUndefined();
                 });
@@ -2377,12 +1260,12 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
                     const destination = "c";
-                    await sourceFile.moveAndReplaceOrFail(destination);
+                    await sourceFile.moveOrFail(destination);
 
                     const result = await fileStorage
                         .create(destination)
@@ -2395,53 +1278,26 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT", "utf8"),
                     );
                     const sourceFile = fileStorage.create(source);
-                    await sourceFile.add({
+                    await sourceFile.put({
                         data: sourceData,
                     });
 
                     const destination = "c";
-                    await sourceFile.moveAndReplaceOrFail(destination);
+                    await sourceFile.moveOrFail(destination);
 
                     const result = await sourceFile.getBytes();
                     expect(result).toBeNull();
                 });
             });
             describe("method: removeMany", () => {
-                test("Should return false when all keys does not exists", async () => {
-                    const result = await fileStorage.removeMany([
-                        fileStorage.create("a"),
-                        fileStorage.create("b"),
-                        fileStorage.create("c"),
-                    ]);
-
-                    expect(result).toBe(false);
-                });
-                test("Should return true when one key exists", async () => {
-                    const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-                    const fileA = fileStorage.create("a");
-                    await fileA.add({
-                        data,
-                    });
-
-                    const fileB = fileStorage.create("b");
-                    const fileC = fileStorage.create("c");
-
-                    const result = await fileStorage.removeMany([
-                        fileA,
-                        fileB,
-                        fileC,
-                    ]);
-
-                    expect(result).toBe(true);
-                });
                 test("Should persist removal of the keys that exists", async () => {
                     const fileA = fileStorage.create("a");
-                    await fileA.add({
+                    await fileA.put({
                         data: new Uint8Array(Buffer.from("CONTENT_A", "utf8")),
                     });
 
                     const fileB = fileStorage.create("b");
-                    await fileB.add({
+                    await fileB.put({
                         data: new Uint8Array(Buffer.from("CONTENT_B", "utf8")),
                     });
 
@@ -2449,7 +1305,7 @@ export function fileStorageTestSuite(
                         Buffer.from("CONTENT_C", "utf8"),
                     );
                     const fileC = fileStorage.create("c");
-                    await fileC.add({
+                    await fileC.put({
                         data: dataC,
                     });
 
@@ -2466,19 +1322,19 @@ export function fileStorageTestSuite(
             describe("method: clear", () => {
                 test("Should remove all the keys", async () => {
                     const fileA = fileStorage.create("a");
-                    await fileA.add({
+                    await fileA.put({
                         data: new Uint8Array(Buffer.from("CONTENT_A", "utf8")),
                     });
                     const fileB = fileStorage.create("b");
-                    await fileB.add({
+                    await fileB.put({
                         data: new Uint8Array(Buffer.from("CONTENT_B", "utf8")),
                     });
                     const fileC = fileStorage.create("c");
-                    await fileC.add({
+                    await fileC.put({
                         data: new Uint8Array(Buffer.from("CONTENT_c", "utf8")),
                     });
                     const fileD = fileStorage.create("d");
-                    await fileD.add({
+                    await fileD.put({
                         data: new Uint8Array(Buffer.from("CONTENT_d", "utf8")),
                     });
 

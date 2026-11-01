@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { NoOpCacheAdapter } from "@/cache/implementations/adapters/no-op-cache-adapter/_module-exports.js";
 import {
@@ -13,6 +13,10 @@ describe("function: withCacheFactory", () => {
     const cacheResolver = new CacheResolver<"memory">({
         adapters: { memory: new NoOpCacheAdapter() },
         defaultAdapter: "memory",
+    });
+
+    beforeAll(async () => {
+        await cacheResolver.init();
     });
     beforeEach(() => {
         vi.restoreAllMocks();
