@@ -7,14 +7,14 @@ import { TrieRouter } from "hono/router/trie-router";
 
 import { Context } from "@/execution-context/implementations/derivables/execution-context/context.js";
 import { HttpError } from "@/http-router/contracts/_module-exports.js";
-import { HttpReq } from "@/http-router/implementations/http-req/http-req.js";
-import { HttpRes } from "@/http-router/implementations/http-res/http-res.js";
+import { HttpReq } from "@/http-router/implementations/http-router/http-req.js";
 import {
     createHttpResHelpers,
     httpResHelpers,
-} from "@/http-router/implementations/http-res-helpers/http-res-helpers.js";
-import { HttpRouterBase } from "@/http-router/implementations/http-router-base/http-router-base.js";
-import { withPrefix } from "@/http-router/implementations/with-prefix/with-prefix.js";
+} from "@/http-router/implementations/http-router/http-res-helpers.js";
+import { HttpRes } from "@/http-router/implementations/http-router/http-res.js";
+import { HttpRouterBase } from "@/http-router/implementations/http-router/http-router-base.js";
+import { withPrefix } from "@/http-router/implementations/http-router/with-prefix.js";
 import { use } from "@/http-router/middlewares/_module-exports.js";
 import {
     callInvocable,
@@ -42,7 +42,7 @@ import type {
     EndpointEntry,
     MiddlewareEntry,
     RouterEntry,
-} from "@/http-router/implementations/types/types.js";
+} from "@/http-router/implementations/http-router/types.js";
 import type {
     InvocableFn,
     OneOrMore,
