@@ -12,10 +12,14 @@ import type {
 import type { IExecutionContext } from "@/execution-context/contracts/_module-exports.js";
 
 /**
- * IMPORT_PATH: `"eridu-tech/cache"`
+ * IMPORT_PATH: `"eridu-tech/concurrency"`
  * @group Derivables
  */
 export class Concurrency implements IConcurrency {
+    /**
+     * @param executionContext - The execution context that carries the active task
+     * context, and with it the `AbortSignal` inherited by created tasks.
+     */
     constructor(private readonly executionContext: IExecutionContext) {}
 
     allSettled<
