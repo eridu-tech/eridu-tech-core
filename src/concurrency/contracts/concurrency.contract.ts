@@ -2,9 +2,14 @@
  * @module Concurrency
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { AbortConcurrencyError } from "@/concurrency/contracts/concurrency.errors.js";
+import {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    AbortConcurrencyError,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    TimeoutConcurrencyError,
+} from "@/concurrency/contracts/concurrency.errors.js";
 
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type {
     IInvocableObject,
     InvocableFn,
@@ -216,6 +221,22 @@ export type ITaskGroup = {
 };
 
 /**
+ * Settings for tasks created by {@link ITaskHelpers.create}.
+ *
+ * IMPORT_PATH: `"eridu-tech/concurrency/contracts"`
+ * @group Contracts
+ */
+export type ConcurrencyCreateSettings = {
+    /**
+     * How long the task may run before it fails with
+     * `TimeoutConcurrencyError`. Use `null` for no timeout.
+     *
+     * @default null
+     */
+    timeout?: ITimeSpan | null;
+};
+
+/**
  * Helpers for creating async tasks and accessing or aborting the current task context.
  *
  * IMPORT_PATH: `"eridu-tech/concurrency/contracts"`
@@ -239,8 +260,12 @@ export type ITaskHelpers = {
      * implicitly; the work takes no arguments.
      *
      * @param invocable - The work to wrap.
+     * @param settings - Optional per-task settings, such as a timeout.
      */
-    create<TType>(invocable: TaskInvocable<TType>): ITask<TType>;
+    create<TType>(
+        invocable: TaskInvocable<TType>,
+        settings?: ConcurrencyCreateSettings,
+    ): ITask<TType>;
 
     /**
      * Creates a task that already succeeded with `undefined`.
@@ -260,6 +285,15 @@ export type ITaskHelpers = {
      * @param error - The reason the task rejects with.
      */
     reject<TType>(error: unknown): ITask<TType>;
+
+    /**
+     * Creates a task that fails with `TimeoutConcurrencyError` once `time`
+     * elapses. Race it against other tasks to bound how long they run.
+     *
+     * @param time - How long to wait before the task fails.
+     * @throws {TimeoutConcurrencyError}
+     */
+    timeout(time: ITimeSpan): ITask<void>;
 };
 
 /**

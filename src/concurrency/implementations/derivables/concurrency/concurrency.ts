@@ -38,24 +38,6 @@ export class Concurrency implements IConcurrency {
         throw new Error("Method not implemented.");
     }
 
-    abort(error: unknown): void {
-        throw new Error("Method not implemented.");
-    }
-
-    create<TType>(invocable: TaskInvocable<TType>): ITask<TType> {
-        throw new Error("Method not implemented.");
-    }
-
-    resolve(): ITask<void>;
-    resolve<TType>(value: TType): ITask<TType>;
-    resolve<TType>(value?: TType): ITask<void | TType> {
-        throw new Error("Method not implemented.");
-    }
-
-    reject<TType>(error: unknown): ITask<TType> {
-        throw new Error("Method not implemented.");
-    }
-
     all<TType extends ReadonlyArray<ITask>>(
         values: TType,
     ): TaskAllResult<TType>;
@@ -77,6 +59,28 @@ export class Concurrency implements IConcurrency {
     ): TaskJoinResult<TType>;
     race<TType>(values: Iterable<ITask<TType>>): ITask<TType>;
     race<TType>(iterable: Iterable<ITask<TType>>): ITask<TType> {
+        throw new Error("Method not implemented.");
+    }
+
+    abort(error: unknown): void {
+        throw new Error("Method not implemented.");
+    }
+
+    create<TType>(invocable: TaskInvocable<TType>): ITask<TType> {
+        throw new Error("Method not implemented.");
+    }
+
+    resolve(): ITask<void>;
+    resolve<TType>(value: TType): ITask<TType>;
+    resolve<TType>(value?: TType): ITask<void | TType> {
+        throw new Error("Method not implemented.");
+    }
+
+    reject<TType>(error: unknown): ITask<TType> {
+        throw new Error("Method not implemented.");
+    }
+
+    timeout(): ITask<void> {
         throw new Error("Method not implemented.");
     }
 }

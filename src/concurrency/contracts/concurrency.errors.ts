@@ -28,7 +28,28 @@ export class AbortConcurrencyError extends Error {
  * IMPORT_PATH: `"eridu-tech/concurrency/contracts"`
  * @group Errors
  */
+export class TimeoutConcurrencyError extends Error {
+    static create(message: string, cause?: unknown): TimeoutConcurrencyError {
+        return new TimeoutConcurrencyError(message, cause);
+    }
+
+    /**
+     * Note: Do not instantiate `TimeoutConcurrencyError` directly via the constructor. Use the static `create()` factory method instead.
+     * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
+     * @internal
+     */
+    constructor(message: string, cause?: unknown) {
+        super(message, { cause });
+        this.name = TimeoutConcurrencyError.name;
+    }
+}
+
+/**
+ * IMPORT_PATH: `"eridu-tech/concurrency/contracts"`
+ * @group Errors
+ */
 export const CONCURRENCY_ERRORS = {
+    Timeout: TimeoutConcurrencyError,
     Abort: AbortConcurrencyError,
 } as const;
 
