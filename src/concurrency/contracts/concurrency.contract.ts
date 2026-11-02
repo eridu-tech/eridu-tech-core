@@ -2,6 +2,7 @@
  * @module Concurrency
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { AbortConcurrencyError } from "@/concurrency/contracts/concurrency.errors.js";
 
 import type {
@@ -134,11 +135,38 @@ export type TaskJoinResult<
  */
 export type ITaskGroup = {
     /**
+     * Waits for every task to settle, whether it succeeds or fails.
+     * Unlike `all`, a failing task does not reject the returned task: its
+     * failure is captured as a rejected entry in the results.
+     *
+     * @param values - The tasks to settle.
+     * @returns A task resolving to a tuple of each task's settled result,
+     * in the same order as the input tasks.
+     */
+    allSettled<
+        TType extends ReadonlyArray<ITask<PromiseSettledResult<unknown>>>,
+    >(
+        values: TType,
+    ): TaskAllResult<TType>;
+
+    /**
+     * Same as the tuple overload, for any iterable of tasks.
+     *
+     * @param iterable - The tasks to settle.
+     * @returns A task resolving to an array of each task's settled result,
+     * in the same order as the input tasks.
+     */
+    allSettled<TType>(
+        iterable: Iterable<ITask<TType>>,
+    ): ITask<Array<PromiseSettledResult<TType>>>;
+
+    /**
      * Waits for every task to succeed and resolves with their results,
      * in the same order as the input tasks.
      *
      * @param values - The tasks to wait for.
      * @returns A task resolving to a tuple of each task's result.
+     * @throws {AggregateError}
      */
     all<TType extends ReadonlyArray<ITask>>(
         values: TType,
@@ -149,6 +177,7 @@ export type ITaskGroup = {
      *
      * @param iterable - The tasks to wait for.
      * @returns A task resolving to an array of each task's result.
+     * @throws {AggregateError}
      */
     all<TType>(iterable: Iterable<ITask<TType>>): ITask<Array<TType>>;
 

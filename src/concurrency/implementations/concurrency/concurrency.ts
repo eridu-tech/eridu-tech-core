@@ -18,6 +18,18 @@ import type { IExecutionContext } from "@/execution-context/contracts/_module-ex
 export class Concurrency implements IConcurrency {
     constructor(private readonly executionContext: IExecutionContext) {}
 
+    allSettled<
+        TType extends ReadonlyArray<ITask<PromiseSettledResult<unknown>>>,
+    >(values: TType): TaskAllResult<TType>;
+    allSettled<TType>(
+        iterable: Iterable<ITask<TType>>,
+    ): ITask<Array<PromiseSettledResult<TType>>>;
+    allSettled<TType>(
+        iterable: Iterable<ITask<TType>>,
+    ): ITask<Array<PromiseSettledResult<TType>>> {
+        throw new Error("Method not implemented.");
+    }
+
     get signal(): AbortSignal {
         throw new Error("Method not implemented.");
     }
