@@ -41,7 +41,7 @@ function tokenToString(token: DiToken): string {
 export function bindHttpMiddlewareFactory(container: IContainer) {
     return (token: DiToken<HttpMiddleware>): HttpMiddlewareFn => {
         return async (...args) => {
-            const middleware = await container.resolveOrFail(token);
+            const middleware = container.resolveOrFail(token);
 
             if (!isInvocable(middleware)) {
                 throw UnexpectedError.create(
