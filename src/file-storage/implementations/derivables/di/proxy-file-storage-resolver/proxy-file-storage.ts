@@ -28,8 +28,8 @@ export class ProxyFileStorage<
         private readonly adapterName: TAdapters | undefined,
     ) {}
 
-    private async getFileStorage(): Promise<IFileStorage> {
-        const fileStorageResolver = await this.container.resolveOrFail(
+    private getFileStorage(): IFileStorage {
+        const fileStorageResolver = this.container.resolveOrFail(
             this.resolverToken,
         );
         return fileStorageResolver.use(this.adapterName);
@@ -45,10 +45,10 @@ export class ProxyFileStorage<
     }
 
     async clear(): Promise<void> {
-        return (await this.getFileStorage()).clear();
+        return this.getFileStorage().clear();
     }
 
     async removeMany(files: Array<IFile>): Promise<void> {
-        return (await this.getFileStorage()).removeMany(files);
+        return this.getFileStorage().removeMany(files);
     }
 }
