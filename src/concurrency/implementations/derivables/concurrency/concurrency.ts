@@ -3,6 +3,7 @@
  */
 
 import type {
+    ConcurrencyCreateSettings,
     IConcurrency,
     ITask,
     TaskAllResult,
@@ -66,7 +67,10 @@ export class Concurrency implements IConcurrency {
         throw new Error("Method not implemented.");
     }
 
-    create<TType>(invocable: TaskInvocable<TType>): ITask<TType> {
+    create<TType>(
+        invocable: TaskInvocable<TType>,
+        settings: ConcurrencyCreateSettings = {},
+    ): ITask<TType> {
         throw new Error("Method not implemented.");
     }
 
