@@ -27,8 +27,8 @@ export class ProxyTransactionRunner<
         private readonly adapterName: TAdapters | undefined,
     ) {}
 
-    private async getRunner(): Promise<ITransactionRunner> {
-        const transactionContextResolver = await this.container.resolveOrFail(
+    private getRunner(): ITransactionRunner {
+        const transactionContextResolver = this.container.resolveOrFail(
             this.resolverToken,
         );
         return transactionContextResolver.use(this.adapterName);
@@ -42,6 +42,6 @@ export class ProxyTransactionRunner<
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     async run(propagation: any, asyncInvocable?: any): Promise<any> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        return (await this.getRunner()).run(propagation, asyncInvocable);
+        return this.getRunner().run(propagation, asyncInvocable);
     }
 }

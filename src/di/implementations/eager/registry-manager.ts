@@ -42,7 +42,7 @@ type RegisterValueElement = {
  */
 type RegisterFunctionElement = {
     type: typeof REGISTER_ELEMENT_TYPE.FUNC;
-    [VALUE_KEY]: () => Promise<unknown>;
+    [VALUE_KEY]: () => unknown;
 };
 
 /**

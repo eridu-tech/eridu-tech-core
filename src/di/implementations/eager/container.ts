@@ -269,19 +269,17 @@ export class Container implements IContainer {
             initNode: (nodeId) => {
                 const factoryArrayArgs: Array<{
                     key: string | number;
-                    value: () => Promise<unknown>;
+                    value: () => unknown;
                 }> = this.graphManager.dependencyOf(nodeId).map((dep) => {
                     if (
                         this.graphManager.isSingleton(dep) ||
                         this.graphManager.isScoped(dep)
                     ) {
-                        const getValueLazy = async () =>
-                            Promise.resolve(
-                                this.registryManager.getAsValueOrThrow({
-                                    token: dep,
-                                    type: this.graphManager.getLifespan(dep),
-                                }),
-                            );
+                        const getValueLazy = () =>
+                            this.registryManager.getAsValueOrThrow({
+                                token: dep,
+                                type: this.graphManager.getLifespan(dep),
+                            });
 
                         const cachedFunction = reuse({
                             func: getValueLazy,
@@ -293,14 +291,14 @@ export class Container implements IContainer {
                             value: cachedFunction,
                         };
                     } else if (this.graphManager.isTransient(dep)) {
-                        const valueAsAsyncFunc =
+                        const valueAsFunc =
                             this.registryManager.getAsFunctionOrThrow({
                                 token: dep,
                                 type: this.graphManager.getLifespan(dep),
                             });
                         return {
                             key: this.graphManager.getArgKey([nodeId, dep]),
-                            value: valueAsAsyncFunc,
+                            value: valueAsFunc,
                         };
                     }
 
@@ -315,24 +313,20 @@ export class Container implements IContainer {
                 const serviceFactory =
                     this.graphManager.getTransientNodeOrThrow(nodeId).service;
 
-                const zeroArgsServiceFactory = async () => {
-                    const resolvedInputs = await Promise.all(
-                        factoryArrayArgs.map(async (entry) => ({
-                            key: entry.key,
-                            value: await entry.value(),
-                        })),
-                    );
+                const zeroArgsServiceFactory = () => {
+                    const resolvedInputs = factoryArrayArgs.map((entry) => ({
+                        key: entry.key,
+                        value: entry.value(),
+                    }));
 
                     const resolvedFactoryArgs =
                         this.transformArrayDepToRecordDep(resolvedInputs);
 
-                    const value = await callInvocable(
+                    return callInvocable(
                         serviceFactory,
                         resolvedFactoryArgs,
                         this.settings.executionContext,
                     );
-
-                    return value;
                 };
 
                 this.registryManager.save({
@@ -575,7 +569,7 @@ export class Container implements IContainer {
             );
         };
 
-        const has = async <T>(token: DiToken<T>) => {
+        const has = <T>(token: DiToken<T>) => {
             if (!exists(token)) {
                 return false;
             }
@@ -586,7 +580,7 @@ export class Container implements IContainer {
             return this._has(token);
         };
 
-        const get = async <T>(token: DiToken<T>) => {
+        const get = <T>(token: DiToken<T>) => {
             if (!exists(token)) {
                 return null;
             }
@@ -597,7 +591,7 @@ export class Container implements IContainer {
             return this._resolve(token);
         };
 
-        const getOrFail = async <T>(token: DiToken<T>) => {
+        const getOrFail = <T>(token: DiToken<T>) => {
             if (!exists(token)) {
                 throw CanNotResolveServiceDiError.create({
                     flag: CanNotResolveServiceDiError.FLAG.NOT_REGISTERED_TOKEN,
@@ -765,15 +759,12 @@ export class Container implements IContainer {
         });
     }
 
-    private async resolveOrGiveExplanation<TType>(
-        token: DiToken<TType>,
-    ): Promise<
+    private resolveOrGiveExplanation<TType>(token: DiToken<TType>):
         | { success: true; value: TType }
         | {
               success: false;
               explanation: CanNotResolveServiceDiErrorCreateData;
-          }
-    > {
+          } {
         const tokenExistInIsolatedRegistry =
             this.registryManager.existInIsolatedRegistry(token);
 
@@ -812,10 +803,8 @@ export class Container implements IContainer {
     }
 
     // internal resolver. Do not care if called inside DynamicServiceProvider unlike public
-    private async _resolve<TType>(
-        token: DiToken<TType>,
-    ): Promise<TType | null> {
-        const res = await this.resolveOrGiveExplanation(token);
+    private _resolve<TType>(token: DiToken<TType>): TType | null {
+        const res = this.resolveOrGiveExplanation(token);
         if (res.success) {
             return res.value;
         }
@@ -823,15 +812,15 @@ export class Container implements IContainer {
     }
 
     // internal resolveOrFail. Do not care if called inside DynamicServiceProvider unlike public
-    private async _resolveOrFail<TType>(token: DiToken<TType>): Promise<TType> {
-        const result = await this.resolveOrGiveExplanation(token);
+    private _resolveOrFail<TType>(token: DiToken<TType>): TType {
+        const result = this.resolveOrGiveExplanation(token);
         if (!result.success) {
             throw CanNotResolveServiceDiError.create(result.explanation);
         }
         return result.value;
     }
 
-    async resolve<TType>(token: DiToken<TType>): Promise<TType | null> {
+    resolve<TType>(token: DiToken<TType>): TType | null {
         this.throwIfContainerNotActive(this.resolve.name);
         this.throwIfInsideDynamicServiceProvider(this.resolve.name);
 
@@ -842,13 +831,12 @@ export class Container implements IContainer {
         return value as TType;
     }
 
-    private async resolveSingleton<TType>(
-        token: DiToken<TType>,
-    ): Promise<
+    private resolveSingleton<TType>(token: DiToken<TType>):
         | { success: true; value: TType }
-        | { success: false; explanation: CanNotResolveServiceDiErrorCreateData }
-    > {
-        await Promise.resolve();
+        | {
+              success: false;
+              explanation: CanNotResolveServiceDiErrorCreateData;
+          } {
         if (!this.graphManager.isSingleton(token)) {
             throw UnexpectedError.create(
                 `Excepted token to exist in graph and be singleton`,
@@ -876,12 +864,12 @@ export class Container implements IContainer {
         return { success: true, value: this.assumeType<TType>(value) };
     }
 
-    private async resolveTransient<TType>(
-        token: DiToken<TType>,
-    ): Promise<
+    private resolveTransient<TType>(token: DiToken<TType>):
         | { success: true; value: TType }
-        | { success: false; explanation: CanNotResolveServiceDiErrorCreateData }
-    > {
+        | {
+              success: false;
+              explanation: CanNotResolveServiceDiErrorCreateData;
+          } {
         if (!this.graphManager.isTransient(token)) {
             throw UnexpectedError.create(
                 `Excepted token to exist in graph and be transient`,
@@ -912,7 +900,7 @@ export class Container implements IContainer {
             token,
             type: INTERNAL_LIFETIME.TRANSIENT,
         });
-        const value = await factory();
+        const value = factory();
 
         if (value === null) {
             return {
@@ -927,15 +915,12 @@ export class Container implements IContainer {
         return { success: true, value: this.assumeType<TType>(value) };
     }
 
-    private async resolveScoped<TType>(token: DiToken<TType>): Promise<
+    private resolveScoped<TType>(token: DiToken<TType>):
         | { success: true; value: TType }
         | {
               success: false;
               explanation: CanNotResolveServiceDiErrorCreateData;
-          }
-    > {
-        await Promise.resolve();
-
+          } {
         if (!this.graphManager.isScoped(token)) {
             throw UnexpectedError.create(
                 `Excepted token to exist in graph and be scoped`,
@@ -996,13 +981,12 @@ export class Container implements IContainer {
         return { success: true, value: this.assumeType<TType>(value) };
     }
 
-    private async resolveDynamic<TType>(
-        token: DiToken<TType>,
-    ): Promise<
+    private resolveDynamic<TType>(token: DiToken<TType>):
         | { success: true; value: TType }
-        | { success: false; explanation: CanNotResolveServiceDiErrorCreateData }
-    > {
-        await Promise.resolve();
+        | {
+              success: false;
+              explanation: CanNotResolveServiceDiErrorCreateData;
+          } {
         if (!this.graphManager.isDynamic(token)) {
             throw UnexpectedError.create(
                 `Excepted token to exist in graph and be dynamic`,
@@ -1058,21 +1042,21 @@ export class Container implements IContainer {
         return { success: true, value: this.assumeType<TType>(value) };
     }
 
-    async resolveOr<TType>(
+    resolveOr<TType>(
         token: DiToken<TType>,
         defaultValue: NoInfer<TType>,
-    ): Promise<TType> {
+    ): TType {
         this.throwIfContainerNotActive(this.resolveOr.name);
         this.throwIfInsideDynamicServiceProvider(this.resolveOr.name);
 
-        const result = await this.resolveOrGiveExplanation(token);
+        const result = this.resolveOrGiveExplanation(token);
         if (result.success) {
             return result.value;
         }
         return defaultValue;
     }
 
-    async resolveOrFail<TType>(token: DiToken<TType>): Promise<TType> {
+    resolveOrFail<TType>(token: DiToken<TType>): TType {
         this.throwIfContainerNotActive(this.resolveOrFail.name);
         this.throwIfInsideDynamicServiceProvider(this.resolveOrFail.name);
 
@@ -1080,12 +1064,12 @@ export class Container implements IContainer {
     }
 
     // internal has. Do not care if called inside DynamicServiceProvider unlike public
-    private async _has(token: DiToken): Promise<boolean> {
-        const res = await this._resolve(token);
+    private _has(token: DiToken): boolean {
+        const res = this._resolve(token);
         return res !== null;
     }
 
-    async has(token: DiToken): Promise<boolean> {
+    has(token: DiToken): boolean {
         this.throwIfContainerNotActive(this.resolve.name);
         this.throwIfInsideDynamicServiceProvider(this.resolve.name);
         return this._has(token);

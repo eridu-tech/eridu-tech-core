@@ -68,7 +68,9 @@ export class ProxyExecutionContext implements IAsyncExecutionContext {
     }
 
     private resolve(): Promise<IAsyncExecutionContext> {
-        return this.container.resolveOrFail(this.executionContextToken);
+        return Promise.resolve(
+            this.container.resolveOrFail(this.executionContextToken),
+        );
     }
 
     private chain(

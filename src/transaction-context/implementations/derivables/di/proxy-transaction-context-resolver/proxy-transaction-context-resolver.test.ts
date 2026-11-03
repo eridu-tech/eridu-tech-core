@@ -111,18 +111,18 @@ describe("class: ProxyTransactionContextResolver", () => {
             const adapter2 = new NoOpTransactionAdapter(null);
             start2 = vi.spyOn(adapter2, "start");
 
+            const resolver = new TransactionContextResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+                executionContext,
+            });
+            await resolver.init();
             container.registerFactory({
                 token: TransactionContextResolver,
-                factory: async () => {
-                    const resolver = new TransactionContextResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                        executionContext,
-                    });
-                    await resolver.init();
+                factory: () => {
                     return resolver;
                 },
                 deps: {},
@@ -185,18 +185,18 @@ describe("class: ProxyTransactionContextResolver", () => {
             const adapter2 = new NoOpTransactionAdapter(null);
             start2 = vi.spyOn(adapter2, "start");
 
+            const resolver = new TransactionContextResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+                executionContext,
+            });
+            await resolver.init();
             container.registerFactory({
                 token: TransactionContextResolver,
-                factory: async () => {
-                    const resolver = new TransactionContextResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                        executionContext,
-                    });
-                    await resolver.init();
+                factory: () => {
                     return resolver;
                 },
                 deps: {},

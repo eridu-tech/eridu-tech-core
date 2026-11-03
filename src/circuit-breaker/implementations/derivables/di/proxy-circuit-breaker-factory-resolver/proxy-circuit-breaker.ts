@@ -42,8 +42,8 @@ export class ProxyCircuitBreaker<TAdapters extends string = string>
             CircuitBreakerFactoryCreateSettings | undefined,
     ) {}
 
-    private async getCircuitBreaker(): Promise<ICircuitBreaker> {
-        const factoryResolver = await this.container.resolveOrFail(
+    private getCircuitBreaker(): ICircuitBreaker {
+        const factoryResolver = this.container.resolveOrFail(
             this.resolverToken,
         );
         if (this.circuitBreaker === null) {
@@ -59,7 +59,7 @@ export class ProxyCircuitBreaker<TAdapters extends string = string>
     }
 
     async internalSerializationId(): Promise<string> {
-        const circuitBreaker = await this.getCircuitBreaker();
+        const circuitBreaker = this.getCircuitBreaker();
         if (!isInternalSerdeIdentifiable(circuitBreaker)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved circuit breaker, it does not implement internal serialization",
@@ -73,20 +73,20 @@ export class ProxyCircuitBreaker<TAdapters extends string = string>
     }
 
     async getState(): Promise<CircuitBreakerState> {
-        return (await this.getCircuitBreaker()).getState();
+        return this.getCircuitBreaker().getState();
     }
 
     async runOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue> {
-        return (await this.getCircuitBreaker()).runOrFail(asyncInvocable);
+        return this.getCircuitBreaker().runOrFail(asyncInvocable);
     }
 
     async isolate(): Promise<void> {
-        return (await this.getCircuitBreaker()).isolate();
+        return this.getCircuitBreaker().isolate();
     }
 
     async reset(): Promise<void> {
-        return (await this.getCircuitBreaker()).reset();
+        return this.getCircuitBreaker().reset();
     }
 }

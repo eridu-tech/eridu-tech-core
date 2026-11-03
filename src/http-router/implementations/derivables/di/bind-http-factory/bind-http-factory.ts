@@ -37,7 +37,7 @@ export function bindHttpFactory(container: IContainer) {
         method: keyof ConditionalPick<TInstance, HttpHandler>,
     ): HttpHandlerFn => {
         return async (...args) => {
-            const controller = await container.resolveOrFail(token);
+            const controller = container.resolveOrFail(token);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const handler = controller[
                 method as keyof TInstance

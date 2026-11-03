@@ -165,19 +165,17 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
             const adapter2 = new NoOpCircuitBreakerAdapter();
             getState2 = vi.spyOn(adapter2, "getState");
 
+            const factory = new CircuitBreakerFactoryResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+            });
+            await factory.init();
             container.registerFactory({
                 token: CircuitBreakerFactoryResolver,
-                factory: async () => {
-                    const factory = new CircuitBreakerFactoryResolver<Adapters>(
-                        {
-                            adapters: {
-                                adapter1,
-                                adapter2,
-                            },
-                            defaultAdapter: "adapter1",
-                        },
-                    );
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},
@@ -238,19 +236,17 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
             const adapter2 = new NoOpCircuitBreakerAdapter();
             getState2 = vi.spyOn(adapter2, "getState");
 
+            const factory = new CircuitBreakerFactoryResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+            });
+            await factory.init();
             container.registerFactory({
                 token: CircuitBreakerFactoryResolver,
-                factory: async () => {
-                    const factory = new CircuitBreakerFactoryResolver<Adapters>(
-                        {
-                            adapters: {
-                                adapter1,
-                                adapter2,
-                            },
-                            defaultAdapter: "adapter1",
-                        },
-                    );
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},

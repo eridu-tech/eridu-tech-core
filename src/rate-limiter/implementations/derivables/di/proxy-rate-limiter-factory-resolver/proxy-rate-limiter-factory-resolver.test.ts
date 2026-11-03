@@ -167,18 +167,18 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
             const adapter2 = new NoOpRateLimiterAdapter();
             getState2 = vi.spyOn(adapter2, "getState");
 
+            const factory = new RateLimiterFactoryResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+                serde,
+            });
+            await factory.init();
             container.registerFactory({
                 token: RateLimiterFactoryResolver,
-                factory: async () => {
-                    const factory = new RateLimiterFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},
@@ -246,18 +246,18 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
             const adapter2 = new NoOpRateLimiterAdapter();
             getState2 = vi.spyOn(adapter2, "getState");
 
+            const factory = new RateLimiterFactoryResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+                serde,
+            });
+            await factory.init();
             container.registerFactory({
                 token: RateLimiterFactoryResolver,
-                factory: async () => {
-                    const factory = new RateLimiterFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},
