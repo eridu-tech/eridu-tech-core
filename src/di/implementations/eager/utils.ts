@@ -41,21 +41,18 @@ export function tokenToString(token: DiToken): string {
 /**
  * @internal
  */
-type CachedFunc<T, T2> = (cacheArgs: {
-    nodeId: T;
-    func: () => Promise<T2>;
-}) => () => Promise<T2>;
+type CachedFunc<T, T2> = (cacheArgs: { nodeId: T; func: () => T2 }) => () => T2;
 
 /**
  * @internal
  */
 export function createFunctionCache<T1, T2>(): CachedFunc<T1, T2> {
-    const functionCache = new Map<T1, () => Promise<T2>>();
+    const functionCache = new Map<T1, () => T2>();
 
     const reusedFunc = (cacheArgs: {
         nodeId: T1;
-        func: () => Promise<T2>;
-    }): (() => Promise<T2>) => {
+        func: () => T2;
+    }): (() => T2) => {
         const cachedFunc = functionCache.get(cacheArgs.nodeId);
 
         const isCachedAlready = cachedFunc !== undefined;

@@ -114,7 +114,7 @@ export type ServiceFactory<
     TRegisteredType = unknown,
 > = Invocable<
     [deps: TDeps, executionContext: IExecutionContext],
-    Promisable<TRegisteredType>
+    TRegisteredType
 >;
 
 /**
@@ -175,10 +175,16 @@ export type FactoryRegistrationBase<
  */
 export type ServiceHooks<TRegisteredType = unknown> = {
     /** Invoked after the container is initialized, with the resolved service instance. */
-    onInit?: Invocable<[registration: TRegisteredType], Promisable<void>>;
+    onInit?: Invocable<
+        [registration: NoInfer<TRegisteredType>],
+        Promisable<void>
+    >;
 
     /** Invoked before the container is deinitialized, with the resolved service instance. */
-    onDeInit?: Invocable<[registration: TRegisteredType], Promisable<void>>;
+    onDeInit?: Invocable<
+        [registration: NoInfer<TRegisteredType>],
+        Promisable<void>
+    >;
 };
 
 export type FactoryRegistrationSingleton<
@@ -332,7 +338,7 @@ export type IServiceResolver = {
      * @throws {@link InvalidMethodCallDiError} If the container is inactive (e.g., called before {@link IContainer.init} or after {@link IContainer.deInit}).
      * @returns The resolved service, or `null` if not found.
      */
-    resolve<TType>(token: DiToken<TType>): Promise<TType | null>;
+    resolve<TType>(token: DiToken<TType>): TType | null;
 
     /**
      * Resolves a service by token, returning the `defaultValue` if not found.
@@ -346,7 +352,7 @@ export type IServiceResolver = {
     resolveOr<TType>(
         token: DiToken<TType>,
         defaultValue: NoInfer<TType>,
-    ): Promise<TType>;
+    ): TType;
 
     /**
      * Resolves a service by token throwing {@link CanNotResolveServiceDiError} if not found.
@@ -357,7 +363,7 @@ export type IServiceResolver = {
      *  @throws {@link InvalidMethodCallDiError} If the container is inactive (e.g., called before {@link IContainer.init} or after {@link IContainer.deInit}).
      * @returns The resolved service.
      */
-    resolveOrFail<TType>(token: DiToken<TType>): Promise<TType>;
+    resolveOrFail<TType>(token: DiToken<TType>): TType;
 
     /**
      * Checks whether a token can be resolved by calling {@link IContainer.resolve}.
@@ -375,7 +381,7 @@ export type IServiceResolver = {
      * @throws {@link InvalidMethodCallDiError} If the container is inactive (e.g., called before {@link IContainer.init} or after {@link IContainer.deInit}).
      * @returns `true` if the token can be resolved, `false` otherwise.
      */
-    has(token: DiToken): Promise<boolean>;
+    has(token: DiToken): boolean;
 };
 
 /**
@@ -448,7 +454,7 @@ export type IDynamicServiceRegister = {
      */
     get<TRegisteredType>(
         token: DiToken<TRegisteredType>,
-    ): Promise<TRegisteredType | null>;
+    ): TRegisteredType | null;
 
     /**
      * Retrieves the registered value from the execution context for a given dynamic token, throwing an error if it cannot be resolved.
@@ -460,7 +466,7 @@ export type IDynamicServiceRegister = {
      */
     getOrFail<TRegisteredType>(
         token: DiToken<TRegisteredType>,
-    ): Promise<TRegisteredType>;
+    ): TRegisteredType;
 
     /**
      * Checks whether a value can be resolved for a given dynamic token.
@@ -469,7 +475,7 @@ export type IDynamicServiceRegister = {
      * @returns `true` if the token exists in the execution context and is registered as dynamic in the graph; otherwise, `false`.
      *
      */
-    has<TRegisteredType>(token: DiToken<TRegisteredType>): Promise<boolean>;
+    has(token: DiToken): boolean;
 };
 
 /**

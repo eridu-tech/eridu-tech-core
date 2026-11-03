@@ -22,17 +22,15 @@ export class DynamicServiceRegister implements IDynamicServiceRegister {
     }
     get<TRegisteredType>(
         token: DiToken<TRegisteredType>,
-    ): Promise<TRegisteredType | null> {
+    ): TRegisteredType | null {
         return this.args.get(token);
     }
     getOrFail<TRegisteredType>(
         token: DiToken<TRegisteredType>,
-    ): Promise<TRegisteredType> {
+    ): TRegisteredType {
         return this.args.getOrFail(token);
     }
-    async has<TRegisteredType>(
-        token: DiToken<TRegisteredType>,
-    ): Promise<boolean> {
+    has(token: DiToken): boolean {
         return this.args.has(token);
     }
 }
