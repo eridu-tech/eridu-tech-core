@@ -68,20 +68,16 @@ describe("class: RateLimiterFactory", () => {
                         Promise.resolve(state),
                     );
 
-                    try {
-                        await rateLimiterFactory
+                    await expect(
+                        rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: true,
                             })
                             .runOrFail(() => {
                                 throw new Error("Unexpected error");
-                            });
-                    } catch (error: unknown) {
-                        if (!(error instanceof UnexpectedErrorA)) {
-                            throw error;
-                        }
-                    }
+                            }),
+                    ).rejects.toThrow("Unexpected error");
 
                     expect(updateStateSpy).toHaveBeenCalledOnce();
                 });
@@ -120,20 +116,16 @@ describe("class: RateLimiterFactory", () => {
                         .spyOn(adapter, "getState")
                         .mockImplementation(() => Promise.resolve(state));
 
-                    try {
-                        await rateLimiterFactory
+                    await expect(
+                        rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: true,
                             })
                             .runOrFail(() => {
                                 throw new Error("Unexpected error");
-                            });
-                    } catch (error: unknown) {
-                        if (!(error instanceof UnexpectedErrorA)) {
-                            throw error;
-                        }
-                    }
+                            }),
+                    ).rejects.toThrow("Unexpected error");
 
                     expect(getStateSpy).toHaveBeenCalledOnce();
                 });
@@ -200,20 +192,16 @@ describe("class: RateLimiterFactory", () => {
                         Promise.resolve(state),
                     );
 
-                    try {
-                        await rateLimiterFactory
+                    await expect(
+                        rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: false,
                             })
                             .runOrFail(() => {
                                 throw new Error("Unexpected error");
-                            });
-                    } catch (error: unknown) {
-                        if (!(error instanceof UnexpectedErrorA)) {
-                            throw error;
-                        }
-                    }
+                            }),
+                    ).rejects.toThrow("Unexpected error");
 
                     expect(updateStateSpy).toHaveBeenCalledOnce();
                 });
@@ -252,20 +240,16 @@ describe("class: RateLimiterFactory", () => {
                         .spyOn(adapter, "getState")
                         .mockImplementation(() => Promise.resolve(state));
 
-                    try {
-                        await rateLimiterFactory
+                    await expect(
+                        rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: false,
                             })
                             .runOrFail(() => {
                                 throw new Error("Unexpected error");
-                            });
-                    } catch (error: unknown) {
-                        if (!(error instanceof UnexpectedErrorA)) {
-                            throw error;
-                        }
-                    }
+                            }),
+                    ).rejects.toThrow("Unexpected error");
 
                     expect(getStateSpy).not.toHaveBeenCalled();
                 });
