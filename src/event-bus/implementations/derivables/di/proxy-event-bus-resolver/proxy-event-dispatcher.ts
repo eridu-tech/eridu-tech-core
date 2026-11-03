@@ -31,7 +31,7 @@ export class ProxyEventDispatcher<
         eventName: TEventName,
         event: TEventMap[TEventName],
     ): Promise<void> {
-        const eventBusResolver = await this.container.resolveOrFail(
+        const eventBusResolver = this.container.resolveOrFail(
             this.resolverToken,
         );
         await eventBusResolver.use(this.adapterName).dispatch(eventName, event);
