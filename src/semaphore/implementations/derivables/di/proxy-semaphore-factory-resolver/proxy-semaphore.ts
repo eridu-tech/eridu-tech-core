@@ -40,8 +40,8 @@ export class ProxySemaphore<
         private readonly createSettings: Required<SemaphoreFactoryCreateSettings>,
     ) {}
 
-    private async getSemaphore(): Promise<ISemaphore> {
-        const factoryResolver = await this.container.resolveOrFail(
+    private getSemaphore(): ISemaphore {
+        const factoryResolver = this.container.resolveOrFail(
             this.resolverToken,
         );
         if (this.semaphore === null) {
@@ -57,7 +57,7 @@ export class ProxySemaphore<
     }
 
     async internalSerializationId(): Promise<string> {
-        const semaphore = await this.getSemaphore();
+        const semaphore = this.getSemaphore();
         if (!isInternalSerdeIdentifiable(semaphore)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved semaphore, it does not implement internal serialization",
@@ -85,40 +85,40 @@ export class ProxySemaphore<
     }
 
     async getState(): Promise<ISemaphoreState> {
-        return (await this.getSemaphore()).getState();
+        return this.getSemaphore().getState();
     }
 
     async runOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue> {
-        return (await this.getSemaphore()).runOrFail(asyncInvocable);
+        return this.getSemaphore().runOrFail(asyncInvocable);
     }
 
     async acquire(): Promise<boolean> {
-        return (await this.getSemaphore()).acquire();
+        return this.getSemaphore().acquire();
     }
 
     async acquireOrFail(): Promise<void> {
-        return (await this.getSemaphore()).acquireOrFail();
+        return this.getSemaphore().acquireOrFail();
     }
 
     async release(): Promise<boolean> {
-        return (await this.getSemaphore()).release();
+        return this.getSemaphore().release();
     }
 
     async releaseOrFail(): Promise<void> {
-        return (await this.getSemaphore()).releaseOrFail();
+        return this.getSemaphore().releaseOrFail();
     }
 
     async forceReleaseAll(): Promise<boolean> {
-        return (await this.getSemaphore()).forceReleaseAll();
+        return this.getSemaphore().forceReleaseAll();
     }
 
     async refresh(ttl?: ITimeSpan): Promise<boolean> {
-        return (await this.getSemaphore()).refresh(ttl);
+        return this.getSemaphore().refresh(ttl);
     }
 
     async refreshOrFail(ttl?: ITimeSpan): Promise<void> {
-        return (await this.getSemaphore()).refreshOrFail(ttl);
+        return this.getSemaphore().refreshOrFail(ttl);
     }
 }

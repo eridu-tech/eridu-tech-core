@@ -160,6 +160,14 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             const adapter2 = new NoOpSemaphoreAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
 
+            const factory = new SemaphoreFactoryResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+            });
+            await factory.init();
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -168,15 +176,7 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             });
             container.registerFactory({
                 token: SemaphoreFactoryResolver,
-                factory: async () => {
-                    const factory = new SemaphoreFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},
@@ -264,6 +264,14 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             const adapter2 = new NoOpSemaphoreAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
 
+            const factory = new SemaphoreFactoryResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+            });
+            await factory.init();
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -272,15 +280,7 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             });
             container.registerFactory({
                 token: SemaphoreFactoryResolver,
-                factory: async () => {
-                    const factory = new SemaphoreFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},
