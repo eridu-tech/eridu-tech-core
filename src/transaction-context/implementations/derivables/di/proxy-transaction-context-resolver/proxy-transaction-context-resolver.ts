@@ -89,8 +89,8 @@ export class ProxyTransactionContextResolver<
         asyncInvocable: AsyncLazy<void>,
         settings?: AfterCommitSettings,
     ): Promise<void> {
-        return (
-            await this.container.resolveOrFail(this.resolverToken)
-        ).afterCommit(asyncInvocable, settings);
+        return this.container
+            .resolveOrFail(this.resolverToken)
+            .afterCommit(asyncInvocable, settings);
     }
 }
