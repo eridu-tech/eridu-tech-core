@@ -64,8 +64,8 @@ describe("class: ProxyEventBusResolver", () => {
                         defaultAdapter: "adapter1",
                     });
                 },
-                onInit: async (resolver) => {
-                    await resolver.init();
+                onInit: (resolver) => {
+                    resolver.init();
                 },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
