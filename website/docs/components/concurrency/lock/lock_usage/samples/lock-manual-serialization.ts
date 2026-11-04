@@ -14,5 +14,5 @@ const lockFactory = new LockFactory({
 });
 
 const lock = lockFactory.create("resource");
-const serializedLock = await serde.serialize(lock);
-const deserializedLock = await serde.deserialize(serializedLock);
+const serializedLock = serde.serialize(lock);
+const deserializedLock = serde.deserialize(serializedLock);

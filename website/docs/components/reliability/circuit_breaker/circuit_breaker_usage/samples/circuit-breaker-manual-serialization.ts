@@ -14,7 +14,7 @@ const circuitBreakerFactory = new CircuitBreakerFactory({
 });
 
 const circuitBreaker = circuitBreakerFactory.create("resource");
-const serializedCircuitBreaker = await serde.serialize(circuitBreaker);
-const deserializedCircuitBreaker = await serde.deserialize(
+const serializedCircuitBreaker = serde.serialize(circuitBreaker);
+const deserializedCircuitBreaker = serde.deserialize(
     serializedCircuitBreaker,
 );

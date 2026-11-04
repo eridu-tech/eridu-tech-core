@@ -16,5 +16,5 @@ const semaphoreFactory = new SemaphoreFactory({
 const semaphore = semaphoreFactory.create("resource", {
     limit: 2,
 });
-const serializedSemaphore = await serde.serialize(semaphore);
-const deserializedSemaphore = await serde.deserialize(serializedSemaphore);
+const serializedSemaphore = serde.serialize(semaphore);
+const deserializedSemaphore = serde.deserialize(serializedSemaphore);

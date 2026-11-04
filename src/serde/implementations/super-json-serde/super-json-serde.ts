@@ -17,8 +17,7 @@ import type {
 } from "@/serde/contracts/_module-exports.js";
 
 /**
- * Serializes and deserializes values with @eridu-tech/superjson,
- * the async-capable fork of SuperJSON.
+ * Serializes and deserializes values with SuperJSON.
  *
  * Supports standard structured data plus custom transformers for runtime-specific
  * values that need stable serialization across boundaries.

@@ -16,5 +16,5 @@ const sharedLockFactory = new SharedLockFactory({
 const sharedLock = sharedLockFactory.create("resource", {
     limit: 2,
 });
-const serializedSharedLock = await serde.serialize(sharedLock);
-const deserializedSharedLock = await serde.deserialize(serializedSharedLock);
+const serializedSharedLock = serde.serialize(sharedLock);
+const deserializedSharedLock = serde.deserialize(serializedSharedLock);
