@@ -5,7 +5,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { UninitializedEnvAccessorError } from "@/env-accessor/contracts/env-accessor.errors.js";
 import type {
-    IInitizable,
+    IAsyncInitizable,
     UndefinedToNull,
 } from "@/utilities/_module-exports.js";
 
@@ -25,7 +25,7 @@ export type BaseEnvConfig = Partial<Record<string, string | number | boolean>>;
  * @group Contracts
  */
 export type IEnvAccessor<TEnvConfig extends BaseEnvConfig = BaseEnvConfig> =
-    IInitizable & {
+    IAsyncInitizable & {
         /**
          * Get a value from the environment config, or null if missing/undefined.
          *
