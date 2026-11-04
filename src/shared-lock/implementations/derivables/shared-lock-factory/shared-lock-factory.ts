@@ -165,7 +165,7 @@ export class SharedLockFactory implements ISharedLockFactory, IInitizable {
         );
     }
 
-    async init(): Promise<void> {
+    init(): void {
         const transformer = new SharedLockSerdeTransformer({
             adapter: this.adapter,
             defaultRefreshTime: this.defaultRefreshTime,
@@ -174,7 +174,6 @@ export class SharedLockFactory implements ISharedLockFactory, IInitizable {
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
-        return Promise.resolve();
     }
 
     create(
