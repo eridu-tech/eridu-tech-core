@@ -97,8 +97,8 @@ describe("class: LockFactory", () => {
             await lockFactory2.init();
 
             const lock2 = lockFactory2.create(key, { ttl });
-            const deserializeLock2 = await serde.deserialize<ILock>(
-                await serde.serialize(lock2),
+            const deserializeLock2 = serde.deserialize<ILock>(
+                serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquire();
 
@@ -127,8 +127,8 @@ describe("class: LockFactory", () => {
             await lockFactory2.init();
             const lock2 = lockFactory2.create(key, { ttl });
 
-            const deserializeLock2 = await serde.deserialize<ILock>(
-                await serde.serialize(lock2),
+            const deserializeLock2 = serde.deserialize<ILock>(
+                serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquire();
 
@@ -159,8 +159,8 @@ describe("class: LockFactory", () => {
             const lockFactory = new LockFactory({ adapter, serde });
             await lockFactory.init();
 
-            const deserializedLock = await serde.deserialize<ILock>(
-                await serde.serialize(lockFactory.create("a", { ttl: null })),
+            const deserializedLock = serde.deserialize<ILock>(
+                serde.serialize(lockFactory.create("a", { ttl: null })),
             );
             const promise = deserializedLock.acquire();
 

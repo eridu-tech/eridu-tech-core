@@ -54,14 +54,14 @@ export class ProxyLock<TAdapters extends string = string> implements ILock {
         return LOCK_CLASS_TAG;
     }
 
-    async internalSerializationId(): Promise<string> {
+    internalSerializationId(): string {
         const lock = this.getLock();
         if (!isInternalSerdeIdentifiable(lock)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved lock, it does not implement internal serialization",
             );
         }
-        return await lock.internalSerializationId();
+        return lock.internalSerializationId();
     }
 
     get key(): string {
