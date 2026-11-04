@@ -7,8 +7,8 @@ serde.registerCustom(ListCollection.serdeTransformer);
 serde.registerCustom(IterableCollection.serdeTransformer);
 
 const listCollection = new ListCollection([1, 2, 3, 4, 5]);
-const serializedListCollection = await serde.serialize(listCollection);
-const deserializedListCollection = await serde.deserialize<ListCollection>(
+const serializedListCollection = serde.serialize(listCollection);
+const deserializedListCollection = serde.deserialize<ListCollection>(
     serializedListCollection,
 );
 

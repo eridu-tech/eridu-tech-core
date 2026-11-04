@@ -15,5 +15,5 @@ const fileStorage = new FileStorage({
 });
 
 const file = fileStorage.create("file.txt");
-const serializedFIle = await serde.serialize(file);
-const deserializedFIle = await serde.deserialize(serializedFIle);
+const serializedFIle = serde.serialize(file);
+const deserializedFIle = serde.deserialize(serializedFIle);

@@ -16,5 +16,5 @@ const rateLimiterFactory = new RateLimiterFactory({
 const rateLimiter = rateLimiterFactory.create("resource", {
     limit: 10,
 });
-const serializedRateLimiter = await serde.serialize(rateLimiter);
-const deserializedRateLimiter = await serde.deserialize(serializedRateLimiter);
+const serializedRateLimiter = serde.serialize(rateLimiter);
+const deserializedRateLimiter = serde.deserialize(serializedRateLimiter);

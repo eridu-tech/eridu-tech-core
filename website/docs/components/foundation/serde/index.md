@@ -10,6 +10,8 @@ keywords:
 
 The `eridu-tech/serde` component provides seamless way to serialize/deserialize data and adding custom serialization/deserialization logic for custom data types.
 
+`serialize` and `deserialize` are synchronous, and so are the `isApplicable`, `serialize` and `deserialize` methods of the custom transformers.
+
 ## Initial configuration
 
 ```ts file=./samples/serde-initial-config.ts
