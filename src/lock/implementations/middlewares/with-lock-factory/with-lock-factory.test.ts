@@ -18,8 +18,8 @@ describe("function: withLockFactory", () => {
         defaultAdapter: "memory",
     });
 
-    beforeAll(async () => {
-        await lockFactoryResolver.init();
+    beforeAll(() => {
+        lockFactoryResolver.init();
     });
     beforeEach(() => {
         vi.restoreAllMocks();

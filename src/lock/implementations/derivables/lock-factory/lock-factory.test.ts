@@ -24,13 +24,13 @@ import type { KyselyLockTables } from "@/lock/implementations/adapters/kysely-lo
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: LockFactory", () => {
-    async function createLockFactory() {
+    function createLockFactory() {
         const serde = new SuperJsonSerde();
         const lockFactory = new LockFactory({
             serde,
             adapter: new MemoryLockAdapter(),
         });
-        await lockFactory.init();
+        lockFactory.init();
         return {
             lockFactory,
             serde,
@@ -81,7 +81,7 @@ describe("class: LockFactory", () => {
                 adapter: adapter1,
                 serde,
             });
-            await lockFactory1.init();
+            lockFactory1.init();
             const lock1 = lockFactory1.create(key, { ttl });
 
             await lock1.acquire();
@@ -94,7 +94,7 @@ describe("class: LockFactory", () => {
                 adapter: adapter2,
                 serde,
             });
-            await lockFactory2.init();
+            lockFactory2.init();
 
             const lock2 = lockFactory2.create(key, { ttl });
             const deserializeLock2 = serde.deserialize<ILock>(
@@ -114,7 +114,7 @@ describe("class: LockFactory", () => {
                 serializationId: "adapter1",
                 serde,
             });
-            await lockFactory1.init();
+            lockFactory1.init();
             const lock1 = lockFactory1.create(key, { ttl });
 
             await lock1.acquire();
@@ -124,7 +124,7 @@ describe("class: LockFactory", () => {
                 serializationId: "adapter2",
                 serde,
             });
-            await lockFactory2.init();
+            lockFactory2.init();
             const lock2 = lockFactory2.create(key, { ttl });
 
             const deserializeLock2 = serde.deserialize<ILock>(
@@ -141,7 +141,7 @@ describe("class: LockFactory", () => {
             const adapter = new MemoryLockAdapter();
             vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
             const lockFactory = new LockFactory({ adapter });
-            await lockFactory.init();
+            lockFactory.init();
 
             const promise = lockFactory.create("a", { ttl: null }).acquire();
 
@@ -157,7 +157,7 @@ describe("class: LockFactory", () => {
             const adapter = new MemoryLockAdapter();
             vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
             const lockFactory = new LockFactory({ adapter, serde });
-            await lockFactory.init();
+            lockFactory.init();
 
             const deserializedLock = serde.deserialize<ILock>(
                 serde.serialize(lockFactory.create("a", { ttl: null })),

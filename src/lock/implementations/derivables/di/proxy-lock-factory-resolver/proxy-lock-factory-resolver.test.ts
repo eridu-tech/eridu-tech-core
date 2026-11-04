@@ -57,8 +57,8 @@ describe("class: ProxyLockFactoryResolver", () => {
                         serde,
                     });
                 },
-                onInit: async (factory) => {
-                    await factory.init();
+                onInit: (factory) => {
+                    factory.init();
                 },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
@@ -150,17 +150,17 @@ describe("class: ProxyLockFactoryResolver", () => {
             container = new Container({
                 executionContext,
             });
-            const factory = new LockFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             container.registerFactory({
                 token: LockFactoryResolver,
                 factory: () => {
+                    const factory = new LockFactoryResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},
@@ -240,17 +240,17 @@ describe("class: ProxyLockFactoryResolver", () => {
             container = new Container({
                 executionContext,
             });
-            const factory = new LockFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             container.registerFactory({
                 token: LockFactoryResolver,
                 factory: () => {
+                    const factory = new LockFactoryResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},
