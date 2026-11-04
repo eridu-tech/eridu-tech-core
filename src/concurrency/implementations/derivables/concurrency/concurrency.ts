@@ -3,7 +3,7 @@
  */
 
 import type {
-    ConcurrencyCreateSettings,
+    TaskSettings,
     IConcurrency,
     ITask,
     TaskAllResult,
@@ -11,6 +11,7 @@ import type {
     TaskJoinResult,
 } from "@/concurrency/contracts/_module-exports.js";
 import type { IExecutionContext } from "@/execution-context/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/concurrency"`
@@ -23,43 +24,7 @@ export class Concurrency implements IConcurrency {
      */
     constructor(private readonly executionContext: IExecutionContext) {}
 
-    allSettled<
-        TType extends ReadonlyArray<ITask<PromiseSettledResult<unknown>>>,
-    >(values: TType): TaskAllResult<TType>;
-    allSettled<TType>(
-        iterable: Iterable<ITask<TType>>,
-    ): ITask<Array<PromiseSettledResult<TType>>>;
-    allSettled<TType>(
-        iterable: Iterable<ITask<TType>>,
-    ): ITask<Array<PromiseSettledResult<TType>>> {
-        throw new Error("Method not implemented.");
-    }
-
     get signal(): AbortSignal {
-        throw new Error("Method not implemented.");
-    }
-
-    all<TType extends ReadonlyArray<ITask>>(
-        values: TType,
-    ): TaskAllResult<TType>;
-    all<TType>(iterable: Iterable<ITask<TType>>): ITask<Array<TType>>;
-    all<TType>(iterable: Iterable<ITask<TType>>): ITask<Array<TType>> {
-        throw new Error("Method not implemented.");
-    }
-
-    any<TType extends ReadonlyArray<ITask>>(
-        values: TType,
-    ): TaskJoinResult<TType>;
-    any<TType>(values: Iterable<ITask<TType>>): ITask<TType>;
-    any<TType>(iterable: Iterable<ITask<TType>>): ITask<TType> {
-        throw new Error("Method not implemented.");
-    }
-
-    race<TType extends ReadonlyArray<ITask>>(
-        values: TType,
-    ): TaskJoinResult<TType>;
-    race<TType>(values: Iterable<ITask<TType>>): ITask<TType>;
-    race<TType>(iterable: Iterable<ITask<TType>>): ITask<TType> {
         throw new Error("Method not implemented.");
     }
 
@@ -69,8 +34,10 @@ export class Concurrency implements IConcurrency {
 
     create<TType>(
         invocable: TaskInvocable<TType>,
-        settings: ConcurrencyCreateSettings = {},
+        settings: TaskSettings = {},
     ): ITask<TType> {
+        const { timeout = null, signal = new AbortController().signal } =
+            settings;
         throw new Error("Method not implemented.");
     }
 
@@ -84,7 +51,74 @@ export class Concurrency implements IConcurrency {
         throw new Error("Method not implemented.");
     }
 
-    timeout(): ITask<void> {
+    timeout(time: ITimeSpan): ITask<void> {
+        throw new Error("Method not implemented.");
+    }
+
+    allSettled<
+        TType extends ReadonlyArray<ITask<PromiseSettledResult<unknown>>>,
+    >(values: TType, settings?: TaskSettings): TaskAllResult<TType>;
+    allSettled<TType>(
+        iterable: Iterable<ITask<TType>>,
+        settings?: TaskSettings,
+    ): ITask<Array<PromiseSettledResult<TType>>>;
+    allSettled<TType>(
+        iterable: Iterable<ITask<TType>>,
+        settings: TaskSettings = {},
+    ): ITask<Array<PromiseSettledResult<TType>>> {
+        const { timeout = null, signal = new AbortController().signal } =
+            settings;
+        throw new Error("Method not implemented.");
+    }
+
+    all<TType extends ReadonlyArray<ITask>>(
+        values: TType,
+        settings?: TaskSettings,
+    ): TaskAllResult<TType>;
+    all<TType>(
+        iterable: Iterable<ITask<TType>>,
+        settings?: TaskSettings,
+    ): ITask<Array<TType>>;
+    all<TType>(
+        iterable: Iterable<ITask<TType>>,
+        settings: TaskSettings = {},
+    ): ITask<Array<TType>> {
+        const { timeout = null, signal = new AbortController().signal } =
+            settings;
+        throw new Error("Method not implemented.");
+    }
+
+    any<TType extends ReadonlyArray<ITask>>(
+        values: TType,
+        settings?: TaskSettings,
+    ): TaskJoinResult<TType>;
+    any<TType>(
+        values: Iterable<ITask<TType>>,
+        settings?: TaskSettings,
+    ): ITask<TType>;
+    any<TType>(
+        iterable: Iterable<ITask<TType>>,
+        settings: TaskSettings = {},
+    ): ITask<TType> {
+        const { timeout = null, signal = new AbortController().signal } =
+            settings;
+        throw new Error("Method not implemented.");
+    }
+
+    race<TType extends ReadonlyArray<ITask>>(
+        values: TType,
+        settings?: TaskSettings,
+    ): TaskJoinResult<TType>;
+    race<TType>(
+        values: Iterable<ITask<TType>>,
+        settings?: TaskSettings,
+    ): ITask<TType>;
+    race<TType>(
+        iterable: Iterable<ITask<TType>>,
+        settings: TaskSettings = {},
+    ): ITask<TType> {
+        const { timeout = null, signal = new AbortController().signal } =
+            settings;
         throw new Error("Method not implemented.");
     }
 }

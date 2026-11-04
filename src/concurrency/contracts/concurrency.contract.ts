@@ -152,6 +152,7 @@ export type ITaskGroup = {
         TType extends ReadonlyArray<ITask<PromiseSettledResult<unknown>>>,
     >(
         values: TType,
+        settings?: TaskSettings,
     ): TaskAllResult<TType>;
 
     /**
@@ -163,6 +164,7 @@ export type ITaskGroup = {
      */
     allSettled<TType>(
         iterable: Iterable<ITask<TType>>,
+        settings?: TaskSettings,
     ): ITask<Array<PromiseSettledResult<TType>>>;
 
     /**
@@ -175,6 +177,7 @@ export type ITaskGroup = {
      */
     all<TType extends ReadonlyArray<ITask>>(
         values: TType,
+        settings?: TaskSettings,
     ): TaskAllResult<TType>;
 
     /**
@@ -184,7 +187,10 @@ export type ITaskGroup = {
      * @returns A task resolving to an array of each task's result.
      * @throws {AggregateError}
      */
-    all<TType>(iterable: Iterable<ITask<TType>>): ITask<Array<TType>>;
+    all<TType>(
+        iterable: Iterable<ITask<TType>>,
+        settings?: TaskSettings,
+    ): ITask<Array<TType>>;
 
     /**
      * Resolves with the result of the first task that succeeds.
@@ -194,6 +200,7 @@ export type ITaskGroup = {
      */
     any<TType extends ReadonlyArray<ITask>>(
         values: TType,
+        settings?: TaskSettings,
     ): TaskJoinResult<TType>;
 
     /**
@@ -201,7 +208,10 @@ export type ITaskGroup = {
      *
      * @param values - The tasks to compete.
      */
-    any<TType>(values: Iterable<ITask<TType>>): ITask<TType>;
+    any<TType>(
+        values: Iterable<ITask<TType>>,
+        settings?: TaskSettings,
+    ): ITask<TType>;
 
     /**
      * Settles with the first task to settle, whether it succeeds or fails.
@@ -210,6 +220,7 @@ export type ITaskGroup = {
      */
     race<TType extends ReadonlyArray<ITask>>(
         values: TType,
+        settings?: TaskSettings,
     ): TaskJoinResult<TType>;
 
     /**
@@ -217,7 +228,10 @@ export type ITaskGroup = {
      *
      * @param values - The tasks to race.
      */
-    race<TType>(values: Iterable<ITask<TType>>): ITask<TType>;
+    race<TType>(
+        values: Iterable<ITask<TType>>,
+        settings?: TaskSettings,
+    ): ITask<TType>;
 };
 
 /**
@@ -226,7 +240,7 @@ export type ITaskGroup = {
  * IMPORT_PATH: `"eridu-tech/concurrency/contracts"`
  * @group Contracts
  */
-export type ConcurrencyCreateSettings = {
+export type TaskSettings = {
     /**
      * How long the task may run before it fails with
      * `TimeoutConcurrencyError`. Use `null` for no timeout.
@@ -234,6 +248,12 @@ export type ConcurrencyCreateSettings = {
      * @default null
      */
     timeout?: ITimeSpan | null;
+
+    /**
+     * Aborts the task when this signal is aborted. Useful for integrating
+     * external libraries that accept an `AbortSignal`.
+     */
+    signal?: AbortSignal;
 };
 
 /**
@@ -264,7 +284,7 @@ export type ITaskHelpers = {
      */
     create<TType>(
         invocable: TaskInvocable<TType>,
-        settings?: ConcurrencyCreateSettings,
+        settings?: TaskSettings,
     ): ITask<TType>;
 
     /**
