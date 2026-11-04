@@ -56,14 +56,14 @@ export class ProxySharedLock<
         return SHARED_LOCK_CLASS_TAG;
     }
 
-    async internalSerializationId(): Promise<string> {
+    internalSerializationId(): string {
         const sharedLock = this.getSharedLock();
         if (!isInternalSerdeIdentifiable(sharedLock)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved shared lock, it does not implement internal serialization",
             );
         }
-        return await sharedLock.internalSerializationId();
+        return sharedLock.internalSerializationId();
     }
 
     get key(): string {
