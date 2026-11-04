@@ -76,7 +76,7 @@ export class CircuitBreakerSerdeTransformer implements ISerdeTransformer<
         );
     }
 
-    async isApplicable(value: unknown): Promise<boolean> {
+    isApplicable(value: unknown): boolean {
         if (!isInternalSerdeIdentifiable(value)) {
             return false;
         }
@@ -85,7 +85,7 @@ export class CircuitBreakerSerdeTransformer implements ISerdeTransformer<
         }
 
         const isSerlizationIdMathcing =
-            this.serializationId === (await value.internalSerializationId());
+            this.serializationId === value.internalSerializationId();
 
         return isSerlizationIdMathcing;
     }
