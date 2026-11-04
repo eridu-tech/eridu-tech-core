@@ -10,7 +10,7 @@ import type {
     IRateLimiterStorageAdapterTransaction,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
+    IAsyncDeinitizable,
     InvocableFn,
     IPrunable,
 } from "@/utilities/_module-exports.js";
@@ -31,7 +31,7 @@ export type MemoryRateLimiterData<TType = unknown> = {
  * @group Adapters
  */
 export class MemoryRateLimiterStorageAdapter<TType>
-    implements IRateLimiterStorageAdapter<TType>, IDeinitizable, IPrunable
+    implements IRateLimiterStorageAdapter<TType>, IAsyncDeinitizable, IPrunable
 {
     constructor(
         private readonly map = new Map<string, MemoryRateLimiterData<TType>>(),

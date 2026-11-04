@@ -18,8 +18,8 @@ import type {
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     InvocableFn,
 } from "@/utilities/_module-exports.js";
 
@@ -68,7 +68,10 @@ export type MongodbRateLimiterDocument = {
  * @group Adapters
  */
 export class MongodbRateLimiterStorageAdapter<TType>
-    implements IRateLimiterStorageAdapter<TType>, IInitizable, IDeinitizable
+    implements
+        IRateLimiterStorageAdapter<TType>,
+        IAsyncInitizable,
+        IAsyncDeinitizable
 {
     private readonly transactionContext: ITransactionContext<Db, ClientSession>;
     private readonly collection: Collection<MongodbRateLimiterDocument>;
