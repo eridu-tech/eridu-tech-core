@@ -17,8 +17,8 @@ await container.init();
 await container.run({
     scope: async () => {
         // Scoped services are resolved once within this scope
-        const a1 = await container.resolveOrFail(A);
-        const a2 = await container.resolveOrFail(A);
+        const a1 = container.resolveOrFail(A);
+        const a2 = container.resolveOrFail(A);
 
         console.log(a1 === a2); // true
 
@@ -26,7 +26,7 @@ await container.run({
         // instance of the scoped service
         await container.run({
             scope: async () => {
-                const nestedA = await container.resolveOrFail(A);
+                const nestedA = container.resolveOrFail(A);
                 console.log(nestedA === a1); // false
             },
         });

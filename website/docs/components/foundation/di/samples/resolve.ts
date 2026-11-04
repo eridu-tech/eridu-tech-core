@@ -8,7 +8,7 @@ container.registerValue({
 
 await container.init();
 
-const logger = await container.resolve(Logger);
+const logger = container.resolve(Logger);
 if (logger) {
     logger.log("Logger is available");
 }

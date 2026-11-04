@@ -8,6 +8,6 @@ container.registerValue({
 
 await container.init();
 
-if (await container.has(Logger)) {
+if (container.has(Logger)) {
     console.log("Logger is resolvable");
 }
