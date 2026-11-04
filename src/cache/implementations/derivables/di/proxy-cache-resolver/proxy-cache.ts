@@ -2,13 +2,15 @@
  * @module Cache
  */
 
-import type { ICacheResolver } from "@/cache/contracts/cache-resolver.contract.js";
-import type { ICache } from "@/cache/contracts/cache.contract.js";
+import type {
+    ICacheResolver,
+    ICache,
+} from "@/cache/contracts/_module-exports.js";
 import type {
     DiToken,
     IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
-import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type { AsyncLazyable, NoneFunc } from "@/utilities/_module-exports.js";
 
 /**

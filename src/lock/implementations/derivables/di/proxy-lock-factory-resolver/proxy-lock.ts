@@ -19,7 +19,7 @@ import type {
     ILockState,
     LockFactoryCreateSettings,
 } from "@/lock/contracts/_module-exports.js";
-import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 /**

@@ -12,7 +12,7 @@ import { sharedLockFactorySerdeTestSuite } from "@/shared-lock/implementations/t
 
 import type { Mock } from "vitest";
 
-import type { IFlexibleSerde } from "@/serde/contracts/flexible-serde.contract.js";
+import type { IFlexibleSerde } from "@/serde/contracts/_module-exports.js";
 import type {
     ISharedLockAdapter,
     ISharedLockFactory,
