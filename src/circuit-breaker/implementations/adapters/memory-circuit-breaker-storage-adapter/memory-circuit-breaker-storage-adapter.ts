@@ -9,7 +9,7 @@ import type {
     ICircuitBreakerFactory,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
+    IAsyncDeinitizable,
     InvocableFn,
 } from "@/utilities/_module-exports.js";
 
@@ -20,7 +20,7 @@ import type {
  * @group Adapters
  */
 export class MemoryCircuitBreakerStorageAdapter<TType = unknown>
-    implements ICircuitBreakerStorageAdapter<TType>, IDeinitizable
+    implements ICircuitBreakerStorageAdapter<TType>, IAsyncDeinitizable
 {
     /**
      * You can also provide an `Map`.

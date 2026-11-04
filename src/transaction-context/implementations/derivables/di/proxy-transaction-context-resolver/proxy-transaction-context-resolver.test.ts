@@ -48,8 +48,8 @@ describe("class: ProxyTransactionContextResolver", () => {
                     });
                     return resolver;
                 },
-                onInit: async (factory) => {
-                    await factory.init();
+                onInit: (factory) => {
+                    factory.init();
                 },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
@@ -119,7 +119,7 @@ describe("class: ProxyTransactionContextResolver", () => {
                 defaultAdapter: "adapter1",
                 executionContext,
             });
-            await resolver.init();
+            resolver.init();
             container.registerFactory({
                 token: TransactionContextResolver,
                 factory: () => {
@@ -193,7 +193,7 @@ describe("class: ProxyTransactionContextResolver", () => {
                 defaultAdapter: "adapter1",
                 executionContext,
             });
-            await resolver.init();
+            resolver.init();
             container.registerFactory({
                 token: TransactionContextResolver,
                 factory: () => {

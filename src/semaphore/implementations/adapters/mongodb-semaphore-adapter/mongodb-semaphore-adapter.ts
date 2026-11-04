@@ -24,8 +24,8 @@ import type {
     TransactionAware,
 } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -83,7 +83,7 @@ export type MongodbSemaphoreAdapterSettings = {
  * @group Adapters
  */
 export class MongodbSemaphoreAdapter
-    implements ISemaphoreAdapter, IDeinitizable, IInitizable
+    implements ISemaphoreAdapter, IAsyncDeinitizable, IAsyncInitizable
 {
     private static isSlotNotExpired = (
         slot: MongodbSemaphoreSlotEntryDocument,

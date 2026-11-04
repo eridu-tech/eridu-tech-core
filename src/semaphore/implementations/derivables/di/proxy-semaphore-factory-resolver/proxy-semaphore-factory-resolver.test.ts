@@ -59,8 +59,8 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
                         serde,
                     });
                 },
-                onInit: async (factory) => {
-                    await factory.init();
+                onInit: (factory) => {
+                    factory.init();
                 },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
@@ -159,15 +159,6 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
 
             const adapter2 = new NoOpSemaphoreAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
-
-            const factory = new SemaphoreFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -177,6 +168,14 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             container.registerFactory({
                 token: SemaphoreFactoryResolver,
                 factory: () => {
+                    const factory = new SemaphoreFactoryResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},
@@ -264,14 +263,6 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             const adapter2 = new NoOpSemaphoreAdapter();
             acquire2 = vi.spyOn(adapter2, "acquire");
 
-            const factory = new SemaphoreFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -281,6 +272,14 @@ describe("class: ProxySemaphoreFactoryResolver", () => {
             container.registerFactory({
                 token: SemaphoreFactoryResolver,
                 factory: () => {
+                    const factory = new SemaphoreFactoryResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},

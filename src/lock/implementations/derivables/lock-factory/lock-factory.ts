@@ -158,7 +158,7 @@ export class LockFactory implements ILockFactory, IInitizable {
         );
     }
 
-    async init(): Promise<void> {
+    init(): void {
         const transformer = new LockSerdeTransformer({
             adapter: this.adapter,
             defaultRefreshTime: this.defaultRefreshTime,
@@ -167,7 +167,6 @@ export class LockFactory implements ILockFactory, IInitizable {
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
-        return Promise.resolve();
     }
 
     create(key: string, settings: LockFactoryCreateSettings = {}): ILock {

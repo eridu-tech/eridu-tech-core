@@ -50,7 +50,7 @@ describe("class: CircuitBreakerFactory", () => {
 
     let circuitBreakerFactory: CircuitBreakerFactory;
     const slowCallTime = TimeSpan.fromMilliseconds(50);
-    beforeEach(async () => {
+    beforeEach(() => {
         vi.resetAllMocks();
         vi.clearAllMocks();
         circuitBreakerFactory = new CircuitBreakerFactory({
@@ -59,7 +59,7 @@ describe("class: CircuitBreakerFactory", () => {
             defaultSlowCallTime: slowCallTime,
             enableAsyncTracking: false,
         });
-        await circuitBreakerFactory.init();
+        circuitBreakerFactory.init();
     });
 
     class UnexpectedErrorA extends Error {}
@@ -593,7 +593,7 @@ describe("class: CircuitBreakerFactory", () => {
                 enableAsyncTracking: false,
                 serde,
             });
-            await circuitBreakerFactory1.init();
+            circuitBreakerFactory1.init();
             const circuitBreaker1 = circuitBreakerFactory1.create(key);
 
             try {
@@ -616,7 +616,7 @@ describe("class: CircuitBreakerFactory", () => {
                 enableAsyncTracking: false,
                 serde,
             });
-            await circuitBreakerFactory2.init();
+            circuitBreakerFactory2.init();
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =
@@ -644,7 +644,7 @@ describe("class: CircuitBreakerFactory", () => {
                 serializationId: "adapter1",
                 serde,
             });
-            await circuitBreakerFactory1.init();
+            circuitBreakerFactory1.init();
             const circuitBreaker1 = circuitBreakerFactory1.create(key);
 
             try {
@@ -668,7 +668,7 @@ describe("class: CircuitBreakerFactory", () => {
                 serializationId: "adapter2",
                 serde,
             });
-            await circuitBreakerFactory2.init();
+            circuitBreakerFactory2.init();
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =
@@ -698,7 +698,7 @@ describe("class: CircuitBreakerFactory", () => {
             const failingCircuitBreakerFactory = new CircuitBreakerFactory({
                 adapter: createFailingAdapter(unexpectedError),
             });
-            await failingCircuitBreakerFactory.init();
+            failingCircuitBreakerFactory.init();
 
             const promise = failingCircuitBreakerFactory.create("a").getState();
 
@@ -715,7 +715,7 @@ describe("class: CircuitBreakerFactory", () => {
             const failingCircuitBreakerFactory = new CircuitBreakerFactory({
                 adapter: createFailingAdapter(unexpectedError),
             });
-            await failingCircuitBreakerFactory.init();
+            failingCircuitBreakerFactory.init();
 
             const promise = failingCircuitBreakerFactory
                 .create("a")
@@ -734,7 +734,7 @@ describe("class: CircuitBreakerFactory", () => {
             const failingCircuitBreakerFactory = new CircuitBreakerFactory({
                 adapter: createFailingAdapter(unexpectedError),
             });
-            await failingCircuitBreakerFactory.init();
+            failingCircuitBreakerFactory.init();
 
             const promise = failingCircuitBreakerFactory.create("a").isolate();
 
@@ -751,7 +751,7 @@ describe("class: CircuitBreakerFactory", () => {
             const failingCircuitBreakerFactory = new CircuitBreakerFactory({
                 adapter: createFailingAdapter(unexpectedError),
             });
-            await failingCircuitBreakerFactory.init();
+            failingCircuitBreakerFactory.init();
 
             const promise = failingCircuitBreakerFactory.create("a").reset();
 

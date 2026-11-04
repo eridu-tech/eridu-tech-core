@@ -73,7 +73,7 @@ export class EventBusResolver<
         Record<TAdapters, EventBus<TEventMap>>
     >;
 
-    async init(): Promise<void> {
+    init(): void {
         const { adapters, ...rest } = this.settings;
         for (const adapterName in adapters) {
             const adapter = adapters[adapterName];
@@ -86,7 +86,6 @@ export class EventBusResolver<
             });
             this.factories[adapterName] = eventBus;
         }
-        return Promise.resolve();
     }
 
     /**

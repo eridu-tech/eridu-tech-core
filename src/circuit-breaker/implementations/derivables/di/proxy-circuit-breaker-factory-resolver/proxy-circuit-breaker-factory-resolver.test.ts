@@ -60,8 +60,8 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
                         serde,
                     });
                 },
-                onInit: async (factory) => {
-                    await factory.init();
+                onInit: (factory) => {
+                    factory.init();
                 },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
@@ -165,17 +165,19 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
             const adapter2 = new NoOpCircuitBreakerAdapter();
             getState2 = vi.spyOn(adapter2, "getState");
 
-            const factory = new CircuitBreakerFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             container.registerFactory({
                 token: CircuitBreakerFactoryResolver,
                 factory: () => {
+                    const factory = new CircuitBreakerFactoryResolver<Adapters>(
+                        {
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
+                        },
+                    );
+                    factory.init();
                     return factory;
                 },
                 deps: {},
@@ -236,17 +238,19 @@ describe("class: ProxyCircuitBreakerFactoryResolver", () => {
             const adapter2 = new NoOpCircuitBreakerAdapter();
             getState2 = vi.spyOn(adapter2, "getState");
 
-            const factory = new CircuitBreakerFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             container.registerFactory({
                 token: CircuitBreakerFactoryResolver,
                 factory: () => {
+                    const factory = new CircuitBreakerFactoryResolver<Adapters>(
+                        {
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
+                        },
+                    );
+                    factory.init();
                     return factory;
                 },
                 deps: {},

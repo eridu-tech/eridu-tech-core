@@ -8,7 +8,10 @@ import type {
     ILockAdapter,
     ILockAdapterState,
 } from "@/lock/contracts/_module-exports.js";
-import type { IDeinitizable, IPrunable } from "@/utilities/_module-exports.js";
+import type {
+    IAsyncDeinitizable,
+    IPrunable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Note the `MemoryLockAdapter` is limited to single process usage and cannot be shared across multiple servers or different processes.
@@ -18,7 +21,7 @@ import type { IDeinitizable, IPrunable } from "@/utilities/_module-exports.js";
  * @group Adapters
  */
 export class MemoryLockAdapter
-    implements ILockAdapter, IDeinitizable, IPrunable
+    implements ILockAdapter, IAsyncDeinitizable, IPrunable
 {
     /**
      * You can also provide an `Map`.

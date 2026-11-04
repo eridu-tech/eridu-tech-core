@@ -30,8 +30,8 @@ import type {
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -105,7 +105,7 @@ class FsRecursiveFileWalker implements AsyncIterable<string> {
  * @group Adapters
  */
 export class FsFileStorageAdapter
-    implements IFileStorageAdapter, IDeinitizable, IInitizable
+    implements IFileStorageAdapter, IAsyncDeinitizable, IAsyncInitizable
 {
     private readonly location: string;
     private readonly keyPathMapper: FsKeyPathMapper;

@@ -75,7 +75,7 @@ export class TransactionContextResolver<TAdapters extends string = string>
         Record<TAdapters, TransactionContext>
     >;
 
-    async init(): Promise<void> {
+    init(): void {
         const { adapters, executionContext } = this.settings;
         for (const adapterName in adapters) {
             const adapter = adapters[adapterName];
@@ -95,7 +95,6 @@ export class TransactionContextResolver<TAdapters extends string = string>
             return transactionContext instanceof TransactionContext;
         });
         this.hooks = new MultiTransactionHooks(transactionContexts);
-        return Promise.resolve();
     }
 
     use(

@@ -32,8 +32,8 @@ import type {
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     Invocable,
 } from "@/utilities/_module-exports.js";
 
@@ -120,7 +120,7 @@ export const defaultPublicUrlGenerator: S3FilePublicUrlGenerator = async ({
  * @group Adapters
  */
 export class S3FileStorageAdapter
-    implements ISignedFileStorageAdapter, IDeinitizable, IInitizable
+    implements ISignedFileStorageAdapter, IAsyncDeinitizable, IAsyncInitizable
 {
     private readonly client: S3Client;
     private readonly bucket: string;

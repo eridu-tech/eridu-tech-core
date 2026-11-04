@@ -17,8 +17,8 @@ import type {
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     InvocableFn,
 } from "@/utilities/_module-exports.js";
 
@@ -70,7 +70,10 @@ export type MongodbCircuitBreakerStorageAdapterSettings = {
  * @group Adapters
  */
 export class MongodbCircuitBreakerStorageAdapter<TType = unknown>
-    implements ICircuitBreakerStorageAdapter<TType>, IInitizable, IDeinitizable
+    implements
+        ICircuitBreakerStorageAdapter<TType>,
+        IAsyncInitizable,
+        IAsyncDeinitizable
 {
     private readonly collection: Collection<MongodbCircuitBreakerStorageDocument>;
     private readonly transactionContext: ITransactionContext<Db, ClientSession>;

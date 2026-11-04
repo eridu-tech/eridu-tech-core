@@ -13,8 +13,8 @@ import type {
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     InvocableFn,
 } from "@/utilities/_module-exports.js";
 
@@ -135,7 +135,10 @@ class KyselyCircuitBreakerStorageAdapterTransaction<
  * @group Adapters
  */
 export class KyselyCircuitBreakerStorageAdapter<TType>
-    implements ICircuitBreakerStorageAdapter, IInitizable, IDeinitizable
+    implements
+        ICircuitBreakerStorageAdapter,
+        IAsyncInitizable,
+        IAsyncDeinitizable
 {
     private readonly transactionContext: ITransactionContext<
         Kysely<KyselyCircuitBreakerStorageTables>

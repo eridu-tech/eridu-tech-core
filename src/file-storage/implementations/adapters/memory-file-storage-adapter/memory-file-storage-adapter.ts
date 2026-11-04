@@ -15,7 +15,7 @@ import type {
     WritableFileAdapterContent,
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
-import type { IDeinitizable } from "@/utilities/_module-exports.js";
+import type { IAsyncDeinitizable } from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/file-storage/memory-file-storage-adapter"`
@@ -37,7 +37,7 @@ export type MemoryFile = {
  * @group Adapters
  */
 export class MemoryFileStorageAdapter
-    implements IFileStorageAdapter, IDeinitizable
+    implements IFileStorageAdapter, IAsyncDeinitizable
 {
     /**
      * You can provide an optional {@link Map | `Map`}, that will be used for storing the data.

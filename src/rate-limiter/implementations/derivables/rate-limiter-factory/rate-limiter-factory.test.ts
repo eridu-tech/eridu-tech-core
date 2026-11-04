@@ -43,13 +43,13 @@ describe("class: RateLimiterFactory", () => {
     class UnexpectedErrorA extends Error {}
 
     let rateLimiterFactory: RateLimiterFactory;
-    beforeEach(async () => {
+    beforeEach(() => {
         vi.resetAllMocks();
         vi.clearAllMocks();
         rateLimiterFactory = new RateLimiterFactory({
             adapter,
         });
-        await rateLimiterFactory.init();
+        rateLimiterFactory.init();
     });
 
     describe("API tests:", () => {
@@ -436,7 +436,7 @@ describe("class: RateLimiterFactory", () => {
                 ),
                 serde,
             });
-            await rateLimiterFactory1.init();
+            rateLimiterFactory1.init();
             const rateLimiter1 = rateLimiterFactory1.create(key, {
                 limit: 1,
             });
@@ -460,7 +460,7 @@ describe("class: RateLimiterFactory", () => {
                 }),
                 serde,
             });
-            await rateLimiterFactory2.init();
+            rateLimiterFactory2.init();
             const rateLimiter2 = rateLimiterFactory2.create(key, {
                 limit: 1,
             });
@@ -487,7 +487,7 @@ describe("class: RateLimiterFactory", () => {
                 serializationId: "adapter1",
                 serde,
             });
-            await rateLimiterFactory1.init();
+            rateLimiterFactory1.init();
             const rateLimiter1 = rateLimiterFactory1.create(key, {
                 limit: 1,
             });
@@ -512,7 +512,7 @@ describe("class: RateLimiterFactory", () => {
                 serializationId: "adapter2",
                 serde,
             });
-            await rateLimiterFactory2.init();
+            rateLimiterFactory2.init();
             const rateLimiter2 = rateLimiterFactory2.create(key, {
                 limit: 1,
             });
@@ -540,7 +540,7 @@ describe("class: RateLimiterFactory", () => {
             const failingRateLimiterFactory = new RateLimiterFactory({
                 adapter: createFailingAdapter(unexpectedError),
             });
-            await failingRateLimiterFactory.init();
+            failingRateLimiterFactory.init();
 
             const promise = failingRateLimiterFactory
                 .create("a", { limit: 1 })
@@ -559,7 +559,7 @@ describe("class: RateLimiterFactory", () => {
             const failingRateLimiterFactory = new RateLimiterFactory({
                 adapter: createFailingAdapter(unexpectedError),
             });
-            await failingRateLimiterFactory.init();
+            failingRateLimiterFactory.init();
 
             const promise = failingRateLimiterFactory
                 .create("a", { limit: 1 })
@@ -578,7 +578,7 @@ describe("class: RateLimiterFactory", () => {
             const failingRateLimiterFactory = new RateLimiterFactory({
                 adapter: createFailingAdapter(unexpectedError),
             });
-            await failingRateLimiterFactory.init();
+            failingRateLimiterFactory.init();
 
             const promise = failingRateLimiterFactory
                 .create("a", { limit: 1 })

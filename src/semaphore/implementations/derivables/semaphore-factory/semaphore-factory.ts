@@ -158,7 +158,7 @@ export class SemaphoreFactory implements ISemaphoreFactory, IInitizable {
         );
     }
 
-    async init(): Promise<void> {
+    init(): void {
         const transformer = new SemaphoreSerdeTransformer({
             adapter: this.adapter,
             defaultRefreshTime: this.defaultRefreshTime,
@@ -167,7 +167,6 @@ export class SemaphoreFactory implements ISemaphoreFactory, IInitizable {
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
-        return Promise.resolve();
     }
 
     create(key: string, settings: SemaphoreFactoryCreateSettings): ISemaphore {

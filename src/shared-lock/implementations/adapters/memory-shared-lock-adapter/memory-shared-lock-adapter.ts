@@ -13,7 +13,10 @@ import type {
     IWriterLockAdapterState,
     IReaderSemaphoreAdapterState,
 } from "@/shared-lock/contracts/_module-exports.js";
-import type { IDeinitizable, IPrunable } from "@/utilities/_module-exports.js";
+import type {
+    IAsyncDeinitizable,
+    IPrunable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * IMPORT_PATH: `"eridu-tech/shared-lock/memory-shared-lock-adapter"`
@@ -50,7 +53,7 @@ export type MemorySharedLockData = {
  * @group Adapters
  */
 export class MemorySharedLockAdapter
-    implements ISharedLockAdapter, IDeinitizable, IPrunable
+    implements ISharedLockAdapter, IAsyncDeinitizable, IPrunable
 {
     /**
      * You can also provide an `Map`.

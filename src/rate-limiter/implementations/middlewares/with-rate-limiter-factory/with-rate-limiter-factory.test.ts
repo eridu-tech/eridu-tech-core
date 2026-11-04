@@ -17,8 +17,8 @@ describe("function: withRateLimiterFactory", () => {
         },
     );
 
-    beforeAll(async () => {
-        await rateLimiterFactoryResolver.init();
+    beforeAll(() => {
+        rateLimiterFactoryResolver.init();
     });
     beforeEach(() => {
         vi.restoreAllMocks();
