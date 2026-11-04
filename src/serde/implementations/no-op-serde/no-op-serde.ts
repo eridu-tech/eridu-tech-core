@@ -19,14 +19,14 @@ import type { OneOrMore } from "@/utilities/_module-exports.js";
 export class NoOpSerde<
     TSerializedValue,
 > implements IFlexibleSerde<TSerializedValue> {
-    serialize<TValue>(value: TValue): Promise<TSerializedValue> {
+    serialize<TValue>(value: TValue): TSerializedValue {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return Promise.resolve(value as any);
+        return value as any;
     }
 
-    deserialize<TValue>(serializedValue: TSerializedValue): Promise<TValue> {
+    deserialize<TValue>(serializedValue: TSerializedValue): TValue {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return Promise.resolve(serializedValue as any);
+        return serializedValue as any;
     }
 
     registerCustom<

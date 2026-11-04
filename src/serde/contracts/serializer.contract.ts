@@ -32,5 +32,5 @@ export type ISerializer<TSerializedValue = unknown> = {
      * @returns The serialized representation of the value
      * @throws {UnableToSerializeSerdeError} If serialization fails (circular references, unsupported types, etc.)
      */
-    serialize<TValue>(value: TValue): Promise<TSerializedValue>;
+    serialize<TValue>(value: TValue): TSerializedValue;
 };
