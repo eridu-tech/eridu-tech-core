@@ -111,14 +111,14 @@ export class RedisCacheAdapter<
         valueToAdd: InvocableFn<[], Promisable<TType>>,
         ttl: Date | null,
     ): Promise<TType> {
-        const serializedValue = await this.serde.serialize(valueToAdd());
+        const serializedValue = this.serde.serialize(valueToAdd());
         const ttlInMs = ttl?.getTime() ?? -1;
         const result = await this.database.eridu_cache_get_or_add(
             key,
             serializedValue,
             ttlInMs,
         );
-        return await this.serde.deserialize(result);
+        return this.serde.deserialize(result);
     }
 
     private initIncrementCommand(): void {
@@ -145,7 +145,7 @@ export class RedisCacheAdapter<
         if (value === null) {
             return null;
         }
-        return await this.serde.deserialize(value);
+        return this.serde.deserialize(value);
     }
 
     async getAndRemove(key: string): Promise<TType | null> {
@@ -153,21 +153,18 @@ export class RedisCacheAdapter<
         if (value === null) {
             return null;
         }
-        return await this.serde.deserialize(value);
+        return this.serde.deserialize(value);
     }
 
     async add(key: string, value: TType, ttl: Date | null): Promise<boolean> {
+        const serializedValue = this.serde.serialize(value);
         if (ttl === null) {
-            const result = await this.database.set(
-                key,
-                await this.serde.serialize(value),
-                "NX",
-            );
+            const result = await this.database.set(key, serializedValue, "NX");
             return result === "OK";
         }
         const result = await this.database.set(
             key,
-            await this.serde.serialize(value),
+            serializedValue,
             "PXAT",
             ttl.getTime(),
             "NX",
@@ -176,17 +173,14 @@ export class RedisCacheAdapter<
     }
 
     async put(key: string, value: TType, ttl: Date | null): Promise<boolean> {
+        const serializedValue = this.serde.serialize(value);
         if (ttl === null) {
-            const result = await this.database.set(
-                key,
-                await this.serde.serialize(value),
-                "GET",
-            );
+            const result = await this.database.set(key, serializedValue, "GET");
             return result !== null;
         }
         const result = await this.database.set(
             key,
-            await this.serde.serialize(value),
+            serializedValue,
             "PXAT",
             ttl.getTime(),
             "GET",
@@ -197,7 +191,7 @@ export class RedisCacheAdapter<
     async update(key: string, value: TType): Promise<boolean> {
         const result = await this.database.set(
             key,
-            await this.serde.serialize(value),
+            this.serde.serialize(value),
             "XX",
         );
         return result === "OK";
@@ -207,7 +201,7 @@ export class RedisCacheAdapter<
         try {
             const redisResult = await this.database.eridu_cache_increment(
                 key,
-                await this.serde.serialize(value),
+                this.serde.serialize(value),
             );
             const keyExists = redisResult === 1;
             return keyExists;

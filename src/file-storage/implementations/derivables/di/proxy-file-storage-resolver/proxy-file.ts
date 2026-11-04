@@ -53,14 +53,14 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
         return FILE_CLASS_TAG;
     }
 
-    async internalSerializationId(): Promise<string> {
+    internalSerializationId(): string {
         const file = this.getFile();
         if (!isInternalSerdeIdentifiable(file)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved file, it does not implement internal serialization",
             );
         }
-        return await file.internalSerializationId();
+        return file.internalSerializationId();
     }
 
     get key(): string {

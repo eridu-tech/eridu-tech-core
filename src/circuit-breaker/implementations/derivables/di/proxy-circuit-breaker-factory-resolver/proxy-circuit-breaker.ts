@@ -58,14 +58,14 @@ export class ProxyCircuitBreaker<TAdapters extends string = string>
         return CIRCUIT_BREAKER_CLASS_TAG;
     }
 
-    async internalSerializationId(): Promise<string> {
+    internalSerializationId(): string {
         const circuitBreaker = this.getCircuitBreaker();
         if (!isInternalSerdeIdentifiable(circuitBreaker)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved circuit breaker, it does not implement internal serialization",
             );
         }
-        return await circuitBreaker.internalSerializationId();
+        return circuitBreaker.internalSerializationId();
     }
 
     get key(): string {

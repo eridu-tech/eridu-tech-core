@@ -96,8 +96,8 @@ describe("class: SharedLockFactory", () => {
             await sharedLockFactory2.init();
             const lock2 = sharedLockFactory2.create(key, { ttl, limit });
 
-            const deserializeLock2 = await serde.deserialize<ISharedLock>(
-                await serde.serialize(lock2),
+            const deserializeLock2 = serde.deserialize<ISharedLock>(
+                serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquireWriter();
 
@@ -127,8 +127,8 @@ describe("class: SharedLockFactory", () => {
             await sharedLockFactory2.init();
             const lock2 = sharedLockFactory2.create(key, { ttl, limit });
 
-            const deserializeLock2 = await serde.deserialize<ISharedLock>(
-                await serde.serialize(lock2),
+            const deserializeLock2 = serde.deserialize<ISharedLock>(
+                serde.serialize(lock2),
             );
             const result = await deserializeLock2.acquireWriter();
 
@@ -167,8 +167,8 @@ describe("class: SharedLockFactory", () => {
             const sharedLockFactory = new SharedLockFactory({ adapter, serde });
             await sharedLockFactory.init();
 
-            const deserializedLock = await serde.deserialize<ISharedLock>(
-                await serde.serialize(
+            const deserializedLock = serde.deserialize<ISharedLock>(
+                serde.serialize(
                     sharedLockFactory.create("a", { ttl: null, limit: 1 }),
                 ),
             );

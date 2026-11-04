@@ -51,7 +51,7 @@ export class SharedLockSerdeTransformer implements ISerdeTransformer<
         );
     }
 
-    async isApplicable(value: unknown): Promise<boolean> {
+    isApplicable(value: unknown): boolean {
         if (!isInternalSerdeIdentifiable(value)) {
             return false;
         }
@@ -60,7 +60,7 @@ export class SharedLockSerdeTransformer implements ISerdeTransformer<
         }
 
         const isSerlizationIdMathcing =
-            this.serializationId === (await value.internalSerializationId());
+            this.serializationId === value.internalSerializationId();
 
         return isSerlizationIdMathcing;
     }

@@ -465,10 +465,9 @@ describe("class: RateLimiterFactory", () => {
                 limit: 1,
             });
 
-            const deserializedRateLimiter2 =
-                await serde.deserialize<IRateLimiter>(
-                    await serde.serialize(rateLimiter2),
-                );
+            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
+                serde.serialize(rateLimiter2),
+            );
             const handler = vi.fn();
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
@@ -518,10 +517,9 @@ describe("class: RateLimiterFactory", () => {
                 limit: 1,
             });
 
-            const deserializedRateLimiter2 =
-                await serde.deserialize<IRateLimiter>(
-                    await serde.serialize(rateLimiter2),
-                );
+            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
+                serde.serialize(rateLimiter2),
+            );
             const handler = vi.fn();
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();

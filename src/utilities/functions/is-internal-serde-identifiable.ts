@@ -2,14 +2,12 @@
  * @module Utilities
  */
 
-import type { Promisable } from "@/utilities/types/_module.js";
-
 /**
  * @internal
  */
 export type InternalSerdeIdentifiable = {
     internalClassTag(): symbol;
-    internalSerializationId(): Promisable<string>;
+    internalSerializationId(): string;
 };
 
 /**
