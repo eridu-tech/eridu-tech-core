@@ -46,6 +46,25 @@ Here is a complete list of settings for the [`withLock`](https://eridu-tech.gith
 | `lockId` | `Invocable<TParameters, string>` | Optional function that produces a unique identifier for the current lock acquisition attempt. Defaults to a UUID (`v4`)                                                    |
 | `ttl`    | `ITimeSpan \| null`              | Time-to-live for the lock. `null` means the lock never expires automatically; if omitted the factory's default TTL is used                                                 |
 
+## withHttpLockError middleware {#with_http_lock_error_middleware}
+
+The `withHttpLockError` middleware converts every lock error thrown by the wrapped endpoint or downstream middleware into an `HttpError`, so the request fails with a meaningful status code instead of a generic `500`. Errors that are not lock errors are rethrown untouched, and the original error is preserved as the `cause`.
+
+### Usage
+
+```ts file=./samples/with-http-lock-error.ts
+
+```
+
+### Status codes
+
+| Errors                                                                                                                                           | Status |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| `FailedAcquireLockError`, `FailedRefreshLockError`, `FailedReleaseLockError`                                                                     | `409`  |
+| `UnableToAcquireLockError`, `UnableToReleaseLockError`, `UnableToForceReleaseLockError`, `UnableToRefreshLockError`, `UnableToGetStateLockError` | `503`  |
+
+A `409` response means the lock is owned by another caller or is no longer valid. A `503` response means the lock adapter failed, so the same request can be retried later. The original error is preserved as the `cause`, and no identifiers are exposed in the response body.
+
 ## Further information
 
 For further information refer to [`eridu-tech/lock`](https://eridu-tech.github.io/eridu-tech-core/modules/Lock.html) API docs.

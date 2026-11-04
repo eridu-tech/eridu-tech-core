@@ -13,6 +13,7 @@ import type { InferInstance } from "@/utilities/_module-exports.js";
 export class FailedAcquireLockError extends Error {
     static create(key: string, cause?: unknown): FailedAcquireLockError {
         return new FailedAcquireLockError(
+            key,
             `Key "${key}" already acquired`,
             cause,
         );
@@ -23,7 +24,11 @@ export class FailedAcquireLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedAcquireLockError.name;
     }
@@ -42,6 +47,8 @@ export class FailedReleaseLockError extends Error {
         cause?: unknown,
     ): FailedReleaseLockError {
         return new FailedReleaseLockError(
+            key,
+            lockId,
             `Unonwed release on key "${key}" by owner "${lockId}"`,
             cause,
         );
@@ -52,7 +59,12 @@ export class FailedReleaseLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly lockId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedReleaseLockError.name;
     }
@@ -71,6 +83,8 @@ export class FailedRefreshLockError extends Error {
         cause?: unknown,
     ): FailedRefreshLockError {
         return new FailedRefreshLockError(
+            key,
+            lockId,
             `Unonwed refresh on key "${key}" by owner "${lockId}"`,
             cause,
         );
@@ -81,7 +95,12 @@ export class FailedRefreshLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly lockId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedRefreshLockError.name;
     }
@@ -97,6 +116,7 @@ export class FailedRefreshLockError extends Error {
 export class UnableToAcquireLockError extends Error {
     static create(key: string, cause?: unknown): UnableToAcquireLockError {
         return new UnableToAcquireLockError(
+            key,
             `Unable to acquire lock on key "${key}"`,
             cause,
         );
@@ -107,7 +127,11 @@ export class UnableToAcquireLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToAcquireLockError.name;
     }
@@ -127,6 +151,8 @@ export class UnableToReleaseLockError extends Error {
         cause?: unknown,
     ): UnableToReleaseLockError {
         return new UnableToReleaseLockError(
+            key,
+            lockId,
             `Unable to release lock on key "${key}" by owner "${lockId}"`,
             cause,
         );
@@ -137,7 +163,12 @@ export class UnableToReleaseLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly lockId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToReleaseLockError.name;
     }
@@ -153,6 +184,7 @@ export class UnableToReleaseLockError extends Error {
 export class UnableToForceReleaseLockError extends Error {
     static create(key: string, cause?: unknown): UnableToForceReleaseLockError {
         return new UnableToForceReleaseLockError(
+            key,
             `Unable to force release lock on key "${key}"`,
             cause,
         );
@@ -163,7 +195,11 @@ export class UnableToForceReleaseLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToForceReleaseLockError.name;
     }
@@ -183,6 +219,8 @@ export class UnableToRefreshLockError extends Error {
         cause?: unknown,
     ): UnableToRefreshLockError {
         return new UnableToRefreshLockError(
+            key,
+            lockId,
             `Unable to refresh lock on key "${key}" by owner "${lockId}"`,
             cause,
         );
@@ -193,7 +231,12 @@ export class UnableToRefreshLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly lockId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToRefreshLockError.name;
     }
@@ -209,6 +252,7 @@ export class UnableToRefreshLockError extends Error {
 export class UnableToGetStateLockError extends Error {
     static create(key: string, cause?: unknown): UnableToGetStateLockError {
         return new UnableToGetStateLockError(
+            key,
             `Unable to get state of lock on key "${key}"`,
             cause,
         );
@@ -219,10 +263,49 @@ export class UnableToGetStateLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetStateLockError.name;
     }
+}
+
+/**
+ * IMPORT_PATH: `"eridu-tech/lock/contracts"`
+ * @group Errors
+ */
+export const UNABLE_LOCK_ERRORS = {
+    UnableToAcquire: UnableToAcquireLockError,
+    UnableToRelease: UnableToReleaseLockError,
+    UnableToForceRelease: UnableToForceReleaseLockError,
+    UnableToRefresh: UnableToRefreshLockError,
+    UnableToGetState: UnableToGetStateLockError,
+} as const;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/lock/contracts"`
+ * @group Errors
+ */
+export type AllUnableLockErrors = InferInstance<
+    (typeof UNABLE_LOCK_ERRORS)[keyof typeof UNABLE_LOCK_ERRORS]
+>;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/lock/contracts"`
+ * @group Errors
+ */
+export function isUnableToLockError(
+    value: unknown,
+): value is AllUnableLockErrors {
+    for (const errorClass of Object.values(UNABLE_LOCK_ERRORS)) {
+        if (value instanceof errorClass) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -233,11 +316,7 @@ export const LOCK_ERRORS = {
     FailedAcquire: FailedAcquireLockError,
     FailedRelease: FailedReleaseLockError,
     FailedRefresh: FailedRefreshLockError,
-    UnableToAcquire: UnableToAcquireLockError,
-    UnableToRelease: UnableToReleaseLockError,
-    UnableToForceRelease: UnableToForceReleaseLockError,
-    UnableToRefresh: UnableToRefreshLockError,
-    UnableToGetState: UnableToGetStateLockError,
+    ...UNABLE_LOCK_ERRORS,
 } as const;
 
 /**

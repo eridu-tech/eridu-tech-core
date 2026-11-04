@@ -48,6 +48,26 @@ Here is a complete list of settings for the [`withSharedLock`](https://eridu-tec
 | `lockId` | `Invocable<TParameters, string>` | Optional function that produces a unique identifier for the current lock acquisition attempt. Defaults to a UUID (`v4`)                 |
 | `ttl`    | `ITimeSpan \| null`              | Time-to-live for the lock. `null` means the lock never expires automatically; if omitted the factory's default TTL is used              |
 
+## withHttpSharedLockError middleware {#with_http_shared_lock_error_middleware}
+
+The `withHttpSharedLockError` middleware converts every shared-lock error (reader semaphore, writer lock and shared-lock errors) thrown by the wrapped endpoint or downstream middleware into an `HttpError`, so the request fails with a meaningful status code instead of a generic `500`. Errors that are not shared-lock errors are rethrown untouched, and the original error is preserved as the `cause`.
+
+### Usage
+
+```ts file=./samples/with-http-shared-lock-error.ts
+
+```
+
+### Status codes
+
+| Errors                                                                                                                                                                                                                                                                                              | Status |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `LimitReachedReaderSemaphoreError`                                                                                                                                                                                                                                                                  | `429`  |
+| `FailedRefreshReaderSemaphoreError`, `FailedReleaseReaderSemaphoreError`, `FailedAcquireWriterLockError`, `FailedRefreshWriterLockError`, `FailedReleaseWriterLockError`                                                                                                                            | `409`  |
+| `UnableToAcquireReaderSemaphoreError`, `UnableToReleaseReaderSemaphoreError`, `UnableToRefreshReaderSemaphoreError`, `UnableToAcquireWriterLockError`, `UnableToReleaseWriterLockError`, `UnableToRefreshWriterLockError`, `UnableToForceReleaseSharedLockError`, `UnableToGetStateSharedLockError` | `503`  |
+
+A `429` response means the reader semaphore has no free slot left. A `409` response means the caller's slot or lock is no longer valid or is owned by another caller. A `503` response means the shared-lock adapter failed, so the same request can be retried later. The original error is preserved as the `cause`, and no identifiers are exposed in the response body.
+
 ## Further information
 
 For further information refer to [`eridu-tech/shared-lock`](https://eridu-tech.github.io/eridu-tech-core/modules/SharedLock.html) API docs.

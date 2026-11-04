@@ -3,7 +3,7 @@
  */
 
 import type { ISerde } from "@/serde/contracts/serde.contract.js";
-import type { OneOrMore, Promisable } from "@/utilities/_module-exports.js";
+import type { OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * Base structure for serialized values with version tracking.
@@ -57,7 +57,7 @@ export type ISerdeTransformer<
      * @param value - The value to check
      * @returns True if value should be serialized by this transformer, false otherwise
      */
-    isApplicable(value: unknown): Promisable<boolean>;
+    isApplicable(value: unknown): boolean;
 
     /**
      * Deserializes a value from the serialized format to runtime format.
@@ -65,9 +65,7 @@ export type ISerdeTransformer<
      * @param serializedValue - The value in serialized format
      * @returns The value in deserialized/runtime format
      */
-    deserialize(
-        serializedValue: TSerializedValue,
-    ): Promisable<TDeserializedValue>;
+    deserialize(serializedValue: TSerializedValue): TDeserializedValue;
 
     /**
      * Serializes a value from runtime format to the serialized format.
@@ -75,9 +73,7 @@ export type ISerdeTransformer<
      * @param deserializedValue - The value in deserialized/runtime format
      * @returns The value in serialized format (must include version field)
      */
-    serialize(
-        deserializedValue: TDeserializedValue,
-    ): Promisable<TSerializedValue>;
+    serialize(deserializedValue: TDeserializedValue): TSerializedValue;
 };
 
 /**

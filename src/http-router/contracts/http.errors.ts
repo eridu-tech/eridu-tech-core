@@ -20,7 +20,13 @@ export type HttpErrorSettings = {
     /**
      * Arbitrary data to attach to the error (e.g. validation issues).
      */
-    payload?: unknown;
+    details?: unknown;
+
+    /**
+     * Headers to set on the HTTP response when the router serializes the error
+     * (e.g. `{ "Retry-After": "30" }`).
+     */
+    headers?: Partial<Record<string, string>>;
 
     /** The underlying error cause, if any. */
     cause?: unknown;
@@ -38,16 +44,21 @@ export class HttpError extends Error {
     /**
      * Creates a new `HttpError` from the given settings.
      *
-     * @param settings - The error configuration (status, message, cause).
+     * @param settings - The error configuration (status, message, payload, headers, cause).
      */
     static create(settings: HttpErrorSettings): HttpError {
         return new HttpError(settings);
     }
 
     /**
+     * Headers set on the HTTP response when the router serializes the error.
+     */
+    public readonly headers: Partial<Record<string, string>>;
+
+    /**
      * Arbitrary data attached to the error (e.g. validation issues).
      */
-    public readonly payload: unknown;
+    public readonly details: unknown;
 
     /**
      * The HTTP error status code (4xx or 5xx).
@@ -60,11 +71,12 @@ export class HttpError extends Error {
      * @internal
      */
     constructor(settings: HttpErrorSettings) {
-        const { status, message, payload, cause } = settings;
+        const { status, message, details, headers = {}, cause } = settings;
 
         super(message, { cause });
 
-        this.payload = payload;
+        this.headers = headers;
+        this.details = details;
         this.name = HttpError.name;
         this.status = status;
     }

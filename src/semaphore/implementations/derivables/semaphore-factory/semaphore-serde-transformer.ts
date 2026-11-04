@@ -49,7 +49,7 @@ export class SemaphoreSerdeTransformer implements ISerdeTransformer<
         return ["semaphore", this.serializationId].filter((str) => str !== "");
     }
 
-    async isApplicable(value: unknown): Promise<boolean> {
+    isApplicable(value: unknown): boolean {
         if (!isInternalSerdeIdentifiable(value)) {
             return false;
         }
@@ -58,7 +58,7 @@ export class SemaphoreSerdeTransformer implements ISerdeTransformer<
         }
 
         const isSerlizationIdMathcing =
-            this.serializationId === (await value.internalSerializationId());
+            this.serializationId === value.internalSerializationId();
 
         return isSerlizationIdMathcing;
     }

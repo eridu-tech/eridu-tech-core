@@ -68,20 +68,16 @@ describe("class: RateLimiterFactory", () => {
                         Promise.resolve(state),
                     );
 
-                    try {
-                        await rateLimiterFactory
+                    await expect(
+                        rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: true,
                             })
                             .runOrFail(() => {
                                 throw new Error("Unexpected error");
-                            });
-                    } catch (error: unknown) {
-                        if (!(error instanceof UnexpectedErrorA)) {
-                            throw error;
-                        }
-                    }
+                            }),
+                    ).rejects.toThrow("Unexpected error");
 
                     expect(updateStateSpy).toHaveBeenCalledOnce();
                 });
@@ -120,20 +116,16 @@ describe("class: RateLimiterFactory", () => {
                         .spyOn(adapter, "getState")
                         .mockImplementation(() => Promise.resolve(state));
 
-                    try {
-                        await rateLimiterFactory
+                    await expect(
+                        rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: true,
                             })
                             .runOrFail(() => {
                                 throw new Error("Unexpected error");
-                            });
-                    } catch (error: unknown) {
-                        if (!(error instanceof UnexpectedErrorA)) {
-                            throw error;
-                        }
-                    }
+                            }),
+                    ).rejects.toThrow("Unexpected error");
 
                     expect(getStateSpy).toHaveBeenCalledOnce();
                 });
@@ -200,20 +192,16 @@ describe("class: RateLimiterFactory", () => {
                         Promise.resolve(state),
                     );
 
-                    try {
-                        await rateLimiterFactory
+                    await expect(
+                        rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: false,
                             })
                             .runOrFail(() => {
                                 throw new Error("Unexpected error");
-                            });
-                    } catch (error: unknown) {
-                        if (!(error instanceof UnexpectedErrorA)) {
-                            throw error;
-                        }
-                    }
+                            }),
+                    ).rejects.toThrow("Unexpected error");
 
                     expect(updateStateSpy).toHaveBeenCalledOnce();
                 });
@@ -252,20 +240,16 @@ describe("class: RateLimiterFactory", () => {
                         .spyOn(adapter, "getState")
                         .mockImplementation(() => Promise.resolve(state));
 
-                    try {
-                        await rateLimiterFactory
+                    await expect(
+                        rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: false,
                             })
                             .runOrFail(() => {
                                 throw new Error("Unexpected error");
-                            });
-                    } catch (error: unknown) {
-                        if (!(error instanceof UnexpectedErrorA)) {
-                            throw error;
-                        }
-                    }
+                            }),
+                    ).rejects.toThrow("Unexpected error");
 
                     expect(getStateSpy).not.toHaveBeenCalled();
                 });
@@ -481,10 +465,9 @@ describe("class: RateLimiterFactory", () => {
                 limit: 1,
             });
 
-            const deserializedRateLimiter2 =
-                await serde.deserialize<IRateLimiter>(
-                    await serde.serialize(rateLimiter2),
-                );
+            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
+                serde.serialize(rateLimiter2),
+            );
             const handler = vi.fn();
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();
@@ -534,10 +517,9 @@ describe("class: RateLimiterFactory", () => {
                 limit: 1,
             });
 
-            const deserializedRateLimiter2 =
-                await serde.deserialize<IRateLimiter>(
-                    await serde.serialize(rateLimiter2),
-                );
+            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
+                serde.serialize(rateLimiter2),
+            );
             const handler = vi.fn();
             await deserializedRateLimiter2.runOrFail(handler);
             expect(handler).toHaveBeenCalledOnce();

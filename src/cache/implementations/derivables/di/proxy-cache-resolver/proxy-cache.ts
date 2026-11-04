@@ -26,38 +26,36 @@ export class ProxyCache<
         private readonly adapterName: TAdapters | undefined,
     ) {}
 
-    private async getCache(): Promise<ICache<TType>> {
-        const cacheResolver = await this.container.resolveOrFail(
-            this.resolverToken,
-        );
+    private getCache(): ICache<TType> {
+        const cacheResolver = this.container.resolveOrFail(this.resolverToken);
         return cacheResolver.use(this.adapterName);
     }
 
     async exists(key: string): Promise<boolean> {
-        return (await this.getCache()).exists(key);
+        return this.getCache().exists(key);
     }
 
     async missing(key: string): Promise<boolean> {
-        return (await this.getCache()).missing(key);
+        return this.getCache().missing(key);
     }
 
     async get(key: string): Promise<TType | null> {
-        return (await this.getCache()).get(key);
+        return this.getCache().get(key);
     }
 
     async getOrFail(key: string): Promise<TType> {
-        return (await this.getCache()).getOrFail(key);
+        return this.getCache().getOrFail(key);
     }
 
     async getOr(
         key: string,
         defaultValue: AsyncLazyable<NoneFunc<TType>>,
     ): Promise<TType> {
-        return (await this.getCache()).getOr(key, defaultValue);
+        return this.getCache().getOr(key, defaultValue);
     }
 
     async getAndRemove(key: string): Promise<TType | null> {
-        return (await this.getCache()).getAndRemove(key);
+        return this.getCache().getAndRemove(key);
     }
 
     async getOrAdd(
@@ -65,70 +63,70 @@ export class ProxyCache<
         valueToAdd: AsyncLazyable<TType>,
         ttl?: ITimeSpan | null,
     ): Promise<TType> {
-        return (await this.getCache()).getOrAdd(key, valueToAdd, ttl);
+        return this.getCache().getOrAdd(key, valueToAdd, ttl);
     }
 
     async add(key: string, value: TType, ttl?: ITimeSpan): Promise<boolean> {
-        return (await this.getCache()).add(key, value, ttl);
+        return this.getCache().add(key, value, ttl);
     }
 
     async addOrFail(key: string, value: TType, ttl?: ITimeSpan): Promise<void> {
-        return (await this.getCache()).addOrFail(key, value, ttl);
+        return this.getCache().addOrFail(key, value, ttl);
     }
 
     async put(key: string, value: TType, ttl?: ITimeSpan): Promise<boolean> {
-        return (await this.getCache()).put(key, value, ttl);
+        return this.getCache().put(key, value, ttl);
     }
 
     async update(key: string, value: TType): Promise<boolean> {
-        return (await this.getCache()).update(key, value);
+        return this.getCache().update(key, value);
     }
 
     async updateOrFail(key: string, value: TType): Promise<void> {
-        return (await this.getCache()).updateOrFail(key, value);
+        return this.getCache().updateOrFail(key, value);
     }
 
     async increment(
         key: string,
         value?: Extract<TType, number>,
     ): Promise<boolean> {
-        return (await this.getCache()).increment(key, value);
+        return this.getCache().increment(key, value);
     }
 
     async incrementOrFail(
         key: string,
         value?: Extract<TType, number>,
     ): Promise<void> {
-        return (await this.getCache()).incrementOrFail(key, value);
+        return this.getCache().incrementOrFail(key, value);
     }
 
     async decrement(
         key: string,
         value?: Extract<TType, number>,
     ): Promise<boolean> {
-        return (await this.getCache()).decrement(key, value);
+        return this.getCache().decrement(key, value);
     }
 
     async decrementOrFail(
         key: string,
         value?: Extract<TType, number>,
     ): Promise<void> {
-        return (await this.getCache()).decrementOrFail(key, value);
+        return this.getCache().decrementOrFail(key, value);
     }
 
     async remove(key: string): Promise<boolean> {
-        return (await this.getCache()).remove(key);
+        return this.getCache().remove(key);
     }
 
     async removeOrFail(key: string): Promise<void> {
-        return (await this.getCache()).removeOrFail(key);
+        return this.getCache().removeOrFail(key);
     }
 
     async removeMany(keys: Array<string>): Promise<boolean> {
-        return (await this.getCache()).removeMany(keys);
+        return this.getCache().removeMany(keys);
     }
 
     async clear(): Promise<void> {
-        return (await this.getCache()).clear();
+        return this.getCache().clear();
     }
 }

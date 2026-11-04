@@ -47,6 +47,26 @@ Here is a complete list of settings for the [`withSemaphore`](https://eridu-tech
 | `slotId` | `Invocable<TParameters, string>` | Optional function that produces a unique slot identifier for the current acquisition attempt. Defaults to a UUID (`v4`)                           |
 | `ttl`    | `ITimeSpan \| null`              | Time-to-live for each acquired slot. `null` means slots never expire automatically; if omitted the factory's default TTL is used                  |
 
+## withHttpSemaphoreError middleware {#with_http_semaphore_error_middleware}
+
+The `withHttpSemaphoreError` middleware converts every semaphore error thrown by the wrapped endpoint or downstream middleware into an `HttpError`, so the request fails with a meaningful status code instead of a generic `500`. Errors that are not semaphore errors are rethrown untouched, and the original error is preserved as the `cause`.
+
+### Usage
+
+```ts file=./samples/with-http-semaphore-error.ts
+
+```
+
+### Status codes
+
+| Errors                                                                                                                                                                       | Status |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `LimitReachedSemaphoreError`                                                                                                                                                 | `429`  |
+| `FailedRefreshSemaphoreError`, `FailedReleaseSemaphoreError`                                                                                                                 | `409`  |
+| `UnableToAcquireSemaphoreError`, `UnableToReleaseSemaphoreError`, `UnableToForceReleaseAllSemaphoreError`, `UnableToRefreshSemaphoreError`, `UnableToGetStateSemaphoreError` | `503`  |
+
+A `429` response means the semaphore has no free slot left. A `409` response means the caller's slot is no longer valid. A `503` response means the semaphore adapter failed, so the same request can be retried later. The original error is preserved as the `cause`, and no identifiers are exposed in the response body.
+
 ## Further information
 
 For further information refer to [`eridu-tech/semaphore`](https://eridu-tech.github.io/eridu-tech-core/modules/Semaphore.html) API docs.

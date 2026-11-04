@@ -13,6 +13,7 @@ import type { InferInstance } from "@/utilities/_module-exports.js";
 export class LimitReachedSemaphoreError extends Error {
     static create(key: string, cause?: unknown): LimitReachedSemaphoreError {
         return new LimitReachedSemaphoreError(
+            key,
             `Key "${key}" has reached the limit`,
             cause,
         );
@@ -23,7 +24,11 @@ export class LimitReachedSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = LimitReachedSemaphoreError.name;
     }
@@ -42,6 +47,8 @@ export class FailedRefreshSemaphoreError extends Error {
         cause?: unknown,
     ): FailedRefreshSemaphoreError {
         return new FailedRefreshSemaphoreError(
+            key,
+            slotId,
             `Failed to refresh slot "${slotId}" of key "${key}"`,
             cause,
         );
@@ -52,7 +59,12 @@ export class FailedRefreshSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly slotId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedRefreshSemaphoreError.name;
     }
@@ -71,6 +83,8 @@ export class FailedReleaseSemaphoreError extends Error {
         cause?: unknown,
     ): FailedReleaseSemaphoreError {
         return new FailedReleaseSemaphoreError(
+            key,
+            slotId,
             `Failed to release slot "${slotId}" of key "${key}"`,
             cause,
         );
@@ -81,7 +95,12 @@ export class FailedReleaseSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly slotId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedReleaseSemaphoreError.name;
     }
@@ -97,6 +116,7 @@ export class FailedReleaseSemaphoreError extends Error {
 export class UnableToAcquireSemaphoreError extends Error {
     static create(key: string, cause?: unknown): UnableToAcquireSemaphoreError {
         return new UnableToAcquireSemaphoreError(
+            key,
             `Unable to acquire slot of key "${key}"`,
             cause,
         );
@@ -107,7 +127,11 @@ export class UnableToAcquireSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToAcquireSemaphoreError.name;
     }
@@ -127,6 +151,8 @@ export class UnableToReleaseSemaphoreError extends Error {
         cause?: unknown,
     ): UnableToReleaseSemaphoreError {
         return new UnableToReleaseSemaphoreError(
+            key,
+            slotId,
             `Unable to release slot "${slotId}" of key "${key}"`,
             cause,
         );
@@ -137,7 +163,12 @@ export class UnableToReleaseSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly slotId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToReleaseSemaphoreError.name;
     }
@@ -156,6 +187,7 @@ export class UnableToForceReleaseAllSemaphoreError extends Error {
         cause?: unknown,
     ): UnableToForceReleaseAllSemaphoreError {
         return new UnableToForceReleaseAllSemaphoreError(
+            key,
             `Unable to force release all slots of key "${key}"`,
             cause,
         );
@@ -166,7 +198,11 @@ export class UnableToForceReleaseAllSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToForceReleaseAllSemaphoreError.name;
     }
@@ -186,6 +222,8 @@ export class UnableToRefreshSemaphoreError extends Error {
         cause?: unknown,
     ): UnableToRefreshSemaphoreError {
         return new UnableToRefreshSemaphoreError(
+            key,
+            slotId,
             `Unable to refresh slot "${slotId}" of key "${key}"`,
             cause,
         );
@@ -196,7 +234,12 @@ export class UnableToRefreshSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly slotId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToRefreshSemaphoreError.name;
     }
@@ -215,6 +258,7 @@ export class UnableToGetStateSemaphoreError extends Error {
         cause?: unknown,
     ): UnableToGetStateSemaphoreError {
         return new UnableToGetStateSemaphoreError(
+            key,
             `Unable to get state of semaphore with key "${key}"`,
             cause,
         );
@@ -225,10 +269,49 @@ export class UnableToGetStateSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetStateSemaphoreError.name;
     }
+}
+
+/**
+ * IMPORT_PATH: `"eridu-tech/semaphore/contracts"`
+ * @group Errors
+ */
+export const UNABLE_SEMAPHORE_ERRORS = {
+    UnableToAcquire: UnableToAcquireSemaphoreError,
+    UnableToRelease: UnableToReleaseSemaphoreError,
+    UnableToForceReleaseAll: UnableToForceReleaseAllSemaphoreError,
+    UnableToRefresh: UnableToRefreshSemaphoreError,
+    UnableToGetState: UnableToGetStateSemaphoreError,
+} as const;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/semaphore/contracts"`
+ * @group Errors
+ */
+export type AllUnableSemaphoreErrors = InferInstance<
+    (typeof UNABLE_SEMAPHORE_ERRORS)[keyof typeof UNABLE_SEMAPHORE_ERRORS]
+>;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/semaphore/contracts"`
+ * @group Errors
+ */
+export function isUnableToSemaphoreError(
+    value: unknown,
+): value is AllUnableSemaphoreErrors {
+    for (const errorClass of Object.values(UNABLE_SEMAPHORE_ERRORS)) {
+        if (value instanceof errorClass) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -239,11 +322,7 @@ export const SEMAPHORE_ERRORS = {
     ReachedLimit: LimitReachedSemaphoreError,
     FailedRefresh: FailedRefreshSemaphoreError,
     FailedRelease: FailedReleaseSemaphoreError,
-    UnableToAcquire: UnableToAcquireSemaphoreError,
-    UnableToRelease: UnableToReleaseSemaphoreError,
-    UnableToForceReleaseAll: UnableToForceReleaseAllSemaphoreError,
-    UnableToRefresh: UnableToRefreshSemaphoreError,
-    UnableToGetState: UnableToGetStateSemaphoreError,
+    ...UNABLE_SEMAPHORE_ERRORS,
 } as const;
 
 /**

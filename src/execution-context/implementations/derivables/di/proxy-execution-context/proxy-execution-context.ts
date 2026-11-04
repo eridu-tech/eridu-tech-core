@@ -2,8 +2,6 @@
  * @module ExecutionContext
  */
 
-import { ProxyAsyncContextChain } from "@/execution-context/implementations/derivables/di/proxy-execution-context/proxy-async-context-chain.js";
-
 import type {
     DiToken,
     IServiceResolver,
@@ -11,17 +9,16 @@ import type {
 import type {
     ContextToken,
     DecrementSettings,
-    IAsyncContext,
-    IAsyncContextChain,
-    IAsyncExecutionContext,
+    IContext,
+    IExecutionContext,
     IncrementSettings,
     PutDecrementSettings,
     PutIncrementSettings,
 } from "@/execution-context/contracts/_module-exports.js";
 import type {
-    AsyncLazyable,
+    Lazyable,
     Invocable,
-    Promisable,
+    InvocableFn,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -32,18 +29,18 @@ import type {
  */
 export type ProxyExecutionContextSettings = {
     container: Pick<IServiceResolver, "resolveOrFail">;
-    executionContextToken: DiToken<IAsyncExecutionContext>;
+    executionContextToken: DiToken<IExecutionContext>;
 };
 
 /**
- * An {@link IAsyncExecutionContext} that resolves the underlying execution context
+ * An {@link IExecutionContext} that resolves the underlying execution context
  * from a dependency-injection container.
  *
  * Construct the proxy with a {@link ProxyExecutionContextSettings}.
  *
  * The `executionContextToken` is resolved through the container on every operation via
  * {@link IServiceResolver.resolveOrFail}, and the operation is then delegated to the
- * resolved {@link IAsyncExecutionContext}. Because resolution happens lazily, every
+ * resolved {@link IExecutionContext}. Because resolution happens lazily, every
  * `LIFETIME` is supported:
  *
  * - `SINGLETON` registrations can be used once `IContainer.init()` has been awaited.
@@ -52,170 +49,165 @@ export type ProxyExecutionContextSettings = {
  * - `TRANSIENT` registrations create a new execution context per operation, so context
  *   values are not shared between separate operations. Prefer `SINGLETON` or `SCOPED`.
  *
- * Mutating methods return an {@link IAsyncContextChain} that reuses the resolution of
+ * Mutating methods return an {@link IContextChain} that reuses the resolution of
  * the chain, so chained mutations are applied to the same execution context.
  *
  * IMPORT_PATH: `"eridu-tech/execution-context/di"`
  * @group Derivables
  */
-export class ProxyExecutionContext implements IAsyncExecutionContext {
+export class ProxyExecutionContext implements IExecutionContext {
     private readonly container: Pick<IServiceResolver, "resolveOrFail">;
-    private readonly executionContextToken: DiToken<IAsyncExecutionContext>;
+    private readonly executionContextToken: DiToken<IExecutionContext>;
 
     constructor(settings: ProxyExecutionContextSettings) {
         this.container = settings.container;
         this.executionContextToken = settings.executionContextToken;
     }
 
-    private resolve(): Promise<IAsyncExecutionContext> {
-        return this.container.resolveOrFail(this.executionContextToken);
+    run<TValue>(invocable: Invocable<[], TValue>): TValue {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .run(invocable);
     }
 
-    private chain(
-        operation: (
-            executionContext: IAsyncExecutionContext,
-        ) => Promisable<unknown>,
-    ): IAsyncContextChain {
-        const executionContext = this.resolve();
-        return new ProxyAsyncContextChain(
-            executionContext,
-            executionContext.then((resolved) => {
-                return operation(resolved);
-            }),
-        );
+    bind<TArgs extends Array<unknown>, TReturn>(
+        fn: Invocable<[...args: TArgs], TReturn>,
+    ): InvocableFn<[...args: TArgs], TReturn> {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .bind(fn);
     }
 
-    async contains<TValue>(
+    contains<TValue>(
         token: ContextToken<Array<TValue>>,
         matchValue:
-            | NoInfer<TValue>
-            | Invocable<[value: NoInfer<TValue>], Promisable<boolean>>,
-    ): Promise<boolean> {
-        return (await this.resolve()).contains(token, matchValue);
+            NoInfer<TValue> | Invocable<[value: NoInfer<TValue>], boolean>,
+    ): boolean {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .contains(token, matchValue);
     }
 
-    async exists<TValue>(token: ContextToken<TValue>): Promise<boolean> {
-        return (await this.resolve()).exists(token);
+    exists<TValue>(token: ContextToken<TValue>): boolean {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .exists(token);
     }
 
-    async missing<TValue>(token: ContextToken<TValue>): Promise<boolean> {
-        return (await this.resolve()).missing(token);
+    missing<TValue>(token: ContextToken<TValue>): boolean {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .missing(token);
     }
 
-    async get<TValue>(token: ContextToken<TValue>): Promise<TValue | null> {
-        return (await this.resolve()).get(token);
+    get<TValue>(token: ContextToken<TValue>): TValue | null {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .get(token);
     }
 
-    async getOr<TValue>(
+    getOr<TValue>(
         token: ContextToken<TValue>,
-        defaultValue: AsyncLazyable<TValue>,
-    ): Promise<TValue> {
-        return (await this.resolve()).getOr(token, defaultValue);
+        defaultValue: Lazyable<TValue>,
+    ): TValue {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .getOr(token, defaultValue);
     }
 
-    async getOrFail<TValue>(token: ContextToken<TValue>): Promise<TValue> {
-        return (await this.resolve()).getOrFail(token);
+    getOrFail<TValue>(token: ContextToken<TValue>): TValue {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .getOrFail(token);
     }
 
-    add<TValue>(
-        token: ContextToken<TValue>,
-        value: NoInfer<TValue>,
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.add(token, value);
-        });
+    add<TValue>(token: ContextToken<TValue>, value: NoInfer<TValue>): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .add(token, value);
     }
 
-    put<TValue>(
-        token: ContextToken<TValue>,
-        value: NoInfer<TValue>,
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.put(token, value);
-        });
+    put<TValue>(token: ContextToken<TValue>, value: NoInfer<TValue>): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .put(token, value);
     }
 
     putIncrement(
         token: ContextToken<number>,
         settings?: PutIncrementSettings,
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.putIncrement(token, settings);
-        });
+    ): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .putIncrement(token, settings);
     }
 
     putDecrement(
         token: ContextToken<number>,
         settings?: PutDecrementSettings,
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.putDecrement(token, settings);
-        });
+    ): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .putDecrement(token, settings);
     }
 
     putPush<TValue>(
         token: ContextToken<Array<TValue>>,
         ...values: Array<NoInfer<TValue>>
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.putPush(token, ...values);
-        });
+    ): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .putPush(token, ...values);
     }
 
     update<TValue>(
         token: ContextToken<TValue>,
         value: NoInfer<TValue>,
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.update(token, value);
-        });
+    ): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .update(token, value);
     }
 
     updateIncrement(
         token: ContextToken<number>,
         settings?: IncrementSettings,
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.updateIncrement(token, settings);
-        });
+    ): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .updateIncrement(token, settings);
     }
 
     updateDecrement(
         token: ContextToken<number>,
         settings?: DecrementSettings,
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.updateDecrement(token, settings);
-        });
+    ): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .updateDecrement(token, settings);
     }
 
     updatePush<TValue>(
         token: ContextToken<Array<TValue>>,
         ...values: Array<NoInfer<TValue>>
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.updatePush(token, ...values);
-        });
+    ): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .updatePush(token, ...values);
     }
 
-    remove<TValue>(token: ContextToken<TValue>): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.remove(token);
-        });
+    remove<TValue>(token: ContextToken<TValue>): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .remove(token);
     }
 
     when(
-        condition: AsyncLazyable<boolean>,
-        ...invocables: Array<Invocable<[context: IAsyncContext], IAsyncContext>>
-    ): IAsyncContextChain {
-        return this.chain((executionContext) => {
-            return executionContext.when(condition, ...invocables);
-        });
-    }
-
-    async run<TValue>(
-        invocable: Invocable<[], Promisable<TValue>>,
-    ): Promise<TValue> {
-        return (await this.resolve()).run(invocable);
+        condition: Lazyable<boolean>,
+        ...invocables: Array<Invocable<[context: IContext], IContext>>
+    ): IContext {
+        return this.container
+            .resolveOrFail(this.executionContextToken)
+            .when(condition, ...invocables);
     }
 }

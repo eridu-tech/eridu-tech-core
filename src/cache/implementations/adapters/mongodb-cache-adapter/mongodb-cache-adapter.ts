@@ -165,7 +165,7 @@ export class MongodbCacheAdapter<TType = unknown>
         const hasExpirationAndExpiredQuery = {
             $and: [hasExpirationQuery, hasExpiredQuery],
         };
-        const serializedValue = await this.serde.serialize(valueToAdd());
+        const serializedValue = this.serde.serialize(valueToAdd());
         const document = await this.collection.findOneAndUpdate(
             {
                 key,
@@ -207,7 +207,7 @@ export class MongodbCacheAdapter<TType = unknown>
 
         const { expiration, value } = document;
         if (expiration === null) {
-            return await this.serde.deserialize(value);
+            return this.serde.deserialize(value);
         }
 
         const hasExpired = expiration.getTime() <= new Date().getTime();
@@ -215,7 +215,7 @@ export class MongodbCacheAdapter<TType = unknown>
             return valueToAdd();
         }
 
-        return await this.serde.deserialize(value);
+        return this.serde.deserialize(value);
     }
 
     /**
@@ -271,13 +271,13 @@ export class MongodbCacheAdapter<TType = unknown>
         }
         const { expiration, value } = document;
         if (expiration === null) {
-            return await this.serde.deserialize(value);
+            return this.serde.deserialize(value);
         }
         const hasExpired = expiration.getTime() <= new Date().getTime();
         if (hasExpired) {
             return null;
         }
-        return await this.serde.deserialize(value);
+        return this.serde.deserialize(value);
     }
 
     async get(key: string): Promise<TType | null> {
@@ -336,7 +336,7 @@ export class MongodbCacheAdapter<TType = unknown>
         const hasExpirationAndExpiredQuery = {
             $and: [hasExpirationQuery, hasExpiredQuery],
         };
-        const serializedValue = await this.serde.serialize(value);
+        const serializedValue = this.serde.serialize(value);
         const document = await this.collection.findOneAndUpdate(
             {
                 key,
@@ -380,7 +380,7 @@ export class MongodbCacheAdapter<TType = unknown>
             },
             {
                 $set: {
-                    value: await this.serde.serialize(value),
+                    value: this.serde.serialize(value),
                     expiration: ttl ?? null,
                 },
             },
@@ -401,7 +401,7 @@ export class MongodbCacheAdapter<TType = unknown>
             MongodbCacheAdapter.filterUnexpiredKeys([key]),
             {
                 $set: {
-                    value: await this.serde.serialize(value),
+                    value: this.serde.serialize(value),
                 },
             },
             {

@@ -19,6 +19,7 @@ export class BlockedRateLimiterError extends Error {
     ): BlockedRateLimiterError {
         return new BlockedRateLimiterError(
             state,
+            key,
             `Rate limiter for key "${key}" is blocked. All calls are being blocked until wait time is reached.`,
             cause,
         );
@@ -31,6 +32,7 @@ export class BlockedRateLimiterError extends Error {
      */
     constructor(
         public readonly state: Omit<RateLimiterBlockedState, "type">,
+        readonly key: string,
         message?: string,
         cause?: unknown,
     ) {
@@ -52,6 +54,7 @@ export class UnableToGetStateRateLimiterError extends Error {
         cause?: unknown,
     ): UnableToGetStateRateLimiterError {
         return new UnableToGetStateRateLimiterError(
+            key,
             `Unable to get state of rate limiter with key "${key}"`,
             cause,
         );
@@ -62,7 +65,11 @@ export class UnableToGetStateRateLimiterError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetStateRateLimiterError.name;
     }
@@ -81,6 +88,7 @@ export class UnableToUpdateStateRateLimiterError extends Error {
         cause?: unknown,
     ): UnableToUpdateStateRateLimiterError {
         return new UnableToUpdateStateRateLimiterError(
+            key,
             `Unable to update state of rate limiter with key "${key}"`,
             cause,
         );
@@ -91,7 +99,11 @@ export class UnableToUpdateStateRateLimiterError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToUpdateStateRateLimiterError.name;
     }
@@ -107,6 +119,7 @@ export class UnableToUpdateStateRateLimiterError extends Error {
 export class UnableToResetRateLimiterError extends Error {
     static create(key: string, cause?: unknown): UnableToResetRateLimiterError {
         return new UnableToResetRateLimiterError(
+            key,
             `Unable to reset rate limiter with key "${key}"`,
             cause,
         );
@@ -117,7 +130,11 @@ export class UnableToResetRateLimiterError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToResetRateLimiterError.name;
     }
@@ -127,11 +144,42 @@ export class UnableToResetRateLimiterError extends Error {
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
-export const RATE_LIMITER_ERRORS = {
-    Blocked: BlockedRateLimiterError,
+export const UNABLE_RATE_LIMITER_ERRORS = {
     UnableToGetState: UnableToGetStateRateLimiterError,
     UnableToUpdateState: UnableToUpdateStateRateLimiterError,
     UnableToReset: UnableToResetRateLimiterError,
+} as const;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
+ * @group Errors
+ */
+export type AllUnableRateLimiterErrors = InferInstance<
+    (typeof UNABLE_RATE_LIMITER_ERRORS)[keyof typeof UNABLE_RATE_LIMITER_ERRORS]
+>;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
+ * @group Errors
+ */
+export function isUnableToRateLimiterError(
+    value: unknown,
+): value is AllUnableRateLimiterErrors {
+    for (const errorClass of Object.values(UNABLE_RATE_LIMITER_ERRORS)) {
+        if (value instanceof errorClass) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
+ * @group Errors
+ */
+export const RATE_LIMITER_ERRORS = {
+    Blocked: BlockedRateLimiterError,
+    ...UNABLE_RATE_LIMITER_ERRORS,
 } as const;
 
 /**

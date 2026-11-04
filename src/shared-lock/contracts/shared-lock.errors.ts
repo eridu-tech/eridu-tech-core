@@ -16,6 +16,7 @@ export class LimitReachedReaderSemaphoreError extends Error {
         cause?: unknown,
     ): LimitReachedReaderSemaphoreError {
         return new LimitReachedReaderSemaphoreError(
+            key,
             `Key "${key}" has reached the limit`,
             cause,
         );
@@ -26,7 +27,11 @@ export class LimitReachedReaderSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = LimitReachedReaderSemaphoreError.name;
     }
@@ -45,6 +50,8 @@ export class FailedRefreshReaderSemaphoreError extends Error {
         cause?: unknown,
     ): FailedRefreshReaderSemaphoreError {
         return new FailedRefreshReaderSemaphoreError(
+            key,
+            slotId,
             `Failed to refresh slot "${slotId}" of key "${key}"`,
             cause,
         );
@@ -55,7 +62,12 @@ export class FailedRefreshReaderSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly slotId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedRefreshReaderSemaphoreError.name;
     }
@@ -74,6 +86,8 @@ export class FailedReleaseReaderSemaphoreError extends Error {
         cause?: unknown,
     ): FailedReleaseReaderSemaphoreError {
         return new FailedReleaseReaderSemaphoreError(
+            key,
+            slotId,
             `Failed to release slot "${slotId}" of key "${key}"`,
             cause,
         );
@@ -84,7 +98,12 @@ export class FailedReleaseReaderSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly slotId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedReleaseReaderSemaphoreError.name;
     }
@@ -103,6 +122,7 @@ export class UnableToAcquireReaderSemaphoreError extends Error {
         cause?: unknown,
     ): UnableToAcquireReaderSemaphoreError {
         return new UnableToAcquireReaderSemaphoreError(
+            key,
             `Unable to acquire reader slot of key "${key}"`,
             cause,
         );
@@ -113,7 +133,11 @@ export class UnableToAcquireReaderSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToAcquireReaderSemaphoreError.name;
     }
@@ -133,6 +157,8 @@ export class UnableToReleaseReaderSemaphoreError extends Error {
         cause?: unknown,
     ): UnableToReleaseReaderSemaphoreError {
         return new UnableToReleaseReaderSemaphoreError(
+            key,
+            slotId,
             `Unable to release reader slot "${slotId}" of key "${key}"`,
             cause,
         );
@@ -143,7 +169,12 @@ export class UnableToReleaseReaderSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly slotId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToReleaseReaderSemaphoreError.name;
     }
@@ -163,6 +194,8 @@ export class UnableToRefreshReaderSemaphoreError extends Error {
         cause?: unknown,
     ): UnableToRefreshReaderSemaphoreError {
         return new UnableToRefreshReaderSemaphoreError(
+            key,
+            slotId,
             `Unable to refresh reader slot "${slotId}" of key "${key}"`,
             cause,
         );
@@ -173,10 +206,48 @@ export class UnableToRefreshReaderSemaphoreError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly slotId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToRefreshReaderSemaphoreError.name;
     }
+}
+
+/**
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export const UNABLE_READER_SEMAPHORE_ERRORS = {
+    UnableToAcquireReader: UnableToAcquireReaderSemaphoreError,
+    UnableToReleaseReader: UnableToReleaseReaderSemaphoreError,
+    UnableToRefreshReader: UnableToRefreshReaderSemaphoreError,
+} as const;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export type AllUnableReaderSemaphoreErrors = InferInstance<
+    (typeof UNABLE_READER_SEMAPHORE_ERRORS)[keyof typeof UNABLE_READER_SEMAPHORE_ERRORS]
+>;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export function isUnableToReaderSemaphoreError(
+    value: unknown,
+): value is AllUnableReaderSemaphoreErrors {
+    for (const errorClass of Object.values(UNABLE_READER_SEMAPHORE_ERRORS)) {
+        if (value instanceof errorClass) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -187,9 +258,7 @@ export const READER_SEMAPHORE_ERRORS = {
     ReachedLimitReader: LimitReachedReaderSemaphoreError,
     FailedRefreshReader: FailedRefreshReaderSemaphoreError,
     FailedReleaseReader: FailedReleaseReaderSemaphoreError,
-    UnableToAcquireReader: UnableToAcquireReaderSemaphoreError,
-    UnableToReleaseReader: UnableToReleaseReaderSemaphoreError,
-    UnableToRefreshReader: UnableToRefreshReaderSemaphoreError,
+    ...UNABLE_READER_SEMAPHORE_ERRORS,
 } as const;
 
 /**
@@ -224,6 +293,7 @@ export function isReaderSemaphoreError(
 export class FailedAcquireWriterLockError extends Error {
     static create(key: string, cause?: unknown): FailedAcquireWriterLockError {
         return new FailedAcquireWriterLockError(
+            key,
             `Key "${key}" already acquired`,
             cause,
         );
@@ -234,7 +304,11 @@ export class FailedAcquireWriterLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedAcquireWriterLockError.name;
     }
@@ -253,6 +327,8 @@ export class FailedReleaseWriterLockError extends Error {
         cause?: unknown,
     ): FailedReleaseWriterLockError {
         return new FailedReleaseWriterLockError(
+            key,
+            lockId,
             `Unonwed release on key "${key}" by owner "${lockId}"`,
             cause,
         );
@@ -263,7 +339,12 @@ export class FailedReleaseWriterLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly lockId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedReleaseWriterLockError.name;
     }
@@ -282,6 +363,8 @@ export class FailedRefreshWriterLockError extends Error {
         cause?: unknown,
     ): FailedRefreshWriterLockError {
         return new FailedRefreshWriterLockError(
+            key,
+            lockId,
             `Unonwed refresh on key "${key}" by owner "${lockId}"`,
             cause,
         );
@@ -292,7 +375,12 @@ export class FailedRefreshWriterLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly lockId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = FailedRefreshWriterLockError.name;
     }
@@ -312,6 +400,8 @@ export class UnableToAcquireWriterLockError extends Error {
         cause?: unknown,
     ): UnableToAcquireWriterLockError {
         return new UnableToAcquireWriterLockError(
+            key,
+            lockId,
             `Unable to acquire writer lock on key "${key}" by owner "${lockId}"`,
             cause,
         );
@@ -322,7 +412,12 @@ export class UnableToAcquireWriterLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly lockId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToAcquireWriterLockError.name;
     }
@@ -342,6 +437,8 @@ export class UnableToReleaseWriterLockError extends Error {
         cause?: unknown,
     ): UnableToReleaseWriterLockError {
         return new UnableToReleaseWriterLockError(
+            key,
+            lockId,
             `Unable to release writer lock on key "${key}" by owner "${lockId}"`,
             cause,
         );
@@ -352,7 +449,12 @@ export class UnableToReleaseWriterLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly lockId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToReleaseWriterLockError.name;
     }
@@ -372,6 +474,8 @@ export class UnableToRefreshWriterLockError extends Error {
         cause?: unknown,
     ): UnableToRefreshWriterLockError {
         return new UnableToRefreshWriterLockError(
+            key,
+            lockId,
             `Unable to refresh writer lock on key "${key}" by owner "${lockId}"`,
             cause,
         );
@@ -382,10 +486,48 @@ export class UnableToRefreshWriterLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        readonly lockId: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToRefreshWriterLockError.name;
     }
+}
+
+/**
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export const UNABLE_WRITER_LOCK_ERRORS = {
+    UnableToAcquireWriter: UnableToAcquireWriterLockError,
+    UnableToReleaseWriter: UnableToReleaseWriterLockError,
+    UnableToRefreshWriter: UnableToRefreshWriterLockError,
+} as const;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export type AllUnableWriterLockErrors = InferInstance<
+    (typeof UNABLE_WRITER_LOCK_ERRORS)[keyof typeof UNABLE_WRITER_LOCK_ERRORS]
+>;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export function isUnableToWriterLockError(
+    value: unknown,
+): value is AllUnableWriterLockErrors {
+    for (const errorClass of Object.values(UNABLE_WRITER_LOCK_ERRORS)) {
+        if (value instanceof errorClass) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -396,9 +538,7 @@ export const WRITER_LOCK_ERRORS = {
     FailedAcquireWriter: FailedAcquireWriterLockError,
     FailedReleaseWriter: FailedReleaseWriterLockError,
     FailedRefreshWriter: FailedRefreshWriterLockError,
-    UnableToAcquireWriter: UnableToAcquireWriterLockError,
-    UnableToReleaseWriter: UnableToReleaseWriterLockError,
-    UnableToRefreshWriter: UnableToRefreshWriterLockError,
+    ...UNABLE_WRITER_LOCK_ERRORS,
 } as const;
 
 /**
@@ -437,6 +577,7 @@ export class UnableToForceReleaseSharedLockError extends Error {
         cause?: unknown,
     ): UnableToForceReleaseSharedLockError {
         return new UnableToForceReleaseSharedLockError(
+            key,
             `Unable to force release shared lock on key "${key}"`,
             cause,
         );
@@ -447,7 +588,11 @@ export class UnableToForceReleaseSharedLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToForceReleaseSharedLockError.name;
     }
@@ -466,6 +611,7 @@ export class UnableToGetStateSharedLockError extends Error {
         cause?: unknown,
     ): UnableToGetStateSharedLockError {
         return new UnableToGetStateSharedLockError(
+            key,
             `Unable to get state of shared lock with key "${key}"`,
             cause,
         );
@@ -476,7 +622,11 @@ export class UnableToGetStateSharedLockError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetStateSharedLockError.name;
     }
@@ -486,11 +636,44 @@ export class UnableToGetStateSharedLockError extends Error {
  * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
  * @group Errors
  */
+export const UNABLE_SHARED_LOCK_ERRORS = {
+    ...UNABLE_READER_SEMAPHORE_ERRORS,
+    ...UNABLE_WRITER_LOCK_ERRORS,
+    UnableToForceRelease: UnableToForceReleaseSharedLockError,
+    UnableToGetState: UnableToGetStateSharedLockError,
+} as const;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export type AllUnableSharedLockErrors = InferInstance<
+    (typeof UNABLE_SHARED_LOCK_ERRORS)[keyof typeof UNABLE_SHARED_LOCK_ERRORS]
+>;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
+export function isUnableToSharedLockError(
+    value: unknown,
+): value is AllUnableSharedLockErrors {
+    return (
+        isUnableToReaderSemaphoreError(value) ||
+        isUnableToWriterLockError(value) ||
+        value instanceof UnableToForceReleaseSharedLockError ||
+        value instanceof UnableToGetStateSharedLockError
+    );
+}
+
+/**
+ * IMPORT_PATH: `"eridu-tech/shared-lock/contracts"`
+ * @group Errors
+ */
 export const SHARED_LOCK_ERRORS = {
     ...READER_SEMAPHORE_ERRORS,
     ...WRITER_LOCK_ERRORS,
-    UnableToForceRelease: UnableToForceReleaseSharedLockError,
-    UnableToGetState: UnableToGetStateSharedLockError,
+    ...UNABLE_SHARED_LOCK_ERRORS,
 } as const;
 
 /**

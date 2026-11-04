@@ -30,6 +30,7 @@ import type {
     Lifetime,
 } from "@/di/contracts/_module-exports.js";
 import type { IExecutionContext } from "@/execution-context/contracts/_module-exports.js";
+import type { Promisable } from "@/utilities/_module-exports.js";
 
 // ---------------------------------------------------------------------------
 // Helper tokens and test classes
@@ -207,7 +208,7 @@ describe("class: Container", () => {
             });
 
             await container.init();
-            const result = await container.resolveOrFail(ILOGGER);
+            const result = container.resolveOrFail(ILOGGER);
             expect(result).toBeDefined();
         });
 
@@ -340,7 +341,7 @@ describe("class: Container", () => {
             });
 
             await container.init();
-            const result = await container.resolveOr(ICONFIG, {
+            const result = container.resolveOr(ICONFIG, {
                 apiUrl: "default",
                 timeout: 1000,
             });
@@ -368,7 +369,7 @@ describe("class: Container", () => {
             });
 
             await container.init();
-            const result = await container.resolveOrFail(ICONFIG);
+            const result = container.resolveOrFail(ICONFIG);
             expect(result).toEqual({
                 apiUrl: "https://api.example.com",
                 timeout: 5000,
@@ -388,7 +389,7 @@ describe("class: Container", () => {
 
         test("Should return false when token is not registered", async () => {
             await container.init();
-            const result = await container.has(ILOGGER);
+            const result = container.has(ILOGGER);
             expect(result).toBe(false);
         });
     });
@@ -486,7 +487,7 @@ describe("class: Container", () => {
             });
 
             await container.init();
-            const result = await container.resolveOrFail(ICONFIG);
+            const result = container.resolveOrFail(ICONFIG);
             expect(result).toEqual({
                 apiUrl: "https://new.example.com",
                 timeout: 5000,
@@ -642,7 +643,7 @@ describe("class: Container", () => {
             await container.init();
 
             expect(hook).toHaveBeenCalledWith(logger);
-            expect(await container.resolveOrFail(ILOGGER)).toBe(logger);
+            expect(container.resolveOrFail(ILOGGER)).toBe(logger);
         });
 
         test("Should run the onInit hook while the container is active", async () => {
@@ -652,9 +653,9 @@ describe("class: Container", () => {
             container.registerValue({
                 token: ICONFIG,
                 value,
-                onInit: async () => {
+                onInit: () => {
                     isActiveDuringHook =
-                        (await container.resolveOrFail(ICONFIG)) === value;
+                        container.resolveOrFail(ICONFIG) === value;
                 },
             });
 
@@ -670,9 +671,9 @@ describe("class: Container", () => {
             container.registerValue({
                 token: ICONFIG,
                 value,
-                onDeInit: async () => {
+                onDeInit: () => {
                     isActiveDuringHook =
-                        (await container.resolveOrFail(ICONFIG)) === value;
+                        container.resolveOrFail(ICONFIG) === value;
                 },
             });
 
@@ -710,7 +711,7 @@ describe("class: Container", () => {
 
             await container.init();
 
-            const config = await container.resolveOrFail(ICONFIG);
+            const config = container.resolveOrFail(ICONFIG);
             expect(config.apiUrl).toBe("https://api.example.com");
 
             await container.deInit();
@@ -746,9 +747,9 @@ describe("class: Container", () => {
             });
 
             await parentContainer.init();
-            const parentConfig = await parentContainer.resolveOrFail(ICONFIG);
+            const parentConfig = parentContainer.resolveOrFail(ICONFIG);
             await child.init();
-            const childConfig = await child.resolveOrFail(ICONFIG);
+            const childConfig = child.resolveOrFail(ICONFIG);
 
             expect(parentConfig.apiUrl).toBe("https://parent.example.com");
             expect(childConfig.apiUrl).toBe("https://child.example.com");
@@ -803,8 +804,8 @@ describe("class: Container", () => {
             container.registerValue({ token: TOKEN_B, value: "value-b" });
 
             await container.init();
-            const a = await container.resolveOrFail(TOKEN_A);
-            const b = await container.resolveOrFail(TOKEN_B);
+            const a = container.resolveOrFail(TOKEN_A);
+            const b = container.resolveOrFail(TOKEN_B);
 
             expect(a).toBe("value-a");
             expect(b).toBe("value-b");
@@ -815,8 +816,7 @@ describe("class: Container", () => {
 
             container.registerFactory({
                 token: ILOGGER,
-                factory: async () => {
-                    await Promise.resolve();
+                factory: () => {
                     return new ConsoleLogger();
                 },
                 deps: {},
@@ -824,7 +824,7 @@ describe("class: Container", () => {
             });
 
             await container.init();
-            const logger = await container.resolveOrFail(ILOGGER);
+            const logger = container.resolveOrFail(ILOGGER);
             expect(logger).toBeDefined();
             expect(typeof logger.log).toBe("function");
         });
@@ -913,15 +913,14 @@ describe("class: Container", () => {
                     });
                 },
                 scope: async () => {
-                    const requestId = await container.resolveOrFail(REQUEST_ID);
+                    const requestId = container.resolveOrFail(REQUEST_ID);
                     expect(requestId).toBe("req-001");
 
-                    const userService =
-                        await container.resolveOrFail(IUSER_SERVICE);
+                    const userService = container.resolveOrFail(IUSER_SERVICE);
                     const user = await userService.getUser("42");
                     expect(user).toEqual({ name: "John Doe" });
 
-                    const config = await container.resolveOrFail(ICONFIG);
+                    const config = container.resolveOrFail(ICONFIG);
                     expect(config.apiUrl).toBe("https://api.example.com");
                 },
             });
@@ -959,11 +958,11 @@ describe("class: Container", () => {
             await appContainer.init();
 
             // Resolve from test container — should get UserService with MockDatabase
-            const userService = await testContainer.resolveOrFail(UserService);
+            const userService = testContainer.resolveOrFail(UserService);
             expect(userService).toBeInstanceOf(UserService);
 
             // Parent container still has real Database
-            const parentDb = await appContainer.resolveOrFail(Database);
+            const parentDb = appContainer.resolveOrFail(Database);
             expect(parentDb).toBeInstanceOf(Database);
         });
     });
@@ -976,8 +975,16 @@ describe("Illegal method call before Container.init or after Container.deInit (w
     });
 
     type TestData = {
-        func: () => Promise<void>;
+        func: () => Promisable<void>;
         name: string;
+    };
+    const captureError = async (func: TestData["func"]): Promise<unknown> => {
+        try {
+            await func();
+        } catch (error) {
+            return error;
+        }
+        return null;
     };
     /**
      * Declared as a list so the shared cases below can be reused for additional
@@ -988,30 +995,30 @@ describe("Illegal method call before Container.init or after Container.deInit (w
         (createToken) =>
             [
                 {
-                    func: async () => {
+                    func: () => {
                         const token = createToken();
-                        await container.resolve(token);
+                        container.resolve(token);
                     },
                     name: "resolve",
                 },
                 {
-                    func: async () => {
+                    func: () => {
                         const token = createToken();
-                        await container.resolveOr(token, "_");
+                        container.resolveOr(token, "_");
                     },
                     name: "resolveOr",
                 },
                 {
-                    func: async () => {
+                    func: () => {
                         const token = createToken();
-                        await container.resolveOrFail(token);
+                        container.resolveOrFail(token);
                     },
                     name: "resolveOrFail",
                 },
                 {
-                    func: async () => {
+                    func: () => {
                         const token = createToken();
-                        await container.has(token);
+                        container.has(token);
                     },
                     name: "has",
                 },
@@ -1040,9 +1047,9 @@ describe("Illegal method call before Container.init or after Container.deInit (w
     test.each(testCases)(
         "When method Container.$name is called before Container.init then should fail with InvalidMethodCallDiError",
         async (testCase) => {
-            const promise = testCase.func();
-            await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
-            await expect(promise).rejects.toHaveProperty(
+            const error = await captureError(testCase.func);
+            expect(error).toBeInstanceOf(InvalidMethodCallDiError);
+            expect(error).toHaveProperty(
                 "flag",
                 InvalidMethodCallDiError.FLAG.NOT_ACTIVE,
             );
@@ -1070,9 +1077,9 @@ describe("Illegal method call before Container.init or after Container.deInit (w
         async (testCase) => {
             await container.init();
             await container.deInit();
-            const promise = testCase.func();
-            await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
-            await expect(promise).rejects.toHaveProperty(
+            const error = await captureError(testCase.func);
+            expect(error).toBeInstanceOf(InvalidMethodCallDiError);
+            expect(error).toHaveProperty(
                 "flag",
                 InvalidMethodCallDiError.FLAG.NOT_ACTIVE,
             );
@@ -1212,10 +1219,10 @@ describe("illegal method call inside DynamicServiceProvider in Container.run blo
         const tokenA = genericToken("A");
 
         const promise = container.run({
-            registration: async () => {
-                await container.resolve(tokenA);
+            registration: () => {
+                container.resolve(tokenA);
             },
-            scope: async () => {},
+            scope: () => {},
         });
         await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
         await expect(promise).rejects.toHaveProperty(
@@ -1230,10 +1237,10 @@ describe("illegal method call inside DynamicServiceProvider in Container.run blo
         const tokenA = genericToken("A");
 
         const promise = container.run({
-            registration: async () => {
-                await container.resolveOr(tokenA, "_");
+            registration: () => {
+                container.resolveOr(tokenA, "_");
             },
-            scope: async () => {},
+            scope: () => {},
         });
         await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
         await expect(promise).rejects.toHaveProperty(
@@ -1248,10 +1255,10 @@ describe("illegal method call inside DynamicServiceProvider in Container.run blo
         const tokenA = genericToken("A");
 
         const promise = container.run({
-            registration: async () => {
-                await container.resolveOrFail(tokenA);
+            registration: () => {
+                container.resolveOrFail(tokenA);
             },
-            scope: async () => {},
+            scope: () => {},
         });
         await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
         await expect(promise).rejects.toHaveProperty(
@@ -1277,7 +1284,7 @@ describe("init / deInit failure semantics", () => {
 
         // A failed init must not leave the container usable: resolves and
         // re-inits are both blocked.
-        await expect(container.resolve(ICONFIG)).rejects.toThrow(
+        expect(() => container.resolve(ICONFIG)).toThrow(
             InvalidMethodCallDiError,
         );
         await expect(container.init()).rejects.toThrow(
@@ -1320,7 +1327,7 @@ describe("init / deInit failure semantics", () => {
         expect(hook2).toHaveBeenCalled();
 
         // Cleanup still ran: the container is terminated.
-        await expect(container.resolve(TOKEN_A)).rejects.toThrow(
+        expect(() => container.resolve(TOKEN_A)).toThrow(
             InvalidMethodCallDiError,
         );
     });
@@ -1341,7 +1348,7 @@ describe("has", () => {
         container.registerFactory(nodeA);
         await container.init();
 
-        const value = await container.has(nodeA.token);
+        const value = container.has(nodeA.token);
         expect(value).toBe(true);
     });
 
@@ -1354,7 +1361,7 @@ describe("has", () => {
         container.registerFactory(nodeA);
         await container.init();
 
-        const value = await container.has(nodeA.token);
+        const value = container.has(nodeA.token);
         expect(value).toBe(true);
     });
 
@@ -1371,7 +1378,7 @@ describe("has", () => {
         container.registerFactory(nodeA);
         await container.init();
 
-        const value = await container.has(nodeA.token);
+        const value = container.has(nodeA.token);
         expect(value).toBe(false);
     });
 
@@ -1385,7 +1392,7 @@ describe("has", () => {
         container.registerDynamic(tokenA);
         await container.init();
 
-        const value = await container.has(tokenA);
+        const value = container.has(tokenA);
         expect(value).toBe(false);
     });
 });
@@ -1427,8 +1434,8 @@ describe("resolve & Container.init & Container.run", () => {
     });
 
     describe("nonexistent token", () => {
-        test("should return null when resolving a nonexistent token at top with Container.resolve", async () => {
-            await expect(container.resolve(tokenA)).resolves.toBe(null);
+        test("should return null when resolving a nonexistent token at top with Container.resolve", () => {
+            expect(container.resolve(tokenA)).toBe(null);
         });
 
         /**
@@ -1444,10 +1451,16 @@ describe("resolve & Container.init & Container.run", () => {
          * ```
          * This behaviour should be same for singleton, transient, scoped, dynamic and transient tokens.
          */
-        test("should fail when resolving a nonexistent token at top with Container.resolveOrFail", async () => {
-            const promise = container.resolveOrFail(tokenA);
-            await expect(promise).rejects.toThrow(CanNotResolveServiceDiError);
-            await expect(promise).rejects.toHaveProperty(
+        test("should fail when resolving a nonexistent token at top with Container.resolveOrFail", () => {
+            const fn = () => container.resolveOrFail(tokenA);
+            expect(fn).toThrow(CanNotResolveServiceDiError);
+            let error: unknown;
+            try {
+                fn();
+            } catch (caught) {
+                error = caught;
+            }
+            expect(error).toHaveProperty(
                 "flag",
                 CanNotResolveServiceDiError.FLAG.NOT_REGISTERED_TOKEN,
             );
@@ -1464,11 +1477,11 @@ describe("resolve & Container.init & Container.run", () => {
          * ```
          * This behaviour should be same for all singleton,transient,scoped,dynamic and transient tokens.
          */
-        test("should return the default value when resolving a nonexistent token at top with Container.resolveOr", async () => {
+        test("should return the default value when resolving a nonexistent token at top with Container.resolveOr", () => {
             const defaultValue = "_";
-            await expect(
-                container.resolveOr(tokenA, defaultValue),
-            ).resolves.toBe(defaultValue);
+            expect(container.resolveOr(tokenA, defaultValue)).toBe(
+                defaultValue,
+            );
         });
 
         test("should return null when resolving a nonexistent token inside run block scope with Container.resolve", async () => {
@@ -1476,8 +1489,8 @@ describe("resolve & Container.init & Container.run", () => {
                 undefined | string | null;
 
             await container.run({
-                scope: async () => {
-                    value = await container.resolve(tokenA);
+                scope: () => {
+                    value = container.resolve(tokenA);
                 },
             });
 
@@ -1486,8 +1499,8 @@ describe("resolve & Container.init & Container.run", () => {
 
         test("should fail when resolving a nonexistent token inside run block scope with Container.resolveOrFail", async () => {
             const promise = container.run({
-                scope: async () => {
-                    return await container.resolveOrFail(tokenA);
+                scope: () => {
+                    return container.resolveOrFail(tokenA);
                 },
             });
             await expect(promise).rejects.toThrow(CanNotResolveServiceDiError);
@@ -1502,8 +1515,8 @@ describe("resolve & Container.init & Container.run", () => {
             let value: undefined | string = undefined as undefined | string;
 
             await container.run({
-                scope: async () => {
-                    value = await container.resolveOr(tokenA, defaultValue);
+                scope: () => {
+                    value = container.resolveOr(tokenA, defaultValue);
                 },
             });
 
@@ -1531,14 +1544,12 @@ describe("register & Container.init & resolve", () => {
             container.registerFactory(nodeA);
             await container.init();
 
-            const correctValue = await callInvocable(
+            const correctValue = callInvocable(
                 nodeA.factory,
                 {},
                 executionContext,
             );
-            await expect(container.resolve(nodeA.token)).resolves.toBe(
-                correctValue,
-            );
+            expect(container.resolve(nodeA.token)).toBe(correctValue);
         });
 
         test("Should resolve successfully a deep singleton dependency chain at top with Container.resolve", async () => {
@@ -1568,23 +1579,19 @@ describe("register & Container.init & resolve", () => {
 
             await container.init();
 
-            const value = await container.resolve(nodeD.token);
-            const valueA = await callInvocable(
-                nodeA.factory,
-                {},
-                executionContext,
-            );
-            const valueB = await callInvocable(
+            const value = container.resolve(nodeD.token);
+            const valueA = callInvocable(nodeA.factory, {}, executionContext);
+            const valueB = callInvocable(
                 nodeB.factory,
                 { a: valueA },
                 executionContext,
             );
-            const valueC = await callInvocable(
+            const valueC = callInvocable(
                 nodeC.factory,
                 { b: valueB },
                 executionContext,
             );
-            const correctValue = await callInvocable(
+            const correctValue = callInvocable(
                 nodeD.factory,
                 { c: valueC },
                 executionContext,
@@ -1607,9 +1614,9 @@ describe("register & Container.init & resolve", () => {
             await container.init();
 
             const defaultValue = "_";
-            await expect(
-                container.resolveOr(nodeA.token, defaultValue),
-            ).resolves.toBe(defaultValue);
+            expect(container.resolveOr(nodeA.token, defaultValue)).toBe(
+                defaultValue,
+            );
         });
 
         /**
@@ -1625,9 +1632,15 @@ describe("register & Container.init & resolve", () => {
             container.registerFactory(nodeA);
             await container.init();
 
-            const promise = container.resolveOrFail(nodeA.token);
-            await expect(promise).rejects.toThrow(CanNotResolveServiceDiError);
-            await expect(promise).rejects.toHaveProperty(
+            const resolve = () => container.resolveOrFail(nodeA.token);
+            expect(resolve).toThrow(CanNotResolveServiceDiError);
+            let error: unknown;
+            try {
+                resolve();
+            } catch (caught) {
+                error = caught;
+            }
+            expect(error).toHaveProperty(
                 "flag",
                 CanNotResolveServiceDiError.FLAG.RESOLVED_VALUE_IS_NULL,
             );
@@ -1655,7 +1668,7 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(dateKey, correctValue);
                 await container.init();
-                valueA = await container.resolve(tokenA);
+                valueA = container.resolve(tokenA);
             });
 
             expect(valueA).toBe(correctValue);
@@ -1687,11 +1700,11 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(dateKey, correctValue);
                 await container.init();
-                valueA = await container.resolve(tokenA);
+                valueA = container.resolve(tokenA);
 
                 // Should not affect outcome since value to singleton node is already created.
                 executionContext.put(dateKey, newValue);
-                valueB = await container.resolve(tokenA);
+                valueB = container.resolve(tokenA);
             });
 
             expect(valueA).toBe(correctValue);
@@ -1707,12 +1720,12 @@ describe("register & Container.init & resolve", () => {
             container.registerFactory(nodeA);
             await container.init();
 
-            const itemA = await container.resolve(nodeA.token);
+            const itemA = container.resolve(nodeA.token);
             let itemB: undefined | object | null = undefined;
 
             await container.run({
-                scope: async () => {
-                    itemB = await container.resolve(nodeA.token);
+                scope: () => {
+                    itemB = container.resolve(nodeA.token);
                 },
             });
             expect(itemA).toBe(itemB);
@@ -1755,7 +1768,7 @@ describe("register & Container.init & resolve", () => {
             container.registerFactory(nodeD);
 
             await container.init();
-            const valueA = await container.resolve(nodeD.token);
+            const valueA = container.resolve(nodeD.token);
             expect(valueA?.nodeAValue0).not.toBeUndefined();
             expect(valueA?.nodeAValue0).toBe(valueA?.nodeAValue1);
         });
@@ -1780,7 +1793,7 @@ describe("register & Container.init & resolve", () => {
             container.registerValue({ token: tokenA, value });
             await container.init();
 
-            await expect(container.resolve(tokenA)).resolves.toBe(value);
+            expect(container.resolve(tokenA)).toBe(value);
         });
     });
 
@@ -1794,14 +1807,12 @@ describe("register & Container.init & resolve", () => {
             container.registerFactory(nodeA);
             await container.init();
 
-            const correctValue = await callInvocable(
+            const correctValue = callInvocable(
                 nodeA.factory,
                 {},
                 executionContext,
             );
-            await expect(container.resolve(nodeA.token)).resolves.toBe(
-                correctValue,
-            );
+            expect(container.resolve(nodeA.token)).toBe(correctValue);
         });
 
         test("Should resolve successfully a deep transient dependency chain at top with Container.resolve", async () => {
@@ -1832,28 +1843,24 @@ describe("register & Container.init & resolve", () => {
 
             await container.init();
 
-            const valueA = await callInvocable(
-                nodeA.factory,
-                {},
-                executionContext,
-            );
-            const valueB = await callInvocable(
+            const valueA = callInvocable(nodeA.factory, {}, executionContext);
+            const valueB = callInvocable(
                 nodeB.factory,
                 { a: valueA },
                 executionContext,
             );
-            const valueC = await callInvocable(
+            const valueC = callInvocable(
                 nodeC.factory,
                 { b: valueB },
                 executionContext,
             );
-            const correctValue = await callInvocable(
+            const correctValue = callInvocable(
                 nodeD.factory,
                 { c: valueC },
                 executionContext,
             );
 
-            const value = await container.resolve(nodeD.token);
+            const value = container.resolve(nodeD.token);
 
             expect(value).toBe(correctValue);
         });
@@ -1884,11 +1891,11 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(dateKey, correctValue0);
                 await container.init();
-                valueA = await container.resolve(tokenA);
+                valueA = container.resolve(tokenA);
 
                 // Should affect outcome since transient node and each time resolved factory is called.
                 executionContext.put(dateKey, correctValue1);
-                valueB = await container.resolve(tokenA);
+                valueB = container.resolve(tokenA);
             });
 
             expect(valueA).toBe(correctValue0);
@@ -1932,7 +1939,7 @@ describe("register & Container.init & resolve", () => {
             container.registerFactory(nodeD);
 
             await container.init();
-            const valueA = await container.resolve(nodeD.token);
+            const valueA = container.resolve(nodeD.token);
             expect(valueA?.nodeAValue0).not.toBeUndefined();
             expect(valueA?.nodeAValue0).not.toBe(valueA?.nodeAValue1);
         });
@@ -1947,7 +1954,7 @@ describe("register & Container.init & resolve", () => {
 
             container.registerFactory(nodeA);
             await container.init();
-            await expect(container.resolve(nodeA.token)).resolves.toBe(null);
+            expect(container.resolve(nodeA.token)).toBe(null);
         });
 
         test("Should resolve successfully when resolving a scoped dependency inside run block scope with Container.resolve", async () => {
@@ -1963,12 +1970,12 @@ describe("register & Container.init & resolve", () => {
                 undefined | string | null;
 
             await container.run({
-                scope: async () => {
-                    value = await container.resolve(nodeA.token);
+                scope: () => {
+                    value = container.resolve(nodeA.token);
                 },
             });
 
-            const correctValue = await callInvocable(
+            const correctValue = callInvocable(
                 nodeA.factory,
                 {},
                 executionContext,
@@ -1990,8 +1997,8 @@ describe("register & Container.init & resolve", () => {
             await container.init();
             let value: string | undefined | null = undefined;
 
-            await executionContext.run(async () => {
-                value = await container.resolve(nodeA.token);
+            executionContext.run(() => {
+                value = container.resolve(nodeA.token);
             });
 
             expect(value).toBe(null);
@@ -2020,8 +2027,8 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(dateKey, correctValue0);
                 await container.run({
-                    scope: async () => {
-                        valueA = await container.resolve(tokenA);
+                    scope: () => {
+                        valueA = container.resolve(tokenA);
                     },
                 });
             });
@@ -2062,11 +2069,11 @@ describe("register & Container.init & resolve", () => {
                 await container.run({
                     scope: async () => {
                         executionContext.put(dateKey, correctValue1);
-                        valueA = await container.resolve(tokenA);
+                        valueA = container.resolve(tokenA);
 
                         await container.run({
-                            scope: async () => {
-                                valueB = await container.resolve(tokenA);
+                            scope: () => {
+                                valueB = container.resolve(tokenA);
                             },
                         });
                     },
@@ -2084,10 +2091,23 @@ describe("register & Container.init & resolve", () => {
                 .lifeTime(LIFETIME.SCOPED)
                 .createToken("A");
 
+            let valueA: object | null = null;
+            let valueB: object | null = null;
+
             container.registerFactory(nodeA);
             await container.init();
-            const valueA = container.resolve(nodeA.token);
-            const valueB = container.resolve(nodeA.token);
+
+            await container.run({
+                scope: () => {
+                    valueA = container.resolve(nodeA.token);
+                },
+            });
+            await container.run({
+                scope: () => {
+                    valueB = container.resolve(nodeA.token);
+                },
+            });
+
             expect(valueA).not.toBe(valueB);
         });
 
@@ -2107,9 +2127,9 @@ describe("register & Container.init & resolve", () => {
             await container.init();
 
             await container.run({
-                scope: async () => {
-                    valueA = await container.resolve(nodeA.token);
-                    valueB = await container.resolve(nodeA.token);
+                scope: () => {
+                    valueA = container.resolve(nodeA.token);
+                    valueB = container.resolve(nodeA.token);
                 },
             });
             expect(valueA).toBe(valueB);
@@ -2133,14 +2153,14 @@ describe("register & Container.init & resolve", () => {
             await container.run({
                 scope: async () => {
                     await container.run({
-                        scope: async () => {
-                            valueA = await container.resolve(nodeA.token);
+                        scope: () => {
+                            valueA = container.resolve(nodeA.token);
                         },
                     });
 
                     await container.run({
-                        scope: async () => {
-                            valueB = await container.resolve(nodeA.token);
+                        scope: () => {
+                            valueB = container.resolve(nodeA.token);
                         },
                     });
                 },
@@ -2165,10 +2185,10 @@ describe("register & Container.init & resolve", () => {
 
             await container.run({
                 scope: async () => {
-                    valueA = await container.resolve(nodeA.token);
+                    valueA = container.resolve(nodeA.token);
                     await container.run({
-                        scope: async () => {
-                            valueB = await container.resolve(nodeA.token);
+                        scope: () => {
+                            valueB = container.resolve(nodeA.token);
                         },
                     });
                 },
@@ -2214,8 +2234,8 @@ describe("register & Container.init & resolve", () => {
             await container.init();
 
             await container.run({
-                scope: async () => {
-                    value = await container.resolve(nodeD.token);
+                scope: () => {
+                    value = container.resolve(nodeD.token);
                 },
             });
 
@@ -2230,7 +2250,7 @@ describe("register & Container.init & resolve", () => {
             container.registerDynamic(tokenA);
 
             await container.init();
-            await expect(container.resolve(tokenA)).resolves.toBe(null);
+            expect(container.resolve(tokenA)).toBe(null);
         });
 
         /**
@@ -2244,8 +2264,8 @@ describe("register & Container.init & resolve", () => {
             await container.init();
 
             const promise = container.run({
-                scope: async () => {
-                    await container.resolveOrFail(tokenA);
+                scope: () => {
+                    container.resolveOrFail(tokenA);
                 },
             });
             await expect(promise).rejects.toThrow(CanNotResolveServiceDiError);
@@ -2271,8 +2291,8 @@ describe("register & Container.init & resolve", () => {
                         value: correctValueA,
                     });
                 },
-                scope: async () => {
-                    valueA = await container.resolve(tokenA);
+                scope: () => {
+                    valueA = container.resolve(tokenA);
                 },
             });
 
@@ -2306,8 +2326,8 @@ describe("register & Container.init & resolve", () => {
                         },
                         scope: async () => {
                             await container.run({
-                                scope: async () => {
-                                    valueA = await container.resolve(tokenA);
+                                scope: () => {
+                                    valueA = container.resolve(tokenA);
                                 },
                             });
                         },
@@ -2334,9 +2354,9 @@ describe("register & Container.init & resolve", () => {
                 registration: (serviceRegister) => {
                     serviceRegister.set({ token: tokenA, value: {} });
                 },
-                scope: async () => {
-                    valueA = await container.resolve(tokenA);
-                    valueB = await container.resolve(tokenA);
+                scope: () => {
+                    valueA = container.resolve(tokenA);
+                    valueB = container.resolve(tokenA);
                 },
             });
             expect(valueA).toBe(valueB);
@@ -2359,10 +2379,10 @@ describe("register & Container.init & resolve", () => {
                     serviceRegister.set({ token: tokenA, value: {} });
                 },
                 scope: async () => {
-                    valueA = await container.resolve(tokenA);
+                    valueA = container.resolve(tokenA);
                     await container.run({
-                        scope: async () => {
-                            valueB = await container.resolve(tokenA);
+                        scope: () => {
+                            valueB = container.resolve(tokenA);
                         },
                     });
                 },
@@ -2379,8 +2399,8 @@ describe("register & Container.init & resolve", () => {
             await container.init();
 
             await container.run({
-                scope: async () => {
-                    value = await container.resolve(tokenA);
+                scope: () => {
+                    value = container.resolve(tokenA);
                 },
             });
 
@@ -2411,10 +2431,10 @@ describe("register & Container.init & resolve", () => {
                     serviceRegister.set({ token: tokenA, value: {} });
                 },
                 scope: async () => {
-                    valueAScope0 = await container.resolve(nodeB.token);
+                    valueAScope0 = container.resolve(nodeB.token);
                     await container.run({
-                        scope: async () => {
-                            valueAScope1 = await container.resolve(nodeB.token);
+                        scope: () => {
+                            valueAScope1 = container.resolve(nodeB.token);
                         },
                     });
                 },
@@ -2448,7 +2468,7 @@ describe("register & Container.init & resolve", () => {
                     serviceRegister.set({ token: tokenA, value: {} });
                 },
                 scope: async () => {
-                    valueAScope0 = await container.resolve(nodeB.token);
+                    valueAScope0 = container.resolve(nodeB.token);
                     await container.run({
                         registration: (serviceRegister) => {
                             serviceRegister.set({
@@ -2456,8 +2476,8 @@ describe("register & Container.init & resolve", () => {
                                 value: {},
                             });
                         },
-                        scope: async () => {
-                            valueAScope1 = await container.resolve(nodeB.token);
+                        scope: () => {
+                            valueAScope1 = container.resolve(nodeB.token);
                         },
                     });
                 },
@@ -2481,8 +2501,8 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(tokenA, correctValueA);
                 await container.run({
-                    scope: async () => {
-                        valueA = await container.resolve(tokenA);
+                    scope: () => {
+                        valueA = container.resolve(tokenA);
                     },
                 });
             });
@@ -2520,8 +2540,8 @@ describe("register & Container.init & resolve", () => {
                             value: newValueCorrectA,
                         });
                     },
-                    scope: async () => {
-                        newValueA = await container.resolve(tokenA);
+                    scope: () => {
+                        newValueA = container.resolve(tokenA);
                     },
                 });
             });
@@ -2578,8 +2598,8 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(tokenA, correctValueA);
                 await container.run({
-                    scope: async () => {
-                        valueA = await container.resolve(tokenA);
+                    scope: () => {
+                        valueA = container.resolve(tokenA);
                     },
                 });
             });
@@ -2606,8 +2626,8 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(tokenA, "_");
                 await container.run({
-                    registration: async (reg) => {
-                        valueA = await reg.get(tokenA);
+                    registration: (reg) => {
+                        valueA = reg.get(tokenA);
                     },
                     scope: () => {},
                 });
@@ -2627,8 +2647,8 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(tokenA, "_");
                 await container.run({
-                    registration: async (reg) => {
-                        exists = await reg.has(tokenA);
+                    registration: (reg) => {
+                        exists = reg.has(tokenA);
                     },
                     scope: () => {},
                 });
@@ -2648,8 +2668,8 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(tokenA, "_");
                 await container.run({
-                    registration: async (reg) => {
-                        exists = await reg.has(tokenA);
+                    registration: (reg) => {
+                        exists = reg.has(tokenA);
                     },
                     scope: () => {},
                 });
@@ -2675,8 +2695,8 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(tokenA, "_");
                 await container.run({
-                    registration: async (reg) => {
-                        exists = await reg.has(tokenA);
+                    registration: (reg) => {
+                        exists = reg.has(tokenA);
                     },
                     scope: () => {},
                 });
@@ -2696,8 +2716,8 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 // No value is put into the execution context.
                 await container.run({
-                    registration: async (reg) => {
-                        exists = await reg.has(tokenA);
+                    registration: (reg) => {
+                        exists = reg.has(tokenA);
                     },
                     scope: () => {},
                 });
@@ -2717,9 +2737,9 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(tokenA, "_");
                 await container.run({
-                    registration: async (reg) => {
+                    registration: (reg) => {
                         try {
-                            await reg.getOrFail(tokenA);
+                            reg.getOrFail(tokenA);
                         } catch (caught) {
                             error = caught;
                         }
@@ -2752,9 +2772,9 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 executionContext.put(tokenA, "_");
                 await container.run({
-                    registration: async (reg) => {
+                    registration: (reg) => {
                         try {
-                            await reg.getOrFail(tokenA);
+                            reg.getOrFail(tokenA);
                         } catch (caught) {
                             error = caught;
                         }
@@ -2782,9 +2802,9 @@ describe("register & Container.init & resolve", () => {
             await executionContext.run(async () => {
                 // No value is put into the execution context.
                 await container.run({
-                    registration: async (reg) => {
+                    registration: (reg) => {
                         try {
-                            await reg.getOrFail(tokenA);
+                            reg.getOrFail(tokenA);
                         } catch (caught) {
                             error = caught;
                         }
@@ -2833,10 +2853,10 @@ describe("register & Container.init & resolve", () => {
 
             await container.run({
                 scope: async () => {
-                    valueB = await container.resolve(nodeB.token);
+                    valueB = container.resolve(nodeB.token);
                     await container.run({
-                        scope: async () => {
-                            valueC = await container.resolve(nodeC.token);
+                        scope: () => {
+                            valueC = container.resolve(nodeC.token);
                         },
                     });
                 },
@@ -2869,8 +2889,8 @@ describe("register & Container.init & resolve", () => {
 
             await container.init();
 
-            const valueB = await container.resolve(nodeB.token);
-            const valueC = await container.resolve(nodeC.token);
+            const valueB = container.resolve(nodeB.token);
+            const valueC = container.resolve(nodeC.token);
 
             expect(valueB?.nodeAValue).not.toBeUndefined();
             expect(valueB?.nodeAValue).toBe(valueC?.nodeAValue);
@@ -2892,7 +2912,7 @@ describe("register & Container.init & resolve", () => {
             container.registerFactory(nodeA);
             container.registerFactory(nodeB);
             await container.init();
-            await expect(container.resolve(nodeB.token)).resolves.toBe(null);
+            expect(container.resolve(nodeB.token)).toBe(null);
         });
 
         test("should resolve successfully when resolving a transient dependency that depends on a scoped dependency inside run block scope with Container.resolve", async () => {
@@ -2911,17 +2931,13 @@ describe("register & Container.init & resolve", () => {
 
             let value: undefined | null | string = undefined;
             await container.run({
-                scope: async () => {
-                    value = await container.resolve(nodeB.token);
+                scope: () => {
+                    value = container.resolve(nodeB.token);
                 },
             });
 
-            const valueA = await callInvocable(
-                nodeA.factory,
-                {},
-                executionContext,
-            );
-            const correctValue = await callInvocable(
+            const valueA = callInvocable(nodeA.factory, {}, executionContext);
+            const correctValue = callInvocable(
                 nodeB.factory,
                 { a: valueA },
                 executionContext,
@@ -2958,9 +2974,9 @@ describe("register & Container.init & resolve", () => {
             await container.init();
 
             await container.run({
-                scope: async () => {
-                    valueB = await container.resolve(nodeB.token);
-                    valueC = await container.resolve(nodeC.token);
+                scope: () => {
+                    valueB = container.resolve(nodeB.token);
+                    valueC = container.resolve(nodeC.token);
                 },
             });
             expect(valueB?.nodeAValue).not.toBeUndefined();
@@ -2997,10 +3013,10 @@ describe("register & Container.init & resolve", () => {
 
             await container.run({
                 scope: async () => {
-                    valueB = await container.resolve(nodeB.token);
+                    valueB = container.resolve(nodeB.token);
                     await container.run({
-                        scope: async () => {
-                            valueC = await container.resolve(nodeC.token);
+                        scope: () => {
+                            valueC = container.resolve(nodeC.token);
                         },
                     });
                 },
@@ -3237,13 +3253,13 @@ describe("override", () => {
 
         await container.init();
 
-        const correctA = await callInvocable(
+        const correctA = callInvocable(
             nodeAOverridden.factory,
             {},
             executionContext,
         );
 
-        const resolvedA = await container.resolve(nodeAOverridden.token);
+        const resolvedA = container.resolve(nodeAOverridden.token);
 
         expect(resolvedA).toBe(correctA);
     });
@@ -3343,19 +3359,19 @@ describe("override", () => {
 
         await container.init();
 
-        const correctA = await callInvocable(
+        const correctA = callInvocable(
             nodeAOverridden.factory,
             {},
             executionContext,
         );
-        const correctB = await callInvocable(
+        const correctB = callInvocable(
             nodeB.factory,
             { a: correctA },
             executionContext,
         );
 
-        const resolvedA = await container.resolve(nodeAOverridden.token);
-        const resolvedB = await container.resolve(nodeB.token);
+        const resolvedA = container.resolve(nodeAOverridden.token);
+        const resolvedB = container.resolve(nodeB.token);
 
         expect(resolvedA).toBe(correctA);
         expect(resolvedB).toBe(correctB);
@@ -3383,19 +3399,15 @@ describe("override", () => {
 
         await container.init();
 
-        const correctA = await callInvocable(
-            nodeA.factory,
-            {},
-            executionContext,
-        );
-        const correctB = await callInvocable(
+        const correctA = callInvocable(nodeA.factory, {}, executionContext);
+        const correctB = callInvocable(
             nodeBOverridden.factory,
             { a: correctA },
             executionContext,
         );
 
-        const resolvedA = await container.resolve(nodeA.token);
-        const resolvedB = await container.resolve(nodeBOverridden.token);
+        const resolvedA = container.resolve(nodeA.token);
+        const resolvedB = container.resolve(nodeBOverridden.token);
 
         expect(resolvedA).toBe(correctA);
         expect(resolvedB).toBe(correctB);
@@ -3434,25 +3446,25 @@ describe("override", () => {
 
         await container.init();
 
-        const correctA = await callInvocable(
+        const correctA = callInvocable(
             nodeAOverridden.factory,
             {},
             executionContext,
         );
-        const correctB = await callInvocable(
+        const correctB = callInvocable(
             nodeB.factory,
             { a: correctA },
             executionContext,
         );
-        const correctC = await callInvocable(
+        const correctC = callInvocable(
             nodeC.factory,
             { b: correctB },
             executionContext,
         );
 
-        const resolvedA = await container.resolve(nodeAOverridden.token);
-        const resolvedB = await container.resolve(nodeB.token);
-        const resolvedC = await container.resolve(nodeC.token);
+        const resolvedA = container.resolve(nodeAOverridden.token);
+        const resolvedB = container.resolve(nodeB.token);
+        const resolvedC = container.resolve(nodeC.token);
 
         expect(resolvedA).toBe(correctA);
         expect(resolvedB).toBe(correctB);
@@ -3487,30 +3499,22 @@ describe("override", () => {
 
         await container.init();
 
-        const correctA = await callInvocable(
-            nodeA.factory,
-            {},
-            executionContext,
-        );
-        const correctC = await callInvocable(
-            nodeC.factory,
-            {},
-            executionContext,
-        );
-        const correctB = await callInvocable(
+        const correctA = callInvocable(nodeA.factory, {}, executionContext);
+        const correctC = callInvocable(nodeC.factory, {}, executionContext);
+        const correctB = callInvocable(
             overriddenNodeB.factory,
             { c: correctC },
             executionContext,
         );
-        const inCorrectB = await callInvocable(
+        const inCorrectB = callInvocable(
             nodeB.factory,
             { a: correctA },
             executionContext,
         );
 
-        const resolvedA = await container.resolve(nodeA.token);
-        const resolvedC = await container.resolve(nodeC.token);
-        const resolvedB = await container.resolve(nodeB.token);
+        const resolvedA = container.resolve(nodeA.token);
+        const resolvedC = container.resolve(nodeC.token);
+        const resolvedB = container.resolve(nodeB.token);
 
         expect(resolvedA).toBe(correctA);
         expect(resolvedC).toBe(correctC);
@@ -3631,8 +3635,8 @@ describe("forked container", () => {
         await containerA.init();
         await containerB.init();
 
-        const hasNodeBContainerA = await containerA.has(nodeA.token);
-        const hasNodeBContainerB = await containerB.has(nodeA.token);
+        const hasNodeBContainerA = containerA.has(nodeA.token);
+        const hasNodeBContainerB = containerB.has(nodeA.token);
 
         expect(hasNodeBContainerA).toBe(false);
         expect(hasNodeBContainerB).toBe(true);
@@ -3651,8 +3655,8 @@ describe("forked container", () => {
         await containerA.init();
         await containerB.init();
 
-        const hasNodeBContainerA = await containerA.has(nodeA.token);
-        const hasNodeBContainerB = await containerB.has(nodeA.token);
+        const hasNodeBContainerA = containerA.has(nodeA.token);
+        const hasNodeBContainerB = containerB.has(nodeA.token);
 
         expect(hasNodeBContainerA).toBe(true);
         expect(hasNodeBContainerB).toBe(false);
@@ -3680,9 +3684,9 @@ describe("forked container", () => {
         await containerA.init();
         await containerB.init();
 
-        const hasNodeA = await containerB.has(nodeA.token);
-        const hasNodeB = await containerB.has(nodeB.token);
-        const hasTokenC = await containerB.has(tokenC);
+        const hasNodeA = containerB.has(nodeA.token);
+        const hasNodeB = containerB.has(nodeB.token);
+        const hasTokenC = containerB.has(tokenC);
 
         expect(hasNodeA).toBe(true);
         expect(hasNodeB).toBe(true);
@@ -3720,10 +3724,10 @@ describe("forked container & override", () => {
         await containerA.init();
         await containerB.init();
 
-        const resolvedContainerA = await containerA.resolve(nodeA.token);
-        const resolvedContainerB = await containerB.resolve(nodeA.token);
+        const resolvedContainerA = containerA.resolve(nodeA.token);
+        const resolvedContainerB = containerB.resolve(nodeA.token);
 
-        const correctA = await callInvocable(
+        const correctA = callInvocable(
             nodeAOverride1.factory,
             {},
             executionContext,
@@ -3751,12 +3755,12 @@ describe("forked container & override", () => {
         await containerA.init();
         await containerB.init();
 
-        const correctContainerB = await callInvocable(
+        const correctContainerB = callInvocable(
             nodeAOverride.factory,
             {},
             executionContext,
         );
-        const resolvedContainerB = await containerB.resolve(nodeA.token);
+        const resolvedContainerB = containerB.resolve(nodeA.token);
         expect(resolvedContainerB).toBe(correctContainerB);
     });
 
@@ -3778,12 +3782,12 @@ describe("forked container & override", () => {
         await containerA.init();
         await containerB.init();
 
-        const correctContainerA = await callInvocable(
+        const correctContainerA = callInvocable(
             nodeAOverride.factory,
             {},
             executionContext,
         );
-        const resolvedContainerA = await containerA.resolve(nodeA.token);
+        const resolvedContainerA = containerA.resolve(nodeA.token);
         expect(resolvedContainerA).toBe(correctContainerA);
     });
 });
@@ -3812,10 +3816,16 @@ describe("forked container & hooks", () => {
 
         await containerB.deInit();
 
-        await expect(containerA.resolve(nodeA.token)).resolves.toBe("A");
-        const promise = containerB.resolve(nodeA.token);
-        await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
-        await expect(promise).rejects.toHaveProperty(
+        expect(containerA.resolve(nodeA.token)).toBe("A");
+        const resolve = () => containerB.resolve(nodeA.token);
+        expect(resolve).toThrow(InvalidMethodCallDiError);
+        let error: unknown;
+        try {
+            resolve();
+        } catch (caught) {
+            error = caught;
+        }
+        expect(error).toHaveProperty(
             "flag",
             InvalidMethodCallDiError.FLAG.NOT_ACTIVE,
         );
@@ -3836,10 +3846,16 @@ describe("forked container & hooks", () => {
 
         await containerA.deInit();
 
-        await expect(containerB.resolve(nodeA.token)).resolves.toBe("A");
-        const promise = containerA.resolve(nodeA.token);
-        await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
-        await expect(promise).rejects.toHaveProperty(
+        expect(containerB.resolve(nodeA.token)).toBe("A");
+        const resolve = () => containerA.resolve(nodeA.token);
+        expect(resolve).toThrow(InvalidMethodCallDiError);
+        let error: unknown;
+        try {
+            resolve();
+        } catch (caught) {
+            error = caught;
+        }
+        expect(error).toHaveProperty(
             "flag",
             InvalidMethodCallDiError.FLAG.NOT_ACTIVE,
         );
@@ -3913,9 +3929,7 @@ describe("feature: optional tokens", () => {
             });
 
             await expect(container.init()).resolves.toBeUndefined();
-            await expect(container.resolveOrFail(consumer)).resolves.toBe(
-                "consumer",
-            );
+            expect(container.resolveOrFail(consumer)).toBe("consumer");
         });
 
         test("Should initialize successfully when a transient factory depends on an unregistered optional token", async () => {
@@ -3930,9 +3944,7 @@ describe("feature: optional tokens", () => {
             });
 
             await expect(container.init()).resolves.toBeUndefined();
-            await expect(container.resolveOrFail(consumer)).resolves.toBe(
-                "consumer",
-            );
+            expect(container.resolveOrFail(consumer)).toBe("consumer");
         });
 
         test("Should initialize successfully when a scoped factory depends on an unregistered optional token", async () => {
@@ -3990,7 +4002,7 @@ describe("feature: optional tokens", () => {
             });
 
             await container.init();
-            await container.resolveOrFail(consumer);
+            container.resolveOrFail(consumer);
 
             expect(received).toBeUndefined();
         });
@@ -4146,7 +4158,7 @@ describe("feature: optional tokens", () => {
 
             await container.init();
 
-            await expect(container.resolveOrFail(consumer)).resolves.toBe(
+            expect(container.resolveOrFail(consumer)).toBe(
                 "consumer(dependency)",
             );
         });
@@ -4164,7 +4176,7 @@ describe("feature: optional tokens", () => {
 
             await container.init();
 
-            await expect(container.has(optional)).resolves.toBe(false);
+            expect(container.has(optional)).toBe(false);
         });
     });
 
@@ -4329,7 +4341,7 @@ describe("feature: optional tokens", () => {
             });
 
             await container.init();
-            await container.resolveOrFail(consumer);
+            container.resolveOrFail(consumer);
 
             expect(received).toBe("optional-value");
         });
@@ -4542,7 +4554,7 @@ describe("feature: optional tokens", () => {
 
             await container.init();
 
-            await expect(container.resolve(optional)).resolves.toBeNull();
+            expect(container.resolve(optional)).toBeNull();
         });
 
         test("Should fail when resolving an unregistered optional token with resolveOrFail", async () => {
@@ -4550,7 +4562,7 @@ describe("feature: optional tokens", () => {
 
             await container.init();
 
-            await expect(container.resolveOrFail(optional)).rejects.toThrow(
+            expect(() => container.resolveOrFail(optional)).toThrow(
                 CanNotResolveServiceDiError,
             );
         });
@@ -4560,9 +4572,9 @@ describe("feature: optional tokens", () => {
 
             await container.init();
 
-            await expect(
-                container.resolveOr(optional, "default-value"),
-            ).resolves.toBe("default-value");
+            expect(container.resolveOr(optional, "default-value")).toBe(
+                "default-value",
+            );
         });
 
         test("Should return false when checking has for an unregistered optional token", async () => {
@@ -4570,7 +4582,7 @@ describe("feature: optional tokens", () => {
 
             await container.init();
 
-            await expect(container.has(optional)).resolves.toBe(false);
+            expect(container.has(optional)).toBe(false);
         });
     });
 
@@ -4600,9 +4612,7 @@ describe("feature: optional tokens", () => {
 
             await container.init();
 
-            await expect(container.resolveOrFail(consumer)).resolves.toBe(
-                "overridden",
-            );
+            expect(container.resolveOrFail(consumer)).toBe("overridden");
             expect(received).toBeUndefined();
         });
 
@@ -4626,9 +4636,7 @@ describe("feature: optional tokens", () => {
             await expect(container.init()).resolves.toBeUndefined();
             await expect(forked.init()).resolves.toBeUndefined();
 
-            await expect(forked.resolveOrFail(consumer)).resolves.toBe(
-                "consumer",
-            );
+            expect(forked.resolveOrFail(consumer)).toBe("consumer");
             expect(received).toBeUndefined();
         });
     });
@@ -4649,7 +4657,7 @@ describe("feature: optional tokens", () => {
 
             await container.init();
 
-            await expect(container.resolveOrFail(token)).resolves.toBe("value");
+            expect(container.resolveOrFail(token)).toBe("value");
         });
     });
 });

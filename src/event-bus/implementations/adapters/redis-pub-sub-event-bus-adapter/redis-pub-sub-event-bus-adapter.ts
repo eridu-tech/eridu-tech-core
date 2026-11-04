@@ -73,11 +73,8 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
         this.serde = serde;
     }
 
-    private redisListener = async (
-        channel: string,
-        message: string,
-    ): Promise<void> => {
-        this.eventEmitter.emit(channel, await this.serde.deserialize(message));
+    private redisListener = (channel: string, message: string): void => {
+        this.eventEmitter.emit(channel, this.serde.deserialize(message));
     };
 
     async addListener(
@@ -107,7 +104,7 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
         return this.transactionHooks.afterCommit(async () => {
             await this.dispatcherClient.publish(
                 eventName,
-                await this.serde.serialize(eventData),
+                this.serde.serialize(eventData),
             );
         });
     }

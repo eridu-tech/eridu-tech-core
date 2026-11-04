@@ -112,17 +112,17 @@ describe("class: ProxyCacheResolver", () => {
             const adapter2 = new NoOpCacheAdapter();
             get2 = vi.spyOn(adapter2, "get");
 
+            const factory = new CacheResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+            });
+            await factory.init();
             container.registerFactory({
                 token: CacheResolver,
-                factory: async () => {
-                    const factory = new CacheResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},
@@ -182,17 +182,17 @@ describe("class: ProxyCacheResolver", () => {
             const adapter2 = new NoOpCacheAdapter();
             get2 = vi.spyOn(adapter2, "get");
 
+            const factory = new CacheResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+            });
+            await factory.init();
             container.registerFactory({
                 token: CacheResolver,
-                factory: async () => {
-                    const factory = new CacheResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},

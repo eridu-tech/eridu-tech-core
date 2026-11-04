@@ -19,8 +19,8 @@ await container.init();
 await childContainer.init();
 
 // Original container still has the original config
-const parentConfig = await container.resolveOrFail(CONFIG);
-const childConfig = await childContainer.resolveOrFail(CONFIG);
+const parentConfig = container.resolveOrFail(CONFIG);
+const childConfig = childContainer.resolveOrFail(CONFIG);
 
 console.log(parentConfig.apiUrl); // "https://api.example.com"
 console.log(childConfig.apiUrl); // "http://test.local"

@@ -620,8 +620,8 @@ describe("class: CircuitBreakerFactory", () => {
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =
-                await serde.deserialize<ICircuitBreaker>(
-                    await serde.serialize(circuitBreaker2),
+                serde.deserialize<ICircuitBreaker>(
+                    serde.serialize(circuitBreaker2),
                 );
             const handler = vi.fn();
             await deserializedCircuitBreaker2.runOrFail(handler);
@@ -672,8 +672,8 @@ describe("class: CircuitBreakerFactory", () => {
             const circuitBreaker2 = circuitBreakerFactory2.create(key);
 
             const deserializedCircuitBreaker2 =
-                await serde.deserialize<ICircuitBreaker>(
-                    await serde.serialize(circuitBreaker2),
+                serde.deserialize<ICircuitBreaker>(
+                    serde.serialize(circuitBreaker2),
                 );
             const handler = vi.fn();
             await deserializedCircuitBreaker2.runOrFail(handler);

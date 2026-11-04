@@ -2,7 +2,7 @@
  * @module Serde
  */
 
-import SuperJson from "@eridu-tech/superjson";
+import SuperJson from "superjson";
 
 import {
     UnableToDeserializeSerdeError,
@@ -17,8 +17,7 @@ import type {
 } from "@/serde/contracts/_module-exports.js";
 
 /**
- * Serializes and deserializes values with @eridu-tech/superjson,
- * the async-capable fork of SuperJSON.
+ * Serializes and deserializes values with SuperJSON.
  *
  * Supports standard structured data plus custom transformers for runtime-specific
  * values that need stable serialization across boundaries.
@@ -28,17 +27,17 @@ import type {
 export class SuperJsonSerde implements IFlexibleSerde<string> {
     private readonly superJson = new SuperJson();
 
-    async serialize<TValue>(value: TValue): Promise<string> {
+    serialize<TValue>(value: TValue): string {
         try {
-            return await this.superJson.stringify(value);
+            return this.superJson.stringify(value);
         } catch (error: unknown) {
             throw UnableToSerializeSerdeError.create(error);
         }
     }
 
-    async deserialize<TValue>(serializedValue: string): Promise<TValue> {
+    deserialize<TValue>(serializedValue: string): TValue {
         try {
-            return await this.superJson.parse(serializedValue);
+            return this.superJson.parse(serializedValue);
         } catch (error: unknown) {
             throw UnableToDeserializeSerdeError.create(error);
         }
@@ -61,14 +60,14 @@ export class SuperJsonSerde implements IFlexibleSerde<string> {
         }
         this.superJson.registerCustom<any, any>(
             {
-                async isApplicable(value) {
+                isApplicable(value: any): value is any {
                     return transformer.isApplicable(value);
                 },
-                async serialize(deserializedValue) {
+                serialize(deserializedValue) {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     return transformer.serialize(deserializedValue);
                 },
-                async deserialize(serializedValue) {
+                deserialize(serializedValue) {
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     return transformer.deserialize(serializedValue);
                 },

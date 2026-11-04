@@ -11,6 +11,7 @@ keywords:
     - DI
     - Dependency injection
     - bindHttpFactory
+    - bindHttpMiddlewareFactory
 ---
 
 # DI Integration
@@ -61,6 +62,36 @@ Pass `bindHttp(Controller, "methodName")` wherever a handler is accepted:
 The bound handler is a regular handler, so it can be registered inside route groups:
 
 ```ts file=./samples/bind-http-factory-with-group.ts
+
+```
+
+### Binding middlewares
+
+The `bindHttpMiddlewareFactory` function turns a middleware registered in the container into an [`HttpMiddlewareFn`](https://eridu-tech.github.io/eridu-tech-core/types/HttpRouter.HttpMiddlewareFn.html), so middlewares can be classes or values with their own dependencies instead of hand-wired instances.
+
+`bindHttpMiddlewareFactory(container)` returns a binder with the signature `(token) => HttpMiddlewareFn`, where `token` is the token of the middleware to resolve. For each request, the binder:
+
+1. Resolves the middleware with [`container.resolveOrFail(token)`](../../../foundation/di/index.md#resolve_or_fail), so the middleware follows the lifetime of its registration.
+2. Invokes the middleware with the [middleware arguments](../http_router_usage/index.md#middleware) (`req`, `res`, `context` and `next`).
+3. Throws `UnexpectedError` when the resolved middleware is not invocable.
+
+Both middleware functions and invocable objects (values with an `invoke` method) are supported.
+
+Register the middleware in the container:
+
+```ts file=./samples/middleware.ts
+
+```
+
+Then pass `bindHttpMiddleware(token)` wherever a middleware is accepted — to `router.use()` for shared middleware:
+
+```ts file=./samples/bind-http-middleware-factory.ts
+
+```
+
+Or to the `middlewares` of a single endpoint:
+
+```ts file=./samples/bind-http-middleware-factory-endpoint.ts
 
 ```
 

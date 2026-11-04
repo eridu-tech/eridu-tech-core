@@ -200,8 +200,8 @@ describe("class: FileStorage", () => {
             await fileStorage2.init();
             const file2 = fileStorage2.create(key);
 
-            const deserializeFile2 = await serde.deserialize<IFile>(
-                await serde.serialize(file2),
+            const deserializeFile2 = serde.deserialize<IFile>(
+                serde.serialize(file2),
             );
             const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
             await deserializeFile2.put({ data: data2 });
@@ -238,8 +238,8 @@ describe("class: FileStorage", () => {
             await fileStorage2.init();
             const file2 = fileStorage2.create(key);
 
-            const deserializeFile2 = await serde.deserialize<IFile>(
-                await serde.serialize(file2),
+            const deserializeFile2 = serde.deserialize<IFile>(
+                serde.serialize(file2),
             );
             const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
             await deserializeFile2.put({ data: data2 });
@@ -272,8 +272,8 @@ describe("class: FileStorage", () => {
             const fileStorage = new FileStorage({ adapter, serde });
             await fileStorage.init();
 
-            const deserializedFile = await serde.deserialize<IFile>(
-                await serde.serialize(fileStorage.create("a")),
+            const deserializedFile = serde.deserialize<IFile>(
+                serde.serialize(fileStorage.create("a")),
             );
             const promise = deserializedFile.getBytes();
 

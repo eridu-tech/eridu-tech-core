@@ -13,6 +13,7 @@ import type { InferInstance } from "@/utilities/_module-exports.js";
 export class OpenCircuitBreakerError extends Error {
     static create(key: string, cause?: unknown): OpenCircuitBreakerError {
         return new OpenCircuitBreakerError(
+            key,
             `Circuit breaker for key "${key}" is in opened state. All calls are being blocked until transitioned to half opened state.`,
             cause,
         );
@@ -23,7 +24,11 @@ export class OpenCircuitBreakerError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = OpenCircuitBreakerError.name;
     }
@@ -32,6 +37,7 @@ export class OpenCircuitBreakerError extends Error {
 export class IsolatedCircuitBreakerError extends Error {
     static create(key: string, cause?: unknown): IsolatedCircuitBreakerError {
         return new IsolatedCircuitBreakerError(
+            key,
             `Circuit breaker for key "${key}" is manually isolated. All calls are being blocked until reseted.`,
             cause,
             // Circuit breaker "a" is manually isolated; all requests are being blocked.
@@ -43,7 +49,11 @@ export class IsolatedCircuitBreakerError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = IsolatedCircuitBreakerError.name;
     }
@@ -62,6 +72,7 @@ export class UnableToGetStateCircuitBreakerError extends Error {
         cause?: unknown,
     ): UnableToGetStateCircuitBreakerError {
         return new UnableToGetStateCircuitBreakerError(
+            key,
             `Unable to get state of circuit breaker with key "${key}"`,
             cause,
         );
@@ -72,7 +83,11 @@ export class UnableToGetStateCircuitBreakerError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToGetStateCircuitBreakerError.name;
     }
@@ -91,6 +106,7 @@ export class UnableToUpdateStateCircuitBreakerError extends Error {
         cause?: unknown,
     ): UnableToUpdateStateCircuitBreakerError {
         return new UnableToUpdateStateCircuitBreakerError(
+            key,
             `Unable to update state of circuit breaker with key "${key}"`,
             cause,
         );
@@ -101,7 +117,11 @@ export class UnableToUpdateStateCircuitBreakerError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToUpdateStateCircuitBreakerError.name;
     }
@@ -120,6 +140,7 @@ export class UnableToIsolateCircuitBreakerError extends Error {
         cause?: unknown,
     ): UnableToIsolateCircuitBreakerError {
         return new UnableToIsolateCircuitBreakerError(
+            key,
             `Unable to isolate circuit breaker with key "${key}"`,
             cause,
         );
@@ -130,7 +151,11 @@ export class UnableToIsolateCircuitBreakerError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToIsolateCircuitBreakerError.name;
     }
@@ -149,6 +174,7 @@ export class UnableToTrackFailureCircuitBreakerError extends Error {
         cause?: unknown,
     ): UnableToTrackFailureCircuitBreakerError {
         return new UnableToTrackFailureCircuitBreakerError(
+            key,
             `Unable to track failure of circuit breaker with key "${key}"`,
             cause,
         );
@@ -159,7 +185,11 @@ export class UnableToTrackFailureCircuitBreakerError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToTrackFailureCircuitBreakerError.name;
     }
@@ -178,6 +208,7 @@ export class UnableToTrackSuccessCircuitBreakerError extends Error {
         cause?: unknown,
     ): UnableToTrackSuccessCircuitBreakerError {
         return new UnableToTrackSuccessCircuitBreakerError(
+            key,
             `Unable to track success of circuit breaker with key "${key}"`,
             cause,
         );
@@ -188,7 +219,11 @@ export class UnableToTrackSuccessCircuitBreakerError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToTrackSuccessCircuitBreakerError.name;
     }
@@ -207,6 +242,7 @@ export class UnableToResetCircuitBreakerError extends Error {
         cause?: unknown,
     ): UnableToResetCircuitBreakerError {
         return new UnableToResetCircuitBreakerError(
+            key,
             `Unable to reset circuit breaker with key "${key}"`,
             cause,
         );
@@ -217,7 +253,11 @@ export class UnableToResetCircuitBreakerError extends Error {
      * The constructor remains public only to maintain compatibility with errorPolicy types and prevent type errors.
      * @internal
      */
-    constructor(message: string, cause?: unknown) {
+    constructor(
+        readonly key: string,
+        message: string,
+        cause?: unknown,
+    ) {
         super(message, { cause });
         this.name = UnableToResetCircuitBreakerError.name;
     }
@@ -227,15 +267,46 @@ export class UnableToResetCircuitBreakerError extends Error {
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
  * @group Errors
  */
-export const CIRCUIT_BREAKER_ERRORS = {
-    Open: OpenCircuitBreakerError,
-    Isolated: IsolatedCircuitBreakerError,
+export const UNABLE_CIRCUIT_BREAKER_ERRORS = {
     UnableToGetState: UnableToGetStateCircuitBreakerError,
     UnableToUpdateState: UnableToUpdateStateCircuitBreakerError,
     UnableToIsolate: UnableToIsolateCircuitBreakerError,
     UnableToTrackFailure: UnableToTrackFailureCircuitBreakerError,
     UnableToTrackSuccess: UnableToTrackSuccessCircuitBreakerError,
     UnableToReset: UnableToResetCircuitBreakerError,
+} as const;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Errors
+ */
+export type AllUnableCircuitBreakerErrors = InferInstance<
+    (typeof UNABLE_CIRCUIT_BREAKER_ERRORS)[keyof typeof UNABLE_CIRCUIT_BREAKER_ERRORS]
+>;
+
+/**
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Errors
+ */
+export function isUnableToCircuitBreakerError(
+    value: unknown,
+): value is AllUnableCircuitBreakerErrors {
+    for (const errorClass of Object.values(UNABLE_CIRCUIT_BREAKER_ERRORS)) {
+        if (value instanceof errorClass) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Errors
+ */
+export const CIRCUIT_BREAKER_ERRORS = {
+    Open: OpenCircuitBreakerError,
+    Isolated: IsolatedCircuitBreakerError,
+    ...UNABLE_CIRCUIT_BREAKER_ERRORS,
 } as const;
 
 /**

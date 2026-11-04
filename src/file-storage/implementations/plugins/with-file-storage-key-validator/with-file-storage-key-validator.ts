@@ -36,7 +36,7 @@ export function withFileStorageKeyValidator(
     function handleKey(key: string): string {
         const validationMessage = callInvocable(keyValidator, key);
         if (validationMessage !== null) {
-            throw InvalidKeyFileError.create(validationMessage);
+            throw InvalidKeyFileError.create(key, validationMessage);
         }
         return key;
     }

@@ -99,6 +99,24 @@ Here is a complete list of settings for the [`withDispatchOnError`](https://erid
 | `type`    | `TEventName`                                                                                            | The event name to dispatch when the wrapped function throws                                                                                  |
 | `payload` | `Invocable<[settings: WithDispatchOnErrorPayloadSettings<TParameters>], TEventMap[TEventName] \| void>` | An invocable that produces the event payload from the wrapped function's arguments and the caught error. Returning `null` skips the dispatch |
 
+## withHttpEventBusError middleware {#with_http_event_bus_error_middleware}
+
+The `withHttpEventBusError` middleware converts every event bus error thrown by the wrapped endpoint or downstream middleware into an `HttpError`, so the request fails with a meaningful status code instead of a generic `500`. Errors that are not event bus errors are rethrown untouched, and the original error is preserved as the `cause`.
+
+### Usage
+
+```ts file=./samples/with-http-event-bus-error.ts
+
+```
+
+### Status codes
+
+| Errors                                                                                                     | Status |
+| ---------------------------------------------------------------------------------------------------------- | ------ |
+| `UnableToDispatchEventBusError`, `UnableToAddListenerEventBusError`, `UnableToRemoveListenerEventBusError` | `503`  |
+
+Every event bus error is thrown when the underlying adapter fails, so they all map to `503` and the same request can be retried later. The original error is preserved as the `cause`, and no identifiers are exposed in the response body.
+
 ## Further information
 
 For further information refer to [`eridu-tech/event-bus`](https://eridu-tech.github.io/eridu-tech-core/modules/EventBus.html) API docs.

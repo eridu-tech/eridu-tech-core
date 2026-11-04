@@ -14,19 +14,19 @@ keywords:
 
 # DI Integration
 
-The `ProxyExecutionContext` class provides an [`IAsyncExecutionContext`](../execution_context_usage/index.md) whose underlying execution context is resolved from a [DI container](../../../foundation/di/index.md).
+The `ProxyExecutionContext` class provides an [`IExecutionContext`](../execution_context_usage/index.md) whose underlying execution context is resolved from a [DI container](../../../foundation/di/index.md).
 
-The proxy supports the `IAsyncExecutionContext` operations:
+The proxy supports the `IExecutionContext` operations:
 
 - `run(invocable)` resolves the execution context and runs the invocable inside its context.
 - Reads such as `get`, `exists`, `missing`, `contains`, `getOr` and `getOrFail` resolve the execution context for each operation.
-- Mutations such as `put`, `add`, `update`, `remove` and `when` return an awaitable `IAsyncContextChain`. A chain reuses a single resolution, so chained mutations are applied to the same execution context.
+- Mutations such as `put`, `add`, `update`, `remove` and `when` return an `IContext`. A chain of mutations reuses a single resolution, so chained mutations are applied to the same execution context.
 
 The proxy resolves the execution context lazily, so it supports the container's configured lifetimes. Scoped registrations must be used inside `container.run()`, while singleton and transient registrations can be used once `container.init()` has been awaited. Create the proxy **before** calling `init()`.
 
 ## Initial configuration
 
-Create the container, register the async execution context, and wrap it with `ProxyExecutionContext`:
+Create the container, register the execution context, and wrap it with `ProxyExecutionContext`:
 
 #### 1. Create the dependency injection container
 
@@ -34,7 +34,7 @@ Create the container, register the async execution context, and wrap it with `Pr
 
 ```
 
-#### 2. Register the async execution context and create the proxy
+#### 2. Register the execution context and create the proxy
 
 ```ts file=./samples/execution-context-di.ts
 
@@ -52,7 +52,7 @@ You can run code within a context boundary through the proxy. The context values
 
 ### 2. Reading context values
 
-Read operations are resolved from the container and delegated to the async execution context:
+Read operations are resolved from the container and delegated to the execution context:
 
 ```ts file=./samples/execution-context-di-read.ts
 
@@ -62,7 +62,7 @@ Read operations are resolved from the container and delegated to the async execu
 
 ### 3. Chaining mutations
 
-Mutating operations return an `IAsyncContextChain` that is also a `PromiseLike<void>`, so an entire chain of mutations can be awaited:
+Mutating operations return an `IContext`, so a group of mutations can be chained:
 
 ```ts file=./samples/execution-context-di-chain.ts
 

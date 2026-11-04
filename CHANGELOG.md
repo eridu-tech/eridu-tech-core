@@ -1,5 +1,474 @@
 # @daiso-tech/core
 
+## 0.74.0
+
+### Minor Changes
+
+- 83d50bf: Serde is now synchronous.
+
+    `ISerializer.serialize()` and `IDeserializer.deserialize()` return their results directly instead of returning a `Promise`, and `ISerde`/`IFlexibleSerde` inherit the synchronous signatures:
+
+    ```ts
+    const serialized = serde.serialize(order);
+    const restored = serde.deserialize<Order>(serialized);
+    ```
+
+    `ISerdeTransformer` hooks are synchronous too, so custom transformers no longer need to be `async`:
+
+    ```ts
+    type SerializedUser = SerializedValueBase & {
+        name: string;
+        age: number;
+    };
+
+    class UserTransformer implements ISerdeTransformer<User, SerializedUser> {
+        name = "User";
+
+        isApplicable(value: unknown): boolean {
+            return value instanceof User;
+        }
+
+        serialize(deserializedValue: User): SerializedUser {
+            return {
+                version: "1",
+                name: deserializedValue.name,
+                age: deserializedValue.age,
+            };
+        }
+
+        deserialize(serializedValue: SerializedUser): User {
+            return new User(serializedValue.name, serializedValue.age);
+        }
+    }
+    ```
+
+    - `ISerdeTransformer.isApplicable()`, `serialize()` and `deserialize()` no longer accept or return `Promisable` values.
+    - `SuperJsonSerde` now uses the synchronous `superjson` package instead of the async-capable `@eridu-tech/superjson` fork, and `NoOpSerde` returns values directly.
+    - Serialization failures throw `UnableToSerializeSerdeError`/`UnableToDeserializeSerdeError` immediately instead of rejecting a promise.
+    - The built-in serde transformers exposed by the lock, shared-lock, semaphore, rate-limiter, circuit-breaker and file-storage components, along with the `internalSerializationId()` method of their DI proxies, are now synchronous as a consequence.
+
+    ### Breaking changes
+    - `ISerializer.serialize()` and `IDeserializer.deserialize()` no longer return a `Promise`; awaiting their results still works, but chaining `.then()`/`.catch()` does not.
+    - `ISerdeTransformer.isApplicable()`, `serialize()` and `deserialize()` no longer return a `Promise`, so `async` transformers no longer type-check as `ISerdeTransformer` implementations. Perform asynchronous work before calling `serialize`/`deserialize`.
+    - `internalSerializationId()` on the DI proxies for lock, shared-lock, semaphore, rate-limiter, circuit-breaker and file-storage returns `string` instead of `Promise<string>`.
+
+## 0.73.0
+
+### Minor Changes
+
+- 8f78172: Added a dependency-injection aware middleware binder to the `eridu-tech/http-router/di` entrypoint.
+
+    `bindHttpMiddlewareFactory(container)` returns a binder that turns a middleware registered in the container into an `HttpMiddlewareFn`. The binder takes the middleware's token, resolves the middleware from the container for each request, and invokes it with the middleware arguments:
+
+    ```ts
+    import { Container } from "eridu-tech/di";
+    import { genericToken } from "eridu-tech/di/contracts";
+    import { ExecutionContext } from "eridu-tech/execution-context";
+    import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+    import {
+        HttpRouter,
+        defaultHttpRouterAdapter,
+    } from "eridu-tech/http-router";
+    import { bindHttpMiddlewareFactory } from "eridu-tech/http-router/di";
+
+    import type { HttpMiddleware } from "eridu-tech/http-router/contracts";
+
+    const container = new Container({
+        executionContext: new ExecutionContext(
+            new AlsExecutionContextAdapter(),
+        ),
+    });
+    const router = new HttpRouter({ router: defaultHttpRouterAdapter() });
+
+    const requestLoggerToken = genericToken<HttpMiddleware>("requestLogger");
+
+    container.registerValue({
+        token: requestLoggerToken,
+        value: {
+            async invoke({ next, req }) {
+                console.log(`${req.method} ${req.url}`);
+                return next();
+            },
+        },
+    });
+
+    await container.init();
+
+    router.use(bindHttpMiddlewareFactory(container)(requestLoggerToken));
+    ```
+
+    - `eridu-tech/http-router/di` exports `bindHttpMiddlewareFactory`.
+    - The binder resolves the middleware with `container.resolveOrFail` on every request, so the middleware's lifetime follows its container registration.
+    - Both middleware functions and invocable objects (values with an `invoke` method) are supported.
+    - The resulting middleware throws `UnexpectedError` when the resolved middleware is not invocable.
+
+- 006e28f: New `UnableTo` errors that describe a circuit breaker adapter failure, available from `eridu-tech/circuit-breaker/contracts`:
+
+    - `UnableToGetStateCircuitBreakerError`
+    - `UnableToUpdateStateCircuitBreakerError`
+    - `UnableToIsolateCircuitBreakerError`
+    - `UnableToTrackFailureCircuitBreakerError`
+    - `UnableToTrackSuccessCircuitBreakerError`
+    - `UnableToResetCircuitBreakerError`
+
+    They are registered in `CIRCUIT_BREAKER_ERRORS`, so `isCircuitBreakerError()` and `AllCircuitBreakerErrors` include them. Each error wraps the unexpected adapter error as its `cause`, and `getState()`, `runOrFail()`, `isolate()` and `reset()` now document the `UnableTo` error they can throw when the underlying adapter fails, alongside `OpenCircuitBreakerError`.
+
+    The new `handleUnexpectedCircuitBreakerAdapterError` plugin applies that mapping to every adapter method. `CircuitBreakerFactory` wraps the provided adapter with it internally, so `try`/`catch` covers `getState`, `updateState`, `isolate`, `trackFailure`, `trackSuccess` and `reset` and rethrows the matching error with the original error as its cause. Circuit breakers created by the factory, including deserialized ones, therefore only reject with circuit breaker errors.
+
+- 4f8d032: Error instances in `eridu-tech/circuit-breaker/contracts` now expose the circuit `key` they were created for:
+
+    - `OpenCircuitBreakerError.key`
+    - `IsolatedCircuitBreakerError.key`
+    - `UnableToGetStateCircuitBreakerError.key`
+    - `UnableToUpdateStateCircuitBreakerError.key`
+    - `UnableToIsolateCircuitBreakerError.key`
+    - `UnableToTrackFailureCircuitBreakerError.key`
+    - `UnableToTrackSuccessCircuitBreakerError.key`
+    - `UnableToResetCircuitBreakerError.key`
+
+    Each `create()` factory passes the key to the error, so it is available as a `readonly` field alongside the existing `message` and `cause`.
+
+- 3b86f22: New `UnableTo` errors that describe an event bus adapter failure, available from `eridu-tech/event-bus/contracts`:
+
+    - `UnableToDispatchEventBusError`
+    - `UnableToAddListenerEventBusError`
+    - `UnableToRemoveListenerEventBusError`
+
+    They are registered in `EVENT_BUS_ERRORS`, so `isEventBusError()` and `AllEventBusErrors` include them. Each error wraps the unexpected adapter error as its `cause`, and the `IEventListenable` and `IEventDispatcher` methods now document the `UnableTo` error they can throw when the underlying adapter fails.
+
+    The new `handleUnexpectedEventBusAdapterError` plugin applies that mapping to every adapter method. `EventBus` wraps the provided adapter with it internally, so `try`/`catch` covers `dispatch`, `addListener` and `removeListener` and rethrows the matching error with the original error as its cause, including through schema plugins and `withListenerTracking`.
+
+- 4f8d032: Error instances in `eridu-tech/event-bus/contracts` now expose the `eventName` they were created for:
+
+    - `UnableToDispatchEventBusError.eventName`
+    - `UnableToAddListenerEventBusError.eventName`
+    - `UnableToRemoveListenerEventBusError.eventName`
+
+    Each `create()` factory passes the event name to the error, so it is available as a `readonly` field alongside the existing `message` and `cause`.
+
+- 0bb6d64: Added an `eridu-tech/execution-context/di` entrypoint that exports the directly constructible `ProxyExecutionContext` class. `ProxyExecutionContext` now implements the synchronous `IExecutionContext` contract and resolves the registered context from the container for each operation. Mutations return `IContext` and are no longer awaitable chains that share a single resolution.
+
+    The `executionContextToken` is resolved through the container on every proxy call with `IServiceResolver.resolveOrFail`, so the proxy can be constructed before the container is initialized. Scoped registrations must be used inside `IContainer.run()`. Transient registrations create a new context for each proxy call, so context values are not shared across separate calls; use a singleton or scoped registration when values need to persist.
+
+    ```ts
+    import { genericToken, LIFETIME } from "eridu-tech/di/contracts";
+    import { ExecutionContext } from "eridu-tech/execution-context";
+    import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+    import { ProxyExecutionContext } from "eridu-tech/execution-context/di";
+
+    import type { IExecutionContext } from "eridu-tech/execution-context/contracts";
+
+    const executionContextToken =
+        genericToken<IExecutionContext>("executionContext");
+
+    // Register with a container that has already been created.
+    container.registerFactory({
+        token: executionContextToken,
+        factory: () => new ExecutionContext(new AlsExecutionContextAdapter()),
+        deps: {},
+        lifetime: LIFETIME.SINGLETON,
+    });
+
+    export const executionContext = new ProxyExecutionContext({
+        container,
+        executionContextToken,
+    });
+    ```
+
+    ### Breaking changes
+    - Removed `AsyncExecutionContext` and the asynchronous execution-context contracts (`IAsyncExecutionContext`, `IAsyncContext` and `IAsyncContextChain`). Use `ExecutionContext` and the synchronous `IExecutionContext`/`IContext` contracts instead.
+    - `ProxyExecutionContext` now implements `IExecutionContext`: context operations return direct values, `getOr()` takes a synchronous lazy default, and `contains()` takes a synchronous predicate. Mutations return `IContext`, not a `PromiseLike` chain. Separate calls to the proxy resolve independently; chaining from a mutation's returned `IContext` continues on that resolved instance.
+
+- 8c7b5c4: New `UnableTo` errors that describe a file storage adapter failure, available from `eridu-tech/file-storage/contracts`:
+
+    - `UnableToGetPublicUrlFileError`
+    - `UnableToGetSignedDownloadUrlFileError`
+    - `UnableToGetSignedUploadUrlFileError`
+    - `UnableToExistsFileError`
+    - `UnableToGetStreamFileError`
+    - `UnableToGetBytesFileError`
+    - `UnableToGetMetaDataFileError`
+    - `UnableToPutFileError`
+    - `UnableToPutStreamFileError`
+    - `UnableToCopyFileError`
+    - `UnableToMoveFileError`
+    - `UnableToRemoveManyFileError`
+    - `UnableToRemoveByPrefixFileError`
+
+    They are registered in `FILE_STORAGE_ERRORS`, so `isFileError()` and `AllFileErrors` include them. Each error wraps the unexpected adapter error as its `cause`, and the `IReadableFile`, `IFile` and `IFileStorage` methods now document the `UnableTo` error they can throw when the underlying adapter fails, alongside `KeyNotFoundFileError`.
+
+    The new `handleUnexpectedFileStorageAdapterError` plugin applies that mapping to every adapter method. `FileStorage` wraps the provided adapter with it internally, so every `ISignedFileStorageAdapter` method is guarded and rethrows the matching error with the original error as its cause. Files created by the storage, including deserialized ones, therefore only reject with file storage errors.
+
+- 4f8d032: Error instances in `eridu-tech/file-storage/contracts` now expose the file identifiers they were created for:
+
+    - `KeyNotFoundFileError.key`
+    - `InvalidKeyFileError.key`
+    - `UnableToGetPublicUrlFileError.key`
+    - `UnableToGetSignedDownloadUrlFileError.key`
+    - `UnableToGetSignedUploadUrlFileError.key`
+    - `UnableToExistsFileError.key`
+    - `UnableToGetStreamFileError.key`
+    - `UnableToGetBytesFileError.key`
+    - `UnableToGetMetaDataFileError.key`
+    - `UnableToPutFileError.key`
+    - `UnableToPutStreamFileError.key`
+    - `UnableToCopyFileError.source` and `UnableToCopyFileError.destination`
+    - `UnableToMoveFileError.source` and `UnableToMoveFileError.destination`
+    - `UnableToRemoveManyFileError.keys`
+    - `UnableToRemoveByPrefixFileError.prefix`
+
+    Each `create()` factory passes the identifiers to the error, so they are available as `readonly` fields alongside the existing `message` and `cause`.
+
+- 4f8d032: `HttpError` now exposes arbitrary error data as `details` instead of `payload`, and accepts optional `headers` that the router applies to the error response:
+
+    - `HttpErrorSettings.payload` was renamed to `HttpErrorSettings.details`.
+    - `HttpError.payload` was renamed to `HttpError.details`.
+    - New `HttpErrorSettings.headers` setting, exposed as `HttpError.headers` (for example `{ "Retry-After": "30" }`).
+    - `HttpRouter` still serializes `details` as `payload` in the JSON error body, and now applies `HttpError.headers` to the response.
+    - Request body validation errors from `HttpReq` now attach the validation issues through `details`.
+
+- 16e1efe: New `withHttp*Error` middlewares that translate component errors into `HttpError` responses, available from the matching `<module>/middlewares` entry point:
+
+    - `withHttpCircuitBreakerError()` from `eridu-tech/circuit-breaker/middlewares` - maps `OpenCircuitBreakerError`, `IsolatedCircuitBreakerError` and every `UnableTo*CircuitBreakerError` to `503`.
+    - `withHttpRateLimiterError()` from `eridu-tech/rate-limiter/middlewares` - maps `BlockedRateLimiterError` to `429` (setting the `RateLimit` and `Retry-After` headers), plus every `UnableTo*RateLimiterError` to `503`.
+    - `withHttpLockError()` from `eridu-tech/lock/middlewares` - maps the `Failed*LockError` errors to `409` and every `UnableTo*LockError` to `503`.
+    - `withHttpSemaphoreError()` from `eridu-tech/semaphore/middlewares` - maps `LimitReachedSemaphoreError` to `429`, the `Failed*SemaphoreError` errors to `409` and every `UnableTo*SemaphoreError` to `503`.
+    - `withHttpSharedLockError()` from `eridu-tech/shared-lock/middlewares` - maps `LimitReachedReaderSemaphoreError` to `429`, every `Failed*` reader/writer error to `409` and every `UnableTo*` error to `503`.
+    - `withHttpEventBusError()` from `eridu-tech/event-bus/middlewares` - maps every `UnableTo*EventBusError` to `503`.
+    - `withHttpFileStorageError()` from `eridu-tech/file-storage/middlewares` - maps `InvalidKeyFileError` to `400`, `KeyNotFoundFileError` to `404` and every `UnableTo*FileError` to `503`.
+
+    Blocked rate limiter responses also carry the `RateLimit` and `Retry-After` headers.
+
+    Every middleware rethrows errors it does not recognize untouched, preserves the original error as the `HttpError` `cause`, and responds with a fixed message, so keys and other identifiers never leak into the response.
+
+- 3cab268: Added a dependency-injection aware middleware binder to the `eridu-tech/http-router/di` entrypoint.
+
+    `bindHttpMiddlewareFactory(container)` returns a binder that turns a middleware registered in the container into an `HttpMiddlewareFn`. The binder takes the middleware's token, resolves the middleware from the container for each request, and invokes it with the middleware arguments:
+
+    ```ts
+    import { Container } from "eridu-tech/di";
+    import { genericToken } from "eridu-tech/di/contracts";
+    import { ExecutionContext } from "eridu-tech/execution-context";
+    import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
+    import {
+        HttpRouter,
+        defaultHttpRouterAdapter,
+    } from "eridu-tech/http-router";
+    import { bindHttpMiddlewareFactory } from "eridu-tech/http-router/di";
+
+    import type { HttpMiddleware } from "eridu-tech/http-router/contracts";
+
+    const container = new Container({
+        executionContext: new ExecutionContext(
+            new AlsExecutionContextAdapter(),
+        ),
+    });
+    const router = new HttpRouter({ router: defaultHttpRouterAdapter() });
+
+    const requestLoggerToken = genericToken<HttpMiddleware>("requestLogger");
+
+    container.registerValue({
+        token: requestLoggerToken,
+        value: {
+            async invoke({ next, req }) {
+                console.log(`${req.method} ${req.url}`);
+                return next();
+            },
+        },
+    });
+
+    await container.init();
+
+    router.use(bindHttpMiddlewareFactory(container)(requestLoggerToken));
+    ```
+
+    - `eridu-tech/http-router/di` exports `bindHttpMiddlewareFactory`.
+    - The binder resolves the middleware with `container.resolveOrFail` on every request, so the middleware's lifetime follows its container registration.
+    - Both middleware functions and invocable objects (values with an `invoke` method) are supported.
+    - The resulting middleware throws `UnexpectedError` when the resolved middleware is not invocable.
+
+- ba57729: New `UnableTo` errors that describe a lock adapter failure, available from `eridu-tech/lock/contracts`:
+
+    - `UnableToAcquireLockError`
+    - `UnableToReleaseLockError`
+    - `UnableToForceReleaseLockError`
+    - `UnableToRefreshLockError`
+    - `UnableToGetStateLockError`
+
+    They are registered in `LOCK_ERRORS`, so `isLockError()` and `AllLockErrors` include them. Each error wraps the unexpected adapter error as its `cause`, and `getState()` and the `ILockBase` methods now document the `UnableTo` error they can throw when the underlying adapter fails, alongside the existing `Failed*` errors.
+
+    The new `handleUnexpectedLockAdapterError` plugin applies that mapping to every adapter method. `LockFactory` wraps the provided adapter with it internally, so `try`/`catch` covers `acquire`, `release`, `forceRelease`, `refresh` and `getState` and rethrows the matching `UnableTo*LockError` with the original error as its cause. Locks created by the factory, including deserialized ones, therefore only reject with lock errors.
+
+- 4f8d032: Error instances in `eridu-tech/lock/contracts` now expose the lock identifiers they were created for:
+
+    - `FailedAcquireLockError.key`
+    - `FailedReleaseLockError.key` and `FailedReleaseLockError.lockId`
+    - `FailedRefreshLockError.key` and `FailedRefreshLockError.lockId`
+    - `UnableToAcquireLockError.key`
+    - `UnableToReleaseLockError.key` and `UnableToReleaseLockError.lockId`
+    - `UnableToForceReleaseLockError.key`
+    - `UnableToRefreshLockError.key` and `UnableToRefreshLockError.lockId`
+    - `UnableToGetStateLockError.key`
+
+    Each `create()` factory passes the identifiers to the error, so they are available as `readonly` fields alongside the existing `message` and `cause`.
+
+- ac1e6f1: New `UnableTo` errors that describe a rate limiter adapter failure, available from `eridu-tech/rate-limiter/contracts`:
+
+    - `UnableToGetStateRateLimiterError`
+    - `UnableToUpdateStateRateLimiterError`
+    - `UnableToResetRateLimiterError`
+
+    They are registered in `RATE_LIMITER_ERRORS`, so `isRateLimiterError()` and `AllRateLimiterErrors` include them. Each error wraps the unexpected adapter error as its `cause`, and `getState()`, `runOrFail()` and `reset()` now document the `UnableTo` error they can throw when the underlying adapter fails, alongside `BlockedRateLimiterError`.
+
+    The new `handleUnexpectedRateLimiterAdapterError` plugin applies that mapping to every adapter method. `RateLimiterFactory` wraps the provided adapter with it internally, so `try`/`catch` covers `getState`, `updateState` and `reset` and rethrows the matching error with the original error as its cause. Rate limiters created by the factory, including deserialized ones, therefore only reject with rate limiter errors.
+
+- 4f8d032: Error instances in `eridu-tech/rate-limiter/contracts` now expose the rate limiter `key` they were created for:
+
+    - `BlockedRateLimiterError.key`
+    - `UnableToGetStateRateLimiterError.key`
+    - `UnableToUpdateStateRateLimiterError.key`
+    - `UnableToResetRateLimiterError.key`
+
+    Each `create()` factory passes the key to the error, so it is available as a `readonly` field alongside the existing `message`, `state` and `cause`.
+
+- db64e13: Renamed the codec errors to use the `UnableTo` prefix:
+
+    - `EncodingError` to `UnableToEncodeCodecError`
+    - `DecodingError` to `UnableToDecodeCodecError`
+
+    The `CODEC_ERRORS` fields were renamed to match:
+
+    - `CODEC_ERRORS.Encoding` to `CODEC_ERRORS.UnableToEncode`
+    - `CODEC_ERRORS.Decoding` to `CODEC_ERRORS.UnableToDecode`
+
+    `isCodecError()` keeps its name and now references the renamed classes.
+
+- c653ec3: Renamed the serde errors to use the `UnableTo` prefix:
+
+    - `SerializationSerdeError` to `UnableToSerializeSerdeError`
+    - `DeserializationSerdeError` to `UnableToDeserializeSerdeError`
+
+    The `SERDE_ERRORS` fields were renamed to match:
+
+    - `SERDE_ERRORS.Serialization` to `SERDE_ERRORS.UnableToSerialize`
+    - `SERDE_ERRORS.Deserialization` to `SERDE_ERRORS.UnableToDeserialize`
+
+    `isSerdeError()` keeps its name and now references the renamed classes.
+
+- b0bb697: New `UnableTo` errors that describe a semaphore adapter failure, available from `eridu-tech/semaphore/contracts`:
+
+    - `UnableToAcquireSemaphoreError`
+    - `UnableToReleaseSemaphoreError`
+    - `UnableToForceReleaseAllSemaphoreError`
+    - `UnableToRefreshSemaphoreError`
+    - `UnableToGetStateSemaphoreError`
+
+    They are registered in `SEMAPHORE_ERRORS`, so `isSemaphoreError()` and `AllSemaphoreErrors` include them. Each error wraps the unexpected adapter error as its `cause`, and `getState()` and the `ISemaphoreBase` methods now document the `UnableTo` error they can throw when the underlying adapter fails, alongside the existing `LimitReached`, `FailedRefresh` and `FailedRelease` errors.
+
+    The new `handleUnexpectedSemaphoreAdapterError` plugin applies that mapping to every adapter method. `SemaphoreFactory` wraps the provided adapter with it internally, so `try`/`catch` covers `acquire`, `release`, `forceReleaseAll`, `refresh` and `getState` and rethrows the matching `UnableTo*SemaphoreError` with the original error as its cause. Semaphores created by the factory, including deserialized ones, therefore only reject with semaphore errors.
+
+- 4f8d032: Error instances in `eridu-tech/semaphore/contracts` now expose the semaphore identifiers they were created for:
+
+    - `LimitReachedSemaphoreError.key`
+    - `FailedRefreshSemaphoreError.key` and `FailedRefreshSemaphoreError.slotId`
+    - `FailedReleaseSemaphoreError.key` and `FailedReleaseSemaphoreError.slotId`
+    - `UnableToAcquireSemaphoreError.key`
+    - `UnableToReleaseSemaphoreError.key` and `UnableToReleaseSemaphoreError.slotId`
+    - `UnableToForceReleaseAllSemaphoreError.key`
+    - `UnableToRefreshSemaphoreError.key` and `UnableToRefreshSemaphoreError.slotId`
+    - `UnableToGetStateSemaphoreError.key`
+
+    Each `create()` factory passes the identifiers to the error, so they are available as `readonly` fields alongside the existing `message` and `cause`.
+
+- 745f30f: New `UnableTo` errors that describe a shared-lock adapter failure, available from `eridu-tech/shared-lock/contracts`:
+
+    - `UnableToAcquireReaderSemaphoreError`
+    - `UnableToReleaseReaderSemaphoreError`
+    - `UnableToRefreshReaderSemaphoreError`
+    - `UnableToAcquireWriterLockError`
+    - `UnableToReleaseWriterLockError`
+    - `UnableToRefreshWriterLockError`
+    - `UnableToForceReleaseSharedLockError`
+    - `UnableToGetStateSharedLockError`
+
+    They are registered in `READER_SEMAPHORE_ERRORS`, `WRITER_LOCK_ERRORS` and `SHARED_LOCK_ERRORS`, so `isSharedLockError()` and `AllSharedLockErrors` include them. Each error wraps the unexpected adapter error as its `cause`, and `getState()` and the `ISharedLockBase` methods now document the `UnableTo` error they can throw when the underlying adapter fails, alongside the existing errors.
+
+    The new `handleUnexpectedSharedLockAdapterError` plugin applies that mapping to every adapter method. `SharedLockFactory` wraps the provided adapter with it internally, so `try`/`catch` covers `acquireWriter`, `releaseWriter`, `refreshWriter`, `acquireReader`, `releaseReader`, `refreshReader`, `forceRelease` and `getState` and rethrows the matching error with the original error as its cause. Shared locks created by the factory, including deserialized ones, therefore only reject with shared lock errors.
+
+- 4f8d032: Error instances in `eridu-tech/shared-lock/contracts` now expose the shared-lock identifiers they were created for.
+
+    Reader semaphore errors:
+
+    - `LimitReachedReaderSemaphoreError.key`
+    - `FailedRefreshReaderSemaphoreError.key` and `FailedRefreshReaderSemaphoreError.slotId`
+    - `FailedReleaseReaderSemaphoreError.key` and `FailedReleaseReaderSemaphoreError.slotId`
+    - `UnableToAcquireReaderSemaphoreError.key`
+    - `UnableToReleaseReaderSemaphoreError.key` and `UnableToReleaseReaderSemaphoreError.slotId`
+    - `UnableToRefreshReaderSemaphoreError.key` and `UnableToRefreshReaderSemaphoreError.slotId`
+
+    Writer lock errors:
+
+    - `FailedAcquireWriterLockError.key`
+    - `FailedReleaseWriterLockError.key` and `FailedReleaseWriterLockError.lockId`
+    - `FailedRefreshWriterLockError.key` and `FailedRefreshWriterLockError.lockId`
+    - `UnableToAcquireWriterLockError.key` and `UnableToAcquireWriterLockError.lockId`
+    - `UnableToReleaseWriterLockError.key` and `UnableToReleaseWriterLockError.lockId`
+    - `UnableToRefreshWriterLockError.key` and `UnableToRefreshWriterLockError.lockId`
+
+    Shared-lock errors:
+
+    - `UnableToForceReleaseSharedLockError.key`
+    - `UnableToGetStateSharedLockError.key`
+
+    Each `create()` factory passes the identifiers to the error, so they are available as `readonly` fields alongside the existing `message` and `cause`.
+
+- abd9712: The dependency-injection container now resolves services synchronously.
+
+    `IServiceResolver.resolve()`, `resolveOr()`, `resolveOrFail()` and `has()` return their results directly instead of a `Promise`, and `IDynamicServiceRegister.get()`, `getOrFail()` and `has()` are synchronous as well. Service factories are invoked during the resolution call, so errors they throw propagate synchronously rather than rejecting a promise:
+
+    ```ts
+    const logger = container.resolveOrFail(LOGGER);
+    const hasLogger = container.has(LOGGER);
+    ```
+
+    `ServiceFactory` now returns `TRegisteredType` instead of `Promisable<TRegisteredType>`, so factories must be synchronous:
+
+    ```ts
+    container.registerFactory({
+        token: CONFIG,
+        factory: () => ({ apiUrl: "https://api.example.com", timeout: 5000 }),
+        deps: {},
+        lifetime: LIFETIME.SINGLETON,
+    });
+    ```
+
+    Lifecycle hooks remain asynchronous: `onInit` and `onDeInit` still accept `Promisable<void>`. Their hook argument now uses `NoInfer<TRegisteredType>`, so it is inferred from the registration instead of widening the registered type.
+
+    ### Breaking changes
+    - `IServiceResolver.resolve()`, `resolveOr()`, `resolveOrFail()` and `has()` no longer return a `Promise`; awaiting their results still works, but chaining `.then()`/`.catch()` does not.
+    - `IDynamicServiceRegister.get()`, `getOrFail()` and `has()` no longer return a `Promise`.
+    - `ServiceFactory` must return the service instance synchronously, so `async` factories no longer type-check. Perform asynchronous setup in the service itself or in an `onInit` hook after construction.
+
+- edc75b6: Added `UnableTo` error guards and registries so adapter failures can be detected without checking every error class:
+
+    - `isUnableToLockError()` / `AllUnableLockErrors` / `UNABLE_LOCK_ERRORS`
+    - `isUnableToSemaphoreError()` / `AllUnableSemaphoreErrors` / `UNABLE_SEMAPHORE_ERRORS`
+    - `isUnableToRateLimiterError()` / `AllUnableRateLimiterErrors` / `UNABLE_RATE_LIMITER_ERRORS`
+    - `isUnableToEventBusError()` / `AllUnableEventBusErrors` / `UNABLE_EVENT_BUS_ERRORS`
+    - `isUnableToFileError()` / `AllUnableFileErrors` / `UNABLE_FILE_STORAGE_ERRORS`
+    - `isUnableToReaderSemaphoreError()` / `AllUnableReaderSemaphoreErrors` / `UNABLE_READER_SEMAPHORE_ERRORS`
+    - `isUnableToWriterLockError()` / `AllUnableWriterLockErrors` / `UNABLE_WRITER_LOCK_ERRORS`
+    - `isUnableToSharedLockError()` / `AllUnableSharedLockErrors` / `UNABLE_SHARED_LOCK_ERRORS`
+
+    `LOCK_ERRORS`, `SEMAPHORE_ERRORS`, `RATE_LIMITER_ERRORS`, `EVENT_BUS_ERRORS`, `FILE_STORAGE_ERRORS`, `READER_SEMAPHORE_ERRORS`, `WRITER_LOCK_ERRORS` and `SHARED_LOCK_ERRORS` now spread their matching `UNABLE_*_ERRORS` registry, so the existing `is*Error()` guards and `All*Errors` types keep matching every adapter error.
+
+### Patch Changes
+
+- 8b810d7: Fixed `NotFoundExecutionContextError` missing from `eridu-tech/execution-context/contracts`.
+
+    - `execution-context.errors.ts` was never re-exported by the contracts entrypoint, so `getOrFail()` could throw an error that consumers had no way to import and detect.
+    - `NotFoundExecutionContextError` is now exported from `eridu-tech/execution-context/contracts`, alongside the execution context contracts.
+
 ## 0.72.0
 
 ### Minor Changes

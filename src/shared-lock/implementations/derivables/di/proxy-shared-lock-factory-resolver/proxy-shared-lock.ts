@@ -40,8 +40,8 @@ export class ProxySharedLock<
         private readonly createSettings: Required<SharedLockFactoryCreateSettings>,
     ) {}
 
-    private async getSharedLock(): Promise<ISharedLock> {
-        const factoryResolver = await this.container.resolveOrFail(
+    private getSharedLock(): ISharedLock {
+        const factoryResolver = this.container.resolveOrFail(
             this.resolverToken,
         );
         if (this.sharedLock === null) {
@@ -56,14 +56,14 @@ export class ProxySharedLock<
         return SHARED_LOCK_CLASS_TAG;
     }
 
-    async internalSerializationId(): Promise<string> {
-        const sharedLock = await this.getSharedLock();
+    internalSerializationId(): string {
+        const sharedLock = this.getSharedLock();
         if (!isInternalSerdeIdentifiable(sharedLock)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved shared lock, it does not implement internal serialization",
             );
         }
-        return await sharedLock.internalSerializationId();
+        return sharedLock.internalSerializationId();
     }
 
     get key(): string {
@@ -85,70 +85,70 @@ export class ProxySharedLock<
     }
 
     async getState(): Promise<ISharedLockState> {
-        return (await this.getSharedLock()).getState();
+        return this.getSharedLock().getState();
     }
 
     async runReaderOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue> {
-        return (await this.getSharedLock()).runReaderOrFail(asyncInvocable);
+        return this.getSharedLock().runReaderOrFail(asyncInvocable);
     }
 
     async acquireReader(): Promise<boolean> {
-        return (await this.getSharedLock()).acquireReader();
+        return this.getSharedLock().acquireReader();
     }
 
     async acquireReaderOrFail(): Promise<void> {
-        return (await this.getSharedLock()).acquireReaderOrFail();
+        return this.getSharedLock().acquireReaderOrFail();
     }
 
     async releaseReader(): Promise<boolean> {
-        return (await this.getSharedLock()).releaseReader();
+        return this.getSharedLock().releaseReader();
     }
 
     async releaseReaderOrFail(): Promise<void> {
-        return (await this.getSharedLock()).releaseReaderOrFail();
+        return this.getSharedLock().releaseReaderOrFail();
     }
 
     async refreshReader(ttl?: ITimeSpan): Promise<boolean> {
-        return (await this.getSharedLock()).refreshReader(ttl);
+        return this.getSharedLock().refreshReader(ttl);
     }
 
     async refreshReaderOrFail(ttl?: ITimeSpan): Promise<void> {
-        return (await this.getSharedLock()).refreshReaderOrFail(ttl);
+        return this.getSharedLock().refreshReaderOrFail(ttl);
     }
 
     async runWriterOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue> {
-        return (await this.getSharedLock()).runWriterOrFail(asyncInvocable);
+        return this.getSharedLock().runWriterOrFail(asyncInvocable);
     }
 
     async acquireWriter(): Promise<boolean> {
-        return (await this.getSharedLock()).acquireWriter();
+        return this.getSharedLock().acquireWriter();
     }
 
     async acquireWriterOrFail(): Promise<void> {
-        return (await this.getSharedLock()).acquireWriterOrFail();
+        return this.getSharedLock().acquireWriterOrFail();
     }
 
     async releaseWriter(): Promise<boolean> {
-        return (await this.getSharedLock()).releaseWriter();
+        return this.getSharedLock().releaseWriter();
     }
 
     async releaseWriterOrFail(): Promise<void> {
-        return (await this.getSharedLock()).releaseWriterOrFail();
+        return this.getSharedLock().releaseWriterOrFail();
     }
 
     async refreshWriter(ttl?: ITimeSpan): Promise<boolean> {
-        return (await this.getSharedLock()).refreshWriter(ttl);
+        return this.getSharedLock().refreshWriter(ttl);
     }
 
     async refreshWriterOrFail(ttl?: ITimeSpan): Promise<void> {
-        return (await this.getSharedLock()).refreshWriterOrFail(ttl);
+        return this.getSharedLock().refreshWriterOrFail(ttl);
     }
 
     async forceRelease(): Promise<boolean> {
-        return (await this.getSharedLock()).forceRelease();
+        return this.getSharedLock().forceRelease();
     }
 }

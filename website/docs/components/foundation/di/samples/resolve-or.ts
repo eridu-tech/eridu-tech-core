@@ -3,5 +3,5 @@ import { ConsoleLogger, Logger } from "./logger.js";
 
 await container.init();
 
-const logger = await container.resolveOr(Logger, new ConsoleLogger());
+const logger = container.resolveOr(Logger, new ConsoleLogger());
 logger.log("Always has a logger");

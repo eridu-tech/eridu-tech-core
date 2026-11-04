@@ -150,6 +150,14 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             const adapter2 = new MemorySharedLockAdapter();
             acquireWriter2 = vi.spyOn(adapter2, "acquireWriter");
 
+            const factory = new SharedLockFactoryResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+            });
+            await factory.init();
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -158,15 +166,7 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             });
             container.registerFactory({
                 token: SharedLockFactoryResolver,
-                factory: async () => {
-                    const factory = new SharedLockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},
@@ -245,6 +245,14 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             const adapter2 = new MemorySharedLockAdapter();
             acquireWriter2 = vi.spyOn(adapter2, "acquireWriter");
 
+            const factory = new SharedLockFactoryResolver<Adapters>({
+                adapters: {
+                    adapter1,
+                    adapter2,
+                },
+                defaultAdapter: "adapter1",
+            });
+            await factory.init();
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -253,15 +261,7 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             });
             container.registerFactory({
                 token: SharedLockFactoryResolver,
-                factory: async () => {
-                    const factory = new SharedLockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    await factory.init();
+                factory: () => {
                     return factory;
                 },
                 deps: {},

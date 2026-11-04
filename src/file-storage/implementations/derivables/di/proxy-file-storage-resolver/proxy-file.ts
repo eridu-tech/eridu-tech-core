@@ -37,8 +37,8 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
         private readonly resourceKey: string,
     ) {}
 
-    private async getFile(): Promise<IFile> {
-        const fileStorageResolver = await this.container.resolveOrFail(
+    private getFile(): IFile {
+        const fileStorageResolver = this.container.resolveOrFail(
             this.resolverToken,
         );
         if (this.file === null) {
@@ -53,14 +53,14 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
         return FILE_CLASS_TAG;
     }
 
-    async internalSerializationId(): Promise<string> {
-        const file = await this.getFile();
+    internalSerializationId(): string {
+        const file = this.getFile();
         if (!isInternalSerdeIdentifiable(file)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved file, it does not implement internal serialization",
             );
         }
-        return await file.internalSerializationId();
+        return file.internalSerializationId();
     }
 
     get key(): string {
@@ -68,92 +68,92 @@ export class ProxyFile<TAdapters extends string = string> implements IFile {
     }
 
     async getText(): Promise<string | null> {
-        return (await this.getFile()).getText();
+        return this.getFile().getText();
     }
 
     async getTextOrFail(): Promise<string> {
-        return (await this.getFile()).getTextOrFail();
+        return this.getFile().getTextOrFail();
     }
 
     async getBytes(): Promise<Uint8Array | null> {
-        return (await this.getFile()).getBytes();
+        return this.getFile().getBytes();
     }
 
     async getBytesOrFail(): Promise<Uint8Array> {
-        return (await this.getFile()).getBytesOrFail();
+        return this.getFile().getBytesOrFail();
     }
 
     async getArrayBuffer(): Promise<ArrayBuffer | null> {
-        return (await this.getFile()).getArrayBuffer();
+        return this.getFile().getArrayBuffer();
     }
 
     async getArrayBufferOrFail(): Promise<ArrayBuffer> {
-        return (await this.getFile()).getArrayBufferOrFail();
+        return this.getFile().getArrayBufferOrFail();
     }
 
     async getReadableStream(): Promise<ReadableStream<Uint8Array> | null> {
-        return (await this.getFile()).getReadableStream();
+        return this.getFile().getReadableStream();
     }
 
     async getReadableStreamOrFail(): Promise<ReadableStream<Uint8Array>> {
-        return (await this.getFile()).getReadableStreamOrFail();
+        return this.getFile().getReadableStreamOrFail();
     }
 
     async getMetadata(): Promise<FileMetadata | null> {
-        return (await this.getFile()).getMetadata();
+        return this.getFile().getMetadata();
     }
 
     async getMetadataOrFail(): Promise<FileMetadata> {
-        return (await this.getFile()).getMetadataOrFail();
+        return this.getFile().getMetadataOrFail();
     }
 
     async exists(): Promise<boolean> {
-        return (await this.getFile()).exists();
+        return this.getFile().exists();
     }
 
     async missing(): Promise<boolean> {
-        return (await this.getFile()).missing();
+        return this.getFile().missing();
     }
 
     async getPublicUrl(): Promise<string> {
-        return (await this.getFile()).getPublicUrl();
+        return this.getFile().getPublicUrl();
     }
 
     async getSignedDownloadUrl(
         options?: FileDownloadUrlOptions,
     ): Promise<string> {
-        return (await this.getFile()).getSignedDownloadUrl(options);
+        return this.getFile().getSignedDownloadUrl(options);
     }
 
     async put(content: WritableFileContent): Promise<void> {
-        return (await this.getFile()).put(content);
+        return this.getFile().put(content);
     }
 
     async putStream(stream: WritableFileStream): Promise<void> {
-        return (await this.getFile()).putStream(stream);
+        return this.getFile().putStream(stream);
     }
 
     async remove(): Promise<void> {
-        return (await this.getFile()).remove();
+        return this.getFile().remove();
     }
 
     async copy(destination: string): Promise<boolean> {
-        return (await this.getFile()).copy(destination);
+        return this.getFile().copy(destination);
     }
 
     async copyOrFail(destination: string): Promise<void> {
-        return (await this.getFile()).copyOrFail(destination);
+        return this.getFile().copyOrFail(destination);
     }
 
     async move(destination: string): Promise<boolean> {
-        return (await this.getFile()).move(destination);
+        return this.getFile().move(destination);
     }
 
     async moveOrFail(destination: string): Promise<void> {
-        return (await this.getFile()).moveOrFail(destination);
+        return this.getFile().moveOrFail(destination);
     }
 
     async getSignedUploadUrl(options?: FileUploadUrlOptions): Promise<string> {
-        return (await this.getFile()).getSignedUploadUrl(options);
+        return this.getFile().getSignedUploadUrl(options);
     }
 }
