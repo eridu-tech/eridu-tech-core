@@ -98,8 +98,8 @@ describe("class: SemaphoreFactory", () => {
             await lockProvider2.init();
             const lock2 = lockProvider2.create(key, { ttl, limit });
 
-            const deserializeSemaphore2 = await serde.deserialize<ISemaphore>(
-                await serde.serialize(lock2),
+            const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
+                serde.serialize(lock2),
             );
             const result = await deserializeSemaphore2.acquire();
 
@@ -129,8 +129,8 @@ describe("class: SemaphoreFactory", () => {
             await lockProvider2.init();
             const lock2 = lockProvider2.create(key, { ttl, limit });
 
-            const deserializeSemaphore2 = await serde.deserialize<ISemaphore>(
-                await serde.serialize(lock2),
+            const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
+                serde.serialize(lock2),
             );
             const result = await deserializeSemaphore2.acquire();
 
@@ -165,8 +165,8 @@ describe("class: SemaphoreFactory", () => {
             const semaphoreFactory = new SemaphoreFactory({ adapter, serde });
             await semaphoreFactory.init();
 
-            const deserializedSemaphore = await serde.deserialize<ISemaphore>(
-                await serde.serialize(
+            const deserializedSemaphore = serde.deserialize<ISemaphore>(
+                serde.serialize(
                     semaphoreFactory.create("a", { ttl: null, limit: 1 }),
                 ),
             );

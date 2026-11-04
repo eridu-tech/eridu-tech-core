@@ -56,14 +56,14 @@ export class ProxySemaphore<
         return SEMAPHORE_CLASS_TAG;
     }
 
-    async internalSerializationId(): Promise<string> {
+    internalSerializationId(): string {
         const semaphore = this.getSemaphore();
         if (!isInternalSerdeIdentifiable(semaphore)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved semaphore, it does not implement internal serialization",
             );
         }
-        return await semaphore.internalSerializationId();
+        return semaphore.internalSerializationId();
     }
 
     get key(): string {
