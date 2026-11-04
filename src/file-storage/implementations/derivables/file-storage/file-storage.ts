@@ -151,7 +151,7 @@ export class FileStorage implements IFileStorage, IInitizable {
         this.serializationId = resolveSerializationId(serializationId, adapter);
     }
 
-    async init(): Promise<void> {
+    init(): void {
         const transformer = new FileSerdeTransformer({
             defaultCacheControl: this.defaultCacheControl,
             defaultContentDisposition: this.defaultContentDisposition,
@@ -163,7 +163,6 @@ export class FileStorage implements IFileStorage, IInitizable {
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
-        return Promise.resolve();
     }
 
     create(key: string): IFile {

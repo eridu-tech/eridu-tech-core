@@ -65,8 +65,8 @@ describe("class: ProxyFileStorageResolver", () => {
                         serde,
                     });
                 },
-                onInit: async (factory) => {
-                    await factory.init();
+                onInit: (factory) => {
+                    factory.init();
                 },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
@@ -137,23 +137,23 @@ describe("class: ProxyFileStorageResolver", () => {
             container = new Container({
                 executionContext,
             });
-            const factory = new FileStorageResolver<Adapters>({
-                adapters: {
-                    adapter1: new SignedFileStorageAdapter({
-                        adapter: adapter1,
-                        urlAdapter: new NoOpFileUrlAdapter(),
-                    }),
-                    adapter2: new SignedFileStorageAdapter({
-                        adapter: adapter2,
-                        urlAdapter: new NoOpFileUrlAdapter(),
-                    }),
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             container.registerFactory({
                 token: FileStorageResolver,
                 factory: () => {
+                    const factory = new FileStorageResolver<Adapters>({
+                        adapters: {
+                            adapter1: new SignedFileStorageAdapter({
+                                adapter: adapter1,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                            adapter2: new SignedFileStorageAdapter({
+                                adapter: adapter2,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},
@@ -212,23 +212,23 @@ describe("class: ProxyFileStorageResolver", () => {
             container = new Container({
                 executionContext,
             });
-            const factory = new FileStorageResolver<Adapters>({
-                adapters: {
-                    adapter1: new SignedFileStorageAdapter({
-                        adapter: adapter1,
-                        urlAdapter: new NoOpFileUrlAdapter(),
-                    }),
-                    adapter2: new SignedFileStorageAdapter({
-                        adapter: adapter2,
-                        urlAdapter: new NoOpFileUrlAdapter(),
-                    }),
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             container.registerFactory({
                 token: FileStorageResolver,
                 factory: () => {
+                    const factory = new FileStorageResolver<Adapters>({
+                        adapters: {
+                            adapter1: new SignedFileStorageAdapter({
+                                adapter: adapter1,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                            adapter2: new SignedFileStorageAdapter({
+                                adapter: adapter2,
+                                urlAdapter: new NoOpFileUrlAdapter(),
+                            }),
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},

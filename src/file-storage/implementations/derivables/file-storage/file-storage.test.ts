@@ -24,7 +24,7 @@ import type {
 } from "@/file-storage/contracts/_module-exports.js";
 
 describe("class: FileStorage", () => {
-    async function createFileStorage() {
+    function createFileStorage() {
         const serde = new SuperJsonSerde();
         const fileStorage = new FileStorage({
             serde,
@@ -33,7 +33,7 @@ describe("class: FileStorage", () => {
                 urlAdapter: {},
             }),
         });
-        await fileStorage.init();
+        fileStorage.init();
         return {
             fileStorage,
             serde,
@@ -126,7 +126,7 @@ describe("class: FileStorage", () => {
                 adapter: adapter1,
                 serde,
             });
-            await fileStorage1.init();
+            fileStorage1.init();
             const file1 = fileStorage1.create(key);
 
             const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
@@ -197,7 +197,7 @@ describe("class: FileStorage", () => {
                 adapter: adapter2,
                 serde,
             });
-            await fileStorage2.init();
+            fileStorage2.init();
             const file2 = fileStorage2.create(key);
 
             const deserializeFile2 = serde.deserialize<IFile>(
@@ -221,7 +221,7 @@ describe("class: FileStorage", () => {
                 serializationId: "adapter1",
                 serde,
             });
-            await fileStorage1.init();
+            fileStorage1.init();
             const file1 = fileStorage1.create(key);
 
             const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
@@ -235,7 +235,7 @@ describe("class: FileStorage", () => {
                 serializationId: "adapter2",
                 serde,
             });
-            await fileStorage2.init();
+            fileStorage2.init();
             const file2 = fileStorage2.create(key);
 
             const deserializeFile2 = serde.deserialize<IFile>(
@@ -254,7 +254,7 @@ describe("class: FileStorage", () => {
             const adapter = new NoOpFileStorageAdapter();
             vi.spyOn(adapter, "getBytes").mockRejectedValue(unexpectedError);
             const fileStorage = new FileStorage({ adapter });
-            await fileStorage.init();
+            fileStorage.init();
 
             const promise = fileStorage.create("a").getBytes();
 
@@ -270,7 +270,7 @@ describe("class: FileStorage", () => {
             const adapter = new NoOpFileStorageAdapter();
             vi.spyOn(adapter, "getBytes").mockRejectedValue(unexpectedError);
             const fileStorage = new FileStorage({ adapter, serde });
-            await fileStorage.init();
+            fileStorage.init();
 
             const deserializedFile = serde.deserialize<IFile>(
                 serde.serialize(fileStorage.create("a")),
