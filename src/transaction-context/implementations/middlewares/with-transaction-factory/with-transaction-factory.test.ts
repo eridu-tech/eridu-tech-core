@@ -20,8 +20,8 @@ describe("function: withTransactionFactory", () => {
         },
     );
 
-    beforeAll(async () => {
-        await transactionContextResolver.init();
+    beforeAll(() => {
+        transactionContextResolver.init();
     });
     beforeEach(() => {
         vi.restoreAllMocks();
