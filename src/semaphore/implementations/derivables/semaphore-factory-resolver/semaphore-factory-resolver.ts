@@ -64,7 +64,7 @@ export class SemaphoreFactoryResolver<TAdapters extends string = string>
         Record<TAdapters, SemaphoreFactory>
     >;
 
-    async init(): Promise<void> {
+    init(): void {
         const { adapters, ...rest } = this.settings;
         for (const adapterName in adapters) {
             const adapter = this.settings.adapters[adapterName];
@@ -76,10 +76,9 @@ export class SemaphoreFactoryResolver<TAdapters extends string = string>
                 adapter,
                 serializationId: adapterName,
             });
-            await factory.init();
+            factory.init();
             this.factories[adapterName] = factory;
         }
-        return Promise.resolve();
     }
 
     use(

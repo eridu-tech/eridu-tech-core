@@ -18,8 +18,8 @@ describe("function: withSemaphoreFactory", () => {
         defaultAdapter: "memory",
     });
 
-    beforeAll(async () => {
-        await semaphoreFactoryResolver.init();
+    beforeAll(() => {
+        semaphoreFactoryResolver.init();
     });
     beforeEach(() => {
         vi.restoreAllMocks();
