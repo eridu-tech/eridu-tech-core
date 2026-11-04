@@ -14,6 +14,14 @@ import type { IExecutionContext } from "@/execution-context/contracts/_module-ex
 import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
 
 /**
+ * Default {@link IConcurrency} implementation that reads the active task context
+ * from an {@link IExecutionContext}.
+ *
+ * Tasks made by `create()`, `resolve()`, `reject()` and `timeout()` capture the task
+ * context that is active when they are created, so aborting the surrounding task also
+ * aborts them. The combinators (`allSettled`, `all`, `any`, `race`) group the given
+ * tasks into a single abortable task, and their `settings` apply to that grouped task.
+ *
  * IMPORT_PATH: `"eridu-tech/concurrency"`
  * @group Derivables
  */

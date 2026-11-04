@@ -1,5 +1,5 @@
 /**
- * @module Cache
+ * @module Concurrency
  */
 
 import type {
@@ -19,7 +19,10 @@ import type { ITimeSpan } from "@/time-span/contracts/time-span.contract.js";
 /**
  * Settings used to construct a {@link ProxyConcurrency}.
  *
- * IMPORT_PATH: `"eridu-tech/cache/di"`
+ * `container` is the resolver the concurrency is looked up in, and
+ * `resolverToken` is the {@link DiToken} it is registered under.
+ *
+ * IMPORT_PATH: `"eridu-tech/concurrency/di"`
  * @group Derivables
  */
 export type ProxyConcurrencySettings = {
@@ -28,7 +31,24 @@ export type ProxyConcurrencySettings = {
 };
 
 /**
- * IMPORT_PATH: `"eridu-tech/cache/di"`
+ * An {@link IConcurrency} that resolves the underlying concurrency from a
+ * dependency-injection container.
+ *
+ * Construct the proxy with a {@link ProxyConcurrencySettings}.
+ *
+ * The `resolverToken` is resolved through the container on every operation via
+ * {@link IServiceResolver.resolveOrFail}, and the operation is then delegated to the
+ * resolved {@link IConcurrency}. Resolution happens lazily, so the binding can use
+ * any `LIFETIME`:
+ *
+ * - `SINGLETON` registrations can be used once `IContainer.init()` has been awaited.
+ * - `SCOPED` registrations are resolved per operation, so the proxy must be used
+ *   inside `IContainer.run()`; resolving it outside of a scope throws.
+ *
+ * A `TRANSIENT` registration resolves a new instance on every access, including each
+ * `signal` read and `abort()` call, so prefer `SINGLETON` or `SCOPED`.
+ *
+ * IMPORT_PATH: `"eridu-tech/concurrency/di"`
  * @group Derivables
  */
 export class ProxyConcurrency implements IConcurrency {
