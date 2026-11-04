@@ -12,8 +12,8 @@ import type {
 } from "@/lock/contracts/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     IPrunable,
 } from "@/utilities/_module-exports.js";
 
@@ -64,7 +64,7 @@ export type KyselyLockAdapterSettings = {
  * @group Adapters
  */
 export class KyselyLockAdapter
-    implements ILockAdapter, IDeinitizable, IInitizable, IPrunable
+    implements ILockAdapter, IAsyncDeinitizable, IAsyncInitizable, IPrunable
 {
     private readonly transactionContext: ITransactionContext<
         Kysely<KyselyLockTables>

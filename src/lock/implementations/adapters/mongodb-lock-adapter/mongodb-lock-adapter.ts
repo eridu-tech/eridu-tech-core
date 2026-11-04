@@ -21,8 +21,8 @@ import type {
     TransactionAware,
 } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -70,7 +70,7 @@ export type MongodbLockEntryDocument = {
  * @group Adapters
  */
 export class MongodbLockAdapter
-    implements ILockAdapter, IDeinitizable, IInitizable
+    implements ILockAdapter, IAsyncDeinitizable, IAsyncInitizable
 {
     private readonly trxCtx: ITransactionContext<Db, ClientSession>;
     private readonly collection: Collection<MongodbLockEntryDocument>;

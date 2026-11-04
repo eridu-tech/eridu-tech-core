@@ -15,8 +15,8 @@ import type {
 } from "@/shared-lock/contracts/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     IPrunable,
 } from "@/utilities/_module-exports.js";
 
@@ -90,7 +90,11 @@ export type KyselySharedLockAdapterSettings = {
  * @group Adapters
  */
 export class KyselySharedLockAdapter
-    implements ISharedLockAdapter, IDeinitizable, IInitizable, IPrunable
+    implements
+        ISharedLockAdapter,
+        IAsyncDeinitizable,
+        IAsyncInitizable,
+        IPrunable
 {
     private readonly transactionContext: ITransactionContext<
         Kysely<KyselySharedLockTables>

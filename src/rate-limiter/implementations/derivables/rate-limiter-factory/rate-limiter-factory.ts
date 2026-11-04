@@ -125,7 +125,7 @@ export class RateLimiterFactory implements IRateLimiterFactory, IInitizable {
         this.serde = serde;
     }
 
-    async init(): Promise<void> {
+    init(): void {
         const transformer = new RateLimiterSerdeTransformer({
             adapter: this.adapter,
             onlyError: this.onlyError,
@@ -135,7 +135,6 @@ export class RateLimiterFactory implements IRateLimiterFactory, IInitizable {
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
-        return Promise.resolve();
     }
 
     create(

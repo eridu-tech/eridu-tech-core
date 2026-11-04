@@ -30,8 +30,8 @@ import type {
     TransactionAware,
 } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     Option,
 } from "@/utilities/_module-exports.js";
 
@@ -108,7 +108,7 @@ export type MongodbSharedLockEntryDocument = {
  * @group Adapters
  */
 export class MongodbSharedLockAdapter
-    implements ISharedLockAdapter, IDeinitizable, IInitizable
+    implements ISharedLockAdapter, IAsyncDeinitizable, IAsyncInitizable
 {
     private static isSlotNotExpired = (
         slot: MongodbReaderSemaphoreSlotEntryDocument,

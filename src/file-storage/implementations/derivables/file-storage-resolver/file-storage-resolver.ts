@@ -63,7 +63,7 @@ export class FileStorageResolver<TAdapters extends string = string>
 
     private readonly storages = {} as Partial<Record<TAdapters, FileStorage>>;
 
-    async init(): Promise<void> {
+    init(): void {
         const { adapters, ...rest } = this.settings;
         for (const adapterName in adapters) {
             const adapter = this.settings.adapters[adapterName];
@@ -75,10 +75,9 @@ export class FileStorageResolver<TAdapters extends string = string>
                 adapter,
                 serializationId: adapterName,
             });
-            await factory.init();
+            factory.init();
             this.storages[adapterName] = factory;
         }
-        return Promise.resolve();
     }
 
     use(

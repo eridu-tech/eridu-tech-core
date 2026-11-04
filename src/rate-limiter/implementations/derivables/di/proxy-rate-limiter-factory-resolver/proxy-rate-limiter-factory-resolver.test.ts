@@ -60,8 +60,8 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                         serde,
                     });
                 },
-                onInit: async (service) => {
-                    await service.init();
+                onInit: (service) => {
+                    service.init();
                 },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
@@ -165,18 +165,18 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
             const adapter2 = new NoOpRateLimiterAdapter();
             getState2 = vi.spyOn(adapter2, "getState");
 
-            const factory = new RateLimiterFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-                serde,
-            });
-            await factory.init();
             container.registerFactory({
                 token: RateLimiterFactoryResolver,
                 factory: () => {
+                    const factory = new RateLimiterFactoryResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                        serde,
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},
@@ -244,18 +244,18 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
             const adapter2 = new NoOpRateLimiterAdapter();
             getState2 = vi.spyOn(adapter2, "getState");
 
-            const factory = new RateLimiterFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-                serde,
-            });
-            await factory.init();
             container.registerFactory({
                 token: RateLimiterFactoryResolver,
                 factory: () => {
+                    const factory = new RateLimiterFactoryResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                        serde,
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},

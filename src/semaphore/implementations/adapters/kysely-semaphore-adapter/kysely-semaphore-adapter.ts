@@ -13,8 +13,8 @@ import type {
 } from "@/semaphore/contracts/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     IPrunable,
 } from "@/utilities/_module-exports.js";
 
@@ -75,7 +75,11 @@ export type KyselySemaphoreAdapterSettings = {
  * @group Adapters
  */
 export class KyselySemaphoreAdapter
-    implements ISemaphoreAdapter, IDeinitizable, IInitizable, IPrunable
+    implements
+        ISemaphoreAdapter,
+        IAsyncDeinitizable,
+        IAsyncInitizable,
+        IPrunable
 {
     private readonly transactionContext: ITransactionContext<
         Kysely<KyselySemaphoreTables>

@@ -24,13 +24,13 @@ import type { KyselySemaphoreTables } from "@/semaphore/implementations/adapters
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe("class: SemaphoreFactory", () => {
-    async function createSemaphoreFactory() {
+    function createSemaphoreFactory() {
         const serde = new SuperJsonSerde();
         const semaphoreFactory = new SemaphoreFactory({
             serde,
             adapter: new MemorySemaphoreAdapter(),
         });
-        await semaphoreFactory.init();
+        semaphoreFactory.init();
         return {
             semaphoreFactory,
             serde,
@@ -82,7 +82,7 @@ describe("class: SemaphoreFactory", () => {
                 adapter: adapter1,
                 serde,
             });
-            await lockProvider1.init();
+            lockProvider1.init();
             const lock1 = lockProvider1.create(key, { ttl, limit });
 
             await lock1.acquire();
@@ -95,7 +95,7 @@ describe("class: SemaphoreFactory", () => {
                 adapter: adapter2,
                 serde,
             });
-            await lockProvider2.init();
+            lockProvider2.init();
             const lock2 = lockProvider2.create(key, { ttl, limit });
 
             const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
@@ -116,7 +116,7 @@ describe("class: SemaphoreFactory", () => {
                 serializationId: "adapter1",
                 serde,
             });
-            await lockProvider1.init();
+            lockProvider1.init();
             const lock1 = lockProvider1.create(key, { ttl, limit });
 
             await lock1.acquire();
@@ -126,7 +126,7 @@ describe("class: SemaphoreFactory", () => {
                 serializationId: "adapter2",
                 serde,
             });
-            await lockProvider2.init();
+            lockProvider2.init();
             const lock2 = lockProvider2.create(key, { ttl, limit });
 
             const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
@@ -143,7 +143,7 @@ describe("class: SemaphoreFactory", () => {
             const adapter = new MemorySemaphoreAdapter();
             vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
             const semaphoreFactory = new SemaphoreFactory({ adapter });
-            await semaphoreFactory.init();
+            semaphoreFactory.init();
 
             const promise = semaphoreFactory
                 .create("a", { ttl: null, limit: 1 })
@@ -163,7 +163,7 @@ describe("class: SemaphoreFactory", () => {
             const adapter = new MemorySemaphoreAdapter();
             vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
             const semaphoreFactory = new SemaphoreFactory({ adapter, serde });
-            await semaphoreFactory.init();
+            semaphoreFactory.init();
 
             const deserializedSemaphore = serde.deserialize<ISemaphore>(
                 serde.serialize(

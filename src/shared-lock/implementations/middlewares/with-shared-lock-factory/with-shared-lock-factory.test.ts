@@ -21,8 +21,8 @@ describe("function: withSharedLockFactory", () => {
         defaultAdapter: "memory",
     });
 
-    beforeAll(async () => {
-        await sharedLockFactoryResolver.init();
+    beforeAll(() => {
+        sharedLockFactoryResolver.init();
     });
     beforeEach(() => {
         vi.restoreAllMocks();

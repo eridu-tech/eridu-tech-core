@@ -8,8 +8,8 @@ import type {
 } from "@/execution-context/contracts/_module-exports.js";
 import type {
     AsyncLazy,
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     IInvocableObject,
     Invocable,
     InvocableFn,
@@ -641,8 +641,8 @@ export type IContainerHooks = {
  * IMPORT_PATH: `"eridu-tech/di/contracts"`
  * @group Contracts
  */
-export type IContainer = IInitizable &
-    IDeinitizable &
+export type IContainer = IAsyncInitizable &
+    IAsyncDeinitizable &
     IContainerHooks &
     IContainerScope &
     IContainerFork &

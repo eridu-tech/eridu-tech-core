@@ -8,7 +8,7 @@ import type {
     ICache,
 } from "@/cache/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
+    IAsyncDeinitizable,
     InvocableFn,
     IPrunable,
     Promisable,
@@ -30,7 +30,7 @@ export type MemoryCacheEntryData<TValue = unknown> = {
  * @group Adapters
  */
 export class MemoryCacheAdapter<TType = unknown>
-    implements ICacheAdapter<TType>, IDeinitizable, IPrunable
+    implements ICacheAdapter<TType>, IAsyncDeinitizable, IPrunable
 {
     /**
      * You can provide an optional {@link Map | `Map`}, that will be used for storing the data.

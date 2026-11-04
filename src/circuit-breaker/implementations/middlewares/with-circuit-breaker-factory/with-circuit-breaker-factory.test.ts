@@ -18,8 +18,8 @@ describe("function: withCircuitBreakerFactory", () => {
             defaultAdapter: "memory",
         });
 
-    beforeAll(async () => {
-        await circuitBreakerFactoryResolver.init();
+    beforeAll(() => {
+        circuitBreakerFactoryResolver.init();
     });
     beforeEach(() => {
         vi.restoreAllMocks();

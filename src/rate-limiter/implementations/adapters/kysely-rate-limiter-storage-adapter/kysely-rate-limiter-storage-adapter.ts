@@ -14,8 +14,8 @@ import type {
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     InvocableFn,
     IPrunable,
 } from "@/utilities/_module-exports.js";
@@ -151,8 +151,8 @@ export type KyselyRateLimiterStorageAdapterSettings = {
 export class KyselyRateLimiterStorageAdapter<TType>
     implements
         IRateLimiterStorageAdapter<TType>,
-        IInitizable,
-        IDeinitizable,
+        IAsyncInitizable,
+        IAsyncDeinitizable,
         IPrunable
 {
     private readonly transactionContext: ITransactionContext<

@@ -9,7 +9,10 @@ import type {
     ISemaphoreAdapterState,
     SemaphoreAcquireSettings,
 } from "@/semaphore/contracts/_module-exports.js";
-import type { IDeinitizable, IPrunable } from "@/utilities/_module-exports.js";
+import type {
+    IAsyncDeinitizable,
+    IPrunable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Note the `MemorySemaphoreAdapter` is limited to single process usage and cannot be shared across multiple servers or different processes.
@@ -19,7 +22,7 @@ import type { IDeinitizable, IPrunable } from "@/utilities/_module-exports.js";
  * @group Adapters
  */
 export class MemorySemaphoreAdapter
-    implements ISemaphoreAdapter, IDeinitizable, IPrunable
+    implements ISemaphoreAdapter, IAsyncDeinitizable, IPrunable
 {
     /**
      * You can also provide an `Map`.

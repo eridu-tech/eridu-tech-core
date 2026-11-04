@@ -185,7 +185,7 @@ export class CircuitBreakerFactory
         this.serializationId = resolveSerializationId(serializationId, adapter);
     }
 
-    async init(): Promise<void> {
+    init(): void {
         const transformer = new CircuitBreakerSerdeTransformer({
             waitUntil: this.waitUntil,
             enableAsyncTracking: this.enableAsyncTracking,
@@ -198,8 +198,6 @@ export class CircuitBreakerFactory
         for (const serde of resolveOneOrMore(this.serde)) {
             serde.registerCustom(transformer, CORE);
         }
-
-        return Promise.resolve();
     }
 
     create(

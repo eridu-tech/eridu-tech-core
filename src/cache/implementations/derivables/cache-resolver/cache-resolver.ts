@@ -60,7 +60,7 @@ export class CacheResolver<TAdapters extends string = string, TType = unknown>
 
     private readonly factories = {} as Partial<Record<TAdapters, Cache<TType>>>;
 
-    async init(): Promise<void> {
+    init(): void {
         const { adapters, ...rest } = this.settings;
         for (const adapterName in adapters) {
             const adapter = this.settings.adapters[adapterName];
@@ -73,7 +73,6 @@ export class CacheResolver<TAdapters extends string = string, TType = unknown>
             });
             this.factories[adapterName] = factory as Cache<TType>;
         }
-        return Promise.resolve();
     }
 
     use(

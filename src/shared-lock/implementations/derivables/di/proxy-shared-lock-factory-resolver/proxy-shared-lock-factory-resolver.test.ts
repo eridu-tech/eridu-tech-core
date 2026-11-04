@@ -58,8 +58,8 @@ describe("class: ProxySharedLockFactoryResolver", () => {
                         serde,
                     });
                 },
-                onInit: async (factory) => {
-                    await factory.init();
+                onInit: (factory) => {
+                    factory.init();
                 },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
@@ -150,14 +150,6 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             const adapter2 = new MemorySharedLockAdapter();
             acquireWriter2 = vi.spyOn(adapter2, "acquireWriter");
 
-            const factory = new SharedLockFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -167,6 +159,14 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             container.registerFactory({
                 token: SharedLockFactoryResolver,
                 factory: () => {
+                    const factory = new SharedLockFactoryResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},
@@ -245,14 +245,6 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             const adapter2 = new MemorySharedLockAdapter();
             acquireWriter2 = vi.spyOn(adapter2, "acquireWriter");
 
-            const factory = new SharedLockFactoryResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -262,6 +254,14 @@ describe("class: ProxySharedLockFactoryResolver", () => {
             container.registerFactory({
                 token: SharedLockFactoryResolver,
                 factory: () => {
+                    const factory = new SharedLockFactoryResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},
