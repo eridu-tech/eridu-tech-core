@@ -5,8 +5,8 @@ type User = { id: string; name: string };
 
 const userToken = contextToken<User>("user");
 
-await executionContext.run(async () => {
-    await executionContext.when(true, (context) =>
+executionContext.run(() => {
+    executionContext.when(true, (context) =>
         context.put(userToken, { id: "123", name: "Alice" }),
     );
 });

@@ -6,11 +6,13 @@ export class Database implements IDatabase {
         return Promise.resolve();
     }
 
-    async connect(): Promise<void> {
+    connect(): Promise<void> {
         console.log("db connected");
+        return Promise.resolve();
     }
 
-    async disconnect(): Promise<void> {
+    disconnect(): Promise<void> {
         console.log("db disconnected");
+        return Promise.resolve();
     }
 }

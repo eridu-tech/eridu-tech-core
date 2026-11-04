@@ -17,16 +17,16 @@ container.registerFactory({
 await container.init();
 
 await container.run({
-    registration: async (register) => {
+    registration: (register) => {
         // Set the dynamic value before the scope executes
         register.set({
             token: REQUEST_ID,
             value: crypto.randomUUID(),
         });
     },
-    scope: async () => {
+    scope: () => {
         // The scoped service is injected with the per-request dynamic value
-        const handler = await container.resolveOrFail(RequestHandler);
-        await handler.handle();
+        const handler = container.resolveOrFail(RequestHandler);
+        handler.handle();
     },
 });

@@ -1,17 +1,17 @@
 import { genericToken, LIFETIME } from "eridu-tech/di/contracts";
-import { AsyncExecutionContext } from "eridu-tech/execution-context";
+import { ExecutionContext } from "eridu-tech/execution-context";
 import { AlsExecutionContextAdapter } from "eridu-tech/execution-context/als-execution-context-adapter";
 import { ProxyExecutionContext } from "eridu-tech/execution-context/di";
 import { container } from "./container.js";
 
-import type { IAsyncExecutionContext } from "eridu-tech/execution-context/contracts";
+import type { IExecutionContext } from "eridu-tech/execution-context/contracts";
 
 const executionContextToken =
-    genericToken<IAsyncExecutionContext>("executionContext");
+    genericToken<IExecutionContext>("executionContext");
 
 container.registerFactory({
     token: executionContextToken,
-    factory: () => new AsyncExecutionContext(new AlsExecutionContextAdapter()),
+    factory: () => new ExecutionContext(new AlsExecutionContextAdapter()),
     deps: {},
     lifetime: LIFETIME.SINGLETON,
 });

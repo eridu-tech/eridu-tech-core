@@ -23,19 +23,21 @@ class MockDatabase implements IDatabase {
         return Promise.resolve();
     }
 
-    async connect(): Promise<void> {
+    connect(): Promise<void> {
         console.log("connected");
+        return Promise.resolve();
     }
 
-    async disconnect(): Promise<void> {
+    disconnect(): Promise<void> {
         console.log("disconnected");
+        return Promise.resolve();
     }
 }
 
 // Override a registered factory service
 container.overrideFactory({
     token: IDATABASE,
-    factory: async (_deps, _executionContext) => {
+    factory: (_deps, _executionContext) => {
         // Return a mock database for testing
         return new MockDatabase();
     },

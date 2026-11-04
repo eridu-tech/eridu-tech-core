@@ -3,7 +3,7 @@ export class RequestHandler {
         /* ... */
     }
 
-    async handle(): Promise<void> {
+    handle(): void {
         console.log(`Handling request: ${this.requestId}`);
     }
 }
