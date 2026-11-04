@@ -54,14 +54,14 @@ export class ProxyRateLimiter<
         return RATE_LIMITER_CLASS_TAG;
     }
 
-    async internalSerializationId(): Promise<string> {
+    internalSerializationId(): string {
         const rateLimiter = this.getRateLimiter();
         if (!isInternalSerdeIdentifiable(rateLimiter)) {
             throw UnexpectedError.create(
                 "Cannot serialize the resolved rate limiter, it does not implement internal serialization",
             );
         }
-        return await rateLimiter.internalSerializationId();
+        return rateLimiter.internalSerializationId();
     }
 
     get key(): string {

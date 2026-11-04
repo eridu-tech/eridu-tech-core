@@ -149,7 +149,7 @@ export class MongodbRateLimiterStorageAdapter<TType>
             },
             {
                 $set: {
-                    state: await this.serde.serialize(state),
+                    state: this.serde.serialize(state),
                     expiration,
                 },
             },
@@ -188,7 +188,7 @@ export class MongodbRateLimiterStorageAdapter<TType>
             return null;
         }
         return {
-            state: await this.serde.deserialize(doc.state),
+            state: this.serde.deserialize(doc.state),
             expiration: doc.expiration,
         };
     }

@@ -115,10 +115,9 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                     limit: 2,
                 });
 
-                const deserializedRateLimiter =
-                    await serde.deserialize<IRateLimiter>(
-                        await serde.serialize(rateLimiter),
-                    );
+                const deserializedRateLimiter = serde.deserialize<IRateLimiter>(
+                    serde.serialize(rateLimiter),
+                );
 
                 await deserializedRateLimiter.getState();
 
@@ -133,10 +132,9 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                     .use("adapter2")
                     .create(key, { limit: 2 });
 
-                const deserializedRateLimiter =
-                    await serde.deserialize<IRateLimiter>(
-                        await serde.serialize(rateLimiter),
-                    );
+                const deserializedRateLimiter = serde.deserialize<IRateLimiter>(
+                    serde.serialize(rateLimiter),
+                );
 
                 await deserializedRateLimiter.getState();
 
