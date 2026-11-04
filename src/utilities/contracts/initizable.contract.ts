@@ -3,8 +3,7 @@
  */
 
 /**
- * Initialization contract for objects requiring async setup.
- * Implementers provide a way to initialize/prepare state before use.
+ * Asynchronous initialization contract for objects requiring async setup.
  *
  * Usage patterns:
  * - Database connection pools: open connections, verify connectivity
@@ -12,20 +11,41 @@
  * - Servers: start listening, bind to ports
  * - Factories: load configuration, prepare templates
  *
- * Typically called once during application startup.
- * Should be idempotent when possible (calling init() multiple times is safe).
+ * Call once during startup, before any other method. Implementations should be
+ * idempotent and share the in-flight promise between concurrent calls.
+ *
+ * @see {@link IInitizable | `IInitizable`} for the synchronous variant.
+ * @see {@link IAsyncDeinitizable | `IAsyncDeinitizable`} for teardown.
+ *
+ * IMPORT_PATH: `"eridu-tech/utilities"`
+ * @group Contracts
+ */
+export type IAsyncInitizable = {
+    /**
+     * Initializes the object and prepares it for use.
+     *
+     * @returns A promise that resolves when initialization is complete
+     * @throws {Error} If initialization fails (e.g., connection timeout)
+     */
+    init(): Promise<void>;
+};
+
+/**
+ * Synchronous version of {@link IAsyncInitizable | `IAsyncInitizable`}.
+ * Use only for in-memory, non-blocking initialization; anything performing I/O
+ * belongs in {@link IAsyncInitizable | `IAsyncInitizable`}.
+ *
+ * @see {@link IDeinitizable | `IDeinitizable`} for teardown.
  *
  * IMPORT_PATH: `"eridu-tech/utilities"`
  * @group Contracts
  */
 export type IInitizable = {
     /**
-     * Initializes the object.
-     * Performs any async setup required before the object is usable.
-     * Should prepare internal state and verify system dependencies.
+     * Initializes the object and prepares it for use.
      *
-     * @returns Void promise (resolves when initialization complete)
-     * @throws Error if initialization fails (e.g., connection timeout, validation error)
+     * @returns Nothing; completion is signalled by the method returning
+     * @throws {Error} If initialization fails (e.g., invalid configuration)
      */
-    init(): Promise<void>;
+    init(): void;
 };
