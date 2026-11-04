@@ -15,7 +15,7 @@ import type { ISerde } from "@/serde/contracts/_module-exports.js";
 export class MongodbCacheAdapterSerde implements ISerde<string | number> {
     constructor(private readonly serde: ISerde<string>) {}
 
-    async serialize<TValue>(value: TValue): Promise<string | number> {
+    serialize<TValue>(value: TValue): string | number {
         try {
             if (
                 typeof value === "number" &&
@@ -24,18 +24,18 @@ export class MongodbCacheAdapterSerde implements ISerde<string | number> {
             ) {
                 return value;
             }
-            return await this.serde.serialize(value);
+            return this.serde.serialize(value);
         } catch (error: unknown) {
             throw UnableToSerializeSerdeError.create(error);
         }
     }
 
-    async deserialize<TValue>(value: string | number): Promise<TValue> {
+    deserialize<TValue>(value: string | number): TValue {
         try {
             if (typeof value === "number") {
                 return value as TValue;
             }
-            return await this.serde.deserialize(value);
+            return this.serde.deserialize(value);
         } catch (error: unknown) {
             throw UnableToDeserializeSerdeError.create(error);
         }
