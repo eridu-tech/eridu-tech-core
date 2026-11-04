@@ -25,8 +25,8 @@ import type {
     TransactionAware,
 } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     InvocableFn,
     Promisable,
 } from "@/utilities/_module-exports.js";
@@ -78,7 +78,7 @@ export type MongodbCacheEntryDocument = {
  * @group Adapters
  */
 export class MongodbCacheAdapter<TType = unknown>
-    implements ICacheAdapter<TType>, IInitizable, IDeinitizable
+    implements ICacheAdapter<TType>, IAsyncInitizable, IAsyncDeinitizable
 {
     private static filterUnexpiredKeys(
         keys: Array<string>,

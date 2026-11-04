@@ -52,8 +52,8 @@ describe("class: ProxyCacheResolver", () => {
                         defaultAdapter: "adapter1",
                     });
                 },
-                onInit: async (factory) => {
-                    await factory.init();
+                onInit: (factory) => {
+                    factory.init();
                 },
                 deps: {},
                 lifetime: LIFETIME.SINGLETON,
@@ -112,17 +112,17 @@ describe("class: ProxyCacheResolver", () => {
             const adapter2 = new NoOpCacheAdapter();
             get2 = vi.spyOn(adapter2, "get");
 
-            const factory = new CacheResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             container.registerFactory({
                 token: CacheResolver,
                 factory: () => {
+                    const factory = new CacheResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},
@@ -182,17 +182,17 @@ describe("class: ProxyCacheResolver", () => {
             const adapter2 = new NoOpCacheAdapter();
             get2 = vi.spyOn(adapter2, "get");
 
-            const factory = new CacheResolver<Adapters>({
-                adapters: {
-                    adapter1,
-                    adapter2,
-                },
-                defaultAdapter: "adapter1",
-            });
-            await factory.init();
             container.registerFactory({
                 token: CacheResolver,
                 factory: () => {
+                    const factory = new CacheResolver<Adapters>({
+                        adapters: {
+                            adapter1,
+                            adapter2,
+                        },
+                        defaultAdapter: "adapter1",
+                    });
+                    factory.init();
                     return factory;
                 },
                 deps: {},

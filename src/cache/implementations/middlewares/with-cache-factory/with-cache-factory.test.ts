@@ -15,8 +15,8 @@ describe("function: withCacheFactory", () => {
         defaultAdapter: "memory",
     });
 
-    beforeAll(async () => {
-        await cacheResolver.init();
+    beforeAll(() => {
+        cacheResolver.init();
     });
     beforeEach(() => {
         vi.restoreAllMocks();

@@ -10,8 +10,8 @@ import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 import type {
-    IDeinitizable,
-    IInitizable,
+    IAsyncDeinitizable,
+    IAsyncInitizable,
     InvocableFn,
     IPrunable,
     Promisable,
@@ -65,7 +65,11 @@ export type KyselyCacheAdapterSettings = {
  * @group Adapters
  */
 export class KyselyCacheAdapter<TType = unknown>
-    implements ICacheAdapter<TType>, IInitizable, IDeinitizable, IPrunable
+    implements
+        ICacheAdapter<TType>,
+        IAsyncInitizable,
+        IAsyncDeinitizable,
+        IPrunable
 {
     private readonly isMysql: boolean;
     private readonly serde: ISerde<string>;
