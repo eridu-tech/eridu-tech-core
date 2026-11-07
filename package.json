@@ -491,6 +491,14 @@
             "types": "./dist/resilience/implementations/_module-exports.d.ts",
             "import": "./dist/resilience/implementations/_module-exports.js"
         },
+        "./secret": {
+            "types": "./dist/secret/implementations/_module-exports.d.ts",
+            "import": "./dist/secret/implementations/_module-exports.js"
+        },
+        "./secret/contracts": {
+            "types": "./dist/secret/contracts/_module-exports.d.ts",
+            "import": "./dist/secret/contracts/_module-exports.js"
+        },
         "./semaphore": {
             "types": "./dist/semaphore/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/semaphore/implementations/derivables/_module-exports.js"

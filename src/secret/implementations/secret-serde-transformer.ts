@@ -4,7 +4,7 @@
 
 import { secret } from "@/secret/implementations/secret.js";
 
-import type { ISecret } from "@/secret/contracts/_module-export.js";
+import type { ISecret } from "@/secret/contracts/_module-exports.js";
 import type { ISerdeTransformer } from "@/serde/contracts/_module-exports.js";
 import type { OneOrMore } from "@/utilities/_module-exports.js";
 

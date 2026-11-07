@@ -434,6 +434,19 @@ const EXISTING_UTILITIES_RECORD = {
             </>
         ),
     } satisfies ComponentItemProps,
+    SECRET: {
+        name: "Secret",
+        icon: <ShieldCheck size="1.5rem" strokeWidth={1.5} />,
+        title: <>Secret</>,
+        link: "/docs/components/utilities/secret",
+        maturity: 80,
+        description: (
+            <>
+                Wrap sensitive values so string conversion is redacted, with
+                explicit access and an optional serialization transformer.
+            </>
+        ),
+    } satisfies ComponentItemProps,
 };
 
 const UPCOMING_FOUNDATION_RUNTIME_RECORD = {
@@ -900,6 +913,7 @@ export const UTILITIES_EXISTING_ITEMS: ComponentItemProps[] = [
     COMPONENT_RECORD.ERROR_POLICY_TYPE,
     COMPONENT_RECORD.INVOCABLE,
     COMPONENT_RECORD.CODEC,
+    COMPONENT_RECORD.SECRET,
 ];
 
 export const EXISTING_ITEMS: ComponentItemProps[] = [

@@ -2,7 +2,7 @@
  * @module Secret
  */
 
-import type { ISecret } from "@/secret/contracts/_module-export.js";
+import type { ISecret } from "@/secret/contracts/_module-exports.js";
 
 /**
  * Wraps a value in a secret so it can be passed around and logged safely.
