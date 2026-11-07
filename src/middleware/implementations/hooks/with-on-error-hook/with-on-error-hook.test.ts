@@ -50,18 +50,6 @@ describe("function: withOnError", () => {
         await expect(fn()).rejects.toThrow("fail");
         expect(order).toEqual(["hook"]);
     });
-    test("Should not await the hook when detach is true", async () => {
-        const error = new Error("fail");
-        const hook = vi.fn(async () => {
-            await new Promise<void>(() => {});
-        });
-        const fn = use(
-            (): Promise<string> => Promise.reject(error),
-            withOnError<[], string>(hook, true),
-        );
-        await expect(fn()).rejects.toBe(error);
-        expect(hook).toHaveBeenCalledExactlyOnceWith([], error);
-    });
     test("Should accept an invocable object as hook", async () => {
         const error = new Error("fail");
         const invoke = vi.fn();
@@ -137,16 +125,6 @@ describe("function: withOnError", () => {
         const fn = use(
             (): Promise<string> => Promise.reject(new Error("fail")),
             withOnError<[], string>(() => Promise.reject(hookError)),
-        );
-        await expect(fn()).rejects.toBe(hookError);
-    });
-    test("Should propagate a synchronous hook error when detach is true", async () => {
-        const hookError = new Error("hook error");
-        const fn = use(
-            (): Promise<string> => Promise.reject(new Error("fail")),
-            withOnError<[], string>(() => {
-                throw hookError;
-            }, true),
         );
         await expect(fn()).rejects.toBe(hookError);
     });

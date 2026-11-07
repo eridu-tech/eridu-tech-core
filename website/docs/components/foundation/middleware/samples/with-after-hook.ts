@@ -22,11 +22,10 @@ const createUser = use(
     }),
 );
 
-// Returning nothing keeps the original result, which pairs with `detach` for
-// fire-and-forget side effects that should not delay the caller.
-const createUserWithSideEffect = use(
+// Returning nothing keeps the original result.
+const createUserWithTracking = use(
     saveUser,
-    withAfterHook<[name: string], User>((_args, user) => {
-        console.log(`Saved user: ${user.id}`);
-    }, true),
+    withAfterHook<[name: string], User>(async (_args, user) => {
+        await trackUser(user);
+    }),
 );

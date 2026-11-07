@@ -22,11 +22,10 @@ const createUser = use(
     }),
 );
 
-// With `detach` set to `true` the hook is fired without being awaited and its
-// return value is ignored, so the wrapped function keeps the original arguments.
-const createUserDetached = use(
+// Returning nothing keeps the original arguments of the wrapped function.
+const createUserWithAudit = use(
     saveUser,
     withBeforeHook<[name: string], User>(async ([name]) => {
         await auditName(name);
-    }, true),
+    }),
 );
