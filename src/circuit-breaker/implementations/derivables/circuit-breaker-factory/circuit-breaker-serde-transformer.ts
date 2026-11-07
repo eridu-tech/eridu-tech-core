@@ -76,7 +76,7 @@ export class CircuitBreakerSerdeTransformer implements ISerdeTransformer<
         );
     }
 
-    isApplicable(value: unknown): boolean {
+    isApplicable(value: unknown): value is ICircuitBreaker {
         if (!isInternalSerdeIdentifiable(value)) {
             return false;
         }

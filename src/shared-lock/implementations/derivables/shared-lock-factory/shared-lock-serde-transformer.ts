@@ -51,7 +51,7 @@ export class SharedLockSerdeTransformer implements ISerdeTransformer<
         );
     }
 
-    isApplicable(value: unknown): boolean {
+    isApplicable(value: unknown): value is ISharedLock {
         if (!isInternalSerdeIdentifiable(value)) {
             return false;
         }
