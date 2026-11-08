@@ -423,6 +423,34 @@
             "types": "./dist/lock/implementations/test-utilities/_module-exports.d.ts",
             "import": "./dist/lock/implementations/test-utilities/_module-exports.js"
         },
+        "./logger": {
+            "types": "./dist/logger/implementations/derivables/_module-exports.d.ts",
+            "import": "./dist/logger/implementations/derivables/_module-exports.js"
+        },
+        "./logger/di": {
+            "types": "./dist/logger/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/logger/implementations/derivables/di/_module-exports.js"
+        },
+        "./logger/middlewares": {
+            "types": "./dist/logger/implementations/middlewares/_module-exports.d.ts",
+            "import": "./dist/logger/implementations/middlewares/_module-exports.js"
+        },
+        "./logger/contracts": {
+            "types": "./dist/logger/contracts/_module-exports.d.ts",
+            "import": "./dist/logger/contracts/_module-exports.js"
+        },
+        "./logger/console-logger-transport": {
+            "types": "./dist/logger/implementations/transports/console-logger-transport/_module-exports.d.ts",
+            "import": "./dist/logger/implementations/transports/console-logger-transport/_module-exports.js"
+        },
+        "./logger/loglayer-logger-transport": {
+            "types": "./dist/logger/implementations/transports/loglayer-logger-transport/_module-exports.d.ts",
+            "import": "./dist/logger/implementations/transports/loglayer-logger-transport/_module-exports.js"
+        },
+        "./logger/no-op-logger-transport": {
+            "types": "./dist/logger/implementations/transports/no-op-logger-transport/_module-exports.d.ts",
+            "import": "./dist/logger/implementations/transports/no-op-logger-transport/_module-exports.js"
+        },
         "./middleware": {
             "types": "./dist/middleware/implementations/_module-exports.d.ts",
             "import": "./dist/middleware/implementations/_module-exports.js"
@@ -720,6 +748,7 @@
         "hono": "^4.13.0",
         "ioredis": "^6.0.0",
         "kysely": "^0.29.4",
+        "loglayer": "^9.4.0",
         "mongodb": "^7.5.0",
         "mysql2": "^3.23.2",
         "pg": "^8.22.0",
@@ -746,6 +775,7 @@
         "hono": "^4.13.0",
         "ioredis": "^6.0.0",
         "kysely": "^0.29.0",
+        "loglayer": "^9.4.0",
         "mongodb": "^7.5.0",
         "ssh2-sftp-client": "^12.1.0",
         "webdav": "^5.11.0"
@@ -755,6 +785,9 @@
             "optional": true
         },
         "kysely": {
+            "optional": true
+        },
+        "loglayer": {
             "optional": true
         },
         "mongodb": {
