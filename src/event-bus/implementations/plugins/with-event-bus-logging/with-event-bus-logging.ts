@@ -16,11 +16,11 @@ import type {
  *
  * A successful call logs a `debug` entry, and a failed call logs an `error`
  * entry before the error is re-thrown unchanged. Entries are named
- * `eventBus.<methodName> succeeded|failed`. On success the logged arguments and
- * the returned value are merged into the metadata as `eventBus.args` and
- * `eventBus.result`; `addListener` and `removeListener` strip the listener,
+ * `event-bus.<methodName> succeeded|failed`. On success the logged arguments and
+ * the returned value are merged into the metadata as `event-bus.args` and
+ * `event-bus.result`; `addListener` and `removeListener` strip the listener,
  * while `dispatch` keeps the payload. Every call runs inside the
- * `eventBus.adapter` scoped metadata, which holds the adapter class name.
+ * `event-bus.adapter` scoped metadata, which holds the adapter class name.
  *
  * @param logger - The logger that receives the entries. Only `debug`, `error`, `scopedMetadata` and `putMetadata` are used.
  * @returns A middleware plugin that wraps an `IEventBusAdapter`.
@@ -37,12 +37,12 @@ export function withEventBusLogging(
             args: Array<unknown>,
             invocable: () => Promise<TValue>,
         ): Promise<TValue> {
-            const prefix = `eventBus.${methodName}`;
+            const prefix = `event-bus.${methodName}`;
             try {
                 const result = await invocable();
                 logger.putMetadata({
-                    "eventBus.args": args,
-                    "eventBus.result": result,
+                    "event-bus.args": args,
+                    "event-bus.result": result,
                 });
                 logger.debug(`${prefix} succeeded`);
                 return result;
@@ -54,7 +54,7 @@ export function withEventBusLogging(
         const withMetadata: MiddlewareFn<any, any> = ({ next }) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return logger.scopedMetadata(
-                { "eventBus.adapter": getConstructorName(adapter) },
+                { "event-bus.adapter": getConstructorName(adapter) },
                 next,
             );
         };

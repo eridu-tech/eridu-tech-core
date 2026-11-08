@@ -30,11 +30,11 @@ describe("function: withEventBusLogging", () => {
             await enhanced.dispatch("myEvent", { id: 1 });
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual(["eventBus.dispatch succeeded"]);
+            expect(entry?.messages).toEqual(["event-bus.dispatch succeeded"]);
             expect(entry?.metadata).toEqual({
-                "eventBus.adapter": "TestAdapter",
-                "eventBus.args": ["myEvent", { id: 1 }],
-                "eventBus.result": undefined,
+                "event-bus.adapter": "TestAdapter",
+                "event-bus.args": ["myEvent", { id: 1 }],
+                "event-bus.result": undefined,
             });
         });
     });
@@ -54,8 +54,10 @@ describe("function: withEventBusLogging", () => {
             await enhanced.addListener("myEvent", listener);
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual(["eventBus.addListener succeeded"]);
-            expect(entry?.metadata["eventBus.args"]).toEqual(["myEvent"]);
+            expect(entry?.messages).toEqual([
+                "event-bus.addListener succeeded",
+            ]);
+            expect(entry?.metadata["event-bus.args"]).toEqual(["myEvent"]);
         });
     });
 
@@ -71,7 +73,7 @@ describe("function: withEventBusLogging", () => {
             await enhanced.dispatch("myEvent", { id: 1 });
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "eventBus.dispatch succeeded",
+                "event-bus.dispatch succeeded",
             );
         });
 
@@ -92,7 +94,7 @@ describe("function: withEventBusLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "eventBus.dispatch failed",
+                "event-bus.dispatch failed",
             );
         });
     });
@@ -113,9 +115,9 @@ describe("function: withEventBusLogging", () => {
 
             const entry = logSpy.mock.calls[0]?.[0];
             expect(entry?.messages).toEqual([
-                "eventBus.removeListener succeeded",
+                "event-bus.removeListener succeeded",
             ]);
-            expect(entry?.metadata["eventBus.args"]).toEqual(["myEvent"]);
+            expect(entry?.metadata["event-bus.args"]).toEqual(["myEvent"]);
         });
     });
 });
