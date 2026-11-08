@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
 import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
@@ -24,25 +26,27 @@ describe("function: withSemaphoreLogging", () => {
         vi.restoreAllMocks();
     });
 
-    describe("entry naming", () => {
-        test("Should name entries after the adapter class and the method", async () => {
+    describe("entry metadata", () => {
+        test("Should attach the adapter class name, the arguments and the result", async () => {
             class TestAdapter extends NoOpSemaphoreAdapter {}
             const adapter = new TestAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
-            });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const logger = new Logger({ transport, executionContext });
             const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
 
             await enhanced.release("myKey", "slotId");
 
-            expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "TestAdapter.release succeeded",
-                {
-                    args: ["myKey", "slotId"],
-                    result: true,
-                },
-            );
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.messages).toEqual(["semaphore.release succeeded"]);
+            expect(entry?.metadata).toEqual({
+                "semaphore.adapter": "TestAdapter",
+                "semaphore.args": ["myKey", "slotId"],
+                "semaphore.result": true,
+            });
         });
     });
 
@@ -59,11 +63,7 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.acquire(settings);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSemaphoreAdapter.acquire succeeded",
-                {
-                    args: [settings],
-                    result: true,
-                },
+                "semaphore.acquire succeeded",
             );
         });
 
@@ -83,11 +83,7 @@ describe("function: withSemaphoreLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSemaphoreAdapter.acquire failed",
-                {
-                    args: [settings],
-                    error,
-                },
+                "semaphore.acquire failed",
             );
         });
     });
@@ -104,11 +100,7 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.forceReleaseAll("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSemaphoreAdapter.forceReleaseAll succeeded",
-                {
-                    args: ["myKey"],
-                    result: true,
-                },
+                "semaphore.forceReleaseAll succeeded",
             );
         });
     });
@@ -122,14 +114,10 @@ describe("function: withSemaphoreLogging", () => {
             const debugSpy = vi.spyOn(logger, "debug");
             const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
 
-            const result = await enhanced.getState("myKey");
+            await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSemaphoreAdapter.getState succeeded",
-                {
-                    args: ["myKey"],
-                    result,
-                },
+                "semaphore.getState succeeded",
             );
         });
     });
@@ -146,11 +134,7 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.refresh("myKey", "slotId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSemaphoreAdapter.refresh succeeded",
-                {
-                    args: ["myKey", "slotId", currentDate],
-                    result: true,
-                },
+                "semaphore.refresh succeeded",
             );
         });
     });
@@ -167,11 +151,7 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.release("myKey", "slotId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSemaphoreAdapter.release succeeded",
-                {
-                    args: ["myKey", "slotId"],
-                    result: true,
-                },
+                "semaphore.release succeeded",
             );
         });
     });
