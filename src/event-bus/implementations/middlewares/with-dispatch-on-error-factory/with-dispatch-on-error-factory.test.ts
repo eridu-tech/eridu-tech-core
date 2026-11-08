@@ -222,6 +222,19 @@ describe("function: withDispatchOnErrorFactory", () => {
         expect(dispatch).not.toHaveBeenCalled();
     });
 
+    test("Should use the default event bus adapter when use is not called", async () => {
+        const wrapped = use(
+            (): Promise<void> => Promise.reject(new Error("boom")),
+            withDispatchOnError({
+                type: "user.created",
+                payload: () => ({ userId: "42" }),
+            }),
+        );
+
+        await expect(wrapped()).rejects.toThrow("boom");
+
+        expect(eventBusResolver.use).toHaveBeenCalledExactlyOnceWith(undefined);
+    });
     test("Should dispatch using the selected event bus adapter", async () => {
         const dispatch = vi.spyOn(adapter, "dispatch");
         const wrapped = use(

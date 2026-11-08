@@ -95,6 +95,21 @@ describe("function: withLockFactory", () => {
 
         expect(await wrapped("2", "3")).toBe("2-3");
     });
+    test("Should use the default adapter when use is not called", async () => {
+        const spy = vi.spyOn(lockFactoryResolver, "use");
+
+        const withLock = withLockFactory(lockFactoryResolver);
+
+        async function fn(_value: string): Promise<void> {}
+        await use(
+            fn,
+            withLock({
+                key: ([value]) => value,
+            }),
+        )("value");
+
+        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
+    });
     test("Should select the adapter passed to use", async () => {
         const spy = vi.spyOn(lockFactoryResolver, "use");
 

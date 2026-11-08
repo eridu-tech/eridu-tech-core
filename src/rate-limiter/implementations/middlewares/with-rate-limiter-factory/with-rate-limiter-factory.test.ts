@@ -107,6 +107,24 @@ describe("function: withRateLimiterFactory", () => {
 
         expect(await wrapped("2", "3")).toBe("2-3");
     });
+    test("Should use the default adapter when use is not called", async () => {
+        const spy = vi.spyOn(rateLimiterFactoryResolver, "use");
+
+        const withRateLimiter = withRateLimiterFactory(
+            rateLimiterFactoryResolver,
+        );
+
+        async function fn(_value: string): Promise<void> {}
+        await use(
+            fn,
+            withRateLimiter({
+                key: ([value]) => value,
+                limit: 4,
+            }),
+        )("value");
+
+        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
+    });
     test("Should select the adapter passed to use", async () => {
         const spy = vi.spyOn(rateLimiterFactoryResolver, "use");
 

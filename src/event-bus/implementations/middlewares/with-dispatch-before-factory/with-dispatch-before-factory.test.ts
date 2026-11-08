@@ -221,6 +221,19 @@ describe("function: withDispatchBeforeFactory", () => {
         expect(innerFn).toHaveBeenCalledOnce();
     });
 
+    test("Should use the default event bus adapter when use is not called", async () => {
+        const wrapped = use(
+            async (): Promise<void> => Promise.resolve(),
+            withDispatchBefore({
+                type: "user.created",
+                payload: () => ({ userId: "42" }),
+            }),
+        );
+
+        await wrapped();
+
+        expect(eventBusResolver.use).toHaveBeenCalledExactlyOnceWith(undefined);
+    });
     test("Should dispatch using the selected event bus adapter", async () => {
         const dispatch = vi.spyOn(adapter, "dispatch");
         const wrapped = use(

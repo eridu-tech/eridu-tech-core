@@ -45,4 +45,22 @@ describe("function: withCacheFactory", () => {
             ttl,
         );
     });
+
+    test("Should cache using the selected adapter", async () => {
+        const useSpy = vi.spyOn(cacheResolver, "use");
+        const getOrAddSpy = vi.spyOn(Cache.prototype, "getOrAdd");
+
+        const withCache = withCacheFactory(cacheResolver);
+
+        async function fn(_value: string): Promise<void> {}
+        await use(
+            fn,
+            withCache.use("memory")({
+                key: ([value]) => value,
+            }),
+        )("key");
+
+        expect(useSpy).toHaveBeenCalledExactlyOnceWith("memory");
+        expect(getOrAddSpy).toHaveBeenCalledOnce();
+    });
 });
