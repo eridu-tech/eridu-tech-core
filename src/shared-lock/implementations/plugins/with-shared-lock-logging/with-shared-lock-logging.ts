@@ -16,10 +16,10 @@ import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports
  *
  * A successful call logs a `debug` entry, and a failed call logs an `error`
  * entry before the error is re-thrown unchanged. Entries are named
- * `sharedLock.<methodName> succeeded|failed`. On success the call arguments and
- * the returned value are merged into the metadata as `sharedLock.args` and
- * `sharedLock.result`, and every call runs inside the `sharedLock.adapter`
- * scoped metadata, which holds the adapter class name.
+ * `shared-lock.<methodName> succeeded|failed`. On success the call arguments
+ * and the returned value are merged into the metadata as `shared-lock.args`
+ * and `shared-lock.result`, and every call runs inside the
+ * `shared-lock.adapter` scoped metadata, which holds the adapter class name.
  *
  * @param logger - The logger that receives the entries. Only `debug`, `error`, `scopedMetadata` and `putMetadata` are used.
  * @returns A middleware plugin that wraps an `ISharedLockAdapter`.
@@ -36,12 +36,12 @@ export function withSharedLockLogging(
             args: Array<unknown>,
             invocable: () => Promise<TValue>,
         ): Promise<TValue> {
-            const prefix = `sharedLock.${methodName}`;
+            const prefix = `shared-lock.${methodName}`;
             try {
                 const result = await invocable();
                 logger.putMetadata({
-                    "sharedLock.args": args,
-                    "sharedLock.result": result,
+                    "shared-lock.args": args,
+                    "shared-lock.result": result,
                 });
                 logger.debug(`${prefix} succeeded`);
                 return result;
@@ -53,7 +53,7 @@ export function withSharedLockLogging(
         const withMetadata: MiddlewareFn<any, any> = ({ next }) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return logger.scopedMetadata(
-                { "sharedLock.adapter": getConstructorName(adapter) },
+                { "shared-lock.adapter": getConstructorName(adapter) },
                 next,
             );
         };

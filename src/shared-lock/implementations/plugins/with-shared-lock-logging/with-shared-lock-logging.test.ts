@@ -42,12 +42,12 @@ describe("function: withSharedLockLogging", () => {
 
             const entry = logSpy.mock.calls[0]?.[0];
             expect(entry?.messages).toEqual([
-                "sharedLock.releaseWriter succeeded",
+                "shared-lock.releaseWriter succeeded",
             ]);
             expect(entry?.metadata).toEqual({
-                "sharedLock.adapter": "TestAdapter",
-                "sharedLock.args": ["myKey", "lockId"],
-                "sharedLock.result": true,
+                "shared-lock.adapter": "TestAdapter",
+                "shared-lock.args": ["myKey", "lockId"],
+                "shared-lock.result": true,
             });
         });
     });
@@ -65,7 +65,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.acquireReader(settings);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "sharedLock.acquireReader succeeded",
+                "shared-lock.acquireReader succeeded",
             );
         });
     });
@@ -82,7 +82,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.acquireWriter("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "sharedLock.acquireWriter succeeded",
+                "shared-lock.acquireWriter succeeded",
             );
         });
 
@@ -103,7 +103,7 @@ describe("function: withSharedLockLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "sharedLock.acquireWriter failed",
+                "shared-lock.acquireWriter failed",
             );
         });
     });
@@ -120,7 +120,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.forceRelease("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "sharedLock.forceRelease succeeded",
+                "shared-lock.forceRelease succeeded",
             );
         });
     });
@@ -137,7 +137,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "sharedLock.getState succeeded",
+                "shared-lock.getState succeeded",
             );
         });
     });
@@ -154,7 +154,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.refreshReader("myKey", "slotId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "sharedLock.refreshReader succeeded",
+                "shared-lock.refreshReader succeeded",
             );
         });
     });
@@ -171,7 +171,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.refreshWriter("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "sharedLock.refreshWriter succeeded",
+                "shared-lock.refreshWriter succeeded",
             );
         });
     });
@@ -188,7 +188,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.releaseReader("myKey", "slotId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "sharedLock.releaseReader succeeded",
+                "shared-lock.releaseReader succeeded",
             );
         });
     });
@@ -205,7 +205,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.releaseWriter("myKey", "lockId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "sharedLock.releaseWriter succeeded",
+                "shared-lock.releaseWriter succeeded",
             );
         });
     });
