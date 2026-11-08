@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/no-op-event-bus-adapter/_module-exports.js";
 import { withEventBusLogging } from "@/event-bus/implementations/plugins/with-event-bus-logging/with-event-bus-logging.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
 import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
@@ -13,47 +15,47 @@ describe("function: withEventBusLogging", () => {
         vi.restoreAllMocks();
     });
 
-    describe("entry naming", () => {
-        test("Should name entries after the adapter class and the method", async () => {
+    describe("entry metadata", () => {
+        test("Should attach the adapter class name, the arguments and the result", async () => {
             class TestAdapter extends NoOpEventBusAdapter {}
             const adapter = new TestAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
-            });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const logger = new Logger({ transport, executionContext });
             const enhanced = withPlugin(adapter, withEventBusLogging(logger));
 
             await enhanced.dispatch("myEvent", { id: 1 });
 
-            expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "TestAdapter.dispatch succeeded",
-                {
-                    args: ["myEvent", { id: 1 }],
-                    result: undefined,
-                },
-            );
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.messages).toEqual(["eventBus.dispatch succeeded"]);
+            expect(entry?.metadata).toEqual({
+                "eventBus.adapter": "TestAdapter",
+                "eventBus.args": ["myEvent", { id: 1 }],
+                "eventBus.result": undefined,
+            });
         });
     });
 
     describe("method: addListener", () => {
         test("Should log a debug entry with the event name but without the listener", async () => {
             const adapter = new NoOpEventBusAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
-            });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
             const listener: EventListenerFn<Record<string, unknown>> = vi.fn();
+            const logger = new Logger({ transport, executionContext });
             const enhanced = withPlugin(adapter, withEventBusLogging(logger));
 
             await enhanced.addListener("myEvent", listener);
 
-            expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpEventBusAdapter.addListener succeeded",
-                {
-                    args: ["myEvent"],
-                    result: undefined,
-                },
-            );
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.messages).toEqual(["eventBus.addListener succeeded"]);
+            expect(entry?.metadata["eventBus.args"]).toEqual(["myEvent"]);
         });
     });
 
@@ -69,11 +71,7 @@ describe("function: withEventBusLogging", () => {
             await enhanced.dispatch("myEvent", { id: 1 });
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpEventBusAdapter.dispatch succeeded",
-                {
-                    args: ["myEvent", { id: 1 }],
-                    result: undefined,
-                },
+                "eventBus.dispatch succeeded",
             );
         });
 
@@ -94,11 +92,7 @@ describe("function: withEventBusLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpEventBusAdapter.dispatch failed",
-                {
-                    args: ["myEvent", { id: 1 }],
-                    error,
-                },
+                "eventBus.dispatch failed",
             );
         });
     });
@@ -106,22 +100,22 @@ describe("function: withEventBusLogging", () => {
     describe("method: removeListener", () => {
         test("Should log a debug entry with the event name but without the listener", async () => {
             const adapter = new NoOpEventBusAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
-            });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
             const listener: EventListenerFn<Record<string, unknown>> = vi.fn();
+            const logger = new Logger({ transport, executionContext });
             const enhanced = withPlugin(adapter, withEventBusLogging(logger));
 
             await enhanced.removeListener("myEvent", listener);
 
-            expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpEventBusAdapter.removeListener succeeded",
-                {
-                    args: ["myEvent"],
-                    result: undefined,
-                },
-            );
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.messages).toEqual([
+                "eventBus.removeListener succeeded",
+            ]);
+            expect(entry?.metadata["eventBus.args"]).toEqual(["myEvent"]);
         });
     });
 });
