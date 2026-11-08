@@ -16,10 +16,10 @@ import type {
  *
  * A successful call logs a `debug` entry, and a failed call logs an `error`
  * entry before the error is re-thrown unchanged. Entries are named
- * `circuitBreaker.<methodName> succeeded|failed`. On success the call arguments
+ * `circuit-breaker.<methodName> succeeded|failed`. On success the call arguments
  * and the returned value are merged into the metadata as
- * `circuitBreaker.args` and `circuitBreaker.result`, and every call runs inside
- * the `circuitBreaker.adapter` scoped metadata, which holds the adapter class
+ * `circuit-breaker.args` and `circuit-breaker.result`, and every call runs inside
+ * the `circuit-breaker.adapter` scoped metadata, which holds the adapter class
  * name.
  *
  * @param logger - The logger that receives the entries. Only `debug`, `error`, `scopedMetadata` and `putMetadata` are used.
@@ -37,12 +37,12 @@ export function withCircuitBreakerLogging(
             args: Array<unknown>,
             invocable: () => Promise<TValue>,
         ): Promise<TValue> {
-            const prefix = `circuitBreaker.${methodName}`;
+            const prefix = `circuit-breaker.${methodName}`;
             try {
                 const result = await invocable();
                 logger.putMetadata({
-                    "circuitBreaker.args": args,
-                    "circuitBreaker.result": result,
+                    "circuit-breaker.args": args,
+                    "circuit-breaker.result": result,
                 });
                 logger.debug(`${prefix} succeeded`);
                 return result;
@@ -54,7 +54,7 @@ export function withCircuitBreakerLogging(
         const withMetadata: MiddlewareFn<any, any> = ({ next }) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return logger.scopedMetadata(
-                { "circuitBreaker.adapter": getConstructorName(adapter) },
+                { "circuit-breaker.adapter": getConstructorName(adapter) },
                 next,
             );
         };

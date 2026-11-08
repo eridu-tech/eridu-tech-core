@@ -31,11 +31,13 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.reset("myKey");
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual(["circuitBreaker.reset succeeded"]);
+            expect(entry?.messages).toEqual([
+                "circuit-breaker.reset succeeded",
+            ]);
             expect(entry?.metadata).toEqual({
-                "circuitBreaker.adapter": "TestAdapter",
-                "circuitBreaker.args": ["myKey"],
-                "circuitBreaker.result": undefined,
+                "circuit-breaker.adapter": "TestAdapter",
+                "circuit-breaker.args": ["myKey"],
+                "circuit-breaker.result": undefined,
             });
         });
     });
@@ -55,7 +57,7 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuitBreaker.getState succeeded",
+                "circuit-breaker.getState succeeded",
             );
         });
     });
@@ -75,7 +77,7 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.isolate("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuitBreaker.isolate succeeded",
+                "circuit-breaker.isolate succeeded",
             );
         });
     });
@@ -95,7 +97,7 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.reset("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuitBreaker.reset succeeded",
+                "circuit-breaker.reset succeeded",
             );
         });
     });
@@ -115,7 +117,7 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.trackFailure("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuitBreaker.trackFailure succeeded",
+                "circuit-breaker.trackFailure succeeded",
             );
         });
     });
@@ -135,7 +137,7 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.trackSuccess("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuitBreaker.trackSuccess succeeded",
+                "circuit-breaker.trackSuccess succeeded",
             );
         });
     });
@@ -155,7 +157,7 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.updateState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuitBreaker.updateState succeeded",
+                "circuit-breaker.updateState succeeded",
             );
         });
 
@@ -177,7 +179,7 @@ describe("function: withCircuitBreakerLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuitBreaker.updateState failed",
+                "circuit-breaker.updateState failed",
             );
         });
     });
