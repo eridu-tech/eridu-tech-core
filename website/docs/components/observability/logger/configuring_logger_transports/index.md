@@ -42,7 +42,7 @@ Drops every entry. Useful when logging is switched off or in tests.
 
 To utilize the `LogLayerLoggerTransport`, install the [`"loglayer"`](https://www.npmjs.com/package/loglayer) package and supply a configured `LogLayer` instance.
 
-Each entry is forwarded through LogLayer's level methods, mapping the logger's `verbose` level to LogLayer's `trace` level. `loggedAt` is rendered as a `Date` and attached to the entry metadata when `includeLoggedAt` is enabled, and spans are attached as milliseconds.
+Each entry is forwarded through `LogLayer.raw`, mapping the logger's `verbose` level to LogLayer's `trace` level. `loggedAt` is rendered as a `Date` and attached to the entry metadata when `includeLoggedAt` is enabled, and spans are attached as milliseconds. Logged values are passed through untouched, leaving serialization to LogLayer.
 
 ```ts file=./samples/loglayer-logger-transport.ts
 
@@ -54,11 +54,10 @@ Each entry is forwarded through LogLayer's level methods, mapping the logger's `
 
 ```
 
-| Option            | Type                           | Default            | Description                                                    |
-| ----------------- | ------------------------------ | ------------------ | -------------------------------------------------------------- |
-| `logger`          | `LogLayer`                     |                    | The LogLayer instance that receives the entries                |
-| `serializer`      | `ISerializer<LogLayerMessage>` | JSON serialization | Serializes each logged value into a value accepted by LogLayer |
-| `includeLoggedAt` | `boolean`                      | `true`             | Whether `loggedAt` is attached to the entry metadata           |
+| Option            | Type       | Default | Description                                          |
+| ----------------- | ---------- | ------- | ---------------------------------------------------- |
+| `logger`          | `LogLayer` |         | The LogLayer instance that receives the entries      |
+| `includeLoggedAt` | `boolean`  | `true`  | Whether `loggedAt` is attached to the entry metadata |
 
 ## Creating your own transport
 

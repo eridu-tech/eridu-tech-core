@@ -13,7 +13,7 @@ Add the logger module: leveled logging with execution-scoped spans and metadata,
 **Transports**
 
 - `ConsoleLoggerTransport` writes each entry to the matching console method, with `error` and `fatal` both using `console.error` and `verbose` using `console.trace`, rendering `loggedAt` as a `Date` and spans in milliseconds.
-- `LogLayerLoggerTransport` forwards each entry to a configured `LogLayer` instance through its level methods, mapping `verbose` to LogLayer's `trace` level, attaching `loggedAt` (when `includeLoggedAt` is enabled) and span durations as metadata, and serializing messages with a configurable serializer (JSON by default). Requires the optional `loglayer` peer dependency.
+- `LogLayerLoggerTransport` forwards each entry to a configured `LogLayer` instance through `LogLayer.raw`, mapping `verbose` to LogLayer's `trace` level, and attaching `loggedAt` (when `includeLoggedAt` is enabled) and span durations as metadata. Logged values are passed through untouched. Requires the optional `loglayer` peer dependency.
 - `NoOpLoggerTransport` drops every entry.
 
 **Derivables**

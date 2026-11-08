@@ -1,15 +1,13 @@
 import { BlankTransport, LogLayer } from "loglayer";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 
 import { LOG_LEVEL } from "@/logger/contracts/_module-exports.js";
 import { LogLayerLoggerTransport } from "@/logger/implementations/transports/loglayer-logger-transport/_module-exports.js";
-import { UnableToSerializeSerdeError } from "@/serde/contracts/serde.errors.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { LogLayerTransportParams } from "loglayer";
 
 import type { LogData } from "@/logger/contracts/_module-exports.js";
-import type { ISerializer } from "@/serde/contracts/serializer.contract.js";
 
 const LOGGED_AT = 1_700_000_000_000;
 
@@ -59,56 +57,17 @@ describe("class: LogLayerLoggerTransport", () => {
         },
     );
 
-    test("Should pass primitive messages through unchanged", () => {
-        transport.log(
-            makeLogData({ messages: ["hello", 42, true, null, undefined] }),
-        );
+    test("Should pass messages through unchanged", () => {
+        const messages = ["hello", 42, true, null, undefined, { first: "x" }];
+        transport.log(makeLogData({ messages }));
 
-        expect(captured[0]?.messages).toEqual([
-            "hello",
-            42,
-            true,
-            null,
-            undefined,
-        ]);
+        expect(captured[0]?.messages).toEqual(messages);
     });
 
-    test("Should serialize non-primitive messages to JSON by default", () => {
-        transport.log(makeLogData({ messages: [{ first: "value" }] }));
+    test("Should forward the entry only once", () => {
+        transport.log(makeLogData());
 
-        expect(captured[0]?.messages).toEqual(['{"first":"value"}']);
-    });
-
-    test("Should use the configured serializer", () => {
-        const serialize = vi.fn(() => "custom");
-        const serializer: ISerializer<string> = { serialize };
-        transport = new LogLayerLoggerTransport({
-            logger: new LogLayer({
-                transport: new BlankTransport({
-                    shipToLogger: (params) => {
-                        captured.push(params);
-                        return [];
-                    },
-                }),
-            }),
-            serializer,
-        });
-
-        transport.log(makeLogData({ messages: [{ first: "value" }] }));
-
-        expect(serialize).toHaveBeenCalledExactlyOnceWith({
-            first: "value",
-        });
-        expect(captured[0]?.messages).toEqual(["custom"]);
-    });
-
-    test("Should wrap serialization failures in UnableToSerializeSerdeError", () => {
-        const circular: Record<string, unknown> = {};
-        circular["self"] = circular;
-
-        expect(() => {
-            transport.log(makeLogData({ messages: [circular] }));
-        }).toThrow(UnableToSerializeSerdeError);
+        expect(captured).toHaveLength(1);
     });
 
     test("Should attach metadata, loggedAt, and spans to the entry", () => {
