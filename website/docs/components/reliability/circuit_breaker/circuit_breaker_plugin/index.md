@@ -82,7 +82,7 @@ The CircuitBreaker logging plugin intercepts every call to a circuit breaker ada
 
 The `withCircuitBreakerLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the logger, so any [`ILogger`](/docs/components/observability/logger/logger_usage) can be passed in.
 
-A successful call logs a `debug` entry named `<adapter class name>.<methodName> succeeded` with a metadata object holding the call arguments and the returned value, which for `updateState` is the state transition. A failed call logs an `error` entry named `<adapter class name>.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Naming entries after the adapter keeps them distinguishable when several adapters share one logger.
+A successful call logs a `debug` entry named `circuit-breaker.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `circuit-breaker.args` and `circuit-breaker.result` (for `updateState` the result is the state transition). A failed call logs an `error` entry named `circuit-breaker.<methodName> failed`, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `circuit-breaker.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one logger stay distinguishable.
 
 | Method         | Logged arguments |
 | -------------- | ---------------- |

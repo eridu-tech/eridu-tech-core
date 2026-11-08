@@ -35,6 +35,8 @@ Add the logger module: leveled logging with execution-scoped spans and metadata,
 **Component plugins**
 
 - `withLockLogging` (`eridu-tech/lock/plugins`), `withSharedLockLogging` (`eridu-tech/shared-lock/plugins`), `withSemaphoreLogging` (`eridu-tech/semaphore/plugins`), `withRateLimiterLogging` (`eridu-tech/rate-limiter/plugins`), `withFileStorageLogging` (`eridu-tech/file-storage/plugins`), `withEventBusLogging` (`eridu-tech/event-bus/plugins`) and `withCircuitBreakerLogging` (`eridu-tech/circuit-breaker/plugins`) log every adapter call through an `ILogger`.
-- A successful call is reported as a `debug` entry and a failed call as an `error` entry, which is logged before the error is re-thrown unchanged. Entries are named `<adapter class name>.<methodName> succeeded` and `<adapter class name>.<methodName> failed`, so calls from several adapters sharing one logger stay distinguishable, and they carry the call arguments as `args` together with either the returned value as `result` or the thrown value as `error`.
-- The plugins only require the `debug` and `error` methods, so any `Pick<ILogger, "debug" | "error">` is accepted.
+- A successful call is reported as a `debug` entry and a failed call as an `error` entry, which is logged before the error is re-thrown unchanged. Entries are named `<component>.<methodName> succeeded` and `<component>.<methodName> failed`.
+- On success the call arguments and the returned value are merged into the metadata as `<component>.args` and `<component>.result` before the entry is logged.
+- Every call runs inside the `<component>.adapter` scoped metadata, which holds the adapter class name, so calls from several adapters sharing one logger stay distinguishable.
+- The plugins need the `debug`, `error`, `scopedMetadata` and `putMetadata` methods, so any `Pick<ILogger, "debug" | "error" | "scopedMetadata" | "putMetadata">` is accepted.
 - `withFileStorageLogging` drops the `data` payload of `put` and `putStream` before logging, so written content never reaches the logger while the file key and the remaining settings do.
