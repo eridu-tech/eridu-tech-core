@@ -1,0 +1,73 @@
+---
+sidebar_position: 3
+sidebar_label: Configuring transports
+pagination_label: Configuring logger transports
+tags:
+    - Logger
+    - Configuring transports
+    - Console
+    - LogLayer
+    - NoOp
+keywords:
+    - Logger
+    - Configuring transports
+    - Console
+    - LogLayer
+    - NoOp
+---
+
+# Configuring Logger transports
+
+## ConsoleLoggerTransport
+
+Writes entries to the JavaScript console. Each level maps to its console counterpart, `error` and `fatal` both use `console.error`, and `verbose` uses `console.trace`. `loggedAt` is rendered as a `Date` and spans in milliseconds.
+
+```ts file=./samples/console-logger-transport.ts
+
+```
+
+## NoOpLoggerTransport
+
+Drops every entry. Useful when logging is switched off or in tests.
+
+```ts file=./samples/no-op-logger-transport.ts
+
+```
+
+:::info
+`NoOpLoggerTransport` lets you test your app without emitting any output, ideal for unit, integration and E2E tests.
+:::
+
+## LogLayerLoggerTransport
+
+To utilize the `LogLayerLoggerTransport`, install the [`"loglayer"`](https://www.npmjs.com/package/loglayer) package and supply a configured `LogLayer` instance.
+
+Each entry is forwarded through LogLayer's level methods, mapping the logger's `verbose` level to LogLayer's `trace` level. `loggedAt` is rendered as a `Date` and attached to the entry metadata when `includeLoggedAt` is enabled, and spans are attached as milliseconds.
+
+```ts file=./samples/loglayer-logger-transport.ts
+
+```
+
+### Settings
+
+```ts file=./samples/loglayer-logger-transport-settings.ts
+
+```
+
+| Option            | Type                           | Default            | Description                                                    |
+| ----------------- | ------------------------------ | ------------------ | -------------------------------------------------------------- |
+| `logger`          | `LogLayer`                     |                    | The LogLayer instance that receives the entries                |
+| `serializer`      | `ISerializer<LogLayerMessage>` | JSON serialization | Serializes each logged value into a value accepted by LogLayer |
+| `includeLoggedAt` | `boolean`                      | `true`             | Whether `loggedAt` is attached to the entry metadata           |
+
+## Creating your own transport
+
+Implement `ILoggerTransport` to forward entries to any backend. Each entry arrives as one fully built `LogData` record, so the backend only has to format and output it.
+
+```ts file=./samples/custom-logger-transport.ts
+
+```
+
+## Further information
+
+For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Observability.html) API docs.
