@@ -34,22 +34,6 @@ Each entry carries:
 
 ```
 
-## Formatting the entry
-
-Because a transport receives the entire record, it decides how the entry is rendered. Converting `loggedAt` into a `Date` and spans into milliseconds is up to the implementation, as is the output format:
-
-```ts file=./samples/formatting-log-data.ts
-
-```
-
-## Registering your custom ILoggerTransport
-
-A custom transport can be passed straight to the `Logger` through the `transport` setting, or registered under an alias on a `LoggerResolver` so it can be selected at runtime, including through the middleware factories:
-
-```ts file=./samples/registering-custom-logger-transport.ts
-
-```
-
 ## Further information
 
 For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Observability.html) API docs.
