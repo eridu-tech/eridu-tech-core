@@ -16,11 +16,11 @@ import type {
  *
  * A successful call logs a `debug` entry, and a failed call logs an `error`
  * entry before the error is re-thrown unchanged. Entries are named
- * `fileStorage.<methodName> succeeded|failed`. On success the logged arguments
- * and the returned value are merged into the metadata as `fileStorage.args` and
- * `fileStorage.result`; `put` and `putStream` drop the `data` payload there, so
+ * `file-storage.<methodName> succeeded|failed`. On success the logged arguments
+ * and the returned value are merged into the metadata as `file-storage.args` and
+ * `file-storage.result`; `put` and `putStream` drop the `data` payload there, so
  * file bytes never reach the logger. Every call runs inside the
- * `fileStorage.adapter` scoped metadata, which holds the adapter class name.
+ * `file-storage.adapter` scoped metadata, which holds the adapter class name.
  *
  * @param logger - The logger that receives the entries. Only `debug`, `error`, `scopedMetadata` and `putMetadata` are used.
  * @returns A middleware plugin that wraps an `IFileStorageAdapter`.
@@ -37,12 +37,12 @@ export function withFileStorageLogging(
             args: Array<unknown>,
             invocable: () => Promise<TValue>,
         ): Promise<TValue> {
-            const prefix = `fileStorage.${methodName}`;
+            const prefix = `file-storage.${methodName}`;
             try {
                 const result = await invocable();
                 logger.putMetadata({
-                    "fileStorage.args": args,
-                    "fileStorage.result": result,
+                    "file-storage.args": args,
+                    "file-storage.result": result,
                 });
                 logger.debug(`${prefix} succeeded`);
                 return result;
@@ -54,7 +54,7 @@ export function withFileStorageLogging(
         const withMetadata: MiddlewareFn<any, any> = ({ next }) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return logger.scopedMetadata(
-                { "fileStorage.adapter": getConstructorName(adapter) },
+                { "file-storage.adapter": getConstructorName(adapter) },
                 next,
             );
         };

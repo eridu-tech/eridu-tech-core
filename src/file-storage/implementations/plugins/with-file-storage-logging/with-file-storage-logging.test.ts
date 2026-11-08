@@ -63,11 +63,11 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.exists("myKey");
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual(["fileStorage.exists succeeded"]);
+            expect(entry?.messages).toEqual(["file-storage.exists succeeded"]);
             expect(entry?.metadata).toEqual({
-                "fileStorage.adapter": "TestAdapter",
-                "fileStorage.args": ["myKey"],
-                "fileStorage.result": false,
+                "file-storage.adapter": "TestAdapter",
+                "file-storage.args": ["myKey"],
+                "file-storage.result": false,
             });
         });
 
@@ -88,15 +88,15 @@ describe("function: withFileStorageLogging", () => {
 
             const entry = logSpy.mock.calls[0]?.[0];
             expect(entry?.metadata).toEqual({
-                "fileStorage.adapter": "NoOpFileStorageAdapter",
-                "fileStorage.args": [
+                "file-storage.adapter": "NoOpFileStorageAdapter",
+                "file-storage.args": [
                     "myKey",
                     {
                         fileSizeInBytes: 3,
                         ...commonSettings,
                     },
                 ],
-                "fileStorage.result": undefined,
+                "file-storage.result": undefined,
             });
         });
     });
@@ -116,7 +116,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.copy("source-key", "destination-key");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.copy succeeded",
+                "file-storage.copy succeeded",
             );
         });
     });
@@ -136,7 +136,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.exists("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.exists succeeded",
+                "file-storage.exists succeeded",
             );
         });
     });
@@ -156,7 +156,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.getBytes("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.getBytes succeeded",
+                "file-storage.getBytes succeeded",
             );
         });
     });
@@ -176,7 +176,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.getMetaData("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.getMetaData succeeded",
+                "file-storage.getMetaData succeeded",
             );
         });
     });
@@ -196,7 +196,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.getStream("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.getStream succeeded",
+                "file-storage.getStream succeeded",
             );
         });
     });
@@ -216,7 +216,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.move("source-key", "destination-key");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.move succeeded",
+                "file-storage.move succeeded",
             );
         });
     });
@@ -236,7 +236,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.put("myKey", createContent());
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.put succeeded",
+                "file-storage.put succeeded",
             );
         });
 
@@ -260,7 +260,7 @@ describe("function: withFileStorageLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.put failed",
+                "file-storage.put failed",
             );
         });
     });
@@ -280,7 +280,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.putStream("myKey", createStream());
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.putStream succeeded",
+                "file-storage.putStream succeeded",
             );
         });
     });
@@ -300,7 +300,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.removeByPrefix("folder/");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.removeByPrefix succeeded",
+                "file-storage.removeByPrefix succeeded",
             );
         });
     });
@@ -320,7 +320,7 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.removeMany(["key-1", "key-2"]);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "fileStorage.removeMany succeeded",
+                "file-storage.removeMany succeeded",
             );
         });
     });
