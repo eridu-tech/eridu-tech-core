@@ -31,11 +31,11 @@ describe("function: withRateLimiterLogging", () => {
             await enhanced.reset("myKey");
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual(["rateLimiter.reset succeeded"]);
+            expect(entry?.messages).toEqual(["rate-limiter.reset succeeded"]);
             expect(entry?.metadata).toEqual({
-                "rateLimiter.adapter": "TestAdapter",
-                "rateLimiter.args": ["myKey"],
-                "rateLimiter.result": undefined,
+                "rate-limiter.adapter": "TestAdapter",
+                "rate-limiter.args": ["myKey"],
+                "rate-limiter.result": undefined,
             });
         });
     });
@@ -55,7 +55,7 @@ describe("function: withRateLimiterLogging", () => {
             await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "rateLimiter.getState succeeded",
+                "rate-limiter.getState succeeded",
             );
         });
     });
@@ -75,7 +75,7 @@ describe("function: withRateLimiterLogging", () => {
             await enhanced.reset("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "rateLimiter.reset succeeded",
+                "rate-limiter.reset succeeded",
             );
         });
     });
@@ -95,7 +95,7 @@ describe("function: withRateLimiterLogging", () => {
             await enhanced.updateState("myKey", 5);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "rateLimiter.updateState succeeded",
+                "rate-limiter.updateState succeeded",
             );
         });
 
@@ -119,7 +119,7 @@ describe("function: withRateLimiterLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "rateLimiter.updateState failed",
+                "rate-limiter.updateState failed",
             );
         });
     });

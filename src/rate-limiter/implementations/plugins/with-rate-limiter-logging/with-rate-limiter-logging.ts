@@ -16,9 +16,9 @@ import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-expor
  *
  * A successful call logs a `debug` entry, and a failed call logs an `error`
  * entry before the error is re-thrown unchanged. Entries are named
- * `rateLimiter.<methodName> succeeded|failed`. On success the call arguments
- * and the returned value are merged into the metadata as `rateLimiter.args` and
- * `rateLimiter.result`, and every call runs inside the `rateLimiter.adapter`
+ * `rate-limiter.<methodName> succeeded|failed`. On success the call arguments
+ * and the returned value are merged into the metadata as `rate-limiter.args` and
+ * `rate-limiter.result`, and every call runs inside the `rate-limiter.adapter`
  * scoped metadata, which holds the adapter class name.
  *
  * @param logger - The logger that receives the entries. Only `debug`, `error`, `scopedMetadata` and `putMetadata` are used.
@@ -36,12 +36,12 @@ export function withRateLimiterLogging(
             args: Array<unknown>,
             invocable: () => Promise<TValue>,
         ): Promise<TValue> {
-            const prefix = `rateLimiter.${methodName}`;
+            const prefix = `rate-limiter.${methodName}`;
             try {
                 const result = await invocable();
                 logger.putMetadata({
-                    "rateLimiter.args": args,
-                    "rateLimiter.result": result,
+                    "rate-limiter.args": args,
+                    "rate-limiter.result": result,
                 });
                 logger.debug(`${prefix} succeeded`);
                 return result;
@@ -53,7 +53,7 @@ export function withRateLimiterLogging(
         const withMetadata: MiddlewareFn<any, any> = ({ next }) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return logger.scopedMetadata(
-                { "rateLimiter.adapter": getConstructorName(adapter) },
+                { "rate-limiter.adapter": getConstructorName(adapter) },
                 next,
             );
         };
