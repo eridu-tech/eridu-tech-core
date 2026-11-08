@@ -39,7 +39,10 @@ function toHttpError(rateLimiterError: AllRateLimiterErrors): HttpError {
         });
     }
 
-    throw UnexpectedError.create("Unhandled rate limiter error type");
+    throw UnexpectedError.create(
+        "Unhandled rate limiter error type",
+        rateLimiterError,
+    );
 }
 
 /**

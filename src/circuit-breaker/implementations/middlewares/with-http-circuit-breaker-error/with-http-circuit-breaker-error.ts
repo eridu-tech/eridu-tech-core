@@ -39,7 +39,10 @@ function toHttpError(circuitBreakerError: AllCircuitBreakerErrors): HttpError {
         });
     }
 
-    throw UnexpectedError.create("!!__MESSAGE__!!");
+    throw UnexpectedError.create(
+        "Circuit breaker error has no HTTP mapping",
+        circuitBreakerError,
+    );
 }
 
 /**

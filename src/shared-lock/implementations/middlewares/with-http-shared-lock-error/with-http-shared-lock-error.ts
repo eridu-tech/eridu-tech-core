@@ -71,7 +71,10 @@ function toHttpError(sharedLockError: AllSharedLockErrors): HttpError {
         });
     }
 
-    throw UnexpectedError.create("Unhandled shared lock error type");
+    throw UnexpectedError.create(
+        "Unhandled shared lock error type",
+        sharedLockError,
+    );
 }
 
 /**

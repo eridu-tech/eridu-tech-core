@@ -47,7 +47,7 @@ function toHttpError(lockError: AllLockErrors): HttpError {
         });
     }
 
-    throw UnexpectedError.create("Unhandled lock error type");
+    throw UnexpectedError.create("Unhandled lock error type", lockError);
 }
 
 /**

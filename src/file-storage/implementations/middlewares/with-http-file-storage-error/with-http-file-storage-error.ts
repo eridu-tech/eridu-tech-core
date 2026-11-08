@@ -39,7 +39,7 @@ function toHttpError(fileError: AllFileErrors): HttpError {
         });
     }
 
-    throw UnexpectedError.create("Unhandled file error type");
+    throw UnexpectedError.create("Unhandled file error type", fileError);
 }
 
 /**
