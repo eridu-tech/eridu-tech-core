@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adapter/_module-exports.js";
 import { withLockLogging } from "@/lock/implementations/plugins/with-lock-logging/with-lock-logging.js";
 import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
@@ -13,25 +15,27 @@ describe("function: withLockLogging", () => {
         vi.restoreAllMocks();
     });
 
-    describe("entry naming", () => {
-        test("Should name entries after the adapter class and the method", async () => {
+    describe("entry metadata", () => {
+        test("Should attach the adapter class name, the arguments and the result", async () => {
             class TestLockAdapter extends NoOpLockAdapter {}
             const adapter = new TestLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
-            });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const logger = new Logger({ transport, executionContext });
             const enhanced = withPlugin(adapter, withLockLogging(logger));
 
             await enhanced.release("myKey", "lockId");
 
-            expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "TestLockAdapter.release succeeded",
-                {
-                    args: ["myKey", "lockId"],
-                    result: true,
-                },
-            );
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.messages).toEqual(["lock.release succeeded"]);
+            expect(entry?.metadata).toEqual({
+                "lock.adapter": "TestLockAdapter",
+                "lock.args": ["myKey", "lockId"],
+                "lock.result": true,
+            });
         });
     });
 
@@ -47,11 +51,7 @@ describe("function: withLockLogging", () => {
             await enhanced.acquire("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpLockAdapter.acquire succeeded",
-                {
-                    args: ["myKey", "lockId", currentDate],
-                    result: true,
-                },
+                "lock.acquire succeeded",
             );
         });
 
@@ -72,11 +72,7 @@ describe("function: withLockLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpLockAdapter.acquire failed",
-                {
-                    args: ["myKey", "lockId", currentDate],
-                    error,
-                },
+                "lock.acquire failed",
             );
         });
     });
@@ -93,11 +89,7 @@ describe("function: withLockLogging", () => {
             await enhanced.forceRelease("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpLockAdapter.forceRelease succeeded",
-                {
-                    args: ["myKey"],
-                    result: true,
-                },
+                "lock.forceRelease succeeded",
             );
         });
     });
@@ -114,11 +106,7 @@ describe("function: withLockLogging", () => {
             await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpLockAdapter.getState succeeded",
-                {
-                    args: ["myKey"],
-                    result: null,
-                },
+                "lock.getState succeeded",
             );
         });
     });
@@ -135,11 +123,7 @@ describe("function: withLockLogging", () => {
             await enhanced.refresh("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpLockAdapter.refresh succeeded",
-                {
-                    args: ["myKey", "lockId", currentDate],
-                    result: true,
-                },
+                "lock.refresh succeeded",
             );
         });
     });
@@ -156,11 +140,7 @@ describe("function: withLockLogging", () => {
             await enhanced.release("myKey", "lockId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpLockAdapter.release succeeded",
-                {
-                    args: ["myKey", "lockId"],
-                    result: true,
-                },
+                "lock.release succeeded",
             );
         });
     });
