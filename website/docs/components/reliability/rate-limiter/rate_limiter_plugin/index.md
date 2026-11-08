@@ -9,6 +9,7 @@ keywords:
     - RateLimiter
     - Plugins
     - withRateLimiterPrefix
+    - withRateLimiterLogging
 ---
 
 # RateLimiter Plugins
@@ -62,4 +63,36 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/foundation/middleware/#plugin) documentation.
+:::
+
+## withRateLimiterLogging plugin
+
+The RateLimiter logging plugin intercepts every call to a rate limiter adapter and reports it to an `ILogger`. Any rate limiter backend becomes a source of observable events without changing the adapter implementation.
+
+### Use cases
+
+- **Throttling diagnostics** - See which keys are checked and which attempts are blocked
+- **Quota analysis** - Correlate exceeded limits with the keys and limits that caused them
+- **Auditing** - Keep a record of manual resets
+
+### How it works
+
+The `withRateLimiterLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the logger, so any [`ILogger`](/docs/components/observability/logger/logger_usage) can be passed in.
+
+A successful call logs a `debug` entry named `<adapter class name>.<methodName> succeeded` with a metadata object holding the call arguments and the returned value. A failed call logs an `error` entry named `<adapter class name>.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Naming entries after the adapter keeps them distinguishable when several adapters share one logger.
+
+| Method        | Logged arguments |
+| ------------- | ---------------- |
+| `getState`    | All arguments    |
+| `reset`       | All arguments    |
+| `updateState` | All arguments    |
+
+### Usage
+
+```ts file=./samples/with-rate-limiter-logging.ts
+
+```
+
+:::info
+Arguments are forwarded to the logger untouched. Use a logger whose transport drops metadata when rate limiter keys are considered sensitive.
 :::

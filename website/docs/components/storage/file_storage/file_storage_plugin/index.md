@@ -9,6 +9,7 @@ keywords:
     - FileStorage
     - Plugins
     - withFileStoragePrefix
+    - withFileStorageLogging
     - withFileStorageKeyValidator
     - withFileStorageLowerCase
     - withFileStorageInferContentTypeOnRead
@@ -328,4 +329,43 @@ The plugin only affects the `getMetaData` method.
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/foundation/middleware/#plugin) documentation.
+:::
+
+## withFileStorageLogging plugin
+
+The FileStorage logging plugin intercepts every call to a file storage adapter and reports it to an `ILogger`. Any storage backend becomes a source of observable events without changing the adapter implementation.
+
+### Use cases
+
+- **Storage diagnostics** - See which keys are read, written, copied, moved and removed
+- **Auditing** - Keep a record of deletions, including prefix removals
+- **Production observability** - Follow storage traffic next to the rest of the application logs
+
+### How it works
+
+The `withFileStorageLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the logger, so any [`ILogger`](/docs/components/observability/logger/logger_usage) can be passed in.
+
+A successful call logs a `debug` entry named `<adapter class name>.<methodName> succeeded` with a metadata object holding the logged arguments and the returned value. A failed call logs an `error` entry named `<adapter class name>.<methodName> failed` with the logged arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Naming entries after the adapter keeps them distinguishable when several adapters share one logger.
+
+| Method           | Logged arguments                          |
+| ---------------- | ----------------------------------------- |
+| `copy`           | All arguments                             |
+| `exists`         | All arguments                             |
+| `getBytes`       | All arguments                             |
+| `getMetaData`    | All arguments                             |
+| `getStream`      | All arguments                             |
+| `move`           | All arguments                             |
+| `put`            | The file key and settings, without `data` |
+| `putStream`      | The file key and settings, without `data` |
+| `removeByPrefix` | All arguments                             |
+| `removeMany`     | All arguments                             |
+
+### Usage
+
+```ts file=./samples/with-file-storage-logging.ts
+
+```
+
+:::info
+`put` and `putStream` drop the `data` payload before logging, so written content never reaches the logger while the file key and the remaining settings are logged. Every other method forwards its arguments untouched, which means file keys are logged.
 :::

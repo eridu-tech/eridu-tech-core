@@ -31,3 +31,10 @@ Add the logger module: leveled logging with execution-scoped spans and metadata,
 **Dependency injection**
 
 - `ProxyLoggerResolver` and `ProxyLoggerResolverSettings` resolve the logger resolver from an `IServiceResolver` on every operation, then select a logger with `use(transportName?)` or use the default transport. Every `LIFETIME` is supported. Prefer `SINGLETON` or `SCOPED`: a `TRANSIENT` resolver creates new loggers per operation, so spans and metadata do not carry across operations.
+
+**Component plugins**
+
+- `withLockLogging` (`eridu-tech/lock/plugins`), `withSharedLockLogging` (`eridu-tech/shared-lock/plugins`), `withSemaphoreLogging` (`eridu-tech/semaphore/plugins`), `withRateLimiterLogging` (`eridu-tech/rate-limiter/plugins`), `withFileStorageLogging` (`eridu-tech/file-storage/plugins`), `withEventBusLogging` (`eridu-tech/event-bus/plugins`) and `withCircuitBreakerLogging` (`eridu-tech/circuit-breaker/plugins`) log every adapter call through an `ILogger`.
+- A successful call is reported as a `debug` entry and a failed call as an `error` entry, which is logged before the error is re-thrown unchanged. Entries are named `<adapter class name>.<methodName> succeeded` and `<adapter class name>.<methodName> failed`, so calls from several adapters sharing one logger stay distinguishable, and they carry the call arguments as `args` together with either the returned value as `result` or the thrown value as `error`.
+- The plugins only require the `debug` and `error` methods, so any `Pick<ILogger, "debug" | "error">` is accepted.
+- `withFileStorageLogging` drops the `data` payload of `put` and `putStream` before logging, so written content never reaches the logger while the file key and the remaining settings do.

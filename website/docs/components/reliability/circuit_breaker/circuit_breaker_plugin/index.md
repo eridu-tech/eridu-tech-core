@@ -9,6 +9,7 @@ keywords:
     - CircuitBreaker
     - Plugins
     - withCircuitBreakerPrefix
+    - withCircuitBreakerLogging
 ---
 
 # CircuitBreaker Plugins
@@ -65,4 +66,39 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/foundation/middleware/#plugin) documentation.
+:::
+
+## withCircuitBreakerLogging plugin
+
+The CircuitBreaker logging plugin intercepts every call to a circuit breaker adapter and reports it to an `ILogger`. Any circuit breaker backend becomes a source of observable events without changing the adapter implementation.
+
+### Use cases
+
+- **State transition auditing** - See when a circuit opens, closes or is isolated manually
+- **Failure tracking diagnostics** - Correlate tracked failures and successes with the keys that produced them
+- **Production observability** - Follow circuit state changes next to the rest of the application logs
+
+### How it works
+
+The `withCircuitBreakerLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the logger, so any [`ILogger`](/docs/components/observability/logger/logger_usage) can be passed in.
+
+A successful call logs a `debug` entry named `<adapter class name>.<methodName> succeeded` with a metadata object holding the call arguments and the returned value, which for `updateState` is the state transition. A failed call logs an `error` entry named `<adapter class name>.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Naming entries after the adapter keeps them distinguishable when several adapters share one logger.
+
+| Method         | Logged arguments |
+| -------------- | ---------------- |
+| `getState`     | All arguments    |
+| `isolate`      | All arguments    |
+| `reset`        | All arguments    |
+| `trackFailure` | All arguments    |
+| `trackSuccess` | All arguments    |
+| `updateState`  | All arguments    |
+
+### Usage
+
+```ts file=./samples/with-circuit-breaker-logging.ts
+
+```
+
+:::info
+Arguments are forwarded to the logger untouched. Use a logger whose transport drops metadata when circuit breaker keys are considered sensitive.
 :::
