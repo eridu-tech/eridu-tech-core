@@ -1,3 +1,4 @@
+import { Logger } from "eridu-tech/logger";
 import type { ILoggerTransport, LogData } from "eridu-tech/logger/contracts";
 
 export class InMemoryLoggerTransport implements ILoggerTransport {
@@ -7,3 +8,7 @@ export class InMemoryLoggerTransport implements ILoggerTransport {
         this.entries.push(data);
     }
 }
+
+export const logger = new Logger({
+    transport: new InMemoryLoggerTransport(),
+});

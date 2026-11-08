@@ -62,11 +62,7 @@ Each entry is forwarded through LogLayer's level methods, mapping the logger's `
 
 ## Creating your own transport
 
-Implement `ILoggerTransport` to forward entries to any backend. Each entry arrives as one fully built `LogData` record, so the backend only has to format and output it.
-
-```ts file=./samples/custom-logger-transport.ts
-
-```
+See [creating adapters](../creating_logger_adapters/index.md) for implementing `ILoggerTransport` and registering a custom transport.
 
 ## Further information
 
