@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
 import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
@@ -11,14 +13,16 @@ describe("function: withRateLimiterLogging", () => {
         vi.restoreAllMocks();
     });
 
-    describe("entry naming", () => {
-        test("Should name entries after the adapter class and the method", async () => {
+    describe("entry metadata", () => {
+        test("Should attach the adapter class name, the arguments and the result", async () => {
             class TestAdapter extends NoOpRateLimiterAdapter {}
             const adapter = new TestAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
-            });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const logger = new Logger({ transport, executionContext });
             const enhanced = withPlugin(
                 adapter,
                 withRateLimiterLogging(logger),
@@ -26,13 +30,13 @@ describe("function: withRateLimiterLogging", () => {
 
             await enhanced.reset("myKey");
 
-            expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "TestAdapter.reset succeeded",
-                {
-                    args: ["myKey"],
-                    result: undefined,
-                },
-            );
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.messages).toEqual(["rateLimiter.reset succeeded"]);
+            expect(entry?.metadata).toEqual({
+                "rateLimiter.adapter": "TestAdapter",
+                "rateLimiter.args": ["myKey"],
+                "rateLimiter.result": undefined,
+            });
         });
     });
 
@@ -48,14 +52,10 @@ describe("function: withRateLimiterLogging", () => {
                 withRateLimiterLogging(logger),
             );
 
-            const result = await enhanced.getState("myKey");
+            await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpRateLimiterAdapter.getState succeeded",
-                {
-                    args: ["myKey"],
-                    result,
-                },
+                "rateLimiter.getState succeeded",
             );
         });
     });
@@ -75,11 +75,7 @@ describe("function: withRateLimiterLogging", () => {
             await enhanced.reset("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpRateLimiterAdapter.reset succeeded",
-                {
-                    args: ["myKey"],
-                    result: undefined,
-                },
+                "rateLimiter.reset succeeded",
             );
         });
     });
@@ -96,14 +92,10 @@ describe("function: withRateLimiterLogging", () => {
                 withRateLimiterLogging(logger),
             );
 
-            const result = await enhanced.updateState("myKey", 5);
+            await enhanced.updateState("myKey", 5);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpRateLimiterAdapter.updateState succeeded",
-                {
-                    args: ["myKey", 5],
-                    result,
-                },
+                "rateLimiter.updateState succeeded",
             );
         });
 
@@ -127,11 +119,7 @@ describe("function: withRateLimiterLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpRateLimiterAdapter.updateState failed",
-                {
-                    args: ["myKey", 5],
-                    error,
-                },
+                "rateLimiter.updateState failed",
             );
         });
     });

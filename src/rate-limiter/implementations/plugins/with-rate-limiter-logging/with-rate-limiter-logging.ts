@@ -5,7 +5,10 @@
 import { getConstructorName } from "@/utilities/_module-exports.js";
 
 import type { ILogger } from "@/logger/contracts/_module-exports.js";
-import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
+import type {
+    MiddlewareFn,
+    PluginFn,
+} from "@/middleware/contracts/_module-exports.js";
 import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-exports.js";
 
 /**
@@ -13,18 +16,19 @@ import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-expor
  *
  * A successful call logs a `debug` entry, and a failed call logs an `error`
  * entry before the error is re-thrown unchanged. Entries are named
- * `<adapter class name>.<methodName> succeeded|failed` and carry the call
- * arguments as `args` together with either the returned value as `result` or
- * the thrown value as `error`. Arguments are logged as-is.
+ * `rateLimiter.<methodName> succeeded|failed`. On success the call arguments
+ * and the returned value are merged into the metadata as `rateLimiter.args` and
+ * `rateLimiter.result`, and every call runs inside the `rateLimiter.adapter`
+ * scoped metadata, which holds the adapter class name.
  *
- * @param logger - The logger that receives the entries. Only `debug` and `error` are used.
+ * @param logger - The logger that receives the entries. Only `debug`, `error`, `scopedMetadata` and `putMetadata` are used.
  * @returns A middleware plugin that wraps an `IRateLimiterAdapter`.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/plugins"`
  * @group Plugins
  */
 export function withRateLimiterLogging(
-    logger: Pick<ILogger, "debug" | "error">,
+    logger: Pick<ILogger, "debug" | "error" | "scopedMetadata" | "putMetadata">,
 ): PluginFn<IRateLimiterAdapter> {
     return (adapter, enhance) => {
         async function logCall<TValue>(
@@ -32,24 +36,38 @@ export function withRateLimiterLogging(
             args: Array<unknown>,
             invocable: () => Promise<TValue>,
         ): Promise<TValue> {
-            const prefix = `${getConstructorName(adapter)}.${methodName}`;
+            const prefix = `rateLimiter.${methodName}`;
             try {
                 const result = await invocable();
-                logger.debug(`${prefix} succeeded`, { args, result });
+                logger.putMetadata({
+                    "rateLimiter.args": args,
+                    "rateLimiter.result": result,
+                });
+                logger.debug(`${prefix} succeeded`);
                 return result;
             } catch (error: unknown) {
-                logger.error(`${prefix} failed`, { args, error });
+                logger.error(`${prefix} failed`);
                 throw error;
             }
         }
-        enhance(adapter, "getState", ({ args, next }) =>
-            logCall("getState", args, next),
-        );
-        enhance(adapter, "reset", ({ args, next }) =>
-            logCall("reset", args, next),
-        );
-        enhance(adapter, "updateState", ({ args, next }) =>
-            logCall("updateState", args, next),
-        );
+        const withMetadata: MiddlewareFn<any, any> = ({ next }) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return logger.scopedMetadata(
+                { "rateLimiter.adapter": getConstructorName(adapter) },
+                next,
+            );
+        };
+        enhance(adapter, "getState", [
+            withMetadata,
+            ({ args, next }) => logCall("getState", args, next),
+        ]);
+        enhance(adapter, "reset", [
+            withMetadata,
+            ({ args, next }) => logCall("reset", args, next),
+        ]);
+        enhance(adapter, "updateState", [
+            withMetadata,
+            ({ args, next }) => logCall("updateState", args, next),
+        ]);
     };
 }
