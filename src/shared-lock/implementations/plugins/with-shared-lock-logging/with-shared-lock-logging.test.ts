@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
 import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
@@ -24,25 +26,29 @@ describe("function: withSharedLockLogging", () => {
         vi.restoreAllMocks();
     });
 
-    describe("entry naming", () => {
-        test("Should name entries after the adapter class and the method", async () => {
+    describe("entry metadata", () => {
+        test("Should attach the adapter class name, the arguments and the result", async () => {
             class TestAdapter extends NoOpSharedLockAdapter {}
             const adapter = new TestAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
-            });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const logger = new Logger({ transport, executionContext });
             const enhanced = withPlugin(adapter, withSharedLockLogging(logger));
 
             await enhanced.releaseWriter("myKey", "lockId");
 
-            expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "TestAdapter.releaseWriter succeeded",
-                {
-                    args: ["myKey", "lockId"],
-                    result: true,
-                },
-            );
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.messages).toEqual([
+                "sharedLock.releaseWriter succeeded",
+            ]);
+            expect(entry?.metadata).toEqual({
+                "sharedLock.adapter": "TestAdapter",
+                "sharedLock.args": ["myKey", "lockId"],
+                "sharedLock.result": true,
+            });
         });
     });
 
@@ -59,11 +65,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.acquireReader(settings);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSharedLockAdapter.acquireReader succeeded",
-                {
-                    args: [settings],
-                    result: true,
-                },
+                "sharedLock.acquireReader succeeded",
             );
         });
     });
@@ -80,11 +82,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.acquireWriter("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSharedLockAdapter.acquireWriter succeeded",
-                {
-                    args: ["myKey", "lockId", currentDate],
-                    result: true,
-                },
+                "sharedLock.acquireWriter succeeded",
             );
         });
 
@@ -105,11 +103,7 @@ describe("function: withSharedLockLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSharedLockAdapter.acquireWriter failed",
-                {
-                    args: ["myKey", "lockId", currentDate],
-                    error,
-                },
+                "sharedLock.acquireWriter failed",
             );
         });
     });
@@ -126,11 +120,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.forceRelease("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSharedLockAdapter.forceRelease succeeded",
-                {
-                    args: ["myKey"],
-                    result: true,
-                },
+                "sharedLock.forceRelease succeeded",
             );
         });
     });
@@ -147,11 +137,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSharedLockAdapter.getState succeeded",
-                {
-                    args: ["myKey"],
-                    result: null,
-                },
+                "sharedLock.getState succeeded",
             );
         });
     });
@@ -168,11 +154,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.refreshReader("myKey", "slotId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSharedLockAdapter.refreshReader succeeded",
-                {
-                    args: ["myKey", "slotId", currentDate],
-                    result: true,
-                },
+                "sharedLock.refreshReader succeeded",
             );
         });
     });
@@ -189,11 +171,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.refreshWriter("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSharedLockAdapter.refreshWriter succeeded",
-                {
-                    args: ["myKey", "lockId", currentDate],
-                    result: true,
-                },
+                "sharedLock.refreshWriter succeeded",
             );
         });
     });
@@ -210,11 +188,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.releaseReader("myKey", "slotId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSharedLockAdapter.releaseReader succeeded",
-                {
-                    args: ["myKey", "slotId"],
-                    result: true,
-                },
+                "sharedLock.releaseReader succeeded",
             );
         });
     });
@@ -231,11 +205,7 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.releaseWriter("myKey", "lockId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "NoOpSharedLockAdapter.releaseWriter succeeded",
-                {
-                    args: ["myKey", "lockId"],
-                    result: true,
-                },
+                "sharedLock.releaseWriter succeeded",
             );
         });
     });
