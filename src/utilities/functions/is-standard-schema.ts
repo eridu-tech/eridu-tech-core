@@ -12,6 +12,9 @@ export function isStandardSchema<TInput, TOutput>(
 ): value is StandardSchemaV1<TInput, TOutput> {
     return (
         typeof value === "object" &&
-        typeof (value as Record<string, unknown>)["~standard"] === "object"
+        value !== null &&
+        "~standard" in value &&
+        typeof value["~standard"] === "object" &&
+        value["~standard"] !== null
     );
 }
