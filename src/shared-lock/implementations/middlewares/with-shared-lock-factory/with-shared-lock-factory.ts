@@ -147,7 +147,7 @@ export type WithSharedLockResolver<TAdapters extends string = string> = {
      * adapter.
      * @returns A {@link WithSharedLock} bound to the selected adapter.
      */
-    use(adapter?: TAdapters): WithSharedLock;
+    use(adapterName?: TAdapters): WithSharedLock;
 };
 
 /**
@@ -172,30 +172,31 @@ export type WithSharedLockResolver<TAdapters extends string = string> = {
 export function withSharedLockFactory<TAdapters extends string = string>(
     sharedLockFactoryResolver: CreateSharedLockResolver<TAdapters>,
 ): WithSharedLock & WithSharedLockResolver<TAdapters> {
-    const withSharedLockResolver: WithSharedLockResolver<TAdapters>["use"] =
-        function use(adapter?: TAdapters): WithSharedLock {
-            return (settings) => {
-                const { key, lockId = () => v4(), when, ...rest } = settings;
-                const sharedLockFactory =
-                    sharedLockFactoryResolver.use(adapter);
-                return ({ next, args }) => {
-                    if (when === SHARED_LOCK_WHEN.READER) {
-                        return sharedLockFactory
-                            .create(callInvocable(key, args), {
-                                ...rest,
-                                lockId: callInvocable(lockId, args),
-                            })
-                            .runReaderOrFail(next);
-                    }
+    const withSharedLockResolver: WithSharedLockResolver<TAdapters>["use"] = (
+        adapterName,
+    ) => {
+        return (settings) => {
+            const { key, lockId = () => v4(), when, ...rest } = settings;
+            const sharedLockFactory =
+                sharedLockFactoryResolver.use(adapterName);
+            return ({ next, args }) => {
+                if (when === SHARED_LOCK_WHEN.READER) {
                     return sharedLockFactory
                         .create(callInvocable(key, args), {
                             ...rest,
                             lockId: callInvocable(lockId, args),
                         })
-                        .runWriterOrFail(next);
-                };
+                        .runReaderOrFail(next);
+                }
+                return sharedLockFactory
+                    .create(callInvocable(key, args), {
+                        ...rest,
+                        lockId: callInvocable(lockId, args),
+                    })
+                    .runWriterOrFail(next);
             };
         };
+    };
 
     const middleware = withSharedLockResolver() as WithSharedLock &
         WithSharedLockResolver<TAdapters>;

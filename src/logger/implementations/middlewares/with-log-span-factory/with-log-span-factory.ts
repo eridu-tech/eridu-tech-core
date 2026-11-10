@@ -60,14 +60,15 @@ export type WithLogSpanResolver<TTransports extends string = string> = {
 export function withLogSpanFactory<TTransports extends string = string>(
     loggerResolver: ILoggerResolver<TTransports>,
 ): WithLogSpan & WithLogSpanResolver<TTransports> {
-    const withLogSpanResolver: WithLogSpanResolver<TTransports>["use"] =
-        function use(transportName?: TTransports): WithLogSpan {
-            return (name) => {
-                return ({ next }) => {
-                    return loggerResolver.use(transportName).span(name, next);
-                };
+    const withLogSpanResolver: WithLogSpanResolver<TTransports>["use"] = (
+        transportName,
+    ) => {
+        return (name) => {
+            return ({ next }) => {
+                return loggerResolver.use(transportName).span(name, next);
             };
         };
+    };
 
     const middleware = withLogSpanResolver() as WithLogSpan &
         WithLogSpanResolver<TTransports>;

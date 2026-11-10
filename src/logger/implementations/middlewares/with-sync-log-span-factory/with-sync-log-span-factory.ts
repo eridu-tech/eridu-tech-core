@@ -62,7 +62,7 @@ export function withSyncLogSpanFactory<TTransports extends string = string>(
     loggerResolver: ILoggerResolver<TTransports>,
 ): WithSyncLogSpan & WithSyncLogSpanResolver<TTransports> {
     const withSyncLogSpanResolver: WithSyncLogSpanResolver<TTransports>["use"] =
-        function use(transportName?: TTransports): WithSyncLogSpan {
+        (transportName) => {
             return (name) => {
                 return ({ next }) => {
                     return loggerResolver.use(transportName).span(name, next);

@@ -82,7 +82,7 @@ export type WithTransactionResolver<TAdapters extends string = string> = {
      * adapter.
      * @returns A {@link WithTransaction} bound to the selected adapter.
      */
-    use(adapter?: TAdapters): WithTransaction;
+    use(adapterName?: TAdapters): WithTransaction;
 };
 
 /**
@@ -106,18 +106,18 @@ export type WithTransactionResolver<TAdapters extends string = string> = {
 export function withTransactionFactory<TAdapters extends string = string>(
     transactionResolver: RunTransactionResolver<TAdapters>,
 ): WithTransaction & WithTransactionResolver<TAdapters> {
-    const withTransactionResolver: WithTransactionResolver<TAdapters>["use"] =
-        function use(adapter?: TAdapters): WithTransaction {
-            return (settings = {}) => {
-                const { propagation = TRANSACTION_PROPAGATION.REQUIRED } =
-                    settings;
-                return ({ next }) => {
-                    return transactionResolver
-                        .use(adapter)
-                        .run(propagation, next);
-                };
+    const withTransactionResolver: WithTransactionResolver<TAdapters>["use"] = (
+        adapterName,
+    ) => {
+        return (settings = {}) => {
+            const { propagation = TRANSACTION_PROPAGATION.REQUIRED } = settings;
+            return ({ next }) => {
+                return transactionResolver
+                    .use(adapterName)
+                    .run(propagation, next);
             };
         };
+    };
 
     const middleware = withTransactionResolver() as WithTransaction &
         WithTransactionResolver<TAdapters>;

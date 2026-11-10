@@ -84,7 +84,7 @@ export type WitCacheResolver<TAdapters extends string = string> = {
      * adapter.
      * @returns A {@link WithCache} bound to the selected adapter.
      */
-    use(adapter?: TAdapters): WithCache;
+    use(adapterName?: TAdapters): WithCache;
 };
 
 /**
@@ -106,15 +106,15 @@ export type WitCacheResolver<TAdapters extends string = string> = {
 export function withCacheFactory<TAdapters extends string = string>(
     cache: GetOrAddCacheResolver<TAdapters>,
 ): WithCache & WitCacheResolver<TAdapters> {
-    const witCacheResolver: WitCacheResolver<TAdapters>["use"] = function use(
-        adapter?: TAdapters,
-    ): WithCache {
+    const witCacheResolver: WitCacheResolver<TAdapters>["use"] = (
+        adapterName,
+    ) => {
         return (settings) => {
             const { key, ttl } = settings;
             return ({ next, args }) => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return cache
-                    .use(adapter)
+                    .use(adapterName)
                     .getOrAdd(
                         callInvocable(key, args),
                         next,

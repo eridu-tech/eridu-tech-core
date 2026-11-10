@@ -129,31 +129,32 @@ export type WithMetadataResolver<TTransports extends string = string> = {
 export function withMetadataFactory<TTransports extends string = string>(
     loggerResolver: ILoggerResolver<TTransports>,
 ): WithLogging & WithMetadataResolver<TTransports> {
-    const withMetadataResolver: WithMetadataResolver<TTransports>["use"] =
-        function use(transportName?: TTransports): WithLogging {
-            return (settings = {}) => {
-                const {
-                    getCurrentFilePath = () => fileURLToPath(import.meta.url),
-                    metadata = () => ({}),
-                    className,
-                } = settings;
-                return async ({ next, name, args }) => {
-                    const logger = loggerResolver.use(transportName);
-                    return logger.scopedMetadata(
-                        {
-                            ...callInvocable(metadata, {
-                                args,
-                                functionName: name,
-                            }),
-                            filePath: callInvocable(getCurrentFilePath),
-                            class: className,
-                            function: name,
-                        },
-                        next,
-                    );
-                };
+    const withMetadataResolver: WithMetadataResolver<TTransports>["use"] = (
+        transportName,
+    ) => {
+        return (settings = {}) => {
+            const {
+                getCurrentFilePath = () => fileURLToPath(import.meta.url),
+                metadata = () => ({}),
+                className,
+            } = settings;
+            return async ({ next, name, args }) => {
+                const logger = loggerResolver.use(transportName);
+                return logger.scopedMetadata(
+                    {
+                        ...callInvocable(metadata, {
+                            args,
+                            functionName: name,
+                        }),
+                        filePath: callInvocable(getCurrentFilePath),
+                        class: className,
+                        function: name,
+                    },
+                    next,
+                );
             };
         };
+    };
 
     const middleware = withMetadataResolver() as WithLogging &
         WithMetadataResolver<TTransports>;

@@ -115,7 +115,7 @@ export type WithSemaphoreResolver<TAdapters extends string = string> = {
      * adapter.
      * @returns A {@link WithSemaphore} bound to the selected adapter.
      */
-    use(adapter?: TAdapters): WithSemaphore;
+    use(adapterName?: TAdapters): WithSemaphore;
 };
 
 /**
@@ -140,21 +140,22 @@ export type WithSemaphoreResolver<TAdapters extends string = string> = {
 export function withSemaphoreFactory<TAdapters extends string = string>(
     semaphoreFactoryResolver: CreateSemaphoreResolver<TAdapters>,
 ): WithSemaphore & WithSemaphoreResolver<TAdapters> {
-    const withSemaphoreResolver: WithSemaphoreResolver<TAdapters>["use"] =
-        function use(adapter?: TAdapters): WithSemaphore {
-            return (settings) => {
-                const { key, slotId = () => v4(), ...rest } = settings;
-                return ({ next, args }) => {
-                    return semaphoreFactoryResolver
-                        .use(adapter)
-                        .create(callInvocable(key, args), {
-                            ...rest,
-                            slotId: callInvocable(slotId, args),
-                        })
-                        .runOrFail(next);
-                };
+    const withSemaphoreResolver: WithSemaphoreResolver<TAdapters>["use"] = (
+        adapterName,
+    ) => {
+        return (settings) => {
+            const { key, slotId = () => v4(), ...rest } = settings;
+            return ({ next, args }) => {
+                return semaphoreFactoryResolver
+                    .use(adapterName)
+                    .create(callInvocable(key, args), {
+                        ...rest,
+                        slotId: callInvocable(slotId, args),
+                    })
+                    .runOrFail(next);
             };
         };
+    };
 
     const middleware = withSemaphoreResolver() as WithSemaphore &
         WithSemaphoreResolver<TAdapters>;

@@ -87,7 +87,7 @@ export function withSyncLoggingFactory<TTransports extends string = string>(
     loggerResolver: ILoggerResolver<TTransports>,
 ): WithSyncLogging & WithSyncLoggingResolver<TTransports> {
     const withSyncLoggingResolver: WithSyncLoggingResolver<TTransports>["use"] =
-        function use(transportName?: TTransports): WithSyncLogging {
+        (transportName) => {
             return (settings = {}) => {
                 const { useFatalLevel = false, className } = settings;
 

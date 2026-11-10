@@ -98,7 +98,7 @@ export type WithDispatchBeforeResolver<
      * @param adapter - The adapter to use. Defaults to the resolver's default
      * adapter.
      */
-    use(adapter?: TAdapters): WithDispatchBefore<TEventMap>;
+    use(adapterName?: TAdapters): WithDispatchBefore<TEventMap>;
 };
 
 /**
@@ -133,15 +133,15 @@ export function withDispatchBeforeFactory<
     const withDispatchBeforeResolver: WithDispatchBeforeResolver<
         TAdapters,
         TEventMap
-    >["use"] = function use(
-        adapter?: TAdapters,
-    ): WithDispatchBefore<TEventMap> {
+    >["use"] = (adapterName) => {
         return (settings) => {
             const { type, payload } = settings;
             return withBeforeHook((args) => {
                 const event = callInvocable(payload, { args });
                 if (event !== null) {
-                    void eventBusResolver.use(adapter).dispatch(type, event);
+                    void eventBusResolver
+                        .use(adapterName)
+                        .dispatch(type, event);
                 }
             });
         };

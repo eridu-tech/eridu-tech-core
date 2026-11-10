@@ -84,32 +84,33 @@ export type WithLoggingResolver<TTransports extends string = string> = {
 export function withLoggingFactory<TTransports extends string = string>(
     loggerResolver: ILoggerResolver<TTransports>,
 ): WithLogging & WithLoggingResolver<TTransports> {
-    const withLoggingResolver: WithLoggingResolver<TTransports>["use"] =
-        function use(transportName?: TTransports): WithLogging {
-            return (settings = {}) => {
-                const { useFatalLevel = false, className } = settings;
-                return async ({ next, args, name }) => {
-                    const logger = loggerResolver.use(transportName);
-                    try {
-                        if (className !== undefined) {
-                            logger.info("class:", className);
-                        }
-                        logger.info("function:", name);
-                        logger.info("args:", args);
-                        const result = await next();
-                        logger.info("return:", result);
-                        return result;
-                    } catch (error: unknown) {
-                        if (useFatalLevel) {
-                            logger.fatal("fatal:", error);
-                        } else {
-                            logger.error("error:", error);
-                        }
-                        throw error;
+    const withLoggingResolver: WithLoggingResolver<TTransports>["use"] = (
+        transportName,
+    ) => {
+        return (settings = {}) => {
+            const { useFatalLevel = false, className } = settings;
+            return async ({ next, args, name }) => {
+                const logger = loggerResolver.use(transportName);
+                try {
+                    if (className !== undefined) {
+                        logger.info("class:", className);
                     }
-                };
+                    logger.info("function:", name);
+                    logger.info("args:", args);
+                    const result = await next();
+                    logger.info("return:", result);
+                    return result;
+                } catch (error: unknown) {
+                    if (useFatalLevel) {
+                        logger.fatal("fatal:", error);
+                    } else {
+                        logger.error("error:", error);
+                    }
+                    throw error;
+                }
             };
         };
+    };
 
     const middleware = withLoggingResolver() as WithLogging &
         WithLoggingResolver<TTransports>;

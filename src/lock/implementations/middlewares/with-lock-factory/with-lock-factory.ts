@@ -106,7 +106,7 @@ export type WithLockResolver<TAdapters extends string = string> = {
      * adapter.
      * @returns A {@link WithLock} bound to the selected adapter.
      */
-    use(adapter?: TAdapters): WithLock;
+    use(adapterName?: TAdapters): WithLock;
 };
 
 /**
@@ -129,14 +129,14 @@ export type WithLockResolver<TAdapters extends string = string> = {
 export function withLockFactory<TAdapters extends string = string>(
     lockFactoryResolver: CreateLockResolver<TAdapters>,
 ): WithLock & WithLockResolver<TAdapters> {
-    const withLockResolver: WithLockResolver<TAdapters>["use"] = function use(
-        adapter?: TAdapters,
-    ): WithLock {
+    const withLockResolver: WithLockResolver<TAdapters>["use"] = (
+        adapterName,
+    ) => {
         return (settings) => {
             const { key, lockId = () => v4(), ...rest } = settings;
             return ({ next, args }) => {
                 return lockFactoryResolver
-                    .use(adapter)
+                    .use(adapterName)
                     .create(callInvocable(key, args), {
                         ...rest,
                         lockId: callInvocable(lockId, args),

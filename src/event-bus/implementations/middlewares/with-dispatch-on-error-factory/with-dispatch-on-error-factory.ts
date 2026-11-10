@@ -105,7 +105,7 @@ export type WithDispatchOnErrorResolver<
      * @param adapter - The adapter to use. Defaults to the resolver's default
      * adapter.
      */
-    use(adapter?: TAdapters): WithDispatchOnError<TEventMap>;
+    use(adapterName?: TAdapters): WithDispatchOnError<TEventMap>;
 };
 
 /**
@@ -140,15 +140,15 @@ export function withDispatchOnErrorFactory<
     const withDispatchOnErrorResolver: WithDispatchOnErrorResolver<
         TAdapters,
         TEventMap
-    >["use"] = function use(
-        adapter?: TAdapters,
-    ): WithDispatchOnError<TEventMap> {
+    >["use"] = (adapterName) => {
         return (settings) => {
             const { type, payload } = settings;
             return withOnError((args, error) => {
                 const event = callInvocable(payload, { args, error });
                 if (event !== null) {
-                    void eventBusResolver.use(adapter).dispatch(type, event);
+                    void eventBusResolver
+                        .use(adapterName)
+                        .dispatch(type, event);
                 }
             });
         };

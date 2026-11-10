@@ -112,7 +112,7 @@ export function withSyncMetadataFactory<TTransports extends string = string>(
     loggerResolver: ILoggerResolver<TTransports>,
 ): WithSyncMetadata & WithSyncMetadataResolver<TTransports> {
     const withSyncMetadataResolver: WithSyncMetadataResolver<TTransports>["use"] =
-        function use(transportName?: TTransports): WithSyncMetadata {
+        (transportName) => {
             return (settings = {}) => {
                 const {
                     getCurrentFilePath = () => fileURLToPath(import.meta.url),
