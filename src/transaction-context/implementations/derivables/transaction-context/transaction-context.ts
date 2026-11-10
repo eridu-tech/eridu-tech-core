@@ -19,7 +19,11 @@ import {
     TRANSACTION_PROPAGATION,
 } from "@/transaction-context/contracts/_module-exports.js";
 import { NoOpTransactionAdapter } from "@/transaction-context/implementations/adapters/no-op-transaction-adapter/_module-exports.js";
-import { callInvocable, UnexpectedError } from "@/utilities/_module-exports.js";
+import {
+    callInvocable,
+    getConstructorName,
+    UnexpectedError,
+} from "@/utilities/_module-exports.js";
 
 import type {
     ContextToken,
@@ -52,7 +56,7 @@ export type ITransactionContextSettings<
      * The context token under which the active transaction-scoped client is
      * stored in the execution context.
      */
-    token: ContextToken<ITransactionData<TTransactionClient>>;
+    token?: ContextToken<ITransactionData<TTransactionClient>>;
 
     /**
      * The adapter used to start transactions for the underlying client.
@@ -182,7 +186,13 @@ export class TransactionContext<
     constructor(
         settings: ITransactionContextSettings<TClient, TTransactionClient>,
     ) {
-        const { token, adapter, executionContext } = settings;
+        const {
+            adapter,
+            token = contextToken(
+                `TransactionContext.${getConstructorName(adapter)}`,
+            ),
+            executionContext,
+        } = settings;
         this.token = token;
         this.adapter = withPlugin(
             adapter,
