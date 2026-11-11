@@ -124,59 +124,21 @@ export type ILogger = {
      */
     fatal(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void;
 
+    /**
+     * Runs `invocable` inside a logging scope.
+     *
+     * Entries logged while it runs carry `settings.group` and
+     * `settings.metadata`, and `settings.span` measures their elapsed time.
+     * The scope ends when `invocable` returns.
+     *
+     * @param invocable - Work to run in the scope.
+     * @param settings - Optional group, metadata, and span name.
+     * @returns Whatever `invocable` returns.
+     */
     run<TValue = void>(
         invocable: Lazy<TValue>,
         settings?: RunLogSettings,
     ): TValue;
-
-    // /**
-    //  * Runs `invocable` inside a span named `name`.
-    //  *
-    //  * Entries logged while the span is open include its elapsed time alongside
-    //  * the elapsed time of every enclosing span. Entries logged after the span
-    //  * returns do not include it, so log from inside to capture the duration.
-    //  *
-    //  * @param name - Span name, used as the key in `LogData.spans`.
-    //  * @param invocable - Work to run inside the span. Invoked immediately.
-    //  *
-    //  * @returns Whatever `invocable` returns.
-    //  */
-    // span<TValue>(name: string, invocable: Lazy<TValue>): TValue;
-
-    // /**
-    //  * Attaches `values` as metadata to entries logged while `invocable` runs.
-    //  *
-    //  * Metadata is inherited by nested spans and metadata scopes, and restored
-    //  * when `invocable` returns. Useful for correlation IDs, user IDs, and other
-    //  * request context.
-    //  *
-    //  * @param values - Metadata entries to apply during the invocation.
-    //  * @param invocable - Work to run with the metadata attached. Invoked
-    //  * immediately.
-    //  *
-    //  * @returns Whatever `invocable` returns.
-    //  */
-    // scopedMetadata<TValue>(
-    //     values: Partial<Record<string, unknown>>,
-    //     invocable: Lazy<TValue>,
-    // ): TValue;
-
-    // /**
-    //  * Attaches a single `key`-`value` pair as metadata. Shorthand for
-    //  * `scopedMetadata({ [key]: value }, invocable)`.
-    //  *
-    //  * @param key - Metadata name.
-    //  * @param value - Metadata value.
-    //  * @param invocable - Work to run with the metadata attached. Invoked
-    //  * immediately.
-    //  *
-    //  * @returns Whatever `invocable` returns.
-    //  */
-    // scopedMetadata<TValue>(
-    //     key: string,
-    //     value: unknown,
-    //     invocable: Lazy<TValue>,
-    // ): TValue;
 
     /**
      * Merges `values` into the metadata of the current scope, without opening
