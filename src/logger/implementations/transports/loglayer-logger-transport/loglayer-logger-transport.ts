@@ -99,7 +99,7 @@ export class LogLayerLoggerTransport implements ILoggerTransport {
             logLevel: LOG_LAYER_LEVELS[level],
             messages: messages as Array<LogLayerMessage>,
             metadata: {
-                ...metadata,
+                attributes: metadata,
                 ...(this.includeLoggedAt && { loggedAt: new Date(loggedAt) }),
                 spans: newSpans,
             },

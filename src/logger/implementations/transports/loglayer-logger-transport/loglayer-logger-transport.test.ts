@@ -68,7 +68,7 @@ describe("class: LogLayerLoggerTransport", () => {
         expect(captured).toHaveLength(1);
     });
 
-    test("Should attach metadata, loggedAt, and spans to the entry", () => {
+    test("Should nest metadata under attributes and attach loggedAt and spans", () => {
         transport.log(
             makeLogData({
                 metadata: { requestId: "abc" },
@@ -80,7 +80,7 @@ describe("class: LogLayerLoggerTransport", () => {
         );
 
         expect(captured[0]?.metadata).toEqual({
-            requestId: "abc",
+            attributes: { requestId: "abc" },
             loggedAt: new Date(LOGGED_AT),
             spans: { db: 12, http: 250 },
         });
@@ -90,6 +90,7 @@ describe("class: LogLayerLoggerTransport", () => {
         transport.log(makeLogData({ spans: {} }));
 
         expect(captured[0]?.metadata).toEqual({
+            attributes: undefined,
             loggedAt: new Date(LOGGED_AT),
             spans: {},
         });
@@ -101,6 +102,12 @@ describe("class: LogLayerLoggerTransport", () => {
         expect(captured[0]?.metadata?.["spans"]).toBeUndefined();
     });
 
+    test("Should leave attributes undefined when the entry has no metadata", () => {
+        transport.log(makeLogData());
+
+        expect(captured[0]?.metadata?.["attributes"]).toBeUndefined();
+    });
+
     test("Should drop spans without a value", () => {
         const spans: LogSpans = {
             db: undefined,
@@ -109,6 +116,7 @@ describe("class: LogLayerLoggerTransport", () => {
         transport.log(makeLogData({ spans }));
 
         expect(captured[0]?.metadata).toEqual({
+            attributes: undefined,
             loggedAt: new Date(LOGGED_AT),
             spans: { http: 5 },
         });
@@ -122,7 +130,10 @@ describe("class: LogLayerLoggerTransport", () => {
 
         transport.log(makeLogData({ spans: {} }));
 
-        expect(captured[0]?.metadata).toEqual({ spans: {} });
+        expect(captured[0]?.metadata).toEqual({
+            attributes: undefined,
+            spans: {},
+        });
     });
 
     test("Should prefix the messages with the group", () => {
