@@ -26,7 +26,7 @@ Every factory accepts an `ILoggerResolver`. Calling the returned factory uses th
 
 ## withLogSpanFactory middleware {#with_log_span_factory_middleware}
 
-The log span middleware intercepts function calls and runs them inside a span named after the middleware label, via the selected logger's `span`. Every entry logged while the wrapped function runs carries the elapsed time of that span and of every enclosing span.
+The log span middleware intercepts function calls and runs them inside a span named after the middleware label, via the selected logger's `run` with a `span` setting. Every entry logged while the wrapped function runs carries the elapsed time of that span and of every enclosing span.
 
 ### Usage
 
@@ -54,7 +54,7 @@ Here is a complete list of settings for the [`withSyncLogSpanFactory`](https://e
 
 ## withLoggingFactory middleware {#with_logging_factory_middleware}
 
-The logging middleware intercepts function calls and logs the class name (when configured), the function name, its arguments and its return value. Failures are reported at the `error` level, or `fatal` when `useFatalLevel` is enabled, and then rethrown untouched.
+The logging middleware intercepts function calls and logs the class name (when configured), the function name, its arguments and its return value at the `verbose` level. Failures are reported at the `error` level, or `fatal` when `useFatalLevel` is enabled, and then rethrown untouched.
 
 ### Usage
 
@@ -89,7 +89,7 @@ Here is a complete list of settings for the [`withSyncLoggingFactory`](https://e
 
 ## withMetadataFactory middleware {#with_metadata_factory_middleware}
 
-The metadata middleware scopes `filePath`, `class` and `function` metadata to the wrapped function. The metadata is attached through the selected logger's `scopedMetadata`, so it is visible only to entries logged while the wrapped function runs.
+The metadata middleware scopes `filePath`, `class` and `function` metadata to the wrapped function. The metadata is attached through the selected logger's `run` metadata setting, so it is visible only to entries logged while the wrapped function runs.
 
 ### Usage
 
@@ -103,11 +103,11 @@ Here is a complete list of settings for the [`withMetadataFactory`](https://erid
 
 ### Settings
 
-| Option               | Type                                                           | Default                                | Description                                                                            |
-| -------------------- | -------------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------- |
-| `className`          | `string`                                                       |                                        | Logged as the `class` metadata entry                                                   |
-| `getCurrentFilePath` | `Invocable<[], string \| null>`                                | `() => fileURLToPath(import.meta.url)` | Resolves the path logged as the `filePath` metadata entry                              |
-| `metadata`           | `Invocable<[args: MetadataSettings], Record<string, unknown>>` | `() => ({})`                           | Returns extra entries to merge into the metadata; the built-in entries take precedence |
+| Option               | Type                                                                    | Default                                | Description                                                                            |
+| -------------------- | ----------------------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------- |
+| `className`          | `string`                                                                |                                        | Logged as the `class` metadata entry                                                   |
+| `getCurrentFilePath` | `Invocable<[], string \| null>`                                         | `() => fileURLToPath(import.meta.url)` | Resolves the path logged as the `filePath` metadata entry                              |
+| `metadata`           | `Invocable<[args: MetadataSettings], Partial<Record<string, unknown>>>` | `() => ({})`                           | Returns extra entries to merge into the metadata; the built-in entries take precedence |
 
 ## withSyncMetadataFactory middleware {#with_sync_metadata_factory_middleware}
 

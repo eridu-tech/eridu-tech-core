@@ -22,13 +22,15 @@ In order to create an adapter you need to implement the [`ILoggerTransport`](htt
 
 Each entry carries:
 
-| Field      | Type                                | Description                                                     |
-| ---------- | ----------------------------------- | --------------------------------------------------------------- |
-| `level`    | `AllLogLevels`                      | `debug`, `verbose`, `info`, `warn`, `error` or `fatal`          |
-| `loggedAt` | `number`                            | Unix timestamp in ms at which the entry was created             |
-| `messages` | `Array<unknown>`                    | Logged values, in the order they were passed to the logger      |
-| `metadata` | `Partial<Record<string, unknown>>`  | Metadata attached by `scopedMetadata` and `putMetadata`         |
-| `spans`    | `Partial<Record<string, TimeSpan>>` | Elapsed time of each span still open when the entry was created |
+| Field      | Type                                | Description                                                           |
+| ---------- | ----------------------------------- | --------------------------------------------------------------------- |
+| `level`    | `AllLogLevels`                      | `debug`, `verbose`, `info`, `warn`, `error` or `fatal`                |
+| `group`    | `string`                            | Group label from the logging method or the enclosing `run` scope      |
+| `loggedAt` | `number`                            | Unix timestamp in ms at which the entry was created                   |
+| `messages` | `Array<unknown>`                    | Logged values, in the order they were passed to the logger            |
+| `metadata` | `Partial<Record<string, unknown>>`  | Metadata from the logging method, `run`, or `putMetadata`             |
+| `error`    | `unknown`                           | Error details attached by `warn`, `error`, and `fatal`                |
+| `spans`    | `Partial<Record<string, TimeSpan>>` | Elapsed time of each `run` span still open when the entry was created |
 
 ```ts file=./samples/custom-logger-transport.ts
 

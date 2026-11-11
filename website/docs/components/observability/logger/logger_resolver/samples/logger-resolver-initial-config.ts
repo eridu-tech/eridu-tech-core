@@ -4,7 +4,7 @@ import { NoOpLoggerTransport } from "eridu-tech/logger/no-op-logger-transport";
 
 export const loggerResolver = new LoggerResolver({
     transports: {
-        // Each alias maps to one transport or an iterable of transports
+        // Each alias maps to one transport
         console: new ConsoleLoggerTransport(),
         "no-op": new NoOpLoggerTransport(),
     },

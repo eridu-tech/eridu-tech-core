@@ -9,5 +9,5 @@ logger.info(["User signed in"], {
 // Failure levels also accept error details
 logger.error(["Payment failed"], {
     metadata: { orderId: "o-1" },
-    errors: { reason: "card_declined" },
+    error: { reason: "card_declined" },
 });

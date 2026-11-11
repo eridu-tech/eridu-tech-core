@@ -20,7 +20,7 @@ keywords:
 
 ## ConsoleLoggerTransport
 
-Writes entries to the JavaScript console. Each level maps to its console counterpart, `error` and `fatal` both use `console.error`, and `verbose` uses `console.trace`. `loggedAt` is rendered as a `Date` and spans in milliseconds.
+Writes entries to the JavaScript console. Each level maps to its console counterpart, `error` and `fatal` both use `console.error`, and `verbose` uses `console.trace`. `loggedAt` is rendered as a `Date` and spans in milliseconds. The remaining fields (`level`, `group`, `messages`, `metadata` and `error`) are forwarded unchanged.
 
 ```ts file=./samples/console-logger-transport.ts
 
@@ -42,7 +42,7 @@ Drops every entry. Useful when logging is switched off or in tests.
 
 To utilize the `LogLayerLoggerTransport`, install the [`"loglayer"`](https://www.npmjs.com/package/loglayer) package and supply a configured `LogLayer` instance.
 
-Each entry is forwarded through `LogLayer.raw`, mapping the logger's `verbose` level to LogLayer's `trace` level. `loggedAt` is rendered as a `Date` and attached to the entry metadata when `includeLoggedAt` is enabled, and spans are attached as milliseconds. Logged values are passed through untouched, leaving serialization to LogLayer.
+Each entry is forwarded through `LogLayer.raw`, mapping the logger's `verbose` level to LogLayer's `trace` level. A `group` is applied as a LogLayer prefix (`[group]`), and `error` is forwarded when present. `loggedAt` is rendered as a `Date` and attached to the entry metadata when `includeLoggedAt` is enabled, and spans are attached as milliseconds. Logged values are passed through untouched, leaving serialization to LogLayer.
 
 ```ts file=./samples/loglayer-logger-transport.ts
 

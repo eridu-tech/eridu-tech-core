@@ -12,12 +12,18 @@ export const logger = new Logger({
     executionContext,
 });
 
-// Spans and metadata are carried through async boundaries
+// Run scopes are carried through async boundaries
 await executionContext.run(async () => {
-    logger.scopedMetadata({ requestId: "req-1" }, async () => {
-        await Promise.resolve();
-        logger.span("db.query", () => {
-            logger.info(["querying"]);
-        });
-    });
+    await logger.run(
+        async () => {
+            await Promise.resolve();
+            logger.run(
+                () => {
+                    logger.info(["querying"]);
+                },
+                { span: "db.query" },
+            );
+        },
+        { metadata: { requestId: "req-1" } },
+    );
 });

@@ -16,7 +16,7 @@ The `LoggerResolver` class provides a flexible way to configure and switch betwe
 
 ## Initial configuration
 
-To begin using the `LoggerResolver`, you will need to register all required transports during initialization.
+To begin using the `LoggerResolver`, you will need to register all required transports during initialization, then call `init()` to create the per-transport loggers before calling `use()`.
 
 ```ts file=./samples/logger-resolver-initial-config.ts
 

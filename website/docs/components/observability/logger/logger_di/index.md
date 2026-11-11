@@ -19,9 +19,9 @@ The `ProxyLoggerResolver` class creates an [`ILoggerResolver`](../logger_resolve
 The returned proxy implements both `ILoggerResolver` and `ILogger`:
 
 - `use(transportName?)` selects a transport alias on the resolved `LoggerResolver`.
-- The `ILogger` methods such as `info`, `error`, `span` and `scopedMetadata` delegate to the logger of the default transport.
+- The `ILogger` methods such as `info`, `error`, `run` and `putMetadata` delegate to the logger of the default transport.
 
-The `resolverToken` is resolved on every operation, so every `LIFETIME` is supported. Prefer `SINGLETON` or `SCOPED`: a `TRANSIENT` resolver creates new loggers per operation, so spans and metadata do not carry across operations.
+The `resolverToken` is resolved on every operation, so every `LIFETIME` is supported. Prefer `SINGLETON` or `SCOPED`: a `TRANSIENT` resolver creates new loggers per operation, so `run` scopes do not carry across operations.
 
 ## Initial configuration
 
@@ -38,6 +38,8 @@ The `resolverToken` is resolved on every operation, so every `LIFETIME` is suppo
 ```
 
 #### 3. Register and initialize the logger resolver
+
+Create the resolver, call its `init()`, and register it on the container before the proxy is used:
 
 ```ts file=./samples/proxy-logger-resolver.ts
 
