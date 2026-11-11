@@ -34,9 +34,17 @@ Here is a complete list of settings for the [`Logger`](https://eridu-tech.github
 
 ## Logging levels
 
-The logger offers the `debug`, `verbose`, `info`, `warn`, `error` and `fatal` levels. `verbose` sits between `debug` and `info` in severity, for detailed progress information that is still meant for humans.
+The logger offers the `debug`, `verbose`, `info`, `warn`, `error` and `fatal` levels. `verbose` sits between `debug` and `info` in severity, for detailed progress information that is still meant for humans. Every level takes the values to log as an array.
 
 ```ts file=./samples/logger-levels.ts
+
+```
+
+## Grouping and extra info
+
+Each level accepts an optional extra-info object next to the messages. `group` labels the entry, `metadata` attaches values to that entry only without opening a scope, and the failure levels (`warn`, `error`, `fatal`) also accept `errors`.
+
+```ts file=./samples/logger-extra-info.ts
 
 ```
 

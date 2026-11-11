@@ -17,7 +17,7 @@ await executionContext.run(async () => {
     logger.scopedMetadata({ requestId: "req-1" }, async () => {
         await Promise.resolve();
         logger.span("db.query", () => {
-            logger.info("querying");
+            logger.info(["querying"]);
         });
     });
 });

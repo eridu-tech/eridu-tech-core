@@ -2,103 +2,235 @@
  * @module FileStorage
  */
 
-import { getConstructorName } from "@/utilities/_module-exports.js";
-
 import type { IFileStorageAdapter } from "@/file-storage/contracts/_module-exports.js";
 import type { ILogger } from "@/logger/contracts/_module-exports.js";
-import type {
-    MiddlewareFn,
-    PluginFn,
-} from "@/middleware/contracts/_module-exports.js";
+import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Creates a plugin that logs every call made to a file storage adapter.
  *
  * A successful call logs a `debug` entry, and a failed call logs an `error`
- * entry before the error is re-thrown unchanged. Entries are named
- * `file-storage.<methodName> succeeded|failed`. On success the logged arguments
- * and the returned value are merged into the metadata as `file-storage.args` and
- * `file-storage.result`; `put` and `putStream` drop the `data` payload there, so
- * file bytes never reach the logger. Every call runs inside the
- * `file-storage.adapter` scoped metadata, which holds the adapter class name.
+ * entry before the error is re-thrown unchanged. Entries are grouped under
+ * `[FileStorage]` and named after the method followed by `succeeded` or
+ * `failed`. Successful entries carry the adapter class name, the logged
+ * arguments and, for value-returning methods, the result. `put` and `putStream`
+ * drop the `data` payload, and `getBytes` and `getStream` omit the returned
+ * bytes or stream so file contents never reach the logger.
  *
- * @param logger - The logger that receives the entries. Only `debug`, `error`, `scopedMetadata` and `putMetadata` are used.
+ * @param logger - The logger that receives the entries. Only `debug` and
+ * `error` are used.
  * @returns A middleware plugin that wraps an `IFileStorageAdapter`.
  *
  * IMPORT_PATH: `"eridu-tech/file-storage/plugins"`
  * @group Plugins
  */
 export function withFileStorageLogging(
-    logger: Pick<ILogger, "debug" | "error" | "scopedMetadata" | "putMetadata">,
+    logger: ILogger,
 ): PluginFn<IFileStorageAdapter> {
-    return (adapter, enhance) => {
-        async function logCall<TValue>(
-            methodName: keyof IFileStorageAdapter,
-            args: Array<unknown>,
-            invocable: () => Promise<TValue>,
-        ): Promise<TValue> {
-            const prefix = `file-storage.${methodName}`;
-            try {
-                const result = await invocable();
-                logger.putMetadata({
-                    "file-storage.args": args,
-                    "file-storage.result": result,
-                });
-                logger.debug(`${prefix} succeeded`);
-                return result;
-            } catch (error: unknown) {
-                logger.error(`${prefix} failed`);
-                throw error;
-            }
-        }
-        const withMetadata: MiddlewareFn<any, any> = ({ next }) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return logger.scopedMetadata(
-                { "file-storage.adapter": getConstructorName(adapter) },
-                next,
-            );
-        };
+    return (adapter, enhance, adapterName) => {
         enhance(adapter, "copy", [
-            withMetadata,
-            ({ args, next }) => logCall("copy", args, next),
+            async ({ args: [source, destination], next }) => {
+                try {
+                    const result = await next();
+                    logger.debug(["copy succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            source,
+                            destination,
+                            result,
+                        },
+                    });
+                    return result;
+                } catch (error: unknown) {
+                    logger.error(["copy failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
         enhance(adapter, "exists", [
-            withMetadata,
-            ({ args, next }) => logCall("exists", args, next),
+            async ({ args: [key], next }) => {
+                try {
+                    const result = await next();
+                    logger.debug(["exists succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            key,
+                            result,
+                        },
+                    });
+                    return result;
+                } catch (error: unknown) {
+                    logger.error(["exists failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
         enhance(adapter, "getBytes", [
-            withMetadata,
-            ({ args, next }) => logCall("getBytes", args, next),
+            async ({ args: [key], next }) => {
+                try {
+                    const result = await next();
+                    logger.debug(["getBytes succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            key,
+                        },
+                    });
+                    return result;
+                } catch (error: unknown) {
+                    logger.error(["getBytes failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
         enhance(adapter, "getMetaData", [
-            withMetadata,
-            ({ args, next }) => logCall("getMetaData", args, next),
+            async ({ args: [key], next }) => {
+                try {
+                    const result = await next();
+                    logger.debug(["getMetaData succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            key,
+                            metadata: result,
+                        },
+                    });
+                    return result;
+                } catch (error: unknown) {
+                    logger.error(["getMetaData failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
         enhance(adapter, "getStream", [
-            withMetadata,
-            ({ args, next }) => logCall("getStream", args, next),
+            async ({ args: [key], next }) => {
+                try {
+                    const result = await next();
+                    logger.debug(["getStream succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            key,
+                        },
+                    });
+                    return result;
+                } catch (error: unknown) {
+                    logger.error(["getStream failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
         enhance(adapter, "move", [
-            withMetadata,
-            ({ args, next }) => logCall("move", args, next),
+            async ({ args: [source, destination], next }) => {
+                try {
+                    const result = await next();
+                    logger.debug(["move succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            source,
+                            destination,
+                            result,
+                        },
+                    });
+                    return result;
+                } catch (error: unknown) {
+                    logger.error(["move failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
         enhance(adapter, "put", [
-            withMetadata,
-            ({ args: [key, { data: _, ...rest }], next }) =>
-                logCall("put", [key, rest], next),
+            async ({ args: [key, { data: _, ...content }], next }) => {
+                try {
+                    await next();
+                    logger.debug(["put succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            key,
+                            content,
+                        },
+                    });
+                } catch (error: unknown) {
+                    logger.error(["put failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
         enhance(adapter, "putStream", [
-            withMetadata,
-            ({ args: [key, { data: _, ...rest }], next }) =>
-                logCall("putStream", [key, rest], next),
+            async ({ args: [key, { data: _, ...stream }], next }) => {
+                try {
+                    await next();
+                    logger.debug(["putStream succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            key,
+                            stream,
+                        },
+                    });
+                } catch (error: unknown) {
+                    logger.error(["putStream failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
         enhance(adapter, "removeByPrefix", [
-            withMetadata,
-            ({ args, next }) => logCall("removeByPrefix", args, next),
+            async ({ args: [prefix], next }) => {
+                try {
+                    await next();
+                    logger.debug(["removeByPrefix succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            prefix,
+                        },
+                    });
+                } catch (error: unknown) {
+                    logger.error(["removeByPrefix failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
         enhance(adapter, "removeMany", [
-            withMetadata,
-            ({ args, next }) => logCall("removeMany", args, next),
+            async ({ args: [keys], next }) => {
+                try {
+                    await next();
+                    logger.debug(["removeMany succeeded"], {
+                        group: "[FileStorage]",
+                        metadata: {
+                            adapter: adapterName,
+                            keys,
+                        },
+                    });
+                } catch (error: unknown) {
+                    logger.error(["removeMany failed"], {
+                        error,
+                    });
+                    throw error;
+                }
+            },
         ]);
     };
 }

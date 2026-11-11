@@ -14,7 +14,7 @@ describe("function: withRateLimiterLogging", () => {
     });
 
     describe("entry metadata", () => {
-        test("Should attach the adapter class name, the arguments and the result", async () => {
+        test("Should attach the group, the adapter class name, the key and the state", async () => {
             class TestAdapter extends NoOpRateLimiterAdapter {}
             const adapter = new TestAdapter();
             const executionContext = new ExecutionContext(
@@ -22,31 +22,73 @@ describe("function: withRateLimiterLogging", () => {
             );
             const transport = new NoOpLoggerTransport();
             const logSpy = vi.spyOn(transport, "log");
+            const resetTime = new Date(0);
+            vi.spyOn(adapter, "getState").mockResolvedValueOnce({
+                success: true,
+                attempt: 1,
+                resetTime,
+            });
             const logger = new Logger({ transport, executionContext });
             const enhanced = withPlugin(
                 adapter,
                 withRateLimiterLogging(logger),
             );
 
-            await enhanced.reset("myKey");
+            await enhanced.getState("myKey");
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual(["rate-limiter.reset succeeded"]);
+            expect(entry?.messages).toEqual(["getState succeeded"]);
+            expect(entry?.group).toEqual("[RateLimiter]");
             expect(entry?.metadata).toEqual({
-                "rate-limiter.adapter": "TestAdapter",
-                "rate-limiter.args": ["myKey"],
-                "rate-limiter.result": undefined,
+                adapter: "TestAdapter",
+                key: "myKey",
+                state: {
+                    success: true,
+                    attempt: 1,
+                    resetTime,
+                },
             });
+        });
+
+        test("Should attach the error without metadata when the call fails", async () => {
+            class TestAdapter extends NoOpRateLimiterAdapter {}
+            const adapter = new TestAdapter();
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const error = new Error("getState failed");
+            vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
+            const logger = new Logger({ transport, executionContext });
+            const enhanced = withPlugin(
+                adapter,
+                withRateLimiterLogging(logger),
+            );
+
+            await expect(enhanced.getState("myKey")).rejects.toThrow(error);
+
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.level).toEqual("error");
+            expect(entry?.messages).toEqual(["getState failed"]);
+            expect(entry?.error).toBe(error);
+            expect(entry?.metadata).toBeUndefined();
         });
     });
 
     describe("method: getState", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log a debug entry with the returned state", async () => {
             const adapter = new NoOpRateLimiterAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
             });
             const debugSpy = vi.spyOn(logger, "debug");
+            const resetTime = new Date(0);
+            vi.spyOn(adapter, "getState").mockResolvedValueOnce({
+                success: true,
+                attempt: 1,
+                resetTime,
+            });
             const enhanced = withPlugin(
                 adapter,
                 withRateLimiterLogging(logger),
@@ -55,7 +97,42 @@ describe("function: withRateLimiterLogging", () => {
             await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "rate-limiter.getState succeeded",
+                ["getState succeeded"],
+                {
+                    group: "[RateLimiter]",
+                    metadata: {
+                        adapter: "NoOpRateLimiterAdapter",
+                        key: "myKey",
+                        state: {
+                            success: true,
+                            attempt: 1,
+                            resetTime,
+                        },
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpRateLimiterAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("getState failed");
+            vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withRateLimiterLogging(logger),
+            );
+
+            await expect(enhanced.getState("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["getState failed"],
+                { error },
             );
         });
     });
@@ -75,18 +152,53 @@ describe("function: withRateLimiterLogging", () => {
             await enhanced.reset("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "rate-limiter.reset succeeded",
+                ["reset succeeded"],
+                {
+                    group: "[RateLimiter]",
+                    metadata: {
+                        adapter: "NoOpRateLimiterAdapter",
+                        key: "myKey",
+                    },
+                },
             );
         });
-    });
 
-    describe("method: updateState", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpRateLimiterAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
             });
             const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("reset failed");
+            vi.spyOn(adapter, "reset").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withRateLimiterLogging(logger),
+            );
+
+            await expect(enhanced.reset("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(["reset failed"], {
+                error,
+            });
+        });
+    });
+
+    describe("method: updateState", () => {
+        test("Should log a debug entry with the returned state", async () => {
+            const adapter = new NoOpRateLimiterAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const resetTime = new Date(0);
+            vi.spyOn(adapter, "updateState").mockResolvedValueOnce({
+                success: true,
+                attempt: 1,
+                resetTime,
+            });
             const enhanced = withPlugin(
                 adapter,
                 withRateLimiterLogging(logger),
@@ -95,7 +207,20 @@ describe("function: withRateLimiterLogging", () => {
             await enhanced.updateState("myKey", 5);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "rate-limiter.updateState succeeded",
+                ["updateState succeeded"],
+                {
+                    group: "[RateLimiter]",
+                    metadata: {
+                        adapter: "NoOpRateLimiterAdapter",
+                        key: "myKey",
+                        limit: 5,
+                        state: {
+                            success: true,
+                            attempt: 1,
+                            resetTime,
+                        },
+                    },
+                },
             );
         });
 
@@ -119,7 +244,8 @@ describe("function: withRateLimiterLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "rate-limiter.updateState failed",
+                ["updateState failed"],
+                { error },
             );
         });
     });

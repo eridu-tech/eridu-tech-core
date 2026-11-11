@@ -8,4 +8,4 @@ export const logger = new Logger({
 });
 
 // Every entry reaches both transports
-logger.info("Written to the console and dropped by the no-op transport");
+logger.info(["Written to the console and dropped by the no-op transport"]);

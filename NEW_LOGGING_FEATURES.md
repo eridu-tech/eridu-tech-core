@@ -1,0 +1,6 @@
+- Add logging middleware that wraps other middlewares.
+- Add new transaction-adapter logging plugin
+- Add new detailed http-router logger middleware
+- Update all existing component logging plugins to not use `getConstructorName` make it configurable.
+- X Update the `ILoggerTransport` and `ILogger` to first party support for grouping
+- X Update the `ILogger` logging methods (e.g `info`, `warn`) to have support for passing metadata and group directly without creating a scope.

@@ -16,7 +16,7 @@ describe("function: withLockLogging", () => {
     });
 
     describe("entry metadata", () => {
-        test("Should attach the adapter class name, the arguments and the result", async () => {
+        test("Should attach the group, the adapter class name, the arguments and the result", async () => {
             class TestLockAdapter extends NoOpLockAdapter {}
             const adapter = new TestLockAdapter();
             const executionContext = new ExecutionContext(
@@ -27,15 +27,42 @@ describe("function: withLockLogging", () => {
             const logger = new Logger({ transport, executionContext });
             const enhanced = withPlugin(adapter, withLockLogging(logger));
 
-            await enhanced.release("myKey", "lockId");
+            await enhanced.acquire("myKey", "lockId", currentDate);
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual(["lock.release succeeded"]);
+            expect(entry?.messages).toEqual(["acquire succeeded"]);
+            expect(entry?.group).toEqual("[Lock]");
             expect(entry?.metadata).toEqual({
-                "lock.adapter": "TestLockAdapter",
-                "lock.args": ["myKey", "lockId"],
-                "lock.result": true,
+                adapter: "TestLockAdapter",
+                key: "myKey",
+                lockId: "lockId",
+                ttl: currentDate,
+                hasAcquired: true,
             });
+        });
+
+        test("Should attach the error without metadata when the call fails", async () => {
+            class TestLockAdapter extends NoOpLockAdapter {}
+            const adapter = new TestLockAdapter();
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const error = new Error("acquire failed");
+            vi.spyOn(adapter, "acquire").mockRejectedValueOnce(error);
+            const logger = new Logger({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withLockLogging(logger));
+
+            await expect(
+                enhanced.acquire("myKey", "lockId", currentDate),
+            ).rejects.toThrow(error);
+
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.level).toEqual("error");
+            expect(entry?.messages).toEqual(["acquire failed"]);
+            expect(entry?.error).toBe(error);
+            expect(entry?.metadata).toBeUndefined();
         });
     });
 
@@ -51,7 +78,17 @@ describe("function: withLockLogging", () => {
             await enhanced.acquire("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "lock.acquire succeeded",
+                ["acquire succeeded"],
+                {
+                    group: "[Lock]",
+                    metadata: {
+                        adapter: "NoOpLockAdapter",
+                        key: "myKey",
+                        lockId: "lockId",
+                        ttl: currentDate,
+                        hasAcquired: true,
+                    },
+                },
             );
         });
 
@@ -72,7 +109,8 @@ describe("function: withLockLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "lock.acquire failed",
+                ["acquire failed"],
+                { error },
             );
         });
     });
@@ -89,13 +127,41 @@ describe("function: withLockLogging", () => {
             await enhanced.forceRelease("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "lock.forceRelease succeeded",
+                ["forceRelease succeeded"],
+                {
+                    group: "[Lock]",
+                    metadata: {
+                        adapter: "NoOpLockAdapter",
+                        key: "myKey",
+                        hasForceReleased: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("forceRelease failed");
+            vi.spyOn(adapter, "forceRelease").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withLockLogging(logger));
+
+            await expect(enhanced.forceRelease("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["forceRelease failed"],
+                { error },
             );
         });
     });
 
     describe("method: getState", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log a debug entry with the returned state", async () => {
             const adapter = new NoOpLockAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
@@ -106,7 +172,35 @@ describe("function: withLockLogging", () => {
             await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "lock.getState succeeded",
+                ["getState succeeded"],
+                {
+                    group: "[Lock]",
+                    metadata: {
+                        adapter: "NoOpLockAdapter",
+                        key: "myKey",
+                        state: null,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("getState failed");
+            vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withLockLogging(logger));
+
+            await expect(enhanced.getState("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["getState failed"],
+                { error },
             );
         });
     });
@@ -123,7 +217,39 @@ describe("function: withLockLogging", () => {
             await enhanced.refresh("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "lock.refresh succeeded",
+                ["refresh succeeded"],
+                {
+                    group: "[Lock]",
+                    metadata: {
+                        adapter: "NoOpLockAdapter",
+                        key: "myKey",
+                        lockId: "lockId",
+                        ttl: currentDate,
+                        hasRefreshed: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("refresh failed");
+            vi.spyOn(adapter, "refresh").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withLockLogging(logger));
+
+            await expect(
+                enhanced.refresh("myKey", "lockId", currentDate),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["refresh failed"],
+                { error },
             );
         });
     });
@@ -140,7 +266,38 @@ describe("function: withLockLogging", () => {
             await enhanced.release("myKey", "lockId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "lock.release succeeded",
+                ["release succeeded"],
+                {
+                    group: "[Lock]",
+                    metadata: {
+                        adapter: "NoOpLockAdapter",
+                        key: "myKey",
+                        lockId: "lockId",
+                        hasReleased: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("release failed");
+            vi.spyOn(adapter, "release").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withLockLogging(logger));
+
+            await expect(enhanced.release("myKey", "lockId")).rejects.toThrow(
+                error,
+            );
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["release failed"],
+                { error },
             );
         });
     });

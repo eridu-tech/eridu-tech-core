@@ -27,7 +27,7 @@ describe("function: withSemaphoreLogging", () => {
     });
 
     describe("entry metadata", () => {
-        test("Should attach the adapter class name, the arguments and the result", async () => {
+        test("Should attach the group, the adapter class name, the arguments and the result", async () => {
             class TestAdapter extends NoOpSemaphoreAdapter {}
             const adapter = new TestAdapter();
             const executionContext = new ExecutionContext(
@@ -41,12 +41,38 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.release("myKey", "slotId");
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual(["semaphore.release succeeded"]);
+            expect(entry?.messages).toEqual(["release succeeded"]);
+            expect(entry?.group).toEqual("[Semaphore]");
             expect(entry?.metadata).toEqual({
-                "semaphore.adapter": "TestAdapter",
-                "semaphore.args": ["myKey", "slotId"],
-                "semaphore.result": true,
+                adapter: "TestAdapter",
+                key: "myKey",
+                slotId: "slotId",
+                hasReleased: true,
             });
+        });
+
+        test("Should attach the error without metadata when the call fails", async () => {
+            class TestAdapter extends NoOpSemaphoreAdapter {}
+            const adapter = new TestAdapter();
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const error = new Error("release failed");
+            vi.spyOn(adapter, "release").mockRejectedValueOnce(error);
+            const logger = new Logger({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+
+            await expect(enhanced.release("myKey", "slotId")).rejects.toThrow(
+                error,
+            );
+
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.level).toEqual("error");
+            expect(entry?.messages).toEqual(["release failed"]);
+            expect(entry?.error).toBe(error);
+            expect(entry?.metadata).toBeUndefined();
         });
     });
 
@@ -63,7 +89,15 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.acquire(settings);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "semaphore.acquire succeeded",
+                ["acquire succeeded"],
+                {
+                    group: "[Semaphore]",
+                    metadata: {
+                        adapter: "NoOpSemaphoreAdapter",
+                        ...settings,
+                        hasAcquired: true,
+                    },
+                },
             );
         });
 
@@ -83,7 +117,8 @@ describe("function: withSemaphoreLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "semaphore.acquire failed",
+                ["acquire failed"],
+                { error },
             );
         });
     });
@@ -100,13 +135,43 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.forceReleaseAll("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "semaphore.forceReleaseAll succeeded",
+                ["forceReleaseAll succeeded"],
+                {
+                    group: "[Semaphore]",
+                    metadata: {
+                        adapter: "NoOpSemaphoreAdapter",
+                        key: "myKey",
+                        hasForceReleasedAll: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSemaphoreAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("forceReleaseAll failed");
+            vi.spyOn(adapter, "forceReleaseAll").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+
+            await expect(enhanced.forceReleaseAll("myKey")).rejects.toThrow(
+                error,
+            );
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["forceReleaseAll failed"],
+                { error },
             );
         });
     });
 
     describe("method: getState", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log a debug entry with the returned state", async () => {
             const adapter = new NoOpSemaphoreAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
@@ -117,7 +182,38 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "semaphore.getState succeeded",
+                ["getState succeeded"],
+                {
+                    group: "[Semaphore]",
+                    metadata: {
+                        adapter: "NoOpSemaphoreAdapter",
+                        key: "myKey",
+                        state: {
+                            limit: Infinity,
+                            acquiredSlots: new Map(),
+                        },
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSemaphoreAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("getState failed");
+            vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+
+            await expect(enhanced.getState("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["getState failed"],
+                { error },
             );
         });
     });
@@ -134,7 +230,39 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.refresh("myKey", "slotId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "semaphore.refresh succeeded",
+                ["refresh succeeded"],
+                {
+                    group: "[Semaphore]",
+                    metadata: {
+                        adapter: "NoOpSemaphoreAdapter",
+                        key: "myKey",
+                        slotId: "slotId",
+                        ttl: currentDate,
+                        hasRefreshed: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSemaphoreAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("refresh failed");
+            vi.spyOn(adapter, "refresh").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+
+            await expect(
+                enhanced.refresh("myKey", "slotId", currentDate),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["refresh failed"],
+                { error },
             );
         });
     });
@@ -151,7 +279,38 @@ describe("function: withSemaphoreLogging", () => {
             await enhanced.release("myKey", "slotId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "semaphore.release succeeded",
+                ["release succeeded"],
+                {
+                    group: "[Semaphore]",
+                    metadata: {
+                        adapter: "NoOpSemaphoreAdapter",
+                        key: "myKey",
+                        slotId: "slotId",
+                        hasReleased: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSemaphoreAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("release failed");
+            vi.spyOn(adapter, "release").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+
+            await expect(enhanced.release("myKey", "slotId")).rejects.toThrow(
+                error,
+            );
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["release failed"],
+                { error },
             );
         });
     });

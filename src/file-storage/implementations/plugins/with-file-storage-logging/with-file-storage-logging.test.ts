@@ -46,7 +46,7 @@ describe("function: withFileStorageLogging", () => {
     });
 
     describe("entry metadata", () => {
-        test("Should attach the adapter class name, the arguments and the result", async () => {
+        test("Should attach the group, the adapter class name, the key and the result", async () => {
             class TestAdapter extends NoOpFileStorageAdapter {}
             const adapter = new TestAdapter();
             const executionContext = new ExecutionContext(
@@ -63,11 +63,12 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.exists("myKey");
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual(["file-storage.exists succeeded"]);
+            expect(entry?.messages).toEqual(["exists succeeded"]);
+            expect(entry?.group).toEqual("[FileStorage]");
             expect(entry?.metadata).toEqual({
-                "file-storage.adapter": "TestAdapter",
-                "file-storage.args": ["myKey"],
-                "file-storage.result": false,
+                adapter: "TestAdapter",
+                key: "myKey",
+                result: false,
             });
         });
 
@@ -87,17 +88,41 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.put("myKey", createContent());
 
             const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.messages).toEqual(["put succeeded"]);
+            expect(entry?.group).toEqual("[FileStorage]");
             expect(entry?.metadata).toEqual({
-                "file-storage.adapter": "NoOpFileStorageAdapter",
-                "file-storage.args": [
-                    "myKey",
-                    {
-                        fileSizeInBytes: 3,
-                        ...commonSettings,
-                    },
-                ],
-                "file-storage.result": undefined,
+                adapter: "NoOpFileStorageAdapter",
+                key: "myKey",
+                content: {
+                    fileSizeInBytes: 3,
+                    ...commonSettings,
+                },
             });
+        });
+
+        test("Should attach the error without metadata when the call fails", async () => {
+            class TestAdapter extends NoOpFileStorageAdapter {}
+            const adapter = new TestAdapter();
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const error = new Error("exists failed");
+            vi.spyOn(adapter, "exists").mockRejectedValueOnce(error);
+            const logger = new Logger({ transport, executionContext });
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(enhanced.exists("myKey")).rejects.toThrow(error);
+
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.level).toEqual("error");
+            expect(entry?.messages).toEqual(["exists failed"]);
+            expect(entry?.error).toBe(error);
+            expect(entry?.metadata).toBeUndefined();
         });
     });
 
@@ -116,8 +141,41 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.copy("source-key", "destination-key");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.copy succeeded",
+                ["copy succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        source: "source-key",
+                        destination: "destination-key",
+                        result: true,
+                    },
+                },
             );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpFileStorageAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("copy failed");
+            vi.spyOn(adapter, "copy").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(
+                enhanced.copy("source-key", "destination-key"),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(["copy failed"], {
+                error,
+            });
         });
     });
 
@@ -136,13 +194,44 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.exists("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.exists succeeded",
+                ["exists succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        key: "myKey",
+                        result: false,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpFileStorageAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("exists failed");
+            vi.spyOn(adapter, "exists").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(enhanced.exists("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["exists failed"],
+                { error },
             );
         });
     });
 
     describe("method: getBytes", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log a debug entry without the returned bytes", async () => {
             const adapter = new NoOpFileStorageAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
@@ -156,13 +245,43 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.getBytes("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.getBytes succeeded",
+                ["getBytes succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        key: "myKey",
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpFileStorageAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("getBytes failed");
+            vi.spyOn(adapter, "getBytes").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(enhanced.getBytes("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["getBytes failed"],
+                { error },
             );
         });
     });
 
     describe("method: getMetaData", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log a debug entry with the returned metadata", async () => {
             const adapter = new NoOpFileStorageAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
@@ -176,13 +295,44 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.getMetaData("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.getMetaData succeeded",
+                ["getMetaData succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        key: "myKey",
+                        metadata: null,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpFileStorageAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("getMetaData failed");
+            vi.spyOn(adapter, "getMetaData").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(enhanced.getMetaData("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["getMetaData failed"],
+                { error },
             );
         });
     });
 
     describe("method: getStream", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log a debug entry without the returned stream", async () => {
             const adapter = new NoOpFileStorageAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
@@ -196,7 +346,37 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.getStream("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.getStream succeeded",
+                ["getStream succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        key: "myKey",
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpFileStorageAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("getStream failed");
+            vi.spyOn(adapter, "getStream").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(enhanced.getStream("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["getStream failed"],
+                { error },
             );
         });
     });
@@ -216,13 +396,46 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.move("source-key", "destination-key");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.move succeeded",
+                ["move succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        source: "source-key",
+                        destination: "destination-key",
+                        result: true,
+                    },
+                },
             );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpFileStorageAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("move failed");
+            vi.spyOn(adapter, "move").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(
+                enhanced.move("source-key", "destination-key"),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(["move failed"], {
+                error,
+            });
         });
     });
 
     describe("method: put", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log a debug entry without the data payload", async () => {
             const adapter = new NoOpFileStorageAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
@@ -236,7 +449,18 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.put("myKey", createContent());
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.put succeeded",
+                ["put succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        key: "myKey",
+                        content: {
+                            fileSizeInBytes: 3,
+                            ...commonSettings,
+                        },
+                    },
+                },
             );
         });
 
@@ -259,14 +483,14 @@ describe("function: withFileStorageLogging", () => {
             ).rejects.toThrow(error);
 
             expect(debugSpy).not.toHaveBeenCalled();
-            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.put failed",
-            );
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(["put failed"], {
+                error,
+            });
         });
     });
 
     describe("method: putStream", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log a debug entry without the data payload", async () => {
             const adapter = new NoOpFileStorageAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
@@ -280,7 +504,43 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.putStream("myKey", createStream());
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.putStream succeeded",
+                ["putStream succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        key: "myKey",
+                        stream: {
+                            fileSizeInBytes: 3,
+                            ...commonSettings,
+                        },
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpFileStorageAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("putStream failed");
+            vi.spyOn(adapter, "putStream").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(
+                enhanced.putStream("myKey", createStream()),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["putStream failed"],
+                { error },
             );
         });
     });
@@ -300,7 +560,39 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.removeByPrefix("folder/");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.removeByPrefix succeeded",
+                ["removeByPrefix succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        prefix: "folder/",
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpFileStorageAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("removeByPrefix failed");
+            vi.spyOn(adapter, "removeByPrefix").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(enhanced.removeByPrefix("folder/")).rejects.toThrow(
+                error,
+            );
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["removeByPrefix failed"],
+                { error },
             );
         });
     });
@@ -320,7 +612,39 @@ describe("function: withFileStorageLogging", () => {
             await enhanced.removeMany(["key-1", "key-2"]);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "file-storage.removeMany succeeded",
+                ["removeMany succeeded"],
+                {
+                    group: "[FileStorage]",
+                    metadata: {
+                        adapter: "NoOpFileStorageAdapter",
+                        keys: ["key-1", "key-2"],
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpFileStorageAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("removeMany failed");
+            vi.spyOn(adapter, "removeMany").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withFileStorageLogging(logger),
+            );
+
+            await expect(
+                enhanced.removeMany(["key-1", "key-2"]),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["removeMany failed"],
+                { error },
             );
         });
     });

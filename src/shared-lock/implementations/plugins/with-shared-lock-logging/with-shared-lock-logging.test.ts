@@ -27,7 +27,7 @@ describe("function: withSharedLockLogging", () => {
     });
 
     describe("entry metadata", () => {
-        test("Should attach the adapter class name, the arguments and the result", async () => {
+        test("Should attach the group, the adapter class name, the arguments and the result", async () => {
             class TestAdapter extends NoOpSharedLockAdapter {}
             const adapter = new TestAdapter();
             const executionContext = new ExecutionContext(
@@ -41,14 +41,38 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.releaseWriter("myKey", "lockId");
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual([
-                "shared-lock.releaseWriter succeeded",
-            ]);
+            expect(entry?.messages).toEqual(["releaseWriter succeeded"]);
+            expect(entry?.group).toEqual("[SharedLock]");
             expect(entry?.metadata).toEqual({
-                "shared-lock.adapter": "TestAdapter",
-                "shared-lock.args": ["myKey", "lockId"],
-                "shared-lock.result": true,
+                adapter: "TestAdapter",
+                key: "myKey",
+                lockId: "lockId",
+                hasReleasedWriter: true,
             });
+        });
+
+        test("Should attach the error without metadata when the call fails", async () => {
+            class TestAdapter extends NoOpSharedLockAdapter {}
+            const adapter = new TestAdapter();
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const error = new Error("releaseWriter failed");
+            vi.spyOn(adapter, "releaseWriter").mockRejectedValueOnce(error);
+            const logger = new Logger({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withSharedLockLogging(logger));
+
+            await expect(
+                enhanced.releaseWriter("myKey", "lockId"),
+            ).rejects.toThrow(error);
+
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.level).toEqual("error");
+            expect(entry?.messages).toEqual(["releaseWriter failed"]);
+            expect(entry?.error).toBe(error);
+            expect(entry?.metadata).toBeUndefined();
         });
     });
 
@@ -65,7 +89,38 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.acquireReader(settings);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "shared-lock.acquireReader succeeded",
+                ["acquireReader succeeded"],
+                {
+                    group: "[SharedLock]",
+                    metadata: {
+                        adapter: "NoOpSharedLockAdapter",
+                        ...settings,
+                        hasAcquiredReader: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSharedLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const settings = createAcquireSettings();
+            const error = new Error("acquireReader failed");
+            vi.spyOn(adapter, "acquireReader").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSharedLockLogging(logger));
+
+            await expect(enhanced.acquireReader(settings)).rejects.toThrow(
+                error,
+            );
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["acquireReader failed"],
+                { error },
             );
         });
     });
@@ -82,7 +137,17 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.acquireWriter("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "shared-lock.acquireWriter succeeded",
+                ["acquireWriter succeeded"],
+                {
+                    group: "[SharedLock]",
+                    metadata: {
+                        adapter: "NoOpSharedLockAdapter",
+                        key: "myKey",
+                        lockId: "lockId",
+                        ttl: currentDate,
+                        hasAcquiredWriter: true,
+                    },
+                },
             );
         });
 
@@ -103,7 +168,8 @@ describe("function: withSharedLockLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "shared-lock.acquireWriter failed",
+                ["acquireWriter failed"],
+                { error },
             );
         });
     });
@@ -120,13 +186,41 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.forceRelease("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "shared-lock.forceRelease succeeded",
+                ["forceRelease succeeded"],
+                {
+                    group: "[SharedLock]",
+                    metadata: {
+                        adapter: "NoOpSharedLockAdapter",
+                        key: "myKey",
+                        hasForceReleased: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSharedLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("forceRelease failed");
+            vi.spyOn(adapter, "forceRelease").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSharedLockLogging(logger));
+
+            await expect(enhanced.forceRelease("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["forceRelease failed"],
+                { error },
             );
         });
     });
 
     describe("method: getState", () => {
-        test("Should log a debug entry when the call succeeds", async () => {
+        test("Should log a debug entry with the returned state", async () => {
             const adapter = new NoOpSharedLockAdapter();
             const logger = new Logger({
                 transport: new NoOpLoggerTransport(),
@@ -137,7 +231,35 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "shared-lock.getState succeeded",
+                ["getState succeeded"],
+                {
+                    group: "[SharedLock]",
+                    metadata: {
+                        adapter: "NoOpSharedLockAdapter",
+                        key: "myKey",
+                        state: null,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSharedLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("getState failed");
+            vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSharedLockLogging(logger));
+
+            await expect(enhanced.getState("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["getState failed"],
+                { error },
             );
         });
     });
@@ -154,7 +276,39 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.refreshReader("myKey", "slotId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "shared-lock.refreshReader succeeded",
+                ["refreshReader succeeded"],
+                {
+                    group: "[SharedLock]",
+                    metadata: {
+                        adapter: "NoOpSharedLockAdapter",
+                        key: "myKey",
+                        slotId: "slotId",
+                        ttl: currentDate,
+                        hasRefreshedReader: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSharedLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("refreshReader failed");
+            vi.spyOn(adapter, "refreshReader").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSharedLockLogging(logger));
+
+            await expect(
+                enhanced.refreshReader("myKey", "slotId", currentDate),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["refreshReader failed"],
+                { error },
             );
         });
     });
@@ -171,7 +325,39 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.refreshWriter("myKey", "lockId", currentDate);
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "shared-lock.refreshWriter succeeded",
+                ["refreshWriter succeeded"],
+                {
+                    group: "[SharedLock]",
+                    metadata: {
+                        adapter: "NoOpSharedLockAdapter",
+                        key: "myKey",
+                        lockId: "lockId",
+                        ttl: currentDate,
+                        hasRefreshedWriter: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSharedLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("refreshWriter failed");
+            vi.spyOn(adapter, "refreshWriter").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSharedLockLogging(logger));
+
+            await expect(
+                enhanced.refreshWriter("myKey", "lockId", currentDate),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["refreshWriter failed"],
+                { error },
             );
         });
     });
@@ -188,7 +374,38 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.releaseReader("myKey", "slotId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "shared-lock.releaseReader succeeded",
+                ["releaseReader succeeded"],
+                {
+                    group: "[SharedLock]",
+                    metadata: {
+                        adapter: "NoOpSharedLockAdapter",
+                        key: "myKey",
+                        slotId: "slotId",
+                        hasReleasedReader: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSharedLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("releaseReader failed");
+            vi.spyOn(adapter, "releaseReader").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSharedLockLogging(logger));
+
+            await expect(
+                enhanced.releaseReader("myKey", "slotId"),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["releaseReader failed"],
+                { error },
             );
         });
     });
@@ -205,7 +422,38 @@ describe("function: withSharedLockLogging", () => {
             await enhanced.releaseWriter("myKey", "lockId");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "shared-lock.releaseWriter succeeded",
+                ["releaseWriter succeeded"],
+                {
+                    group: "[SharedLock]",
+                    metadata: {
+                        adapter: "NoOpSharedLockAdapter",
+                        key: "myKey",
+                        lockId: "lockId",
+                        hasReleasedWriter: true,
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpSharedLockAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("releaseWriter failed");
+            vi.spyOn(adapter, "releaseWriter").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(adapter, withSharedLockLogging(logger));
+
+            await expect(
+                enhanced.releaseWriter("myKey", "lockId"),
+            ).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["releaseWriter failed"],
+                { error },
             );
         });
     });

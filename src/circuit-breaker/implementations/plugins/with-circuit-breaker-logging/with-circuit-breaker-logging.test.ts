@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { CIRCUIT_BREAKER_STATE } from "@/circuit-breaker/contracts/_module-exports.js";
 import { NoOpCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/no-op-circuit-breaker-adapter/_module-exports.js";
 import { withCircuitBreakerLogging } from "@/circuit-breaker/implementations/plugins/with-circuit-breaker-logging/with-circuit-breaker-logging.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
@@ -14,7 +15,7 @@ describe("function: withCircuitBreakerLogging", () => {
     });
 
     describe("entry metadata", () => {
-        test("Should attach the adapter class name, the arguments and the result", async () => {
+        test("Should attach the group, the adapter class name, the key and the state", async () => {
             class TestAdapter extends NoOpCircuitBreakerAdapter {}
             const adapter = new TestAdapter();
             const executionContext = new ExecutionContext(
@@ -28,17 +29,70 @@ describe("function: withCircuitBreakerLogging", () => {
                 withCircuitBreakerLogging(logger),
             );
 
-            await enhanced.reset("myKey");
+            await enhanced.getState("myKey");
 
             const entry = logSpy.mock.calls[0]?.[0];
-            expect(entry?.messages).toEqual([
-                "circuit-breaker.reset succeeded",
-            ]);
+            expect(entry?.messages).toEqual(["getState succeeded"]);
+            expect(entry?.group).toEqual("[CircuitBreaker]");
             expect(entry?.metadata).toEqual({
-                "circuit-breaker.adapter": "TestAdapter",
-                "circuit-breaker.args": ["myKey"],
-                "circuit-breaker.result": undefined,
+                adapter: "TestAdapter",
+                key: "myKey",
+                state: CIRCUIT_BREAKER_STATE.CLOSED,
             });
+        });
+
+        test("Should attach the state transition returned by updateState", async () => {
+            class TestAdapter extends NoOpCircuitBreakerAdapter {}
+            const adapter = new TestAdapter();
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const logger = new Logger({ transport, executionContext });
+            const enhanced = withPlugin(
+                adapter,
+                withCircuitBreakerLogging(logger),
+            );
+
+            await enhanced.updateState("myKey");
+
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.messages).toEqual(["updateState succeeded"]);
+            expect(entry?.group).toEqual("[CircuitBreaker]");
+            expect(entry?.metadata).toEqual({
+                adapter: "TestAdapter",
+                key: "myKey",
+                transition: {
+                    from: CIRCUIT_BREAKER_STATE.CLOSED,
+                    to: CIRCUIT_BREAKER_STATE.CLOSED,
+                },
+            });
+        });
+
+        test("Should attach the error without metadata when the call fails", async () => {
+            class TestAdapter extends NoOpCircuitBreakerAdapter {}
+            const adapter = new TestAdapter();
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const transport = new NoOpLoggerTransport();
+            const logSpy = vi.spyOn(transport, "log");
+            const logger = new Logger({ transport, executionContext });
+            const error = new Error("getState failed");
+            vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withCircuitBreakerLogging(logger),
+            );
+
+            await expect(enhanced.getState("myKey")).rejects.toThrow(error);
+
+            const entry = logSpy.mock.calls[0]?.[0];
+            expect(entry?.level).toEqual("error");
+            expect(entry?.messages).toEqual(["getState failed"]);
+            expect(entry?.error).toBe(error);
+            expect(entry?.metadata).toBeUndefined();
         });
     });
 
@@ -54,10 +108,42 @@ describe("function: withCircuitBreakerLogging", () => {
                 withCircuitBreakerLogging(logger),
             );
 
-            await enhanced.getState("myKey");
+            const state = await enhanced.getState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuit-breaker.getState succeeded",
+                ["getState succeeded"],
+                {
+                    group: "[CircuitBreaker]",
+                    metadata: {
+                        adapter: "NoOpCircuitBreakerAdapter",
+                        key: "myKey",
+                        state: CIRCUIT_BREAKER_STATE.CLOSED,
+                    },
+                },
+            );
+            expect(state).toEqual(CIRCUIT_BREAKER_STATE.CLOSED);
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpCircuitBreakerAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("getState failed");
+            vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withCircuitBreakerLogging(logger),
+            );
+
+            await expect(enhanced.getState("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["getState failed"],
+                { error },
             );
         });
     });
@@ -77,7 +163,37 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.isolate("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuit-breaker.isolate succeeded",
+                ["isolate succeeded"],
+                {
+                    group: "[CircuitBreaker]",
+                    metadata: {
+                        adapter: "NoOpCircuitBreakerAdapter",
+                        key: "myKey",
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpCircuitBreakerAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("isolate failed");
+            vi.spyOn(adapter, "isolate").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withCircuitBreakerLogging(logger),
+            );
+
+            await expect(enhanced.isolate("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["isolate failed"],
+                { error },
             );
         });
     });
@@ -97,8 +213,37 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.reset("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuit-breaker.reset succeeded",
+                ["reset succeeded"],
+                {
+                    group: "[CircuitBreaker]",
+                    metadata: {
+                        adapter: "NoOpCircuitBreakerAdapter",
+                        key: "myKey",
+                    },
+                },
             );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpCircuitBreakerAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("reset failed");
+            vi.spyOn(adapter, "reset").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withCircuitBreakerLogging(logger),
+            );
+
+            await expect(enhanced.reset("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(["reset failed"], {
+                error,
+            });
         });
     });
 
@@ -117,7 +262,37 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.trackFailure("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuit-breaker.trackFailure succeeded",
+                ["trackFailure succeeded"],
+                {
+                    group: "[CircuitBreaker]",
+                    metadata: {
+                        adapter: "NoOpCircuitBreakerAdapter",
+                        key: "myKey",
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpCircuitBreakerAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("trackFailure failed");
+            vi.spyOn(adapter, "trackFailure").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withCircuitBreakerLogging(logger),
+            );
+
+            await expect(enhanced.trackFailure("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["trackFailure failed"],
+                { error },
             );
         });
     });
@@ -137,7 +312,37 @@ describe("function: withCircuitBreakerLogging", () => {
             await enhanced.trackSuccess("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuit-breaker.trackSuccess succeeded",
+                ["trackSuccess succeeded"],
+                {
+                    group: "[CircuitBreaker]",
+                    metadata: {
+                        adapter: "NoOpCircuitBreakerAdapter",
+                        key: "myKey",
+                    },
+                },
+            );
+        });
+
+        test("Should log an error entry and rethrow when the call fails", async () => {
+            const adapter = new NoOpCircuitBreakerAdapter();
+            const logger = new Logger({
+                transport: new NoOpLoggerTransport(),
+            });
+            const debugSpy = vi.spyOn(logger, "debug");
+            const errorSpy = vi.spyOn(logger, "error");
+            const error = new Error("trackSuccess failed");
+            vi.spyOn(adapter, "trackSuccess").mockRejectedValueOnce(error);
+            const enhanced = withPlugin(
+                adapter,
+                withCircuitBreakerLogging(logger),
+            );
+
+            await expect(enhanced.trackSuccess("myKey")).rejects.toThrow(error);
+
+            expect(debugSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
+                ["trackSuccess failed"],
+                { error },
             );
         });
     });
@@ -154,11 +359,26 @@ describe("function: withCircuitBreakerLogging", () => {
                 withCircuitBreakerLogging(logger),
             );
 
-            await enhanced.updateState("myKey");
+            const transition = await enhanced.updateState("myKey");
 
             expect(debugSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuit-breaker.updateState succeeded",
+                ["updateState succeeded"],
+                {
+                    group: "[CircuitBreaker]",
+                    metadata: {
+                        adapter: "NoOpCircuitBreakerAdapter",
+                        key: "myKey",
+                        transition: {
+                            from: CIRCUIT_BREAKER_STATE.CLOSED,
+                            to: CIRCUIT_BREAKER_STATE.CLOSED,
+                        },
+                    },
+                },
             );
+            expect(transition).toEqual({
+                from: CIRCUIT_BREAKER_STATE.CLOSED,
+                to: CIRCUIT_BREAKER_STATE.CLOSED,
+            });
         });
 
         test("Should log an error entry and rethrow when the call fails", async () => {
@@ -179,7 +399,8 @@ describe("function: withCircuitBreakerLogging", () => {
 
             expect(debugSpy).not.toHaveBeenCalled();
             expect(errorSpy).toHaveBeenCalledExactlyOnceWith(
-                "circuit-breaker.updateState failed",
+                ["updateState failed"],
+                { error },
             );
         });
     });

@@ -5,4 +5,4 @@ export const logger = new Logger({
     transport: new ConsoleLoggerTransport(),
 });
 
-logger.info("Application started");
+logger.info(["Application started"]);
