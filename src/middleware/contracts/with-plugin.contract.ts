@@ -10,6 +10,16 @@ import type {
 } from "@/utilities/_module-exports.js";
 
 /**
+ * IMPORT_PATH: `eridu-tech/middleware/contracts`
+ * @group Contracts
+ */
+export type PluginArgs<TInstance = unknown> = [
+    currentInstance: TInstance,
+    enhance: Enhance,
+    className: string,
+];
+
+/**
  * A function-based plugin that receives the target instance and an {@link Enhance} utility.
  *
  * Plugins are used to apply side effects or configuration to an object instance
@@ -28,10 +38,7 @@ import type {
  * IMPORT_PATH: `eridu-tech/middleware/contracts`
  * @group Contracts
  */
-export type PluginFn<TInstance> = InvocableFn<
-    [instance: TInstance, enhance: Enhance],
-    void
->;
+export type PluginFn<TInstance> = InvocableFn<PluginArgs<TInstance>, void>;
 
 /**
  * An object-based plugin that receives the target instance and an {@link Enhance} utility.
@@ -50,7 +57,7 @@ export type PluginFn<TInstance> = InvocableFn<
  * @group Contracts
  */
 export type IPluginObject<TInstance> = IInvocableObject<
-    [instance: TInstance, enhance: Enhance],
+    PluginArgs<TInstance>,
     void
 >;
 
