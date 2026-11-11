@@ -451,6 +451,10 @@
             "types": "./dist/logger/implementations/transports/no-op-logger-transport/_module-exports.d.ts",
             "import": "./dist/logger/implementations/transports/no-op-logger-transport/_module-exports.js"
         },
+        "./logger/otel-logger-transport": {
+            "types": "./dist/logger/implementations/transports/otel-logger-transport/_module-exports.d.ts",
+            "import": "./dist/logger/implementations/transports/otel-logger-transport/_module-exports.js"
+        },
         "./middleware": {
             "types": "./dist/middleware/implementations/_module-exports.d.ts",
             "import": "./dist/middleware/implementations/_module-exports.js"
@@ -713,6 +717,8 @@
         "@aws-sdk/s3-request-presigner": "^3.1102.0",
         "@changesets/cli": "^2.31.1",
         "@loglayer/transport-simple-pretty-terminal": "^3.3.0",
+        "@opentelemetry/api": "^1.10.0",
+        "@opentelemetry/sdk-logs": "^3.1.1",
         "@standard-schema/spec": "^1.1.0",
         "@testcontainers/mariadb": "^12.1.0",
         "@testcontainers/mongodb": "^12.0.4",
@@ -771,6 +777,7 @@
     "peerDependencies": {
         "@aws-sdk/client-s3": "^3.1102.0",
         "@aws-sdk/s3-request-presigner": "^3.1102.0",
+        "@opentelemetry/api": "^1.10.0",
         "@types/ssh2-sftp-client": "^9.0.6",
         "basic-ftp": "^6.2.0",
         "hono": "^4.13.0",
@@ -813,6 +820,9 @@
             "optional": true
         },
         "basic-ftp": {
+            "optional": true
+        },
+        "@opentelemetry/api": {
             "optional": true
         }
     },
