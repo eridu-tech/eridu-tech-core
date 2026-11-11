@@ -14,7 +14,7 @@ import type {
     ILoggerTransport,
 } from "@/logger/contracts/_module-exports.js";
 import type { LoggerSettingsBase } from "@/logger/implementations/derivables/logger/_module.js";
-import type { IInitizable, OneOrMore } from "@/utilities/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * Named registry of logger transports. Each key is a transport alias and the
@@ -25,7 +25,7 @@ import type { IInitizable, OneOrMore } from "@/utilities/_module-exports.js";
  * @group Derivables
  */
 export type LoggerTransports<TTransports extends string = string> = Partial<
-    Record<TTransports, OneOrMore<ILoggerTransport>>
+    Record<TTransports, ILoggerTransport>
 >;
 
 /**

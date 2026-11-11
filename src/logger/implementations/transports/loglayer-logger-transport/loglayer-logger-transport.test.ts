@@ -7,7 +7,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { LogLayerTransportParams } from "loglayer";
 
-import type { LogData } from "@/logger/contracts/_module-exports.js";
+import type { LogData, LogSpans } from "@/logger/contracts/_module-exports.js";
 
 const LOGGED_AT = 1_700_000_000_000;
 
@@ -16,8 +16,6 @@ function makeLogData(overrides: Partial<LogData> = {}): LogData {
         level: LOG_LEVEL.INFO,
         loggedAt: LOGGED_AT,
         messages: ["hello"],
-        metadata: {},
-        spans: {},
         ...overrides,
     };
 }
@@ -97,6 +95,25 @@ describe("class: LogLayerLoggerTransport", () => {
         });
     });
 
+    test("Should leave the spans undefined when the entry has none", () => {
+        transport.log(makeLogData());
+
+        expect(captured[0]?.metadata?.["spans"]).toBeUndefined();
+    });
+
+    test("Should drop spans without a value", () => {
+        const spans: LogSpans = {
+            db: undefined,
+            http: TimeSpan.fromMilliseconds(5),
+        };
+        transport.log(makeLogData({ spans }));
+
+        expect(captured[0]?.metadata).toEqual({
+            loggedAt: new Date(LOGGED_AT),
+            spans: { http: 5 },
+        });
+    });
+
     test("Should omit loggedAt when includeLoggedAt is false", () => {
         transport = new LogLayerLoggerTransport({
             logger,
@@ -106,5 +123,32 @@ describe("class: LogLayerLoggerTransport", () => {
         transport.log(makeLogData({ spans: {} }));
 
         expect(captured[0]?.metadata).toEqual({ spans: {} });
+    });
+
+    test("Should prefix the messages with the group", () => {
+        transport.log(makeLogData({ group: "auth" }));
+
+        expect(captured).toHaveLength(1);
+        expect(captured[0]?.messages).toEqual(["[auth] hello"]);
+    });
+
+    test("Should not prefix the messages without a group", () => {
+        transport.log(makeLogData());
+
+        expect(captured[0]?.messages).toEqual(["hello"]);
+    });
+
+    test("Should forward the error of the entry", () => {
+        const error = new Error("boom");
+
+        transport.log(makeLogData({ error, level: LOG_LEVEL.ERROR }));
+
+        expect(captured[0]?.error).toBe(error);
+    });
+
+    test("Should leave the error undefined when the entry has none", () => {
+        transport.log(makeLogData());
+
+        expect(captured[0]?.error).toBeUndefined();
     });
 });

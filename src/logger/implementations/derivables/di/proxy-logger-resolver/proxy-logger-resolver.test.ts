@@ -10,19 +10,21 @@ import { ProxyLoggerResolver } from "@/logger/implementations/derivables/di/prox
 import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-describe("class: ProxyLoggerResolver", () => {
-    type Transports = "transport1" | "transport2";
+type Transports = "transport1" | "transport2";
 
-    let executionContext: ExecutionContext;
-    let transport1: NoOpLoggerTransport;
-    let transport2: NoOpLoggerTransport;
-    let proxyLoggerResolver: ProxyLoggerResolver<Transports>;
+describe("class: ProxyLoggerResolver", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.clearAllMocks();
+    });
 
     describe("LIFETIME.SINGLETON:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
+        let executionContext: ExecutionContext;
+        let transport1: NoOpLoggerTransport;
+        let transport2: NoOpLoggerTransport;
+        let proxyLoggerResolver: ProxyLoggerResolver<Transports>;
 
+        beforeEach(async () => {
             executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -56,19 +58,15 @@ describe("class: ProxyLoggerResolver", () => {
             await container.init();
         });
 
-        afterEach(() => {
-            vi.restoreAllMocks();
-        });
-
         test("Should delegate every level method to the default transport:", () => {
             const logSpy = vi.spyOn(transport1, "log");
 
-            proxyLoggerResolver.debug("a");
-            proxyLoggerResolver.verbose("b");
-            proxyLoggerResolver.info("c");
-            proxyLoggerResolver.warn("d");
-            proxyLoggerResolver.error("e");
-            proxyLoggerResolver.fatal("f");
+            proxyLoggerResolver.debug(["a"]);
+            proxyLoggerResolver.verbose(["b"]);
+            proxyLoggerResolver.info(["c"]);
+            proxyLoggerResolver.warn(["d"]);
+            proxyLoggerResolver.error(["e"]);
+            proxyLoggerResolver.fatal(["f"]);
 
             const levels = logSpy.mock.calls.map(([data]) => {
                 return data.level;
@@ -87,7 +85,7 @@ describe("class: ProxyLoggerResolver", () => {
             const log1 = vi.spyOn(transport1, "log");
             const log2 = vi.spyOn(transport2, "log");
 
-            proxyLoggerResolver.use("transport2").info("hello");
+            proxyLoggerResolver.use("transport2").info(["hello"]);
 
             expect(log2).toHaveBeenCalledExactlyOnceWith(
                 expect.objectContaining({ messages: ["hello"] }),
@@ -95,20 +93,19 @@ describe("class: ProxyLoggerResolver", () => {
             expect(log1).not.toHaveBeenCalled();
         });
 
-        test("Should delegate span and return its value:", () => {
-            expect(
-                proxyLoggerResolver.span("db", () => {
-                    return 42;
-                }),
-            ).toBe(42);
+        test("Should delegate run and return its value:", () => {
+            expect(proxyLoggerResolver.run(() => 42)).toBe(42);
         });
 
-        test("Should attach spans through the resolved logger:", () => {
+        test("Should attach the span of the run scope:", () => {
             const logSpy = vi.spyOn(transport1, "log");
 
-            proxyLoggerResolver.span("db", () => {
-                proxyLoggerResolver.info("inside");
-            });
+            proxyLoggerResolver.run(
+                () => {
+                    proxyLoggerResolver.info(["inside"]);
+                },
+                { span: "db" },
+            );
 
             expect(logSpy).toHaveBeenCalledExactlyOnceWith(
                 expect.objectContaining({
@@ -118,12 +115,15 @@ describe("class: ProxyLoggerResolver", () => {
             );
         });
 
-        test("Should delegate scopedMetadata with the values form:", () => {
+        test("Should attach the metadata of the run scope:", () => {
             const logSpy = vi.spyOn(transport1, "log");
 
-            proxyLoggerResolver.scopedMetadata({ requestId: "r1" }, () => {
-                proxyLoggerResolver.info("inside");
-            });
+            proxyLoggerResolver.run(
+                () => {
+                    proxyLoggerResolver.info(["inside"]);
+                },
+                { metadata: { requestId: "r1" } },
+            );
 
             expect(logSpy).toHaveBeenCalledExactlyOnceWith(
                 expect.objectContaining({
@@ -133,17 +133,65 @@ describe("class: ProxyLoggerResolver", () => {
             );
         });
 
-        test("Should delegate scopedMetadata with the key-value form:", () => {
+        test("Should attach the group of the run scope:", () => {
             const logSpy = vi.spyOn(transport1, "log");
 
-            proxyLoggerResolver.scopedMetadata("requestId", "r1", () => {
-                proxyLoggerResolver.info("inside");
+            proxyLoggerResolver.run(
+                () => {
+                    proxyLoggerResolver.info(["inside"]);
+                },
+                { group: "auth" },
+            );
+
+            expect(logSpy).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining({
+                    messages: ["inside"],
+                    group: "auth",
+                }),
+            );
+        });
+
+        test("Should not attach the span to entries logged after the run returns:", () => {
+            const logSpy = vi.spyOn(transport1, "log");
+
+            proxyLoggerResolver.run(() => {}, { span: "db" });
+            proxyLoggerResolver.info(["after"]);
+
+            expect(logSpy).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining({
+                    messages: ["after"],
+                    spans: undefined,
+                }),
+            );
+        });
+
+        test("Should forward the extra info of the entry:", () => {
+            const logSpy = vi.spyOn(transport1, "log");
+
+            proxyLoggerResolver.info(["inside"], {
+                group: "auth",
+                metadata: { userId: "42" },
             });
 
             expect(logSpy).toHaveBeenCalledExactlyOnceWith(
                 expect.objectContaining({
                     messages: ["inside"],
-                    metadata: { requestId: "r1" },
+                    group: "auth",
+                    metadata: { userId: "42" },
+                }),
+            );
+        });
+
+        test("Should forward the error details of a failure level:", () => {
+            const logSpy = vi.spyOn(transport1, "log");
+            const error = new Error("timeout");
+
+            proxyLoggerResolver.error(["failed"], { error });
+
+            expect(logSpy).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining({
+                    messages: ["failed"],
+                    error,
                 }),
             );
         });
@@ -154,7 +202,7 @@ describe("class: ProxyLoggerResolver", () => {
             executionContext.run(() => {
                 proxyLoggerResolver.putMetadata({ requestId: "r1" });
                 proxyLoggerResolver.putMetadata("userId", "u1");
-                proxyLoggerResolver.info("inside");
+                proxyLoggerResolver.info(["inside"]);
             });
 
             expect(logSpy).toHaveBeenCalledExactlyOnceWith(
@@ -167,18 +215,21 @@ describe("class: ProxyLoggerResolver", () => {
     });
 
     describe("LIFETIME.TRANSIENT:", () => {
-        test("Should resolve the resolver on every operation:", async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
+        let transientProxyLoggerResolver: ProxyLoggerResolver<Transports>;
+        let transientTransport: NoOpLoggerTransport;
+        let resolveCount: number;
 
+        beforeEach(async () => {
             const transientExecutionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transientTransport = new NoOpLoggerTransport();
+            transientTransport = new NoOpLoggerTransport();
             const container = new Container({
                 executionContext: transientExecutionContext,
             });
-            const factory = vi.fn(() => {
+            resolveCount = 0;
+            const factory = () => {
+                resolveCount++;
                 const resolver = new LoggerResolver<Transports>({
                     transports: {
                         transport1: transientTransport,
@@ -189,32 +240,50 @@ describe("class: ProxyLoggerResolver", () => {
                 });
                 resolver.init();
                 return resolver;
-            });
+            };
             container.registerFactory({
                 token: LoggerResolver,
                 factory,
                 deps: {},
                 lifetime: LIFETIME.TRANSIENT,
             });
-            const transientProxyLoggerResolver =
-                new ProxyLoggerResolver<Transports>({
-                    container,
-                    resolverToken: LoggerResolver,
-                });
+            transientProxyLoggerResolver = new ProxyLoggerResolver<Transports>({
+                container,
+                resolverToken: LoggerResolver,
+            });
+
             await container.init();
+        });
 
-            transientProxyLoggerResolver.info("first");
-            transientProxyLoggerResolver.info("second");
+        test("Should resolve the resolver on every operation:", () => {
+            transientProxyLoggerResolver.info(["first"]);
+            transientProxyLoggerResolver.info(["second"]);
 
-            expect(factory).toHaveBeenCalledTimes(2);
+            expect(resolveCount).toBe(2);
+        });
+
+        test("Should not share the run scope between operations:", () => {
+            const logSpy = vi.spyOn(transientTransport, "log");
+
+            transientProxyLoggerResolver.run(
+                () => {
+                    transientProxyLoggerResolver.info(["inside"]);
+                },
+                { metadata: { requestId: "r1" }, span: "db" },
+            );
+
+            expect(logSpy).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining({
+                    messages: ["inside"],
+                    metadata: undefined,
+                    spans: undefined,
+                }),
+            );
         });
     });
 
     describe("LIFETIME.SCOPED:", () => {
         test("Should resolve the resolver inside the active scope:", async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
-
             const scopedExecutionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
@@ -249,12 +318,64 @@ describe("class: ProxyLoggerResolver", () => {
 
             await container.run({
                 scope: () => {
-                    scopedProxyLoggerResolver.info("inside");
+                    scopedProxyLoggerResolver.info(["inside"]);
                 },
             });
 
             expect(logSpy).toHaveBeenCalledExactlyOnceWith(
                 expect.objectContaining({ messages: ["inside"] }),
+            );
+        });
+
+        test("Should share the run scope within the active scope:", async () => {
+            const scopedExecutionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const scopedTransport = new NoOpLoggerTransport();
+            const container = new Container({
+                executionContext: scopedExecutionContext,
+            });
+            container.registerFactory({
+                token: LoggerResolver,
+                factory: () => {
+                    const resolver = new LoggerResolver<Transports>({
+                        transports: {
+                            transport1: scopedTransport,
+                            transport2: scopedTransport,
+                        },
+                        defaultTransport: "transport1",
+                        executionContext: scopedExecutionContext,
+                    });
+                    resolver.init();
+                    return resolver;
+                },
+                deps: {},
+                lifetime: LIFETIME.SCOPED,
+            });
+            const scopedProxyLoggerResolver =
+                new ProxyLoggerResolver<Transports>({
+                    container,
+                    resolverToken: LoggerResolver,
+                });
+            await container.init();
+            const logSpy = vi.spyOn(scopedTransport, "log");
+
+            await container.run({
+                scope: () => {
+                    scopedProxyLoggerResolver.run(
+                        () => {
+                            scopedProxyLoggerResolver.info(["inside"]);
+                        },
+                        { metadata: { requestId: "r1" } },
+                    );
+                },
+            });
+
+            expect(logSpy).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining({
+                    messages: ["inside"],
+                    metadata: { requestId: "r1" },
+                }),
             );
         });
     });

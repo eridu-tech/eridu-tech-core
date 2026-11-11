@@ -1,6 +1,7 @@
 /**
  * @module Observability
  */
+import type { LogMetadata } from "@/logger/contracts/logger.contract.js";
 import type { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 /**
@@ -27,6 +28,12 @@ export const LOG_LEVEL = {
 export type AllLogLevels = (typeof LOG_LEVEL)[keyof typeof LOG_LEVEL];
 
 /**
+ * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * @group Contracts
+ */
+export type LogSpans = Partial<Record<string, TimeSpan>>;
+
+/**
  * Self-contained log entry handed to a logger transport.
  * Holds everything a logging backend needs to format and output a record, so
  * transports stay independent of the `ILogger` implementation.
@@ -41,6 +48,12 @@ export type LogData = {
     level: AllLogLevels;
 
     /**
+     * Grouping label for the entry, such as a module or subsystem name. Present
+     * only when passed to the logging method.
+     */
+    group?: string;
+
+    /**
      * Unix timestamp in ms at which the entry was created.
      */
     loggedAt: number;
@@ -51,16 +64,22 @@ export type LogData = {
     messages: Array<unknown>;
 
     /**
-     * Metadata attached by `scopedMetadata` and `putMetadata`, keyed by
-     * metadata name.
+     * Metadata attached by `scopedMetadata`, `putMetadata`, or the logging
+     * method, keyed by metadata name.
      */
-    metadata: Partial<Record<string, unknown>>;
+    metadata?: LogMetadata;
+
+    /**
+     * Error details attached by the failure levels `warn`, `error`, and
+     * `fatal`.
+     */
+    error?: unknown;
 
     /**
      * Elapsed time of each span still open when the entry was created, keyed by
      * span name. Empty for entries logged outside any span.
      */
-    spans: Partial<Record<string, TimeSpan>>;
+    spans?: LogSpans;
 };
 
 /**

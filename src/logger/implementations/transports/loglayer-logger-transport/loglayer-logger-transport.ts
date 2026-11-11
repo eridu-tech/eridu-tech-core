@@ -10,6 +10,7 @@ import type {
     AllLogLevels,
     ILoggerTransport,
     LogData,
+    LogSpans,
 } from "@/logger/contracts/_module-exports.js";
 
 /**
@@ -74,9 +75,10 @@ export class LogLayerLoggerTransport implements ILoggerTransport {
         this.includeLoggedAt = includeLoggedAt;
     }
 
-    log(data: LogData): void {
-        const { level, loggedAt, messages, metadata, spans } = data;
-        const newSpans = Object.fromEntries(
+    private spansToMilliseconds(
+        spans: LogSpans,
+    ): Partial<Record<string, number>> {
+        return Object.fromEntries(
             Object.entries(spans)
                 .map(([key, value]) => {
                     return [key, value?.toMilliseconds()] as const;
@@ -85,8 +87,15 @@ export class LogLayerLoggerTransport implements ILoggerTransport {
                     return value !== undefined;
                 }),
         );
+    }
 
-        this.logger.raw({
+    log(data: LogData): void {
+        const { spans, loggedAt, metadata, error, level, messages, group } =
+            data;
+        const newSpans =
+            spans === undefined ? undefined : this.spansToMilliseconds(spans);
+
+        const logData = {
             logLevel: LOG_LAYER_LEVELS[level],
             messages: messages as Array<LogLayerMessage>,
             metadata: {
@@ -94,6 +103,13 @@ export class LogLayerLoggerTransport implements ILoggerTransport {
                 ...(this.includeLoggedAt && { loggedAt: new Date(loggedAt) }),
                 spans: newSpans,
             },
-        });
+            ...(error !== undefined && { error }),
+        } as const;
+
+        if (group === undefined) {
+            this.logger.raw(logData);
+        } else {
+            this.logger.withPrefix(`[${group}]`).raw(logData);
+        }
     }
 }

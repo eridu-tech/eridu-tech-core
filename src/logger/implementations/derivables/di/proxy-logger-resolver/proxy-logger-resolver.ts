@@ -9,8 +9,11 @@ import type {
     IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
 import type {
+    FailureLogExtraInfo,
     ILogger,
     ILoggerResolver,
+    LogExtraInfo,
+    RunLogSettings,
 } from "@/logger/contracts/_module-exports.js";
 import type { Lazy } from "@/utilities/_module-exports.js";
 
@@ -44,7 +47,7 @@ export type ProxyLoggerResolverSettings<TTransports extends string = string> = {
  * every `LIFETIME` is supported:
  *
  * - `SINGLETON` and `SCOPED` registrations share one resolver instance, so
- *   `span` and `scopedMetadata` scopes created by different callers line up.
+ *   `run` scopes created by different callers line up.
  * - `TRANSIENT` registrations create a new resolver per operation. Each resolver
  *   owns its own loggers and context tokens, so spans and metadata written
  *   through one operation are invisible to the next. Prefer `SINGLETON` or
@@ -86,59 +89,35 @@ export class ProxyLoggerResolver<TTransports extends string = string>
         );
     }
 
-    debug(...messages: Array<unknown>): void {
-        this.use().debug(...messages);
+    debug(messages: Array<unknown>, extraInfo?: LogExtraInfo): void {
+        this.use().debug(messages, extraInfo);
     }
 
-    verbose(...messages: Array<unknown>): void {
-        this.use().verbose(...messages);
+    verbose(messages: Array<unknown>, extraInfo?: LogExtraInfo): void {
+        this.use().verbose(messages, extraInfo);
     }
 
-    info(...messages: Array<unknown>): void {
-        this.use().info(...messages);
+    info(messages: Array<unknown>, extraInfo?: LogExtraInfo): void {
+        this.use().info(messages, extraInfo);
     }
 
-    warn(...messages: Array<unknown>): void {
-        this.use().warn(...messages);
+    warn(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void {
+        this.use().warn(messages, extraInfo);
     }
 
-    error(...messages: Array<unknown>): void {
-        this.use().error(...messages);
+    error(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void {
+        this.use().error(messages, extraInfo);
     }
 
-    fatal(...messages: Array<unknown>): void {
-        this.use().fatal(...messages);
+    fatal(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void {
+        this.use().fatal(messages, extraInfo);
     }
 
-    span<TValue>(name: string, invocable: Lazy<TValue>): TValue {
-        return this.use().span(name, invocable);
-    }
-
-    scopedMetadata<TValue>(
-        values: Partial<Record<string, unknown>>,
+    run<TValue = void>(
         invocable: Lazy<TValue>,
-    ): TValue;
-    scopedMetadata<TValue>(
-        key: string,
-        value: unknown,
-        invocable: Lazy<TValue>,
-    ): TValue;
-    scopedMetadata<TValue>(
-        valuesOrKey: string | Partial<Record<string, unknown>>,
-        valueOrInvocable: unknown,
-        invocable?: Lazy<TValue>,
+        settings?: RunLogSettings,
     ): TValue {
-        if (typeof valuesOrKey === "string") {
-            return this.use().scopedMetadata(
-                valuesOrKey,
-                valueOrInvocable,
-                invocable as Lazy<TValue>,
-            );
-        }
-        return this.use().scopedMetadata(
-            valuesOrKey,
-            valueOrInvocable as Lazy<TValue>,
-        );
+        return this.use().run(invocable, settings);
     }
 
     putMetadata(values: Partial<Record<string, unknown>>): void;

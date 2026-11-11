@@ -7,8 +7,11 @@ import type {
     IServiceResolver,
 } from "@/di/contracts/_module-exports.js";
 import type {
+    FailureLogExtraInfo,
     ILogger,
     ILoggerResolver,
+    LogExtraInfo,
+    RunLogSettings,
 } from "@/logger/contracts/_module-exports.js";
 import type { Lazy } from "@/utilities/_module-exports.js";
 
@@ -29,59 +32,35 @@ export class ProxyLogger<
         return loggerResolver.use(this.transportName);
     }
 
-    debug(...messages: Array<unknown>): void {
-        this.getLogger().debug(...messages);
+    debug(messages: Array<unknown>, extraInfo?: LogExtraInfo): void {
+        this.getLogger().debug(messages, extraInfo);
     }
 
-    verbose(...messages: Array<unknown>): void {
-        this.getLogger().verbose(...messages);
+    verbose(messages: Array<unknown>, extraInfo?: LogExtraInfo): void {
+        this.getLogger().verbose(messages, extraInfo);
     }
 
-    info(...messages: Array<unknown>): void {
-        this.getLogger().info(...messages);
+    info(messages: Array<unknown>, extraInfo?: LogExtraInfo): void {
+        this.getLogger().info(messages, extraInfo);
     }
 
-    warn(...messages: Array<unknown>): void {
-        this.getLogger().warn(...messages);
+    warn(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void {
+        this.getLogger().warn(messages, extraInfo);
     }
 
-    error(...messages: Array<unknown>): void {
-        this.getLogger().error(...messages);
+    error(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void {
+        this.getLogger().error(messages, extraInfo);
     }
 
-    fatal(...messages: Array<unknown>): void {
-        this.getLogger().fatal(...messages);
+    fatal(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void {
+        this.getLogger().fatal(messages, extraInfo);
     }
 
-    span<TValue>(name: string, invocable: Lazy<TValue>): TValue {
-        return this.getLogger().span(name, invocable);
-    }
-
-    scopedMetadata<TValue>(
-        values: Partial<Record<string, unknown>>,
+    run<TValue = void>(
         invocable: Lazy<TValue>,
-    ): TValue;
-    scopedMetadata<TValue>(
-        key: string,
-        value: unknown,
-        invocable: Lazy<TValue>,
-    ): TValue;
-    scopedMetadata<TValue>(
-        valuesOrKey: string | Partial<Record<string, unknown>>,
-        valueOrInvocable: unknown,
-        invocable?: Lazy<TValue>,
+        settings?: RunLogSettings,
     ): TValue {
-        if (typeof valuesOrKey === "string") {
-            return this.getLogger().scopedMetadata(
-                valuesOrKey,
-                valueOrInvocable,
-                invocable as Lazy<TValue>,
-            );
-        }
-        return this.getLogger().scopedMetadata(
-            valuesOrKey,
-            valueOrInvocable as Lazy<TValue>,
-        );
+        return this.getLogger().run(invocable, settings);
     }
 
     putMetadata(values: Partial<Record<string, unknown>>): void;

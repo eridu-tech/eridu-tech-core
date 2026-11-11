@@ -49,22 +49,47 @@ describe("function: withLoggingFactory", () => {
         expect(logSpy).toHaveBeenNthCalledWith(
             1,
             expect.objectContaining({
-                level: LOG_LEVEL.INFO,
+                level: LOG_LEVEL.VERBOSE,
                 messages: ["function:", "handler"],
             }),
         );
         expect(logSpy).toHaveBeenNthCalledWith(
             2,
             expect.objectContaining({
-                level: LOG_LEVEL.INFO,
-                messages: ["args:", [1, 2]],
+                level: LOG_LEVEL.VERBOSE,
+                messages: ["args:", "1, 2"],
             }),
         );
         expect(logSpy).toHaveBeenNthCalledWith(
             3,
             expect.objectContaining({
-                level: LOG_LEVEL.INFO,
+                level: LOG_LEVEL.VERBOSE,
                 messages: ["return:", 3],
+            }),
+        );
+    });
+
+    test("Should join the arguments with a comma", async () => {
+        const transport = new NoOpLoggerTransport();
+        const logSpy = vi.spyOn(transport, "log");
+        const logger = new Logger({ transport });
+
+        const fn = use(
+            function handler(first: string, second: string): Promise<string> {
+                return Promise.resolve(first + second);
+            },
+            withLoggingFactory({ use: () => logger })<
+                [string, string],
+                string
+            >(),
+        );
+
+        await fn("Ada", "Lovelace");
+
+        expect(logSpy).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+                messages: ["args:", "Ada, Lovelace"],
             }),
         );
     });
@@ -91,14 +116,14 @@ describe("function: withLoggingFactory", () => {
         expect(logSpy).toHaveBeenNthCalledWith(
             1,
             expect.objectContaining({
-                level: LOG_LEVEL.INFO,
+                level: LOG_LEVEL.VERBOSE,
                 messages: ["class:", "MathService"],
             }),
         );
         expect(logSpy).toHaveBeenNthCalledWith(
             2,
             expect.objectContaining({
-                level: LOG_LEVEL.INFO,
+                level: LOG_LEVEL.VERBOSE,
                 messages: ["function:", "handler"],
             }),
         );
@@ -141,6 +166,85 @@ describe("function: withLoggingFactory", () => {
         const transport = new NoOpLoggerTransport();
         const logSpy = vi.spyOn(transport, "log");
         const logger = new Logger({ transport });
+        const error = new Error("boom");
+
+        const fn = use(
+            function handler(): Promise<string> {
+                return Promise.reject(error);
+            },
+            withLoggingFactory({ use: () => logger })<[], string>(),
+        );
+
+        await expect(fn()).rejects.toThrow(error);
+
+        expect(logSpy).toHaveBeenCalledTimes(3);
+        expect(logSpy).toHaveBeenNthCalledWith(
+            3,
+            expect.objectContaining({
+                level: LOG_LEVEL.ERROR,
+                messages: ["error:"],
+                error,
+            }),
+        );
+    });
+
+    test("Should log the thrown error of a synchronous wrapper", async () => {
+        const transport = new NoOpLoggerTransport();
+        const logSpy = vi.spyOn(transport, "log");
+        const logger = new Logger({ transport });
+        const error = new Error("boom");
+
+        const fn = use(
+            function handler(): Promise<string> {
+                throw error;
+            },
+            withLoggingFactory({ use: () => logger })<[], string>(),
+        );
+
+        await expect(fn()).rejects.toThrow(error);
+
+        expect(logSpy).toHaveBeenNthCalledWith(
+            3,
+            expect.objectContaining({
+                level: LOG_LEVEL.ERROR,
+                messages: ["error:"],
+                error,
+            }),
+        );
+    });
+
+    test("Should log the error at the fatal level when useFatalLevel is enabled", async () => {
+        const transport = new NoOpLoggerTransport();
+        const logSpy = vi.spyOn(transport, "log");
+        const logger = new Logger({ transport });
+        const error = new Error("boom");
+
+        const fn = use(
+            function handler(): Promise<string> {
+                return Promise.reject(error);
+            },
+            withLoggingFactory({ use: () => logger })<[], string>({
+                useFatalLevel: true,
+            }),
+        );
+
+        await expect(fn()).rejects.toThrow(error);
+
+        expect(logSpy).toHaveBeenCalledTimes(3);
+        expect(logSpy).toHaveBeenNthCalledWith(
+            3,
+            expect.objectContaining({
+                level: LOG_LEVEL.FATAL,
+                messages: ["fatal:"],
+                error,
+            }),
+        );
+    });
+
+    test("Should not log the return value when the wrapped function rejects", async () => {
+        const transport = new NoOpLoggerTransport();
+        const logSpy = vi.spyOn(transport, "log");
+        const logger = new Logger({ transport });
 
         const fn = use(
             function handler(): Promise<string> {
@@ -151,38 +255,8 @@ describe("function: withLoggingFactory", () => {
 
         await expect(fn()).rejects.toThrow("boom");
 
-        expect(logSpy).toHaveBeenNthCalledWith(
-            3,
-            expect.objectContaining({
-                level: LOG_LEVEL.ERROR,
-                messages: ["error:", expect.any(Error) as Error],
-            }),
-        );
-    });
-
-    test("Should log the error at the fatal level when useFatalLevel is enabled", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
-
-        const fn = use(
-            function handler(): Promise<string> {
-                return Promise.reject(new Error("boom"));
-            },
-            withLoggingFactory({ use: () => logger })<[], string>({
-                useFatalLevel: true,
-            }),
-        );
-
-        await expect(fn()).rejects.toThrow("boom");
-
-        expect(logSpy).toHaveBeenNthCalledWith(
-            3,
-            expect.objectContaining({
-                level: LOG_LEVEL.FATAL,
-                messages: ["fatal:", expect.any(Error) as Error],
-            }),
-        );
+        const messages = logSpy.mock.calls.map(([data]) => data.messages[0]);
+        expect(messages).toStrictEqual(["function:", "args:", "error:"]);
     });
 
     test("Should not log an error when the wrapped function resolves", async () => {
@@ -203,9 +277,9 @@ describe("function: withLoggingFactory", () => {
 
         const levels = logSpy.mock.calls.map(([data]) => data.level);
         expect(levels).toStrictEqual([
-            LOG_LEVEL.INFO,
-            LOG_LEVEL.INFO,
-            LOG_LEVEL.INFO,
+            LOG_LEVEL.VERBOSE,
+            LOG_LEVEL.VERBOSE,
+            LOG_LEVEL.VERBOSE,
         ]);
     });
 });

@@ -6,7 +6,7 @@ import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
  * Runs the wrapped function inside a span named `name` via the selected
- * logger's `span`, so entries logged by it carry the elapsed time of every
+ * logger's `run`, so entries logged by it carry the elapsed time of every
  * open span.
  *
  * @param name - Name of the span.
@@ -65,7 +65,9 @@ export function withLogSpanFactory<TTransports extends string = string>(
     ) => {
         return (name) => {
             return ({ next }) => {
-                return loggerResolver.use(transportName).span(name, next);
+                return loggerResolver.use(transportName).run(next, {
+                    span: name,
+                });
             };
         };
     };

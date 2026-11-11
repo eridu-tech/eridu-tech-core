@@ -65,7 +65,9 @@ export function withSyncLogSpanFactory<TTransports extends string = string>(
         (transportName) => {
             return (name) => {
                 return ({ next }) => {
-                    return loggerResolver.use(transportName).span(name, next);
+                    return loggerResolver.use(transportName).run(next, {
+                        span: name,
+                    });
                 };
             };
         };

@@ -111,8 +111,8 @@ export type WithMetadataResolver<TTransports extends string = string> = {
 /**
  * Creates a `WithLogging` factory bound to `loggerResolver`.
  *
- * The metadata is attached through the selected logger's `scopedMetadata`, so
- * it is visible only to entries logged while the wrapped function runs.
+ * The metadata is attached through the selected logger's `run`, so it is
+ * visible only to entries logged while the wrapped function runs.
  *
  * Calling the returned function uses the resolver's default transport, while
  * `use()` selects a specific one.
@@ -140,8 +140,8 @@ export function withMetadataFactory<TTransports extends string = string>(
             } = settings;
             return async ({ next, name, args }) => {
                 const logger = loggerResolver.use(transportName);
-                return logger.scopedMetadata(
-                    {
+                return logger.run(next, {
+                    metadata: {
                         ...callInvocable(metadata, {
                             args,
                             functionName: name,
@@ -150,8 +150,7 @@ export function withMetadataFactory<TTransports extends string = string>(
                         class: className,
                         function: name,
                     },
-                    next,
-                );
+                });
             };
         };
     };

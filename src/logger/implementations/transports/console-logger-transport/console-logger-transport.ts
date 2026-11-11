@@ -5,8 +5,10 @@
 import { LOG_LEVEL } from "@/logger/contracts/_module-exports.js";
 
 import type {
+    AllLogLevels,
     ILoggerTransport,
     LogData,
+    LogSpans,
 } from "@/logger/contracts/_module-exports.js";
 
 /**
@@ -20,9 +22,31 @@ import type {
  * @group Transports
  */
 export class ConsoleLoggerTransport implements ILoggerTransport {
-    log(data: LogData): void {
-        const { spans, loggedAt, ...rest } = data;
-        const newSpans = Object.fromEntries(
+    private logToConsole(level: AllLogLevels, data: unknown) {
+        if (level === LOG_LEVEL.DEBUG) {
+            console.debug(data);
+        }
+        if (level === LOG_LEVEL.ERROR) {
+            console.error(data);
+        }
+        if (level === LOG_LEVEL.FATAL) {
+            console.error(data);
+        }
+        if (level === LOG_LEVEL.INFO) {
+            console.info(data);
+        }
+        if (level === LOG_LEVEL.VERBOSE) {
+            console.trace(data);
+        }
+        if (level === LOG_LEVEL.WARN) {
+            console.warn(data);
+        }
+    }
+
+    private spansToMilliseconds(
+        spans: LogSpans,
+    ): Partial<Record<string, number>> {
+        return Object.fromEntries(
             Object.entries(spans)
                 .map(([key, value]) => {
                     return [key, value?.toMilliseconds()] as const;
@@ -31,30 +55,21 @@ export class ConsoleLoggerTransport implements ILoggerTransport {
                     return value !== undefined;
                 }),
         );
+    }
+
+    log(data: LogData): void {
+        const { spans, loggedAt, metadata, error, ...rest } = data;
+        const newSpans =
+            spans === undefined ? undefined : this.spansToMilliseconds(spans);
 
         const newData = {
             ...rest,
             loggedAt: new Date(loggedAt),
-            spans: newSpans,
+            ...(newSpans !== undefined && { spans: newSpans }),
+            ...(metadata !== undefined && { metadata }),
+            ...(error !== undefined && { error }),
         };
 
-        if (rest.level === LOG_LEVEL.DEBUG) {
-            console.debug(newData);
-        }
-        if (rest.level === LOG_LEVEL.ERROR) {
-            console.error(newData);
-        }
-        if (rest.level === LOG_LEVEL.FATAL) {
-            console.error(newData);
-        }
-        if (rest.level === LOG_LEVEL.INFO) {
-            console.info(newData);
-        }
-        if (rest.level === LOG_LEVEL.VERBOSE) {
-            console.trace(newData);
-        }
-        if (rest.level === LOG_LEVEL.WARN) {
-            console.warn(newData);
-        }
+        this.logToConsole(rest.level, newData);
     }
 }

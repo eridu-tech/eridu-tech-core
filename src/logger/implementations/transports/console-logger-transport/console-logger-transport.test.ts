@@ -6,7 +6,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { MockInstance } from "vitest";
 
-import type { LogData } from "@/logger/contracts/_module-exports.js";
+import type { LogData, LogSpans } from "@/logger/contracts/_module-exports.js";
 
 const LOGGED_AT = 1_700_000_000_000;
 
@@ -19,8 +19,6 @@ function makeLogData(overrides: Partial<LogData> = {}): LogData {
         level: LOG_LEVEL.INFO,
         loggedAt: LOGGED_AT,
         messages: ["hello"],
-        metadata: {},
-        spans: {},
         ...overrides,
     };
 }
@@ -82,8 +80,93 @@ describe("class: ConsoleLoggerTransport", () => {
                 loggedAt: new Date(LOGGED_AT),
                 messages,
                 metadata,
-                spans: {},
             });
+        });
+
+        test("Should pass the group through unchanged", () => {
+            const consoleSpy = spyOnConsoleMethods();
+
+            new ConsoleLoggerTransport().log(makeLogData({ group: "auth" }));
+
+            expect(consoleSpy.info).toHaveBeenLastCalledWith(
+                expect.objectContaining({ group: "auth" }),
+            );
+        });
+
+        test("Should pass the error through unchanged", () => {
+            const consoleSpy = spyOnConsoleMethods();
+            const error = new Error("card_declined");
+
+            new ConsoleLoggerTransport().log(
+                makeLogData({ error, level: LOG_LEVEL.ERROR }),
+            );
+
+            expect(consoleSpy.error).toHaveBeenLastCalledWith(
+                expect.objectContaining({ error }),
+            );
+        });
+
+        test("Should pass the error of every failure level", () => {
+            const consoleSpy = spyOnConsoleMethods();
+            const error = new Error("boom");
+
+            new ConsoleLoggerTransport().log(
+                makeLogData({ error, level: LOG_LEVEL.WARN }),
+            );
+            new ConsoleLoggerTransport().log(
+                makeLogData({ error, level: LOG_LEVEL.ERROR }),
+            );
+            new ConsoleLoggerTransport().log(
+                makeLogData({ error, level: LOG_LEVEL.FATAL }),
+            );
+
+            expect(consoleSpy.warn).toHaveBeenLastCalledWith(
+                expect.objectContaining({ error }),
+            );
+            expect(consoleSpy.error).toHaveBeenCalledTimes(2);
+            expect(consoleSpy.error).toHaveBeenNthCalledWith(
+                1,
+                expect.objectContaining({ error }),
+            );
+            expect(consoleSpy.error).toHaveBeenNthCalledWith(
+                2,
+                expect.objectContaining({ error }),
+            );
+        });
+
+        test("Should pass a non-Error value through", () => {
+            const consoleSpy = spyOnConsoleMethods();
+
+            new ConsoleLoggerTransport().log(
+                makeLogData({ error: "declined", level: LOG_LEVEL.ERROR }),
+            );
+
+            expect(consoleSpy.error).toHaveBeenLastCalledWith(
+                expect.objectContaining({ error: "declined" }),
+            );
+        });
+
+        test("Should pass a null error through", () => {
+            const consoleSpy = spyOnConsoleMethods();
+
+            new ConsoleLoggerTransport().log(
+                makeLogData({ error: null, level: LOG_LEVEL.ERROR }),
+            );
+
+            expect(consoleSpy.error).toHaveBeenLastCalledWith(
+                expect.objectContaining({ error: null }),
+            );
+        });
+
+        test("Should omit the group and the error when they are not present", () => {
+            const consoleSpy = spyOnConsoleMethods();
+
+            new ConsoleLoggerTransport().log(makeLogData());
+
+            const [output] = consoleSpy.info.mock.calls[0] as [object];
+            expect(output).not.toHaveProperty("group");
+            expect(output).not.toHaveProperty("error");
+            expect(output).not.toHaveProperty("metadata");
         });
 
         test("Should convert loggedAt into a Date", () => {
@@ -125,6 +208,89 @@ describe("class: ConsoleLoggerTransport", () => {
             expect(consoleSpy.info).toHaveBeenLastCalledWith(
                 expect.objectContaining({ spans: {} }),
             );
+        });
+
+        test("Should omit the spans when the entry has none", () => {
+            const consoleSpy = spyOnConsoleMethods();
+
+            new ConsoleLoggerTransport().log(makeLogData());
+
+            const [output] = consoleSpy.info.mock.calls[0] as [object];
+            expect(output).not.toHaveProperty("spans");
+        });
+
+        test("Should drop spans without a value", () => {
+            const consoleSpy = spyOnConsoleMethods();
+
+            new ConsoleLoggerTransport().log(
+                makeLogData({
+                    spans: {
+                        db: undefined,
+                        http: TimeSpan.fromMilliseconds(5),
+                    },
+                }),
+            );
+
+            expect(consoleSpy.info).toHaveBeenLastCalledWith(
+                expect.objectContaining({ spans: { http: 5 } }),
+            );
+        });
+
+        test("Should output the whole entry when every optional field is set", () => {
+            const consoleSpy = spyOnConsoleMethods();
+            const messages = ["failed", { orderId: "o-1" }];
+            const metadata = { requestId: "abc" };
+            const error = new Error("boom");
+            const spans: LogSpans = { db: TimeSpan.fromMilliseconds(12) };
+
+            new ConsoleLoggerTransport().log(
+                makeLogData({
+                    level: LOG_LEVEL.ERROR,
+                    group: "payments",
+                    messages,
+                    metadata,
+                    error,
+                    spans,
+                }),
+            );
+
+            expect(consoleSpy.error).toHaveBeenLastCalledWith({
+                level: LOG_LEVEL.ERROR,
+                group: "payments",
+                loggedAt: new Date(LOGGED_AT),
+                messages,
+                metadata,
+                error,
+                spans: { db: 12 },
+            });
+        });
+
+        test("Should forward the group at any level", () => {
+            const consoleSpy = spyOnConsoleMethods();
+
+            new ConsoleLoggerTransport().log(
+                makeLogData({ group: "auth", level: LOG_LEVEL.WARN }),
+            );
+
+            expect(consoleSpy.warn).toHaveBeenLastCalledWith(
+                expect.objectContaining({ group: "auth" }),
+            );
+        });
+
+        test("Should not mutate the entry", () => {
+            const spans: LogSpans = { db: TimeSpan.fromMilliseconds(12) };
+            const data = makeLogData({
+                error: new Error("boom"),
+                group: "auth",
+                spans,
+            });
+
+            new ConsoleLoggerTransport().log(data);
+
+            expect(data.spans).toBe(spans);
+            expect(data.spans?.["db"]).toBeInstanceOf(TimeSpan);
+            expect(data.group).toBe("auth");
+            expect(data.error).toBeInstanceOf(Error);
         });
     });
 });

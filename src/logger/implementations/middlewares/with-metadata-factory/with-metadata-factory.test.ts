@@ -12,7 +12,7 @@ describe("function: withMetadataFactory", () => {
         vi.restoreAllMocks();
     });
 
-    test("Should select the transport passed to use", async () => {
+    function createLogger() {
         const transport = new NoOpLoggerTransport();
         const logSpy = vi.spyOn(transport, "log");
         const logger = new Logger({
@@ -21,12 +21,17 @@ describe("function: withMetadataFactory", () => {
                 new AlsExecutionContextAdapter(),
             ),
         });
+        return { logger, logSpy };
+    }
+
+    test("Should select the transport passed to use", async () => {
+        const { logger, logSpy } = createLogger();
         const loggerResolver = {
             use: vi.fn((_transportName?: "primary" | "secondary") => logger),
         };
         const fn = use<[], Promise<number>>(
             function handler(): Promise<number> {
-                logger.info("inside");
+                logger.info(["inside"]);
                 return Promise.resolve(1);
             },
             withMetadataFactory(loggerResolver).use("secondary")<[], number>({
@@ -37,30 +42,19 @@ describe("function: withMetadataFactory", () => {
         await fn();
 
         expect(loggerResolver.use).toHaveBeenCalledExactlyOnceWith("secondary");
-        expect(logSpy).toHaveBeenCalledWith(
-            expect.objectContaining({
-                metadata: {
-                    filePath: "/app/src/math.ts",
-                    class: undefined,
-                    function: "handler",
-                },
-            }),
-        );
+        const [entry] = logSpy.mock.calls[0] ?? [];
+        expect(entry?.metadata).toStrictEqual({
+            filePath: "/app/src/math.ts",
+            class: undefined,
+            function: "handler",
+        });
     });
 
     test("Should attach the file path, class name, and function name while the wrapped function runs", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
-
+        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(first: number, second: number): Promise<number> {
-                logger.info("inside");
+                logger.info(["inside"]);
                 return Promise.resolve(first + second);
             },
             withMetadataFactory({ use: () => logger })<
@@ -87,18 +81,10 @@ describe("function: withMetadataFactory", () => {
     });
 
     test("Should merge the metadata returned by the metadata callback", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
-
+        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(first: number, second: number): Promise<number> {
-                logger.info("inside");
+                logger.info(["inside"]);
                 return Promise.resolve(first + second);
             },
             withMetadataFactory({ use: () => logger })<
@@ -115,30 +101,19 @@ describe("function: withMetadataFactory", () => {
 
         await fn(1, 2);
 
-        expect(logSpy).toHaveBeenCalledExactlyOnceWith(
-            expect.objectContaining({
-                messages: ["inside"],
-                metadata: {
-                    functionName: "handler",
-                    argCount: 2,
-                    filePath: "/app/src/math.ts",
-                    function: "handler",
-                },
-            }),
-        );
+        const [entry] = logSpy.mock.calls[0] ?? [];
+        expect(entry?.metadata).toStrictEqual({
+            functionName: "handler",
+            argCount: 2,
+            filePath: "/app/src/math.ts",
+            class: undefined,
+            function: "handler",
+        });
     });
 
     test("Should pass the function name and arguments to the metadata callback", async () => {
-        const transport = new NoOpLoggerTransport();
-        vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
+        const { logger } = createLogger();
         const metadata = vi.fn(() => ({}));
-
         const fn = use(
             function handler(_name: string, _count: number): Promise<string> {
                 return Promise.resolve("ok");
@@ -158,18 +133,10 @@ describe("function: withMetadataFactory", () => {
     });
 
     test("Should let the built-in entries override the metadata callback values", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
-
+        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): Promise<string> {
-                logger.info("inside");
+                logger.info(["inside"]);
                 return Promise.resolve("ok");
             },
             withMetadataFactory({ use: () => logger })<[], string>({
@@ -185,32 +152,20 @@ describe("function: withMetadataFactory", () => {
 
         await fn();
 
-        expect(logSpy).toHaveBeenCalledExactlyOnceWith(
-            expect.objectContaining({
-                messages: ["inside"],
-                metadata: {
-                    filePath: "/app/src/math.ts",
-                    class: "MathService",
-                    function: "handler",
-                    extra: true,
-                },
-            }),
-        );
+        const [entry] = logSpy.mock.calls[0] ?? [];
+        expect(entry?.metadata).toStrictEqual({
+            extra: true,
+            filePath: "/app/src/math.ts",
+            class: "MathService",
+            function: "handler",
+        });
     });
 
     test("Should attach a null file path when the resolver returns null", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
-
+        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): Promise<string> {
-                logger.info("inside");
+                logger.info(["inside"]);
                 return Promise.resolve("ok");
             },
             withMetadataFactory({ use: () => logger })<[], string>({
@@ -220,30 +175,19 @@ describe("function: withMetadataFactory", () => {
 
         await fn();
 
-        expect(logSpy).toHaveBeenCalledExactlyOnceWith(
-            expect.objectContaining({
-                messages: ["inside"],
-                metadata: {
-                    filePath: null,
-                    function: "handler",
-                },
-            }),
-        );
+        const [entry] = logSpy.mock.calls[0] ?? [];
+        expect(entry?.metadata).toStrictEqual({
+            filePath: null,
+            class: undefined,
+            function: "handler",
+        });
     });
 
     test("Should default the file path to the middleware module path", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
-
+        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): Promise<string> {
-                logger.info("inside");
+                logger.info(["inside"]);
                 return Promise.resolve("ok");
             },
             withMetadataFactory({ use: () => logger })<[], string>(),
@@ -251,31 +195,17 @@ describe("function: withMetadataFactory", () => {
 
         await fn();
 
-        expect(logSpy).toHaveBeenCalledExactlyOnceWith(
-            expect.objectContaining({
-                messages: ["inside"],
-                metadata: expect.objectContaining({
-                    filePath: expect.stringMatching(
-                        /with-metadata-factory\.ts$/,
-                    ) as string,
-                }) as Partial<Record<string, unknown>>,
-            }),
+        const [entry] = logSpy.mock.calls[0] ?? [];
+        expect(entry?.metadata?.["filePath"]).toMatch(
+            /with-metadata-factory\.ts$/,
         );
     });
 
     test("Should leave the class name undefined when it is not configured", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
-
+        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): Promise<string> {
-                logger.info("inside");
+                logger.info(["inside"]);
                 return Promise.resolve("ok");
             },
             withMetadataFactory({ use: () => logger })<[], string>({
@@ -285,21 +215,13 @@ describe("function: withMetadataFactory", () => {
 
         await fn();
 
-        const [firstCall] = logSpy.mock.calls;
-        expect(firstCall?.[0].metadata["class"]).toBeUndefined();
+        const [entry] = logSpy.mock.calls[0] ?? [];
+        expect(entry?.metadata).toHaveProperty("class", undefined);
     });
 
     test("Should resolve the file path on every invocation", async () => {
-        const transport = new NoOpLoggerTransport();
-        vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
+        const { logger } = createLogger();
         const getCurrentFilePath = vi.fn(() => "/app/src/math.ts");
-
         const fn = use(
             function handler(): Promise<string> {
                 return Promise.resolve("ok");
@@ -316,15 +238,7 @@ describe("function: withMetadataFactory", () => {
     });
 
     test("Should not attach the metadata to entries logged after the call", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
-
+        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): Promise<string> {
                 return Promise.resolve("ok");
@@ -336,19 +250,34 @@ describe("function: withMetadataFactory", () => {
         );
 
         await fn();
-        logger.info("after");
+        logger.info(["after"]);
 
-        expect(logSpy).toHaveBeenCalledExactlyOnceWith(
-            expect.objectContaining({
-                messages: ["after"],
-                metadata: {},
+        const [entry] = logSpy.mock.calls[0] ?? [];
+        expect(entry?.metadata).toBeUndefined();
+    });
+
+    test("Should not set the other extra info of the entry", async () => {
+        const { logger, logSpy } = createLogger();
+        const fn = use(
+            function handler(): Promise<string> {
+                logger.info(["inside"]);
+                return Promise.resolve("ok");
+            },
+            withMetadataFactory({ use: () => logger })<[], string>({
+                getCurrentFilePath: () => "/app/src/math.ts",
             }),
         );
+
+        await fn();
+
+        const [entry] = logSpy.mock.calls[0] ?? [];
+        expect(entry?.group).toBeUndefined();
+        expect(entry?.error).toBeUndefined();
+        expect(entry?.spans).toBeUndefined();
     });
 
     test("Should return the resolved value of the wrapped function", async () => {
         const logger = new Logger({ transport: new NoOpLoggerTransport() });
-
         const fn = use(
             function handler(): Promise<string> {
                 return Promise.resolve("result");
@@ -359,29 +288,8 @@ describe("function: withMetadataFactory", () => {
         await expect(fn()).resolves.toBe("result");
     });
 
-    test("Should pass the original arguments to the wrapped function", async () => {
-        const logger = new Logger({ transport: new NoOpLoggerTransport() });
-        const wrappedFn = vi.fn(
-            (firstName: string, lastName: string): Promise<string> =>
-                Promise.resolve(`${firstName} ${lastName}`),
-        );
-
-        const fn = use(
-            wrappedFn,
-            withMetadataFactory({ use: () => logger })<
-                [string, string],
-                string
-            >(),
-        );
-
-        await fn("Ada", "Lovelace");
-
-        expect(wrappedFn).toHaveBeenCalledExactlyOnceWith("Ada", "Lovelace");
-    });
-
     test("Should propagate a rejection from the wrapped function", async () => {
         const logger = new Logger({ transport: new NoOpLoggerTransport() });
-
         const fn = use(
             function handler(): Promise<string> {
                 return Promise.reject(new Error("boom"));

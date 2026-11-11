@@ -95,18 +95,18 @@ export function withSyncLoggingFactory<TTransports extends string = string>(
                     const logger = loggerResolver.use(transportName);
                     try {
                         if (className !== undefined) {
-                            logger.info("class:", className);
+                            logger.verbose(["class:", className]);
                         }
-                        logger.info("function:", name);
-                        logger.info("args:", args);
+                        logger.verbose(["function:", name]);
+                        logger.verbose(["args:", args.join(", ")]);
                         const result = next();
-                        logger.info("return:", result);
+                        logger.verbose(["return:", result]);
                         return result;
                     } catch (error: unknown) {
                         if (useFatalLevel) {
-                            logger.fatal("fatal:", error);
+                            logger.fatal(["fatal:"], { error });
                         } else {
-                            logger.error("error:", error);
+                            logger.error(["error:"], { error });
                         }
                         throw error;
                     }
