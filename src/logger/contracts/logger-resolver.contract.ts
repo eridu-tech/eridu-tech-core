@@ -1,5 +1,5 @@
 /**
- * @module Observability
+ * @module Logger
  */
 
 import type { ILogger } from "@/logger/contracts/logger.contract.js";

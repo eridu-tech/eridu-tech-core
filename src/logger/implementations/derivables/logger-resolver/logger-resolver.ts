@@ -1,5 +1,5 @@
 /**
- * @module Observability
+ * @module Logger
  */
 
 import { Logger } from "@/logger/implementations/derivables/logger/_module.js";

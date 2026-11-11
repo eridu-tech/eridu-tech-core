@@ -1,5 +1,5 @@
 /**
- * @module Observability
+ * @module Logger
  */
 
 import { ProxyLogger } from "@/logger/implementations/derivables/di/proxy-logger-resolver/proxy-logger.js";
