@@ -38,6 +38,18 @@ Drops every entry. Useful when logging is switched off or in tests.
 `NoOpLoggerTransport` lets you test your app without emitting any output, ideal for unit, integration and E2E tests.
 :::
 
+## MemoryLoggerTransport
+
+Stores every entry in memory so tests can assert on them. `entries` returns the stored entries in order, and `clear()` removes them.
+
+```ts file=./samples/memory-logger-transport.ts
+
+```
+
+:::info
+Use `MemoryLoggerTransport` to inspect the entries a `Logger` produced without writing to a real backend.
+:::
+
 ## LogLayerLoggerTransport
 
 To utilize the `LogLayerLoggerTransport`, install the [`"loglayer"`](https://www.npmjs.com/package/loglayer) package and supply a configured `LogLayer` instance.
