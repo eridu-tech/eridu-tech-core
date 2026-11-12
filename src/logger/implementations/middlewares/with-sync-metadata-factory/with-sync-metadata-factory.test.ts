@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
@@ -7,25 +7,26 @@ import { withSyncMetadataFactory } from "@/logger/implementations/middlewares/wi
 import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
 import { use } from "@/middleware/implementations/_module-exports.js";
 
+import type { Mock } from "vitest";
+
 describe("function: withSyncMetadataFactory", () => {
-    afterEach(() => {
+    const transport = new NoOpLoggerTransport();
+    const logger = new Logger({
+        transport,
+        executionContext: new ExecutionContext(
+            new AlsExecutionContextAdapter(),
+        ),
+    });
+    let logSpy: Mock<NoOpLoggerTransport["log"]>;
+
+    beforeEach(() => {
         vi.restoreAllMocks();
+        vi.clearAllMocks();
+
+        logSpy = vi.spyOn(transport, "log");
     });
 
-    function createLogger() {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
-        return { logger, logSpy };
-    }
-
     test("Should select the transport passed to use", () => {
-        const { logger, logSpy } = createLogger();
         const loggerResolver = {
             use: vi.fn((_transportName?: "primary" | "secondary") => logger),
         };
@@ -54,7 +55,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should attach the file path, class name, and function name while the wrapped function runs", () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(first: number, second: number): number {
                 logger.info(["inside"]);
@@ -84,7 +84,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should merge the metadata returned by the metadata callback", () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(first: number, second: number): number {
                 logger.info(["inside"]);
@@ -115,7 +114,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should pass the function name and arguments to the metadata callback", () => {
-        const { logger } = createLogger();
         const metadata = vi.fn(() => ({}));
         const fn = use(
             function handler(_name: string, _count: number): string {
@@ -136,7 +134,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should let the built-in entries override the metadata callback values", () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): string {
                 logger.info(["inside"]);
@@ -165,7 +162,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should attach a null file path when the resolver returns null", () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): string {
                 logger.info(["inside"]);
@@ -187,7 +183,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should default the file path to the middleware module path", () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): string {
                 logger.info(["inside"]);
@@ -205,7 +200,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should leave the class name undefined when it is not configured", () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): string {
                 logger.info(["inside"]);
@@ -223,7 +217,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should resolve the file path on every invocation", () => {
-        const { logger } = createLogger();
         const getCurrentFilePath = vi.fn(() => "/app/src/math.ts");
         const fn = use(
             function handler(): string {
@@ -241,7 +234,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should not attach the metadata to entries logged after the call", () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): string {
                 return "ok";
@@ -260,7 +252,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should not set the other extra info of the entry", () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             function handler(): string {
                 logger.info(["inside"]);
@@ -280,7 +271,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should return the value of the wrapped function synchronously", () => {
-        const logger = new Logger({ transport: new NoOpLoggerTransport() });
         const fn = use(
             function handler(): string {
                 return "result";
@@ -295,7 +285,6 @@ describe("function: withSyncMetadataFactory", () => {
     });
 
     test("Should propagate an error from the wrapped function", () => {
-        const logger = new Logger({ transport: new NoOpLoggerTransport() });
         const fn = use(
             function handler(): string {
                 throw new Error("boom");

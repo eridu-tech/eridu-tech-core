@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op-semaphore-adapter/_module-exports.js";
@@ -17,10 +17,8 @@ describe("function: withSemaphoreFactory", () => {
         adapters: { memory: new NoOpSemaphoreAdapter() },
         defaultAdapter: "memory",
     });
+    semaphoreFactoryResolver.init();
 
-    beforeAll(() => {
-        semaphoreFactoryResolver.init();
-    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();

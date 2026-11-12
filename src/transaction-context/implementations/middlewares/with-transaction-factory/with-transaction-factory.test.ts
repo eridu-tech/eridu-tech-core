@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
@@ -12,17 +12,17 @@ import { withTransactionFactory } from "@/transaction-context/implementations/mi
 describe("function: withTransactionFactory", () => {
     const transactionContextResolver = new TransactionContextResolver<"memory">(
         {
-            adapters: { memory: new NoOpTransactionAdapter<null, null>(null) },
+            adapters: {
+                memory: new NoOpTransactionAdapter<null, null>(null),
+            },
             defaultAdapter: "memory",
             executionContext: new ExecutionContext(
                 new NoOpExecutionContextAdapter(),
             ),
         },
     );
+    transactionContextResolver.init();
 
-    beforeAll(() => {
-        transactionContextResolver.init();
-    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();

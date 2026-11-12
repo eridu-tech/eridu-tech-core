@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
@@ -8,25 +8,26 @@ import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-l
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
+import type { Mock } from "vitest";
+
 describe("function: withLogSpanFactory", () => {
-    afterEach(() => {
+    const transport = new NoOpLoggerTransport();
+    const logger = new Logger({
+        transport,
+        executionContext: new ExecutionContext(
+            new AlsExecutionContextAdapter(),
+        ),
+    });
+    let logSpy: Mock<NoOpLoggerTransport["log"]>;
+
+    beforeEach(() => {
         vi.restoreAllMocks();
+        vi.clearAllMocks();
+
+        logSpy = vi.spyOn(transport, "log");
     });
 
-    function createLogger() {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({
-            transport,
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-        });
-        return { logger, logSpy };
-    }
-
     test("Should select the transport passed to use", async () => {
-        const logger = new Logger({ transport: new NoOpLoggerTransport() });
         const runSpy = vi.spyOn(logger, "run");
         const loggerResolver = {
             use: vi.fn((_transportName?: "primary" | "secondary") => logger),
@@ -48,7 +49,6 @@ describe("function: withLogSpanFactory", () => {
     });
 
     test("Should open a span named after the middleware label", async () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             (name: string): Promise<string> => {
                 logger.info(["inside"]);
@@ -68,7 +68,6 @@ describe("function: withLogSpanFactory", () => {
     });
 
     test("Should not attach the span to entries logged after the call", async () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             (name: string): Promise<string> => Promise.resolve(name),
             withLogSpanFactory({ use: () => logger })<[string], string>("db"),
@@ -82,7 +81,6 @@ describe("function: withLogSpanFactory", () => {
     });
 
     test("Should nest the spans of stacked middlewares", async () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             (_name: string): Promise<string> => {
                 logger.info(["inside"]);
@@ -108,7 +106,6 @@ describe("function: withLogSpanFactory", () => {
     });
 
     test("Should not set the other extra info of the entry", async () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             (name: string): Promise<string> => {
                 logger.info(["inside"]);
@@ -126,7 +123,6 @@ describe("function: withLogSpanFactory", () => {
     });
 
     test("Should return the resolved value of the wrapped function", async () => {
-        const logger = new Logger({ transport: new NoOpLoggerTransport() });
         const fn = use(
             (name: string): Promise<string> => Promise.resolve(`Hello ${name}`),
             withLogSpanFactory({ use: () => logger })<[string], string>("db"),
@@ -136,7 +132,6 @@ describe("function: withLogSpanFactory", () => {
     });
 
     test("Should pass the original arguments to the wrapped function", async () => {
-        const logger = new Logger({ transport: new NoOpLoggerTransport() });
         const wrappedFn = vi.fn(
             (firstName: string, lastName: string): Promise<string> =>
                 Promise.resolve(`${firstName} ${lastName}`),
@@ -154,7 +149,6 @@ describe("function: withLogSpanFactory", () => {
     });
 
     test("Should open a span for every invocation", async () => {
-        const { logger, logSpy } = createLogger();
         const fn = use(
             (_name: string): Promise<string> => {
                 logger.info(["inside"]);
@@ -175,7 +169,6 @@ describe("function: withLogSpanFactory", () => {
     });
 
     test("Should propagate a rejection from the wrapped function", async () => {
-        const logger = new Logger({ transport: new NoOpLoggerTransport() });
         const fn = use(
             (): Promise<string> => Promise.reject(new Error("boom")),
             withLogSpanFactory({ use: () => logger })<[], string>("db"),

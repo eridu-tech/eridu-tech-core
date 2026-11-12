@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { LOG_LEVEL } from "@/logger/contracts/_module-exports.js";
 import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
@@ -6,15 +6,21 @@ import { withLoggingFactory } from "@/logger/implementations/middlewares/with-lo
 import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
 import { use } from "@/middleware/implementations/_module-exports.js";
 
+import type { Mock } from "vitest";
+
 describe("function: withLoggingFactory", () => {
-    afterEach(() => {
+    const transport = new NoOpLoggerTransport();
+    const logger = new Logger({ transport });
+    let logSpy: Mock<NoOpLoggerTransport["log"]>;
+
+    beforeEach(() => {
         vi.restoreAllMocks();
+        vi.clearAllMocks();
+
+        logSpy = vi.spyOn(transport, "log");
     });
 
     test("Should select the transport passed to use", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
         const loggerResolver = {
             use: vi.fn((_transportName?: "primary" | "secondary") => logger),
         };
@@ -29,10 +35,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should log the function name, arguments, and return value", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
-
         const fn = use(
             function handler(first: number, second: number): Promise<number> {
                 return Promise.resolve(first + second);
@@ -70,10 +72,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should join the arguments with a comma", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
-
         const fn = use(
             function handler(first: string, second: string): Promise<string> {
                 return Promise.resolve(first + second);
@@ -95,10 +93,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should log the class name before the function name when className is set", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
-
         const fn = use(
             function handler(first: number, second: number): Promise<number> {
                 return Promise.resolve(first + second);
@@ -130,8 +124,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should return the resolved value of the wrapped function", async () => {
-        const logger = new Logger({ transport: new NoOpLoggerTransport() });
-
         const fn = use(
             function handler(): Promise<string> {
                 return Promise.resolve("result");
@@ -143,7 +135,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should pass the original arguments to the wrapped function", async () => {
-        const logger = new Logger({ transport: new NoOpLoggerTransport() });
         const wrappedFn = vi.fn(
             (first: string, second: string): Promise<string> =>
                 Promise.resolve(`${first} ${second}`),
@@ -163,9 +154,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should log the error at the error level by default and rethrow", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
         const error = new Error("boom");
 
         const fn = use(
@@ -189,9 +177,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should log the thrown error of a synchronous wrapper", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
         const error = new Error("boom");
 
         const fn = use(
@@ -214,9 +199,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should log the error at the fatal level when useFatalLevel is enabled", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
         const error = new Error("boom");
 
         const fn = use(
@@ -242,10 +224,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should not log the return value when the wrapped function rejects", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
-
         const fn = use(
             function handler(): Promise<string> {
                 return Promise.reject(new Error("boom"));
@@ -260,10 +238,6 @@ describe("function: withLoggingFactory", () => {
     });
 
     test("Should not log an error when the wrapped function resolves", async () => {
-        const transport = new NoOpLoggerTransport();
-        const logSpy = vi.spyOn(transport, "log");
-        const logger = new Logger({ transport });
-
         const fn = use(
             function handler(): Promise<string> {
                 return Promise.resolve("ok");

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/no-op-event-bus-adapter/_module-exports.js";
 import { EventBus } from "@/event-bus/implementations/derivables/_module-exports.js";
@@ -17,9 +17,9 @@ describe("function: withDispatchOnErrorFactory", () => {
     };
     const withDispatchOnError = withDispatchOnErrorFactory(eventBusResolver);
 
-    afterEach(() => {
-        vi.clearAllMocks();
+    beforeEach(() => {
         vi.restoreAllMocks();
+        vi.clearAllMocks();
     });
 
     test("Should dispatch the event with the resolved payload when the wrapped function throws", async () => {

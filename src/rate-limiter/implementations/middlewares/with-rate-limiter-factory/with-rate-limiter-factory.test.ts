@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/no-op-rate-limiter-adapter/_module-exports.js";
@@ -16,10 +16,8 @@ describe("function: withRateLimiterFactory", () => {
             defaultAdapter: "memory",
         },
     );
+    rateLimiterFactoryResolver.init();
 
-    beforeAll(() => {
-        rateLimiterFactoryResolver.init();
-    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
