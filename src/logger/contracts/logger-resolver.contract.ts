@@ -3,6 +3,7 @@
  */
 
 import type { ILogger } from "@/logger/contracts/logger.contract.js";
+import type { OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * Logger resolver contract for dynamically selecting and switching between
@@ -24,11 +25,11 @@ export type ILoggerResolver<TTransports extends string = string> = {
      * Retrieves a logger by transport name.
      * If no transport name is provided, uses the default registered transport.
      *
-     * @param transportName - The name of the transport to retrieve (optional). If not provided, uses the default transport.
+     * @param transportNames - The name of the transport to retrieve (optional). If not provided, uses the default transport.
      * @returns The requested logger instance.
      *
      * @throws {UnregisteredAdapterError} If the specified transport name is not registered.
      * @throws {DefaultAdapterNotDefinedError} If no transport name is provided and no default transport is defined.
      */
-    use(transportName?: TTransports): ILogger;
+    use(transportNames?: OneOrMore<TTransports>): ILogger;
 };

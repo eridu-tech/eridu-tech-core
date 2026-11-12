@@ -240,13 +240,13 @@ export class Logger implements ILogger {
 
     putMetadata(key: string, value: unknown): void;
     putMetadata(values: LogMetadata): void;
-    putMetadata(keyOrValue: string | LogMetadata, value?: unknown): void {
-        if (typeof keyOrValue === "string") {
+    putMetadata(keyOrValues: string | LogMetadata, value?: unknown): void {
+        if (typeof keyOrValues === "string") {
             this.saveMetadata({
-                [keyOrValue]: value,
+                [keyOrValues]: value,
             });
             return;
         }
-        this.saveMetadata(keyOrValue);
+        this.saveMetadata(keyOrValues);
     }
 }

@@ -73,14 +73,6 @@ export class ProxyLoggerResolver<TTransports extends string = string>
         this.resolverToken = settings.resolverToken;
     }
 
-    /**
-     * Returns a logger that resolves the logger resolver and selects
-     * `transportName` on every operation.
-     *
-     * @param transportName - The alias to select. Defaults to the resolver's
-     * `defaultTransport`.
-     * @returns A logger bound to the selected transport alias.
-     */
     use(transportName?: TTransports): ILogger {
         return new ProxyLogger(
             this.container,

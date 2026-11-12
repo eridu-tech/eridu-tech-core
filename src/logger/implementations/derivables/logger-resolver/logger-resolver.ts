@@ -3,8 +3,10 @@
  */
 
 import { Logger } from "@/logger/implementations/derivables/logger/_module.js";
+import { ComposedLogger } from "@/logger/implementations/derivables/logger-resolver/composed-logger.js";
 import {
     DefaultAdapterNotDefinedError,
+    resolveOneOrMore,
     UnregisteredAdapterError,
 } from "@/utilities/_module-exports.js";
 
@@ -14,7 +16,7 @@ import type {
     ILoggerTransport,
 } from "@/logger/contracts/_module-exports.js";
 import type { LoggerSettingsBase } from "@/logger/implementations/derivables/logger/_module.js";
-import type { IInitizable } from "@/utilities/_module-exports.js";
+import type { IInitizable, OneOrMore } from "@/utilities/_module-exports.js";
 
 /**
  * Named registry of logger transports. Each key is a transport alias and the
@@ -46,7 +48,12 @@ export type LoggerResolverSettings<TTransports extends string = string> =
          * The alias to use when none is explicitly specified. Must be a key in
          * the `transports` map.
          */
-        defaultTransport?: NoInfer<TTransports>;
+        defaultTransport?: NoInfer<OneOrMore<TTransports>>;
+
+        /**
+         * @default true
+         */
+        throwWhenAllFail?: boolean;
     };
 
 /**
@@ -80,33 +87,33 @@ export class LoggerResolver<TTransports extends string = string>
         }
     }
 
-    /**
-     * Selects the logger of a registered transport alias.
-     *
-     * @param transportName - The alias to select. Defaults to
-     * `defaultTransport`.
-     * @returns The logger of the selected alias.
-     *
-     * @throws {DefaultAdapterNotDefinedError} When no alias is passed and no
-     * `defaultTransport` is configured.
-     * @throws {UnregisteredAdapterError} When the alias is not registered.
-     */
     use(
-        transportName: TTransports | undefined = this.settings.defaultTransport,
+        transportNames: OneOrMore<TTransports> | undefined = this.settings
+            .defaultTransport,
     ): ILogger {
-        if (transportName === undefined) {
+        if (transportNames === undefined) {
             throw DefaultAdapterNotDefinedError.create(
                 Logger.name,
                 Object.keys(this.settings.transports),
             );
         }
-        const logger = this.factories[transportName];
-        if (logger === undefined) {
-            throw UnregisteredAdapterError.create(
-                transportName,
-                Object.keys(this.settings.transports),
-            );
-        }
-        return logger;
+        const resolvedTransportNames = resolveOneOrMore(transportNames);
+
+        const loggers = resolvedTransportNames.map<ILogger>((transportName) => {
+            const logger = this.factories[transportName];
+            if (logger === undefined) {
+                throw UnregisteredAdapterError.create(
+                    transportName,
+                    Object.keys(this.settings.transports),
+                );
+            }
+            return logger;
+        });
+        const composedLogger = new ComposedLogger(
+            loggers,
+            this.settings.throwWhenAllFail ?? true,
+        );
+
+        return composedLogger;
     }
 }
