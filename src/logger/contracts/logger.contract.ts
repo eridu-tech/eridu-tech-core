@@ -2,6 +2,8 @@
  * @module Logger
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { UnableToLogError } from "@/logger/contracts/logger.errors.js";
 import type { Lazy } from "@/utilities/_module-exports.js";
 
 /**
@@ -77,6 +79,8 @@ export type ILogger = {
      *
      * @param messages - Values to log, in the order passed.
      * @param extraInfo - Optional group and metadata for this entry.
+     *
+     * @throws {UnableToLogError}
      */
     debug(messages: Array<unknown>, extraInfo?: LogExtraInfo): void;
 
@@ -86,6 +90,8 @@ export type ILogger = {
      *
      * @param messages - Values to log, in the order passed.
      * @param extraInfo - Optional group and metadata for this entry.
+     *
+     * @throws {UnableToLogError}
      */
     verbose(messages: Array<unknown>, extraInfo?: LogExtraInfo): void;
 
@@ -94,6 +100,8 @@ export type ILogger = {
      *
      * @param messages - Values to log, in the order passed.
      * @param extraInfo - Optional group and metadata for this entry.
+     *
+     * @throws {UnableToLogError}
      */
     info(messages: Array<unknown>, extraInfo?: LogExtraInfo): void;
 
@@ -103,6 +111,8 @@ export type ILogger = {
      * @param messages - Values to log, in the order passed.
      * @param extraInfo - Optional group, metadata, and error details for this
      * entry.
+     *
+     * @throws {UnableToLogError}
      */
     warn(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void;
 
@@ -112,6 +122,8 @@ export type ILogger = {
      * @param messages - Values to log, in the order passed.
      * @param extraInfo - Optional group, metadata, and error details for this
      * entry.
+     *
+     * @throws {UnableToLogError}
      */
     error(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void;
 
@@ -121,6 +133,8 @@ export type ILogger = {
      * @param messages - Values to log, in the order passed.
      * @param extraInfo - Optional group, metadata, and error details for this
      * entry.
+     *
+     * @throws {UnableToLogError}
      */
     fatal(messages: Array<unknown>, extraInfo?: FailureLogExtraInfo): void;
 

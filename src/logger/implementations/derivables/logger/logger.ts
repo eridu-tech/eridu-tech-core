@@ -1,7 +1,10 @@
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { LOG_LEVEL } from "@/logger/contracts/_module-exports.js";
+import {
+    LOG_LEVEL,
+    UnableToLogError,
+} from "@/logger/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/time-span.js";
 import {
     callInvocable,
@@ -149,24 +152,28 @@ export class Logger implements ILogger {
         messages: Array<unknown>,
         extraInfo: FailureLogExtraInfo = {},
     ): void {
-        const { group = this.getGroupName(), metadata, error } = extraInfo;
-        const { metadata: scopedMetadata, spans } = this.getMetadata();
+        try {
+            const { group = this.getGroupName(), metadata, error } = extraInfo;
+            const { metadata: scopedMetadata, spans } = this.getMetadata();
 
-        const combinedMetadata = {
-            ...scopedMetadata,
-            ...metadata,
-        };
-        this.transport.log({
-            level,
-            loggedAt: Logger.getCurrentDateAsUnixTimestampInMs(),
-            messages,
-            metadata: isObjectEmpty(combinedMetadata)
-                ? undefined
-                : combinedMetadata,
-            spans: isObjectEmpty(spans) ? undefined : spans,
-            group,
-            error,
-        });
+            const combinedMetadata = {
+                ...scopedMetadata,
+                ...metadata,
+            };
+            this.transport.log({
+                level,
+                loggedAt: Logger.getCurrentDateAsUnixTimestampInMs(),
+                messages,
+                metadata: isObjectEmpty(combinedMetadata)
+                    ? undefined
+                    : combinedMetadata,
+                spans: isObjectEmpty(spans) ? undefined : spans,
+                group,
+                error,
+            });
+        } catch (error: unknown) {
+            throw UnableToLogError.create(error);
+        }
     }
 
     debug(messages: Array<unknown>, extraInfo?: LogExtraInfo): void {
