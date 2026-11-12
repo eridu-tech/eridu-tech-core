@@ -31,12 +31,14 @@ To begin using the `Logger` class, you'll need to create and configure an instan
 ```
 
 :::info
-Here is a complete list of settings for the [`Logger`](https://eridu-tech.github.io/eridu-tech-core/types/Observability.LoggerSettings.html) class.
+Here is a complete list of settings for the [`Logger`](https://eridu-tech.github.io/eridu-tech-core/types/Logger.LoggerSettings.html) class.
 :::
 
 ## Logging levels
 
 The logger offers the `debug`, `verbose`, `info`, `warn`, `error` and `fatal` levels. `verbose` sits between `debug` and `info` in severity, for detailed progress information that is still meant for humans. Every level takes the values to log as an array.
+
+If the configured transport fails to log an entry, the level throws `UnableToLogError` with the original error preserved as the `cause`.
 
 ```ts file=./samples/logger-levels.ts
 
@@ -86,4 +88,4 @@ Run scopes are read and written through an execution context. With the default `
 
 ## Further information
 
-For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Observability.html) API docs.
+For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.

@@ -72,4 +72,4 @@ const withLogSpan = withLogSpanFactory(logger);
 
 ## Further information
 
-For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Observability.html) API docs.
+For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.

@@ -18,7 +18,7 @@ keywords:
 
 ## Implementing your custom ILoggerTransport
 
-In order to create an adapter you need to implement the [`ILoggerTransport`](https://eridu-tech.github.io/eridu-tech-core/types/Observability.ILoggerTransport.html) contract. It declares a single `log` method that receives one fully built [`LogData`](https://eridu-tech.github.io/eridu-tech-core/types/Observability.LogData.html) record, so your implementation only has to format and output it.
+In order to create an adapter you need to implement the [`ILoggerTransport`](https://eridu-tech.github.io/eridu-tech-core/types/Logger.ILoggerTransport.html) contract. It declares a single `log` method that receives one fully built [`LogData`](https://eridu-tech.github.io/eridu-tech-core/types/Logger.LogData.html) record, so your implementation only has to format and output it.
 
 Each entry carries:
 
@@ -32,10 +32,12 @@ Each entry carries:
 | `error`    | `unknown`                           | Error details attached by `warn`, `error`, and `fatal`                |
 | `spans`    | `Partial<Record<string, TimeSpan>>` | Elapsed time of each `run` span still open when the entry was created |
 
+Transports may throw. When `log` fails, the `Logger` wraps the error in `UnableToLogError`, preserving the original error as the `cause`.
+
 ```ts file=./samples/custom-logger-transport.ts
 
 ```
 
 ## Further information
 
-For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Observability.html) API docs.
+For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.

@@ -54,7 +54,7 @@ Use `MemoryLoggerTransport` to inspect the entries a `Logger` produced without w
 
 To utilize the `LogLayerLoggerTransport`, install the [`"loglayer"`](https://www.npmjs.com/package/loglayer) package and supply a configured `LogLayer` instance.
 
-Each entry is forwarded through `LogLayer.raw`, mapping the logger's `verbose` level to LogLayer's `trace` level. A `group` is applied as a LogLayer prefix (`[group]`), and `error` is forwarded when present. `loggedAt` is rendered as a `Date` and attached to the entry metadata when `includeLoggedAt` is enabled, and spans are attached as milliseconds. Logged values are passed through untouched, leaving serialization to LogLayer.
+Each entry is forwarded through `LogLayer.raw`, mapping the logger's `verbose` level to LogLayer's `trace` level. A `group` is applied as a LogLayer prefix (`[group]`), and `error` is forwarded when present. Logged metadata is nested under `attributes`, so it cannot collide with the transport's own fields; `loggedAt` is rendered as a `Date` and spans in milliseconds, both added when available. `loggedAt` can be omitted with `includeLoggedAt: false`. Logged values are passed through untouched, leaving serialization to LogLayer.
 
 ```ts file=./samples/loglayer-logger-transport.ts
 
@@ -71,10 +71,20 @@ Each entry is forwarded through `LogLayer.raw`, mapping the logger's `verbose` l
 | `logger`          | `LogLayer` |         | The LogLayer instance that receives the entries      |
 | `includeLoggedAt` | `boolean`  | `true`  | Whether `loggedAt` is attached to the entry metadata |
 
+## OtelLoggerTransport
+
+To utilize the `OtelLoggerTransport`, install the optional [`"@opentelemetry/api"`](https://www.npmjs.com/package/@opentelemetry/api) peer dependency and pass a configured OTel `Logger`; by default the transport uses `logs.getLogger("eridu-tech")`.
+
+Each entry is emitted through the OTel `Logger` with the matching severity number (`verbose` maps to `TRACE`) and the level name as `severityText`. Logged values become the record `body`, and `group`, `metadata`, `error` and spans in milliseconds are attached as attributes.
+
+```ts file=./samples/otel-logger-transport.ts
+
+```
+
 ## Creating your own transport
 
 See [creating adapters](../creating_logger_adapters/index.md) for implementing `ILoggerTransport` and registering a custom transport.
 
 ## Further information
 
-For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Observability.html) API docs.
+For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.

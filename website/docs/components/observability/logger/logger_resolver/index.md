@@ -23,7 +23,7 @@ To begin using the `LoggerResolver`, you will need to register all required tran
 ```
 
 :::info
-Here is a complete list of settings for the [`LoggerResolver`](https://eridu-tech.github.io/eridu-tech-core/types/Observability.LoggerResolverSettings.html) class.
+Here is a complete list of settings for the [`LoggerResolver`](https://eridu-tech.github.io/eridu-tech-core/types/Logger.LoggerResolverSettings.html) class.
 :::
 
 ## Usage
@@ -50,4 +50,4 @@ Note that if you specify a non-existent transport, an error will be thrown.
 
 ## Further information
 
-For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Observability.html) API docs.
+For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.

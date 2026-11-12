@@ -35,7 +35,7 @@ The log span middleware intercepts function calls and runs them inside a span na
 ```
 
 :::info
-Here is a complete list of settings for the [`withLogSpanFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Observability.withLogSpanFactory.html) function.
+Here is a complete list of settings for the [`withLogSpanFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withLogSpanFactory.html) function.
 :::
 
 ## withSyncLogSpanFactory middleware {#with_sync_log_span_factory_middleware}
@@ -49,7 +49,7 @@ Synchronous variant of [`withLogSpanFactory`](#with_log_span_factory_middleware)
 ```
 
 :::info
-Here is a complete list of settings for the [`withSyncLogSpanFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Observability.withSyncLogSpanFactory.html) function.
+Here is a complete list of settings for the [`withSyncLogSpanFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withSyncLogSpanFactory.html) function.
 :::
 
 ## withLoggingFactory middleware {#with_logging_factory_middleware}
@@ -63,7 +63,7 @@ The logging middleware intercepts function calls and logs the class name (when c
 ```
 
 :::info
-Here is a complete list of settings for the [`withLoggingFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Observability.withLoggingFactory.html) function.
+Here is a complete list of settings for the [`withLoggingFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withLoggingFactory.html) function.
 :::
 
 ### Settings
@@ -84,7 +84,7 @@ Synchronous variant of [`withLoggingFactory`](#with_logging_factory_middleware) 
 ```
 
 :::info
-Here is a complete list of settings for the [`withSyncLoggingFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Observability.withSyncLoggingFactory.html) function.
+Here is a complete list of settings for the [`withSyncLoggingFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withSyncLoggingFactory.html) function.
 :::
 
 ## withMetadataFactory middleware {#with_metadata_factory_middleware}
@@ -98,7 +98,7 @@ The metadata middleware scopes `filePath`, `class` and `function` metadata to th
 ```
 
 :::info
-Here is a complete list of settings for the [`withMetadataFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Observability.withMetadataFactory.html) function.
+Here is a complete list of settings for the [`withMetadataFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withMetadataFactory.html) function.
 :::
 
 ### Settings
@@ -120,9 +120,9 @@ Synchronous variant of [`withMetadataFactory`](#with_metadata_factory_middleware
 ```
 
 :::info
-Here is a complete list of settings for the [`withSyncMetadataFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Observability.withSyncMetadataFactory.html) function.
+Here is a complete list of settings for the [`withSyncMetadataFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withSyncMetadataFactory.html) function.
 :::
 
 ## Further information
 
-For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Observability.html) API docs.
+For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.
