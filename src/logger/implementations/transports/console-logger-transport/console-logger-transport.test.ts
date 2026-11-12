@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { LOG_LEVEL } from "@/logger/contracts/_module-exports.js";
 import { ConsoleLoggerTransport } from "@/logger/implementations/transports/console-logger-transport/_module-exports.js";
@@ -34,7 +34,12 @@ function spyOnConsoleMethods(): Record<ConsoleMethod, ConsoleSpy> {
 }
 
 describe("class: ConsoleLoggerTransport", () => {
+    beforeEach(() => {
+        vi.useFakeTimers({ now: LOGGED_AT, toFake: ["Date", "performance"] });
+    });
+
     afterEach(() => {
+        vi.useRealTimers();
         vi.restoreAllMocks();
     });
 

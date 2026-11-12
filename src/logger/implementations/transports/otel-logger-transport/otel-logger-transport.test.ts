@@ -4,7 +4,7 @@ import {
     LoggerProvider,
     SimpleLogRecordProcessor,
 } from "@opentelemetry/sdk-logs";
-import { beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { LOG_LEVEL } from "@/logger/contracts/_module-exports.js";
 import { OtelLoggerTransport } from "@/logger/implementations/transports/otel-logger-transport/_module-exports.js";
@@ -31,6 +31,8 @@ describe("class: OtelLoggerTransport", () => {
     let transport: OtelLoggerTransport;
 
     beforeEach(() => {
+        vi.useFakeTimers({ now: LOGGED_AT, toFake: ["Date", "performance"] });
+
         exporter = new InMemoryLogRecordExporter();
         const provider = new LoggerProvider({
             processors: [
@@ -41,6 +43,10 @@ describe("class: OtelLoggerTransport", () => {
         });
         logger = provider.getLogger("test");
         transport = new OtelLoggerTransport({ logger });
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     function getRecords() {
@@ -124,6 +130,12 @@ describe("class: OtelLoggerTransport", () => {
         transport.log(makeLogData({ group: "auth" }));
 
         expect(getRecords()[0]?.attributes).toEqual({ group: "auth" });
+    });
+
+    test("Should stamp the record with the mocked time", () => {
+        transport.log(makeLogData());
+
+        expect(getRecords()[0]?.hrTime).toStrictEqual([LOGGED_AT / 1_000, 0]);
     });
 
     test("Should attach the error as an attribute", () => {

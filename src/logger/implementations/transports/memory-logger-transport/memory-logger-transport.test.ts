@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { LOG_LEVEL } from "@/logger/contracts/_module-exports.js";
 import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
@@ -19,6 +19,14 @@ function makeLogData(overrides: Partial<LogData> = {}): LogData {
 }
 
 describe("class: MemoryLoggerTransport", () => {
+    beforeEach(() => {
+        vi.useFakeTimers({ now: LOGGED_AT, toFake: ["Date", "performance"] });
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     test("Should start with no entries", () => {
         const transport = new MemoryLoggerTransport();
 
@@ -69,6 +77,7 @@ describe("class: MemoryLoggerTransport", () => {
         expect(transport.entries).toHaveLength(1);
         expect(transport.entries[0]?.level).toBe(LOG_LEVEL.INFO);
         expect(transport.entries[0]?.messages).toEqual(["hello"]);
+        expect(transport.entries[0]?.loggedAt).toBe(LOGGED_AT);
     });
 
     test("Should clear every stored entry", () => {

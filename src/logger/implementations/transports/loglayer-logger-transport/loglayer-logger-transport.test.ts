@@ -1,5 +1,5 @@
 import { BlankTransport, LogLayer } from "loglayer";
-import { beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { LOG_LEVEL } from "@/logger/contracts/_module-exports.js";
 import { LogLayerLoggerTransport } from "@/logger/implementations/transports/loglayer-logger-transport/_module-exports.js";
@@ -26,6 +26,8 @@ describe("class: LogLayerLoggerTransport", () => {
     let transport: LogLayerLoggerTransport;
 
     beforeEach(() => {
+        vi.useFakeTimers({ now: LOGGED_AT, toFake: ["Date", "performance"] });
+
         captured = [];
         logger = new LogLayer({
             transport: new BlankTransport({
@@ -36,6 +38,10 @@ describe("class: LogLayerLoggerTransport", () => {
             }),
         });
         transport = new LogLayerLoggerTransport({ logger });
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     test.each([
