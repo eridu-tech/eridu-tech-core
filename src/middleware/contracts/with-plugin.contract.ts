@@ -99,7 +99,7 @@ export type Plugin<TInstance> = PluginFn<TInstance> | IPluginObject<TInstance>;
  * IMPORT_PATH: `eridu-tech/middleware/contracts`
  * @group Contracts
  */
-export type WithPlugin = <TInstance>(
+export type WithPlugin = <TInstance extends object>(
     instance: TInstance,
     plugins: OneOrMore<Plugin<TInstance>>,
 ) => TInstance;

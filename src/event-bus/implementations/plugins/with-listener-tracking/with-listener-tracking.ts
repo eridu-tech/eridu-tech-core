@@ -35,8 +35,8 @@ export function withListenerTracking(
 ): PluginFn<IEventBusAdapter> {
     const listenerStore = new ListenerStore(new Map());
 
-    return (adapter, enhance) => {
-        callInvocable(plugin, adapter, enhance);
+    return (adapter, enhance, adapterName) => {
+        callInvocable(plugin, adapter, enhance, adapterName);
 
         enhance(
             adapter,

@@ -21,7 +21,7 @@ import type { OneOrMore } from "@/utilities/_module-exports.js";
  * @internal
  */
 export function withPluginFactory(enhance_: Enhance): WithPlugin {
-    return <TInstance>(
+    return <TInstance extends object>(
         instance: TInstance,
         plugins: OneOrMore<Plugin<TInstance>>,
     ): TInstance => {
