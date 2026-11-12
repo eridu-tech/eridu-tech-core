@@ -8,7 +8,7 @@ export const loggerResolver = new LoggerResolver({
         console: new ConsoleLoggerTransport(),
         "no-op": new NoOpLoggerTransport(),
     },
-    // You can set an optional default transport
+    // You can set an optional default transport, or a list of transports
     defaultTransport: "console",
 });
 
