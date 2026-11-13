@@ -4,8 +4,8 @@ import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/no-op-
 import { withEventBusLogging } from "@/event-bus/implementations/plugins/with-event-bus-logging/with-event-bus-logging.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
-import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
+import { Log } from "@/log/implementations/derivables/_module-exports.js";
+import { NoOpLogTransport } from "@/log/implementations/transports/no-op-log-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
 import type { EventListenerFn } from "@/event-bus/contracts/_module-exports.js";
@@ -22,11 +22,11 @@ describe("function: withEventBusLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
             const listener: EventListenerFn<Record<string, unknown>> = vi.fn();
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(adapter, withEventBusLogging(logger));
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withEventBusLogging(log));
 
             await enhanced.addListener("myEvent", listener);
 
@@ -45,10 +45,10 @@ describe("function: withEventBusLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(adapter, withEventBusLogging(logger));
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withEventBusLogging(log));
 
             await enhanced.dispatch("myEvent", { id: 1 });
 
@@ -68,12 +68,12 @@ describe("function: withEventBusLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
             const error = new Error("dispatch failed");
             vi.spyOn(adapter, "dispatch").mockRejectedValueOnce(error);
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(adapter, withEventBusLogging(logger));
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withEventBusLogging(log));
 
             await expect(
                 enhanced.dispatch("myEvent", { id: 1 }),
@@ -90,12 +90,12 @@ describe("function: withEventBusLogging", () => {
     describe("method: addListener", () => {
         test("Should log a debug entry with the event name but without the listener", async () => {
             const adapter = new NoOpEventBusAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const debugSpy = vi.spyOn(log, "debug");
             const listener: EventListenerFn<Record<string, unknown>> = vi.fn();
-            const enhanced = withPlugin(adapter, withEventBusLogging(logger));
+            const enhanced = withPlugin(adapter, withEventBusLogging(log));
 
             await enhanced.addListener("myEvent", listener);
 
@@ -113,15 +113,15 @@ describe("function: withEventBusLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpEventBusAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const listener: EventListenerFn<Record<string, unknown>> = vi.fn();
             const error = new Error("addListener failed");
             vi.spyOn(adapter, "addListener").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withEventBusLogging(logger));
+            const enhanced = withPlugin(adapter, withEventBusLogging(log));
 
             await expect(
                 enhanced.addListener("myEvent", listener),
@@ -138,11 +138,11 @@ describe("function: withEventBusLogging", () => {
     describe("method: dispatch", () => {
         test("Should log a debug entry with the event data", async () => {
             const adapter = new NoOpEventBusAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withEventBusLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withEventBusLogging(log));
 
             await enhanced.dispatch("myEvent", { id: 1 });
 
@@ -161,14 +161,14 @@ describe("function: withEventBusLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpEventBusAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("dispatch failed");
             vi.spyOn(adapter, "dispatch").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withEventBusLogging(logger));
+            const enhanced = withPlugin(adapter, withEventBusLogging(log));
 
             await expect(
                 enhanced.dispatch("myEvent", { id: 1 }),
@@ -185,12 +185,12 @@ describe("function: withEventBusLogging", () => {
     describe("method: removeListener", () => {
         test("Should log a debug entry with the event name but without the listener", async () => {
             const adapter = new NoOpEventBusAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const debugSpy = vi.spyOn(log, "debug");
             const listener: EventListenerFn<Record<string, unknown>> = vi.fn();
-            const enhanced = withPlugin(adapter, withEventBusLogging(logger));
+            const enhanced = withPlugin(adapter, withEventBusLogging(log));
 
             await enhanced.removeListener("myEvent", listener);
 
@@ -208,15 +208,15 @@ describe("function: withEventBusLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpEventBusAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const listener: EventListenerFn<Record<string, unknown>> = vi.fn();
             const error = new Error("removeListener failed");
             vi.spyOn(adapter, "removeListener").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withEventBusLogging(logger));
+            const enhanced = withPlugin(adapter, withEventBusLogging(log));
 
             await expect(
                 enhanced.removeListener("myEvent", listener),

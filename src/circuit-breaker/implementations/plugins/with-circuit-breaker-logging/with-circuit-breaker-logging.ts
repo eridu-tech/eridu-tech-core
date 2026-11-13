@@ -3,7 +3,7 @@
  */
 
 import type { ICircuitBreakerAdapter } from "@/circuit-breaker/contracts/_module-exports.js";
-import type { ILogger } from "@/logger/contracts/_module-exports.js";
+import type { ILog } from "@/log/contracts/_module-exports.js";
 import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
@@ -15,21 +15,21 @@ import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
  * and the returned value are merged into the metadata as
  * `circuit-breaker.args` and `circuit-breaker.result`.
  *
- * @param logger - The logger that receives the entries. Only `debug`, `error` and `putMetadata` are used.
+ * @param log - The log that receives the entries. Only `debug`, `error` and `putMetadata` are used.
  * @returns A middleware plugin that wraps an `ICircuitBreakerAdapter`.
  *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/plugins"`
  * @group Plugins
  */
 export function withCircuitBreakerLogging(
-    logger: Pick<ILogger, "debug" | "error">,
+    log: Pick<ILog, "debug" | "error">,
 ): PluginFn<ICircuitBreakerAdapter> {
     return (adapter, enhance, adapterName) => {
         enhance(adapter, "getState", [
             async ({ args: [key], next }) => {
                 try {
                     const state = await next();
-                    logger.debug(["getState succeeded"], {
+                    log.debug(["getState succeeded"], {
                         group: "[CircuitBreaker]",
                         metadata: {
                             adapter: adapterName,
@@ -39,7 +39,7 @@ export function withCircuitBreakerLogging(
                     });
                     return state;
                 } catch (error: unknown) {
-                    logger.error(["getState failed"], {
+                    log.error(["getState failed"], {
                         error,
                     });
                     throw error;
@@ -50,7 +50,7 @@ export function withCircuitBreakerLogging(
             async ({ args: [key], next }) => {
                 try {
                     await next();
-                    logger.debug(["isolate succeeded"], {
+                    log.debug(["isolate succeeded"], {
                         group: "[CircuitBreaker]",
                         metadata: {
                             adapter: adapterName,
@@ -58,7 +58,7 @@ export function withCircuitBreakerLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["isolate failed"], {
+                    log.error(["isolate failed"], {
                         error,
                     });
                     throw error;
@@ -69,7 +69,7 @@ export function withCircuitBreakerLogging(
             async ({ args: [key], next }) => {
                 try {
                     await next();
-                    logger.debug(["reset succeeded"], {
+                    log.debug(["reset succeeded"], {
                         group: "[CircuitBreaker]",
                         metadata: {
                             adapter: adapterName,
@@ -77,7 +77,7 @@ export function withCircuitBreakerLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["reset failed"], {
+                    log.error(["reset failed"], {
                         error,
                     });
                     throw error;
@@ -88,7 +88,7 @@ export function withCircuitBreakerLogging(
             async ({ args: [key], next }) => {
                 try {
                     await next();
-                    logger.debug(["trackFailure succeeded"], {
+                    log.debug(["trackFailure succeeded"], {
                         group: "[CircuitBreaker]",
                         metadata: {
                             adapter: adapterName,
@@ -96,7 +96,7 @@ export function withCircuitBreakerLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["trackFailure failed"], {
+                    log.error(["trackFailure failed"], {
                         error,
                     });
                     throw error;
@@ -107,7 +107,7 @@ export function withCircuitBreakerLogging(
             async ({ args: [key], next }) => {
                 try {
                     await next();
-                    logger.debug(["trackSuccess succeeded"], {
+                    log.debug(["trackSuccess succeeded"], {
                         group: "[CircuitBreaker]",
                         metadata: {
                             adapter: adapterName,
@@ -115,7 +115,7 @@ export function withCircuitBreakerLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["trackSuccess failed"], {
+                    log.error(["trackSuccess failed"], {
                         error,
                     });
                     throw error;
@@ -126,7 +126,7 @@ export function withCircuitBreakerLogging(
             async ({ args: [key], next }) => {
                 try {
                     const transition = await next();
-                    logger.debug(["updateState succeeded"], {
+                    log.debug(["updateState succeeded"], {
                         group: "[CircuitBreaker]",
                         metadata: {
                             adapter: adapterName,
@@ -136,7 +136,7 @@ export function withCircuitBreakerLogging(
                     });
                     return transition;
                 } catch (error: unknown) {
-                    logger.error(["updateState failed"], {
+                    log.error(["updateState failed"], {
                         error,
                     });
                     throw error;

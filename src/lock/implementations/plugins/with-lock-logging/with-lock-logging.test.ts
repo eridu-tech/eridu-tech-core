@@ -4,8 +4,8 @@ import { AlsExecutionContextAdapter } from "@/execution-context/implementations/
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { NoOpLockAdapter } from "@/lock/implementations/adapters/no-op-lock-adapter/_module-exports.js";
 import { withLockLogging } from "@/lock/implementations/plugins/with-lock-logging/with-lock-logging.js";
-import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
-import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
+import { Log } from "@/log/implementations/derivables/_module-exports.js";
+import { NoOpLogTransport } from "@/log/implementations/transports/no-op-log-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
 describe("function: withLockLogging", () => {
@@ -22,10 +22,10 @@ describe("function: withLockLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await enhanced.acquire("myKey", "lockId", currentDate);
 
@@ -47,12 +47,12 @@ describe("function: withLockLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
             const error = new Error("acquire failed");
             vi.spyOn(adapter, "acquire").mockRejectedValueOnce(error);
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await expect(
                 enhanced.acquire("myKey", "lockId", currentDate),
@@ -69,11 +69,11 @@ describe("function: withLockLogging", () => {
     describe("method: acquire", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await enhanced.acquire("myKey", "lockId", currentDate);
 
@@ -94,14 +94,14 @@ describe("function: withLockLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("acquire failed");
             vi.spyOn(adapter, "acquire").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await expect(
                 enhanced.acquire("myKey", "lockId", currentDate),
@@ -118,11 +118,11 @@ describe("function: withLockLogging", () => {
     describe("method: forceRelease", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await enhanced.forceRelease("myKey");
 
@@ -141,14 +141,14 @@ describe("function: withLockLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("forceRelease failed");
             vi.spyOn(adapter, "forceRelease").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await expect(enhanced.forceRelease("myKey")).rejects.toThrow(error);
 
@@ -163,11 +163,11 @@ describe("function: withLockLogging", () => {
     describe("method: getState", () => {
         test("Should log a debug entry with the returned state", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await enhanced.getState("myKey");
 
@@ -186,14 +186,14 @@ describe("function: withLockLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("getState failed");
             vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await expect(enhanced.getState("myKey")).rejects.toThrow(error);
 
@@ -208,11 +208,11 @@ describe("function: withLockLogging", () => {
     describe("method: refresh", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await enhanced.refresh("myKey", "lockId", currentDate);
 
@@ -233,14 +233,14 @@ describe("function: withLockLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("refresh failed");
             vi.spyOn(adapter, "refresh").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await expect(
                 enhanced.refresh("myKey", "lockId", currentDate),
@@ -257,11 +257,11 @@ describe("function: withLockLogging", () => {
     describe("method: release", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await enhanced.release("myKey", "lockId");
 
@@ -281,14 +281,14 @@ describe("function: withLockLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpLockAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("release failed");
             vi.spyOn(adapter, "release").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withLockLogging(logger));
+            const enhanced = withPlugin(adapter, withLockLogging(log));
 
             await expect(enhanced.release("myKey", "lockId")).rejects.toThrow(
                 error,

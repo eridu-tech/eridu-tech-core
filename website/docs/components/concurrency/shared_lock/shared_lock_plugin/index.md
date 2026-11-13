@@ -71,7 +71,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withSharedLockLogging plugin
 
-The SharedLock logging plugin intercepts every call to a shared lock adapter and reports it to an `ILogger`. Any shared lock backend becomes a source of observable events without changing the adapter implementation.
+The SharedLock logging plugin intercepts every call to a shared lock adapter and reports it to an `ILog`. Any shared lock backend becomes a source of observable events without changing the adapter implementation.
 
 ### Use cases
 
@@ -81,9 +81,9 @@ The SharedLock logging plugin intercepts every call to a shared lock adapter and
 
 ### How it works
 
-The `withSharedLockLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the logger, so any [`ILogger`](/docs/components/observability/logger/logger_usage) can be passed in.
+The `withSharedLockLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the log, so any [`ILog`](/docs/components/observability/log/logger_usage) can be passed in.
 
-A successful call logs a `debug` entry named `shared-lock.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `shared-lock.args` and `shared-lock.result`. A failed call logs an `error` entry named `shared-lock.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `shared-lock.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one logger stay distinguishable.
+A successful call logs a `debug` entry named `shared-lock.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `shared-lock.args` and `shared-lock.result`. A failed call logs an `error` entry named `shared-lock.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `shared-lock.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one log stay distinguishable.
 
 | Method          | Logged arguments |
 | --------------- | ---------------- |
@@ -103,5 +103,5 @@ A successful call logs a `debug` entry named `shared-lock.<methodName> succeeded
 ```
 
 :::info
-Arguments are forwarded to the logger untouched. Use a logger whose transport drops metadata when shared lock keys are considered sensitive.
+Arguments are forwarded to the log untouched. Use a log whose transport drops metadata when shared lock keys are considered sensitive.
 :::

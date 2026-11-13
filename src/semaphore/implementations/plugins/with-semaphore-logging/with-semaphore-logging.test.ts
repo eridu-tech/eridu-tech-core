@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
-import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
+import { Log } from "@/log/implementations/derivables/_module-exports.js";
+import { NoOpLogTransport } from "@/log/implementations/transports/no-op-log-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
 import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op-semaphore-adapter/_module-exports.js";
 import { withSemaphoreLogging } from "@/semaphore/implementations/plugins/with-semaphore-logging/with-semaphore-logging.js";
@@ -33,10 +33,10 @@ describe("function: withSemaphoreLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await enhanced.release("myKey", "slotId");
 
@@ -57,12 +57,12 @@ describe("function: withSemaphoreLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
             const error = new Error("release failed");
             vi.spyOn(adapter, "release").mockRejectedValueOnce(error);
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await expect(enhanced.release("myKey", "slotId")).rejects.toThrow(
                 error,
@@ -79,12 +79,12 @@ describe("function: withSemaphoreLogging", () => {
     describe("method: acquire", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const debugSpy = vi.spyOn(log, "debug");
             const settings = createAcquireSettings();
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await enhanced.acquire(settings);
 
@@ -103,15 +103,15 @@ describe("function: withSemaphoreLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const settings = createAcquireSettings();
             const error = new Error("acquire failed");
             vi.spyOn(adapter, "acquire").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await expect(enhanced.acquire(settings)).rejects.toThrow(error);
 
@@ -126,11 +126,11 @@ describe("function: withSemaphoreLogging", () => {
     describe("method: forceReleaseAll", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await enhanced.forceReleaseAll("myKey");
 
@@ -149,14 +149,14 @@ describe("function: withSemaphoreLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("forceReleaseAll failed");
             vi.spyOn(adapter, "forceReleaseAll").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await expect(enhanced.forceReleaseAll("myKey")).rejects.toThrow(
                 error,
@@ -173,11 +173,11 @@ describe("function: withSemaphoreLogging", () => {
     describe("method: getState", () => {
         test("Should log a debug entry with the returned state", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await enhanced.getState("myKey");
 
@@ -199,14 +199,14 @@ describe("function: withSemaphoreLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("getState failed");
             vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await expect(enhanced.getState("myKey")).rejects.toThrow(error);
 
@@ -221,11 +221,11 @@ describe("function: withSemaphoreLogging", () => {
     describe("method: refresh", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await enhanced.refresh("myKey", "slotId", currentDate);
 
@@ -246,14 +246,14 @@ describe("function: withSemaphoreLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("refresh failed");
             vi.spyOn(adapter, "refresh").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await expect(
                 enhanced.refresh("myKey", "slotId", currentDate),
@@ -270,11 +270,11 @@ describe("function: withSemaphoreLogging", () => {
     describe("method: release", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await enhanced.release("myKey", "slotId");
 
@@ -294,14 +294,14 @@ describe("function: withSemaphoreLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpSemaphoreAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("release failed");
             vi.spyOn(adapter, "release").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(adapter, withSemaphoreLogging(logger));
+            const enhanced = withPlugin(adapter, withSemaphoreLogging(log));
 
             await expect(enhanced.release("myKey", "slotId")).rejects.toThrow(
                 error,

@@ -1,8 +1,8 @@
-import { withSyncLoggingFactory } from "eridu-tech/logger/middlewares";
+import { withSyncLoggingFactory } from "eridu-tech/log/middlewares";
 import { use } from "eridu-tech/middleware";
-import { loggerResolver } from "./logger-resolver.js";
+import { logResolver } from "./log-resolver.js";
 
-const withSyncLogging = withSyncLoggingFactory(loggerResolver);
+const withSyncLogging = withSyncLoggingFactory(logResolver);
 
 const parseConfig = (raw: string): string => raw.trim();
 

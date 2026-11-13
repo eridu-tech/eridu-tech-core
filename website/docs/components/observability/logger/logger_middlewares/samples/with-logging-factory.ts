@@ -1,8 +1,8 @@
-import { withLoggingFactory } from "eridu-tech/logger/middlewares";
+import { withLoggingFactory } from "eridu-tech/log/middlewares";
 import { use } from "eridu-tech/middleware";
-import { loggerResolver } from "./logger-resolver.js";
+import { logResolver } from "./log-resolver.js";
 
-const withLogging = withLoggingFactory(loggerResolver);
+const withLogging = withLoggingFactory(logResolver);
 
 const createUser = async (name: string): Promise<string> => `user-${name}`;
 

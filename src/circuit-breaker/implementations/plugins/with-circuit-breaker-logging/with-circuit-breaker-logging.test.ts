@@ -5,8 +5,8 @@ import { NoOpCircuitBreakerAdapter } from "@/circuit-breaker/implementations/ada
 import { withCircuitBreakerLogging } from "@/circuit-breaker/implementations/plugins/with-circuit-breaker-logging/with-circuit-breaker-logging.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
-import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
-import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
+import { Log } from "@/log/implementations/derivables/_module-exports.js";
+import { NoOpLogTransport } from "@/log/implementations/transports/no-op-log-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
 describe("function: withCircuitBreakerLogging", () => {
@@ -21,12 +21,12 @@ describe("function: withCircuitBreakerLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
-            const logger = new Logger({ transport, executionContext });
+            const log = new Log({ transport, executionContext });
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await enhanced.getState("myKey");
@@ -47,12 +47,12 @@ describe("function: withCircuitBreakerLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
-            const logger = new Logger({ transport, executionContext });
+            const log = new Log({ transport, executionContext });
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await enhanced.updateState("myKey");
@@ -76,14 +76,14 @@ describe("function: withCircuitBreakerLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
-            const logger = new Logger({ transport, executionContext });
+            const log = new Log({ transport, executionContext });
             const error = new Error("getState failed");
             vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await expect(enhanced.getState("myKey")).rejects.toThrow(error);
@@ -99,13 +99,13 @@ describe("function: withCircuitBreakerLogging", () => {
     describe("method: getState", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const debugSpy = vi.spyOn(log, "debug");
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             const state = await enhanced.getState("myKey");
@@ -126,16 +126,16 @@ describe("function: withCircuitBreakerLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("getState failed");
             vi.spyOn(adapter, "getState").mockRejectedValueOnce(error);
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await expect(enhanced.getState("myKey")).rejects.toThrow(error);
@@ -151,13 +151,13 @@ describe("function: withCircuitBreakerLogging", () => {
     describe("method: isolate", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const debugSpy = vi.spyOn(log, "debug");
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await enhanced.isolate("myKey");
@@ -176,16 +176,16 @@ describe("function: withCircuitBreakerLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("isolate failed");
             vi.spyOn(adapter, "isolate").mockRejectedValueOnce(error);
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await expect(enhanced.isolate("myKey")).rejects.toThrow(error);
@@ -201,13 +201,13 @@ describe("function: withCircuitBreakerLogging", () => {
     describe("method: reset", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const debugSpy = vi.spyOn(log, "debug");
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await enhanced.reset("myKey");
@@ -226,16 +226,16 @@ describe("function: withCircuitBreakerLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("reset failed");
             vi.spyOn(adapter, "reset").mockRejectedValueOnce(error);
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await expect(enhanced.reset("myKey")).rejects.toThrow(error);
@@ -250,13 +250,13 @@ describe("function: withCircuitBreakerLogging", () => {
     describe("method: trackFailure", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const debugSpy = vi.spyOn(log, "debug");
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await enhanced.trackFailure("myKey");
@@ -275,16 +275,16 @@ describe("function: withCircuitBreakerLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("trackFailure failed");
             vi.spyOn(adapter, "trackFailure").mockRejectedValueOnce(error);
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await expect(enhanced.trackFailure("myKey")).rejects.toThrow(error);
@@ -300,13 +300,13 @@ describe("function: withCircuitBreakerLogging", () => {
     describe("method: trackSuccess", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const debugSpy = vi.spyOn(log, "debug");
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await enhanced.trackSuccess("myKey");
@@ -325,16 +325,16 @@ describe("function: withCircuitBreakerLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("trackSuccess failed");
             vi.spyOn(adapter, "trackSuccess").mockRejectedValueOnce(error);
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await expect(enhanced.trackSuccess("myKey")).rejects.toThrow(error);
@@ -350,13 +350,13 @@ describe("function: withCircuitBreakerLogging", () => {
     describe("method: updateState", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
+            const debugSpy = vi.spyOn(log, "debug");
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             const transition = await enhanced.updateState("myKey");
@@ -383,16 +383,16 @@ describe("function: withCircuitBreakerLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpCircuitBreakerAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("updateState failed");
             vi.spyOn(adapter, "updateState").mockRejectedValueOnce(error);
             const enhanced = withPlugin(
                 adapter,
-                withCircuitBreakerLogging(logger),
+                withCircuitBreakerLogging(log),
             );
 
             await expect(enhanced.updateState("myKey")).rejects.toThrow(error);

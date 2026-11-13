@@ -3,10 +3,10 @@ import { container } from "./container.js";
 
 import type { HttpMiddleware } from "eridu-tech/http-router/contracts";
 
-export const requestLoggerToken = genericToken<HttpMiddleware>("requestLogger");
+export const requestLogToken = genericToken<HttpMiddleware>("requestLog");
 
 container.registerValue({
-    token: requestLoggerToken,
+    token: requestLogToken,
     value: {
         async invoke({ next, req }) {
             console.log(`${req.method} ${req.url}`);

@@ -3,7 +3,7 @@
  */
 
 import type { IFileStorageAdapter } from "@/file-storage/contracts/_module-exports.js";
-import type { ILogger } from "@/logger/contracts/_module-exports.js";
+import type { ILog } from "@/log/contracts/_module-exports.js";
 import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
@@ -15,9 +15,9 @@ import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
  * `failed`. Successful entries carry the adapter class name, the logged
  * arguments and, for value-returning methods, the result. `put` and `putStream`
  * drop the `data` payload, and `getBytes` and `getStream` omit the returned
- * bytes or stream so file contents never reach the logger.
+ * bytes or stream so file contents never reach the log.
  *
- * @param logger - The logger that receives the entries. Only `debug` and
+ * @param log - The log that receives the entries. Only `debug` and
  * `error` are used.
  * @returns A middleware plugin that wraps an `IFileStorageAdapter`.
  *
@@ -25,14 +25,14 @@ import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
  * @group Plugins
  */
 export function withFileStorageLogging(
-    logger: ILogger,
+    log: ILog,
 ): PluginFn<IFileStorageAdapter> {
     return (adapter, enhance, adapterName) => {
         enhance(adapter, "copy", [
             async ({ args: [source, destination], next }) => {
                 try {
                     const result = await next();
-                    logger.debug(["copy succeeded"], {
+                    log.debug(["copy succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -43,7 +43,7 @@ export function withFileStorageLogging(
                     });
                     return result;
                 } catch (error: unknown) {
-                    logger.error(["copy failed"], {
+                    log.error(["copy failed"], {
                         error,
                     });
                     throw error;
@@ -54,7 +54,7 @@ export function withFileStorageLogging(
             async ({ args: [key], next }) => {
                 try {
                     const result = await next();
-                    logger.debug(["exists succeeded"], {
+                    log.debug(["exists succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -64,7 +64,7 @@ export function withFileStorageLogging(
                     });
                     return result;
                 } catch (error: unknown) {
-                    logger.error(["exists failed"], {
+                    log.error(["exists failed"], {
                         error,
                     });
                     throw error;
@@ -75,7 +75,7 @@ export function withFileStorageLogging(
             async ({ args: [key], next }) => {
                 try {
                     const result = await next();
-                    logger.debug(["getBytes succeeded"], {
+                    log.debug(["getBytes succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -84,7 +84,7 @@ export function withFileStorageLogging(
                     });
                     return result;
                 } catch (error: unknown) {
-                    logger.error(["getBytes failed"], {
+                    log.error(["getBytes failed"], {
                         error,
                     });
                     throw error;
@@ -95,7 +95,7 @@ export function withFileStorageLogging(
             async ({ args: [key], next }) => {
                 try {
                     const result = await next();
-                    logger.debug(["getMetaData succeeded"], {
+                    log.debug(["getMetaData succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -105,7 +105,7 @@ export function withFileStorageLogging(
                     });
                     return result;
                 } catch (error: unknown) {
-                    logger.error(["getMetaData failed"], {
+                    log.error(["getMetaData failed"], {
                         error,
                     });
                     throw error;
@@ -116,7 +116,7 @@ export function withFileStorageLogging(
             async ({ args: [key], next }) => {
                 try {
                     const result = await next();
-                    logger.debug(["getStream succeeded"], {
+                    log.debug(["getStream succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -125,7 +125,7 @@ export function withFileStorageLogging(
                     });
                     return result;
                 } catch (error: unknown) {
-                    logger.error(["getStream failed"], {
+                    log.error(["getStream failed"], {
                         error,
                     });
                     throw error;
@@ -136,7 +136,7 @@ export function withFileStorageLogging(
             async ({ args: [source, destination], next }) => {
                 try {
                     const result = await next();
-                    logger.debug(["move succeeded"], {
+                    log.debug(["move succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -147,7 +147,7 @@ export function withFileStorageLogging(
                     });
                     return result;
                 } catch (error: unknown) {
-                    logger.error(["move failed"], {
+                    log.error(["move failed"], {
                         error,
                     });
                     throw error;
@@ -158,7 +158,7 @@ export function withFileStorageLogging(
             async ({ args: [key, { data: _, ...content }], next }) => {
                 try {
                     await next();
-                    logger.debug(["put succeeded"], {
+                    log.debug(["put succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -167,7 +167,7 @@ export function withFileStorageLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["put failed"], {
+                    log.error(["put failed"], {
                         error,
                     });
                     throw error;
@@ -178,7 +178,7 @@ export function withFileStorageLogging(
             async ({ args: [key, { data: _, ...stream }], next }) => {
                 try {
                     await next();
-                    logger.debug(["putStream succeeded"], {
+                    log.debug(["putStream succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -187,7 +187,7 @@ export function withFileStorageLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["putStream failed"], {
+                    log.error(["putStream failed"], {
                         error,
                     });
                     throw error;
@@ -198,7 +198,7 @@ export function withFileStorageLogging(
             async ({ args: [prefix], next }) => {
                 try {
                     await next();
-                    logger.debug(["removeByPrefix succeeded"], {
+                    log.debug(["removeByPrefix succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -206,7 +206,7 @@ export function withFileStorageLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["removeByPrefix failed"], {
+                    log.error(["removeByPrefix failed"], {
                         error,
                     });
                     throw error;
@@ -217,7 +217,7 @@ export function withFileStorageLogging(
             async ({ args: [keys], next }) => {
                 try {
                     await next();
-                    logger.debug(["removeMany succeeded"], {
+                    log.debug(["removeMany succeeded"], {
                         group: "[FileStorage]",
                         metadata: {
                             adapter: adapterName,
@@ -225,7 +225,7 @@ export function withFileStorageLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["removeMany failed"], {
+                    log.error(["removeMany failed"], {
                         error,
                     });
                     throw error;

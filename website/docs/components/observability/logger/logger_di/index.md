@@ -1,7 +1,7 @@
 ---
 sidebar_position: 6
 sidebar_label: DI integration
-pagination_label: Logger DI container integration
+pagination_label: Log DI container integration
 tags:
     - Logger
     - DI
@@ -14,14 +14,14 @@ keywords:
 
 # DI Integration
 
-The `ProxyLoggerResolver` class creates an [`ILoggerResolver`](../logger_resolver/index.md) and [`ILogger`](../logger_usage/index.md) whose underlying resolver is resolved from a [DI container](../../../foundation/di/index.md).
+The `ProxyLogResolver` class creates an [`ILogResolver`](../logger_resolver/index.md) and [`ILog`](../logger_usage/index.md) whose underlying resolver is resolved from a [DI container](../../../foundation/di/index.md).
 
-The returned proxy implements both `ILoggerResolver` and `ILogger`:
+The returned proxy implements both `ILogResolver` and `ILog`:
 
-- `use(transportName?)` selects a transport alias on the resolved `LoggerResolver`.
-- The `ILogger` methods such as `info`, `error`, `run` and `putMetadata` delegate to the logger of the default transport.
+- `use(transportName?)` selects a transport alias on the resolved `LogResolver`.
+- The `ILog` methods such as `info`, `error`, `run` and `putMetadata` delegate to the log of the default transport.
 
-The `resolverToken` is resolved on every operation, so every `LIFETIME` is supported. Prefer `SINGLETON` or `SCOPED`: a `TRANSIENT` resolver creates new loggers per operation, so `run` scopes do not carry across operations.
+The `resolverToken` is resolved on every operation, so every `LIFETIME` is supported. Prefer `SINGLETON` or `SCOPED`: a `TRANSIENT` resolver creates new logs per operation, so `run` scopes do not carry across operations.
 
 ## Initial configuration
 
@@ -31,17 +31,17 @@ The `resolverToken` is resolved on every operation, so every `LIFETIME` is suppo
 
 ```
 
-#### 2. Set up the logger transports
+#### 2. Set up the log transports
 
-```ts file=./samples/logger-transports.ts
+```ts file=./samples/log-transports.ts
 
 ```
 
-#### 3. Register and initialize the logger resolver
+#### 3. Register and initialize the log resolver
 
 Create the resolver, call its `init()`, and register it on the container before the proxy is used:
 
-```ts file=./samples/proxy-logger-resolver.ts
+```ts file=./samples/proxy-log-resolver.ts
 
 ```
 
@@ -49,27 +49,27 @@ Create the resolver, call its `init()`, and register it on the container before 
 
 ### 1. Using the default transport
 
-```ts file=./samples/proxy-logger-resolver-default-transport.ts
+```ts file=./samples/proxy-log-resolver-default-transport.ts
 
 ```
 
 ### 2. Specifying a transport explicitly
 
-```ts file=./samples/proxy-logger-resolver-specific-transport.ts
+```ts file=./samples/proxy-log-resolver-specific-transport.ts
 
 ```
 
 ## Using it with the middlewares
 
-Because the proxy implements `ILoggerResolver`, it can be passed straight to the [logger middleware factories](../logger_middlewares/index.md):
+Because the proxy implements `ILogResolver`, it can be passed straight to the [log middleware factories](../logger_middlewares/index.md):
 
 ```ts
-import { withLogSpanFactory } from "eridu-tech/logger/middlewares";
-import { logger } from "./proxy-logger-resolver.js";
+import { withLogSpanFactory } from "eridu-tech/log/middlewares";
+import { log } from "./proxy-log-resolver.js";
 
-const withLogSpan = withLogSpanFactory(logger);
+const withLogSpan = withLogSpanFactory(log);
 ```
 
 ## Further information
 
-For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.
+For further information refer to [`eridu-tech/log`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.

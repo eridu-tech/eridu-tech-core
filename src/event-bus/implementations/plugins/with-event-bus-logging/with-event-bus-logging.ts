@@ -3,7 +3,7 @@
  */
 
 import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
-import type { ILogger } from "@/logger/contracts/_module-exports.js";
+import type { ILog } from "@/log/contracts/_module-exports.js";
 import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
@@ -16,22 +16,20 @@ import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
  * class name and the event name, plus the event data for `dispatch`. Listeners
  * are never logged.
  *
- * @param logger - The logger that receives the entries. Only `debug` and
+ * @param log - The log that receives the entries. Only `debug` and
  * `error` are used.
  * @returns A middleware plugin that wraps an `IEventBusAdapter`.
  *
  * IMPORT_PATH: `"eridu-tech/event-bus/plugins"`
  * @group Plugins
  */
-export function withEventBusLogging(
-    logger: ILogger,
-): PluginFn<IEventBusAdapter> {
+export function withEventBusLogging(log: ILog): PluginFn<IEventBusAdapter> {
     return (adapter, enhance, adapterName) => {
         enhance(adapter, "addListener", [
             async ({ args: [eventName], next }) => {
                 try {
                     await next();
-                    logger.debug(["addListener succeeded"], {
+                    log.debug(["addListener succeeded"], {
                         group: "[EventBus]",
                         metadata: {
                             adapter: adapterName,
@@ -39,7 +37,7 @@ export function withEventBusLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["addListener failed"], {
+                    log.error(["addListener failed"], {
                         error,
                     });
                     throw error;
@@ -50,7 +48,7 @@ export function withEventBusLogging(
             async ({ args: [eventName, event], next }) => {
                 try {
                     await next();
-                    logger.debug(["dispatch succeeded"], {
+                    log.debug(["dispatch succeeded"], {
                         group: "[EventBus]",
                         metadata: {
                             adapter: adapterName,
@@ -59,7 +57,7 @@ export function withEventBusLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["dispatch failed"], {
+                    log.error(["dispatch failed"], {
                         error,
                     });
                     throw error;
@@ -70,7 +68,7 @@ export function withEventBusLogging(
             async ({ args: [eventName], next }) => {
                 try {
                     await next();
-                    logger.debug(["removeListener succeeded"], {
+                    log.debug(["removeListener succeeded"], {
                         group: "[EventBus]",
                         metadata: {
                             adapter: adapterName,
@@ -78,7 +76,7 @@ export function withEventBusLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["removeListener failed"], {
+                    log.error(["removeListener failed"], {
                         error,
                     });
                     throw error;

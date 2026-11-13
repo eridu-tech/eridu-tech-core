@@ -333,7 +333,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withFileStorageLogging plugin
 
-The FileStorage logging plugin intercepts every call to a file storage adapter and reports it to an `ILogger`. Any storage backend becomes a source of observable events without changing the adapter implementation.
+The FileStorage logging plugin intercepts every call to a file storage adapter and reports it to an `ILog`. Any storage backend becomes a source of observable events without changing the adapter implementation.
 
 ### Use cases
 
@@ -343,9 +343,9 @@ The FileStorage logging plugin intercepts every call to a file storage adapter a
 
 ### How it works
 
-The `withFileStorageLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the logger, so any [`ILogger`](/docs/components/observability/logger/logger_usage) can be passed in.
+The `withFileStorageLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the log, so any [`ILog`](/docs/components/observability/log/logger_usage) can be passed in.
 
-A successful call logs a `debug` entry named `file-storage.<methodName> succeeded`, after merging the logged arguments and the returned value into the metadata as `file-storage.args` and `file-storage.result`. A failed call logs an `error` entry named `file-storage.<methodName> failed`, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `file-storage.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one logger stay distinguishable.
+A successful call logs a `debug` entry named `file-storage.<methodName> succeeded`, after merging the logged arguments and the returned value into the metadata as `file-storage.args` and `file-storage.result`. A failed call logs an `error` entry named `file-storage.<methodName> failed`, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `file-storage.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one log stay distinguishable.
 
 | Method           | Logged arguments                          |
 | ---------------- | ----------------------------------------- |
@@ -367,5 +367,5 @@ A successful call logs a `debug` entry named `file-storage.<methodName> succeede
 ```
 
 :::info
-`put` and `putStream` drop the `data` payload before logging, so written content never reaches the logger while the file key and the remaining settings are logged. Every other method forwards its arguments untouched, which means file keys are logged.
+`put` and `putStream` drop the `data` payload before logging, so written content never reaches the log while the file key and the remaining settings are logged. Every other method forwards its arguments untouched, which means file keys are logged.
 :::

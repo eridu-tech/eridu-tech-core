@@ -2,7 +2,7 @@
  * @module SharedLock
  */
 
-import type { ILogger } from "@/logger/contracts/_module-exports.js";
+import type { ILog } from "@/log/contracts/_module-exports.js";
 import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports.js";
 
@@ -16,22 +16,20 @@ import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports
  * and, for value-returning methods, the outcome under a `has...` key or the
  * returned `state`.
  *
- * @param logger - The logger that receives the entries. Only `debug` and
+ * @param log - The log that receives the entries. Only `debug` and
  * `error` are used.
  * @returns A middleware plugin that wraps an `ISharedLockAdapter`.
  *
  * IMPORT_PATH: `"eridu-tech/shared-lock/plugins"`
  * @group Plugins
  */
-export function withSharedLockLogging(
-    logger: ILogger,
-): PluginFn<ISharedLockAdapter> {
+export function withSharedLockLogging(log: ILog): PluginFn<ISharedLockAdapter> {
     return (adapter, enhance, adapterName) => {
         enhance(adapter, "acquireReader", [
             async ({ args: [{ key, lockId, limit, ttl }], next }) => {
                 try {
                     const hasAcquiredReader = await next();
-                    logger.debug(["acquireReader succeeded"], {
+                    log.debug(["acquireReader succeeded"], {
                         group: "[SharedLock]",
                         metadata: {
                             adapter: adapterName,
@@ -44,7 +42,7 @@ export function withSharedLockLogging(
                     });
                     return hasAcquiredReader;
                 } catch (error: unknown) {
-                    logger.error(["acquireReader failed"], {
+                    log.error(["acquireReader failed"], {
                         error,
                     });
                     throw error;
@@ -55,7 +53,7 @@ export function withSharedLockLogging(
             async ({ args: [key, lockId, ttl], next }) => {
                 try {
                     const hasAcquiredWriter = await next();
-                    logger.debug(["acquireWriter succeeded"], {
+                    log.debug(["acquireWriter succeeded"], {
                         group: "[SharedLock]",
                         metadata: {
                             adapter: adapterName,
@@ -67,7 +65,7 @@ export function withSharedLockLogging(
                     });
                     return hasAcquiredWriter;
                 } catch (error: unknown) {
-                    logger.error(["acquireWriter failed"], {
+                    log.error(["acquireWriter failed"], {
                         error,
                     });
                     throw error;
@@ -78,7 +76,7 @@ export function withSharedLockLogging(
             async ({ args: [key], next }) => {
                 try {
                     const hasForceReleased = await next();
-                    logger.debug(["forceRelease succeeded"], {
+                    log.debug(["forceRelease succeeded"], {
                         group: "[SharedLock]",
                         metadata: {
                             adapter: adapterName,
@@ -88,7 +86,7 @@ export function withSharedLockLogging(
                     });
                     return hasForceReleased;
                 } catch (error: unknown) {
-                    logger.error(["forceRelease failed"], {
+                    log.error(["forceRelease failed"], {
                         error,
                     });
                     throw error;
@@ -99,7 +97,7 @@ export function withSharedLockLogging(
             async ({ args: [key], next }) => {
                 try {
                     const state = await next();
-                    logger.debug(["getState succeeded"], {
+                    log.debug(["getState succeeded"], {
                         group: "[SharedLock]",
                         metadata: {
                             adapter: adapterName,
@@ -109,7 +107,7 @@ export function withSharedLockLogging(
                     });
                     return state;
                 } catch (error: unknown) {
-                    logger.error(["getState failed"], {
+                    log.error(["getState failed"], {
                         error,
                     });
                     throw error;
@@ -120,7 +118,7 @@ export function withSharedLockLogging(
             async ({ args: [key, slotId, ttl], next }) => {
                 try {
                     const hasRefreshedReader = await next();
-                    logger.debug(["refreshReader succeeded"], {
+                    log.debug(["refreshReader succeeded"], {
                         group: "[SharedLock]",
                         metadata: {
                             adapter: adapterName,
@@ -132,7 +130,7 @@ export function withSharedLockLogging(
                     });
                     return hasRefreshedReader;
                 } catch (error: unknown) {
-                    logger.error(["refreshReader failed"], {
+                    log.error(["refreshReader failed"], {
                         error,
                     });
                     throw error;
@@ -143,7 +141,7 @@ export function withSharedLockLogging(
             async ({ args: [key, lockId, ttl], next }) => {
                 try {
                     const hasRefreshedWriter = await next();
-                    logger.debug(["refreshWriter succeeded"], {
+                    log.debug(["refreshWriter succeeded"], {
                         group: "[SharedLock]",
                         metadata: {
                             adapter: adapterName,
@@ -155,7 +153,7 @@ export function withSharedLockLogging(
                     });
                     return hasRefreshedWriter;
                 } catch (error: unknown) {
-                    logger.error(["refreshWriter failed"], {
+                    log.error(["refreshWriter failed"], {
                         error,
                     });
                     throw error;
@@ -166,7 +164,7 @@ export function withSharedLockLogging(
             async ({ args: [key, slotId], next }) => {
                 try {
                     const hasReleasedReader = await next();
-                    logger.debug(["releaseReader succeeded"], {
+                    log.debug(["releaseReader succeeded"], {
                         group: "[SharedLock]",
                         metadata: {
                             adapter: adapterName,
@@ -177,7 +175,7 @@ export function withSharedLockLogging(
                     });
                     return hasReleasedReader;
                 } catch (error: unknown) {
-                    logger.error(["releaseReader failed"], {
+                    log.error(["releaseReader failed"], {
                         error,
                     });
                     throw error;
@@ -188,7 +186,7 @@ export function withSharedLockLogging(
             async ({ args: [key, lockId], next }) => {
                 try {
                     const hasReleasedWriter = await next();
-                    logger.debug(["releaseWriter succeeded"], {
+                    log.debug(["releaseWriter succeeded"], {
                         group: "[SharedLock]",
                         metadata: {
                             adapter: adapterName,
@@ -199,7 +197,7 @@ export function withSharedLockLogging(
                     });
                     return hasReleasedWriter;
                 } catch (error: unknown) {
-                    logger.error(["releaseWriter failed"], {
+                    log.error(["releaseWriter failed"], {
                         error,
                     });
                     throw error;

@@ -69,7 +69,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withLockLogging plugin
 
-The Lock logging plugin intercepts every call to a lock adapter and reports it to an `ILogger`. Any lock backend becomes a source of observable events without changing the adapter implementation.
+The Lock logging plugin intercepts every call to a lock adapter and reports it to an `ILog`. Any lock backend becomes a source of observable events without changing the adapter implementation.
 
 ### Use cases
 
@@ -79,9 +79,9 @@ The Lock logging plugin intercepts every call to a lock adapter and reports it t
 
 ### How it works
 
-The `withLockLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the logger, so any [`ILogger`](/docs/components/observability/logger/logger_usage) can be passed in.
+The `withLockLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the log, so any [`ILog`](/docs/components/observability/log/logger_usage) can be passed in.
 
-A successful call logs a `debug` entry named `lock.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `lock.args` and `lock.result`. A failed call logs an `error` entry named `lock.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `lock.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one logger stay distinguishable.
+A successful call logs a `debug` entry named `lock.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `lock.args` and `lock.result`. A failed call logs an `error` entry named `lock.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `lock.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one log stay distinguishable.
 
 | Method         | Logged arguments |
 | -------------- | ---------------- |
@@ -98,5 +98,5 @@ A successful call logs a `debug` entry named `lock.<methodName> succeeded`, afte
 ```
 
 :::info
-Arguments are forwarded to the logger untouched. Use a logger whose transport drops metadata when lock keys are considered sensitive.
+Arguments are forwarded to the log untouched. Use a log whose transport drops metadata when lock keys are considered sensitive.
 :::

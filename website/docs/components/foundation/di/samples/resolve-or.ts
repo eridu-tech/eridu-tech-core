@@ -1,7 +1,7 @@
 import { container } from "./container.js";
-import { ConsoleLogger, Logger } from "./logger.js";
+import { ConsoleLog, Log } from "./log.js";
 
 await container.init();
 
-const logger = container.resolveOr(Logger, new ConsoleLogger());
-logger.log("Always has a logger");
+const log = container.resolveOr(Log, new ConsoleLog());
+log.log("Always has a log");

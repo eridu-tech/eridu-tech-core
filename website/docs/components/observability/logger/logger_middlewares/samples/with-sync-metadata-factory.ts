@@ -1,9 +1,9 @@
 import { fileURLToPath } from "node:url";
-import { withSyncMetadataFactory } from "eridu-tech/logger/middlewares";
+import { withSyncMetadataFactory } from "eridu-tech/log/middlewares";
 import { use } from "eridu-tech/middleware";
-import { loggerResolver } from "./logger-resolver.js";
+import { logResolver } from "./log-resolver.js";
 
-const withSyncMetadata = withSyncMetadataFactory(loggerResolver);
+const withSyncMetadata = withSyncMetadataFactory(logResolver);
 
 const parseConfig = (raw: string): string => raw.trim();
 

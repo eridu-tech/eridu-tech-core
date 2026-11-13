@@ -115,7 +115,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withEventBusLogging plugin
 
-The EventBus logging plugin intercepts every call to an event bus adapter and reports it to an `ILogger`. Any event bus backend becomes a source of observable events without changing the adapter implementation.
+The EventBus logging plugin intercepts every call to an event bus adapter and reports it to an `ILog`. Any event bus backend becomes a source of observable events without changing the adapter implementation.
 
 ### Use cases
 
@@ -125,9 +125,9 @@ The EventBus logging plugin intercepts every call to an event bus adapter and re
 
 ### How it works
 
-The `withEventBusLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the logger, so any [`ILogger`](/docs/components/observability/logger/logger_usage) can be passed in.
+The `withEventBusLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the log, so any [`ILog`](/docs/components/observability/log/logger_usage) can be passed in.
 
-A successful call logs a `debug` entry named `event-bus.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `event-bus.args` and `event-bus.result`. A failed call logs an `error` entry named `event-bus.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `event-bus.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one logger stay distinguishable.
+A successful call logs a `debug` entry named `event-bus.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `event-bus.args` and `event-bus.result`. A failed call logs an `error` entry named `event-bus.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `event-bus.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one log stay distinguishable.
 
 | Method           | Logged arguments    |
 | ---------------- | ------------------- |
@@ -142,5 +142,5 @@ A successful call logs a `debug` entry named `event-bus.<methodName> succeeded`,
 ```
 
 :::info
-`addListener` and `removeListener` log only the event name, so listener functions never reach the logger. `dispatch` forwards its arguments untouched, which means dispatched event payloads are included in the entries; use a logger whose transport drops metadata when event payloads are considered sensitive.
+`addListener` and `removeListener` log only the event name, so listener functions never reach the log. `dispatch` forwards its arguments untouched, which means dispatched event payloads are included in the entries; use a log whose transport drops metadata when event payloads are considered sensitive.
 :::

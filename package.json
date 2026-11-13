@@ -423,41 +423,41 @@
             "types": "./dist/lock/implementations/test-utilities/_module-exports.d.ts",
             "import": "./dist/lock/implementations/test-utilities/_module-exports.js"
         },
-        "./logger": {
-            "types": "./dist/logger/implementations/derivables/_module-exports.d.ts",
-            "import": "./dist/logger/implementations/derivables/_module-exports.js"
+        "./log": {
+            "types": "./dist/log/implementations/derivables/_module-exports.d.ts",
+            "import": "./dist/log/implementations/derivables/_module-exports.js"
         },
-        "./logger/di": {
-            "types": "./dist/logger/implementations/derivables/di/_module-exports.d.ts",
-            "import": "./dist/logger/implementations/derivables/di/_module-exports.js"
+        "./log/di": {
+            "types": "./dist/log/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/log/implementations/derivables/di/_module-exports.js"
         },
-        "./logger/middlewares": {
-            "types": "./dist/logger/implementations/middlewares/_module-exports.d.ts",
-            "import": "./dist/logger/implementations/middlewares/_module-exports.js"
+        "./log/middlewares": {
+            "types": "./dist/log/implementations/middlewares/_module-exports.d.ts",
+            "import": "./dist/log/implementations/middlewares/_module-exports.js"
         },
-        "./logger/contracts": {
-            "types": "./dist/logger/contracts/_module-exports.d.ts",
-            "import": "./dist/logger/contracts/_module-exports.js"
+        "./log/contracts": {
+            "types": "./dist/log/contracts/_module-exports.d.ts",
+            "import": "./dist/log/contracts/_module-exports.js"
         },
-        "./logger/console-logger-transport": {
-            "types": "./dist/logger/implementations/transports/console-logger-transport/_module-exports.d.ts",
-            "import": "./dist/logger/implementations/transports/console-logger-transport/_module-exports.js"
+        "./log/console-log-transport": {
+            "types": "./dist/log/implementations/transports/console-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/console-log-transport/_module-exports.js"
         },
-        "./logger/loglayer-logger-transport": {
-            "types": "./dist/logger/implementations/transports/loglayer-logger-transport/_module-exports.d.ts",
-            "import": "./dist/logger/implementations/transports/loglayer-logger-transport/_module-exports.js"
+        "./log/loglayer-log-transport": {
+            "types": "./dist/log/implementations/transports/loglayer-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/loglayer-log-transport/_module-exports.js"
         },
-        "./logger/memory-logger-transport": {
-            "types": "./dist/logger/implementations/transports/memory-logger-transport/_module-exports.d.ts",
-            "import": "./dist/logger/implementations/transports/memory-logger-transport/_module-exports.js"
+        "./log/memory-log-transport": {
+            "types": "./dist/log/implementations/transports/memory-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/memory-log-transport/_module-exports.js"
         },
-        "./logger/no-op-logger-transport": {
-            "types": "./dist/logger/implementations/transports/no-op-logger-transport/_module-exports.d.ts",
-            "import": "./dist/logger/implementations/transports/no-op-logger-transport/_module-exports.js"
+        "./log/no-op-log-transport": {
+            "types": "./dist/log/implementations/transports/no-op-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/no-op-log-transport/_module-exports.js"
         },
-        "./logger/otel-logger-transport": {
-            "types": "./dist/logger/implementations/transports/otel-logger-transport/_module-exports.d.ts",
-            "import": "./dist/logger/implementations/transports/otel-logger-transport/_module-exports.js"
+        "./log/otel-log-transport": {
+            "types": "./dist/log/implementations/transports/otel-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/otel-log-transport/_module-exports.js"
         },
         "./middleware": {
             "types": "./dist/middleware/implementations/_module-exports.d.ts",

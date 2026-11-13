@@ -1,14 +1,14 @@
 import { container } from "./container.js";
-import { Logger } from "./logger.js";
+import { Log } from "./log.js";
 
 container.registerValue({
-    token: Logger,
-    value: new Logger(),
+    token: Log,
+    value: new Log(),
 });
 
 await container.init();
 
-const logger = container.resolve(Logger);
-if (logger) {
-    logger.log("Logger is available");
+const log = container.resolve(Log);
+if (log) {
+    log.log("Log is available");
 }

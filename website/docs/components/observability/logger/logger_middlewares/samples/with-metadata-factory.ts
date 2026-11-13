@@ -1,9 +1,9 @@
 import { fileURLToPath } from "node:url";
-import { withMetadataFactory } from "eridu-tech/logger/middlewares";
+import { withMetadataFactory } from "eridu-tech/log/middlewares";
 import { use } from "eridu-tech/middleware";
-import { loggerResolver } from "./logger-resolver.js";
+import { logResolver } from "./log-resolver.js";
 
-const withMetadata = withMetadataFactory(loggerResolver);
+const withMetadata = withMetadataFactory(logResolver);
 
 const loadUser = async (userId: string): Promise<string> => `user-${userId}`;
 

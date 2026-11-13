@@ -1,13 +1,13 @@
 import { container } from "./container.js";
-import { Logger } from "./logger.js";
+import { Log } from "./log.js";
 
 container.registerValue({
-    token: Logger,
-    value: new Logger(),
+    token: Log,
+    value: new Log(),
 });
 
 await container.init();
 
-if (container.has(Logger)) {
-    console.log("Logger is resolvable");
+if (container.has(Log)) {
+    console.log("Log is resolvable");
 }

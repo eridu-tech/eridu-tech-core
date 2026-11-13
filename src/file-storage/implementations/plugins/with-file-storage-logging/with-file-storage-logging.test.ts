@@ -4,8 +4,8 @@ import { AlsExecutionContextAdapter } from "@/execution-context/implementations/
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { NoOpFileStorageAdapter } from "@/file-storage/implementations/adapters/no-op-file-storage-adapter/_module-exports.js";
 import { withFileStorageLogging } from "@/file-storage/implementations/plugins/with-file-storage-logging/with-file-storage-logging.js";
-import { Logger } from "@/logger/implementations/derivables/_module-exports.js";
-import { NoOpLoggerTransport } from "@/logger/implementations/transports/no-op-logger-transport/_module-exports.js";
+import { Log } from "@/log/implementations/derivables/_module-exports.js";
+import { NoOpLogTransport } from "@/log/implementations/transports/no-op-log-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
 import type {
@@ -52,13 +52,10 @@ describe("function: withFileStorageLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.exists("myKey");
 
@@ -77,13 +74,10 @@ describe("function: withFileStorageLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.put("myKey", createContent());
 
@@ -106,15 +100,12 @@ describe("function: withFileStorageLogging", () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const transport = new NoOpLoggerTransport();
+            const transport = new NoOpLogTransport();
             const logSpy = vi.spyOn(transport, "log");
             const error = new Error("exists failed");
             vi.spyOn(adapter, "exists").mockRejectedValueOnce(error);
-            const logger = new Logger({ transport, executionContext });
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const log = new Log({ transport, executionContext });
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(enhanced.exists("myKey")).rejects.toThrow(error);
 
@@ -129,14 +120,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: copy", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.copy("source-key", "destination-key");
 
@@ -156,17 +144,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("copy failed");
             vi.spyOn(adapter, "copy").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(
                 enhanced.copy("source-key", "destination-key"),
@@ -182,14 +167,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: exists", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.exists("myKey");
 
@@ -208,17 +190,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("exists failed");
             vi.spyOn(adapter, "exists").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(enhanced.exists("myKey")).rejects.toThrow(error);
 
@@ -233,14 +212,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: getBytes", () => {
         test("Should log a debug entry without the returned bytes", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.getBytes("myKey");
 
@@ -258,17 +234,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("getBytes failed");
             vi.spyOn(adapter, "getBytes").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(enhanced.getBytes("myKey")).rejects.toThrow(error);
 
@@ -283,14 +256,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: getMetaData", () => {
         test("Should log a debug entry with the returned metadata", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.getMetaData("myKey");
 
@@ -309,17 +279,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("getMetaData failed");
             vi.spyOn(adapter, "getMetaData").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(enhanced.getMetaData("myKey")).rejects.toThrow(error);
 
@@ -334,14 +301,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: getStream", () => {
         test("Should log a debug entry without the returned stream", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.getStream("myKey");
 
@@ -359,17 +323,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("getStream failed");
             vi.spyOn(adapter, "getStream").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(enhanced.getStream("myKey")).rejects.toThrow(error);
 
@@ -384,14 +345,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: move", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.move("source-key", "destination-key");
 
@@ -411,17 +369,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("move failed");
             vi.spyOn(adapter, "move").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(
                 enhanced.move("source-key", "destination-key"),
@@ -437,14 +392,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: put", () => {
         test("Should log a debug entry without the data payload", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.put("myKey", createContent());
 
@@ -466,17 +418,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("put failed");
             vi.spyOn(adapter, "put").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(
                 enhanced.put("myKey", createContent()),
@@ -492,14 +441,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: putStream", () => {
         test("Should log a debug entry without the data payload", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.putStream("myKey", createStream());
 
@@ -521,17 +467,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("putStream failed");
             vi.spyOn(adapter, "putStream").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(
                 enhanced.putStream("myKey", createStream()),
@@ -548,14 +491,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: removeByPrefix", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.removeByPrefix("folder/");
 
@@ -573,17 +513,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("removeByPrefix failed");
             vi.spyOn(adapter, "removeByPrefix").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(enhanced.removeByPrefix("folder/")).rejects.toThrow(
                 error,
@@ -600,14 +537,11 @@ describe("function: withFileStorageLogging", () => {
     describe("method: removeMany", () => {
         test("Should log a debug entry when the call succeeds", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const debugSpy = vi.spyOn(log, "debug");
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await enhanced.removeMany(["key-1", "key-2"]);
 
@@ -625,17 +559,14 @@ describe("function: withFileStorageLogging", () => {
 
         test("Should log an error entry and rethrow when the call fails", async () => {
             const adapter = new NoOpFileStorageAdapter();
-            const logger = new Logger({
-                transport: new NoOpLoggerTransport(),
+            const log = new Log({
+                transport: new NoOpLogTransport(),
             });
-            const debugSpy = vi.spyOn(logger, "debug");
-            const errorSpy = vi.spyOn(logger, "error");
+            const debugSpy = vi.spyOn(log, "debug");
+            const errorSpy = vi.spyOn(log, "error");
             const error = new Error("removeMany failed");
             vi.spyOn(adapter, "removeMany").mockRejectedValueOnce(error);
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageLogging(logger),
-            );
+            const enhanced = withPlugin(adapter, withFileStorageLogging(log));
 
             await expect(
                 enhanced.removeMany(["key-1", "key-2"]),

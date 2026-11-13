@@ -3,7 +3,7 @@
  */
 
 import type { ILockAdapter } from "@/lock/contracts/_module-exports.js";
-import type { ILogger } from "@/logger/contracts/_module-exports.js";
+import type { ILog } from "@/log/contracts/_module-exports.js";
 import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
 /**
@@ -15,20 +15,20 @@ import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
  * Successful entries carry the adapter class name, the call arguments and, for
  * value-returning methods, the result under `result` or `state`.
  *
- * @param logger - The logger that receives the entries. Only `debug` and
+ * @param log - The log that receives the entries. Only `debug` and
  * `error` are used.
  * @returns A middleware plugin that wraps an `ILockAdapter`.
  *
  * IMPORT_PATH: `"eridu-tech/lock/plugins"`
  * @group Plugins
  */
-export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
+export function withLockLogging(log: ILog): PluginFn<ILockAdapter> {
     return (adapter, enhance, adapterName) => {
         enhance(adapter, "acquire", [
             async ({ args: [key, lockId, ttl], next }) => {
                 try {
                     const hasAcquired = await next();
-                    logger.debug(["acquire succeeded"], {
+                    log.debug(["acquire succeeded"], {
                         group: "[Lock]",
                         metadata: {
                             adapter: adapterName,
@@ -40,7 +40,7 @@ export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
                     });
                     return hasAcquired;
                 } catch (error: unknown) {
-                    logger.error(["acquire failed"], {
+                    log.error(["acquire failed"], {
                         error,
                     });
                     throw error;
@@ -51,7 +51,7 @@ export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
             async ({ args: [key], next }) => {
                 try {
                     const hasForceReleased = await next();
-                    logger.debug(["forceRelease succeeded"], {
+                    log.debug(["forceRelease succeeded"], {
                         group: "[Lock]",
                         metadata: {
                             adapter: adapterName,
@@ -61,7 +61,7 @@ export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
                     });
                     return hasForceReleased;
                 } catch (error: unknown) {
-                    logger.error(["forceRelease failed"], {
+                    log.error(["forceRelease failed"], {
                         error,
                     });
                     throw error;
@@ -72,7 +72,7 @@ export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
             async ({ args: [key], next }) => {
                 try {
                     const state = await next();
-                    logger.debug(["getState succeeded"], {
+                    log.debug(["getState succeeded"], {
                         group: "[Lock]",
                         metadata: {
                             adapter: adapterName,
@@ -82,7 +82,7 @@ export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
                     });
                     return state;
                 } catch (error: unknown) {
-                    logger.error(["getState failed"], {
+                    log.error(["getState failed"], {
                         error,
                     });
                     throw error;
@@ -93,7 +93,7 @@ export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
             async ({ args: [key, lockId, ttl], next }) => {
                 try {
                     const hasRefreshed = await next();
-                    logger.debug(["refresh succeeded"], {
+                    log.debug(["refresh succeeded"], {
                         group: "[Lock]",
                         metadata: {
                             adapter: adapterName,
@@ -105,7 +105,7 @@ export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
                     });
                     return hasRefreshed;
                 } catch (error: unknown) {
-                    logger.error(["refresh failed"], {
+                    log.error(["refresh failed"], {
                         error,
                     });
                     throw error;
@@ -116,7 +116,7 @@ export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
             async ({ args: [key, lockId], next }) => {
                 try {
                     const hasReleased = await next();
-                    logger.debug(["release succeeded"], {
+                    log.debug(["release succeeded"], {
                         group: "[Lock]",
                         metadata: {
                             adapter: adapterName,
@@ -127,7 +127,7 @@ export function withLockLogging(logger: ILogger): PluginFn<ILockAdapter> {
                     });
                     return hasReleased;
                 } catch (error: unknown) {
-                    logger.error(["release failed"], {
+                    log.error(["release failed"], {
                         error,
                     });
                     throw error;

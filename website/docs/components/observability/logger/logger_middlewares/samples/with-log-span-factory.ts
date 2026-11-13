@@ -1,8 +1,8 @@
-import { withLogSpanFactory } from "eridu-tech/logger/middlewares";
+import { withLogSpanFactory } from "eridu-tech/log/middlewares";
 import { use } from "eridu-tech/middleware";
-import { loggerResolver } from "./logger-resolver.js";
+import { logResolver } from "./log-resolver.js";
 
-const withLogSpan = withLogSpanFactory(loggerResolver);
+const withLogSpan = withLogSpanFactory(logResolver);
 
 const loadUser = async (userId: string): Promise<string> => `user-${userId}`;
 

@@ -2,7 +2,7 @@
  * @module RateLimiter
  */
 
-import type { ILogger } from "@/logger/contracts/_module-exports.js";
+import type { ILog } from "@/log/contracts/_module-exports.js";
 import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-exports.js";
 
@@ -15,7 +15,7 @@ import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-expor
  * `failed`. Successful entries carry the adapter class name, the call arguments
  * and, for value-returning methods, the returned state under `state`.
  *
- * @param logger - The logger that receives the entries. Only `debug` and
+ * @param log - The log that receives the entries. Only `debug` and
  * `error` are used.
  * @returns A middleware plugin that wraps an `IRateLimiterAdapter`.
  *
@@ -23,14 +23,14 @@ import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-expor
  * @group Plugins
  */
 export function withRateLimiterLogging(
-    logger: ILogger,
+    log: ILog,
 ): PluginFn<IRateLimiterAdapter> {
     return (adapter, enhance, adapterName) => {
         enhance(adapter, "getState", [
             async ({ args: [key], next }) => {
                 try {
                     const state = await next();
-                    logger.debug(["getState succeeded"], {
+                    log.debug(["getState succeeded"], {
                         group: "[RateLimiter]",
                         metadata: {
                             adapter: adapterName,
@@ -40,7 +40,7 @@ export function withRateLimiterLogging(
                     });
                     return state;
                 } catch (error: unknown) {
-                    logger.error(["getState failed"], {
+                    log.error(["getState failed"], {
                         error,
                     });
                     throw error;
@@ -51,7 +51,7 @@ export function withRateLimiterLogging(
             async ({ args: [key], next }) => {
                 try {
                     await next();
-                    logger.debug(["reset succeeded"], {
+                    log.debug(["reset succeeded"], {
                         group: "[RateLimiter]",
                         metadata: {
                             adapter: adapterName,
@@ -59,7 +59,7 @@ export function withRateLimiterLogging(
                         },
                     });
                 } catch (error: unknown) {
-                    logger.error(["reset failed"], {
+                    log.error(["reset failed"], {
                         error,
                     });
                     throw error;
@@ -70,7 +70,7 @@ export function withRateLimiterLogging(
             async ({ args: [key, limit], next }) => {
                 try {
                     const state = await next();
-                    logger.debug(["updateState succeeded"], {
+                    log.debug(["updateState succeeded"], {
                         group: "[RateLimiter]",
                         metadata: {
                             adapter: adapterName,
@@ -81,7 +81,7 @@ export function withRateLimiterLogging(
                     });
                     return state;
                 } catch (error: unknown) {
-                    logger.error(["updateState failed"], {
+                    log.error(["updateState failed"], {
                         error,
                     });
                     throw error;

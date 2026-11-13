@@ -1,7 +1,7 @@
 ---
 sidebar_position: 5
 sidebar_label: Middlewares
-pagination_label: Logger middlewares
+pagination_label: Log middlewares
 tags:
     - Logger
     - Middlewares
@@ -12,21 +12,21 @@ keywords:
     - AOP
 ---
 
-# Logger middlewares
+# Log middlewares
 
 ## Initial configuration
 
-To begin using the logger middlewares, you'll need to create and configure a `LoggerResolver` instance:
+To begin using the log middlewares, you'll need to create and configure a `LogResolver` instance:
 
-```ts file=./samples/logger-resolver.ts
+```ts file=./samples/log-resolver.ts
 
 ```
 
-Every factory accepts an `ILoggerResolver`. Calling the returned factory uses the resolver's default transport, while `use(transportName?)` returns the same middleware bound to the selected transport.
+Every factory accepts an `ILogResolver`. Calling the returned factory uses the resolver's default transport, while `use(transportName?)` returns the same middleware bound to the selected transport.
 
 ## withLogSpanFactory middleware {#with_log_span_factory_middleware}
 
-The log span middleware intercepts function calls and runs them inside a span named after the middleware label, via the selected logger's `run` with a `span` setting. Every entry logged while the wrapped function runs carries the elapsed time of that span and of every enclosing span.
+The log span middleware intercepts function calls and runs them inside a span named after the middleware label, via the selected log's `run` with a `span` setting. Every entry logged while the wrapped function runs carries the elapsed time of that span and of every enclosing span.
 
 ### Usage
 
@@ -35,7 +35,7 @@ The log span middleware intercepts function calls and runs them inside a span na
 ```
 
 :::info
-Here is a complete list of settings for the [`withLogSpanFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withLogSpanFactory.html) function.
+Here is a complete list of settings for the [`withLogSpanFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Log.withLogSpanFactory.html) function.
 :::
 
 ## withSyncLogSpanFactory middleware {#with_sync_log_span_factory_middleware}
@@ -49,7 +49,7 @@ Synchronous variant of [`withLogSpanFactory`](#with_log_span_factory_middleware)
 ```
 
 :::info
-Here is a complete list of settings for the [`withSyncLogSpanFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withSyncLogSpanFactory.html) function.
+Here is a complete list of settings for the [`withSyncLogSpanFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Log.withSyncLogSpanFactory.html) function.
 :::
 
 ## withLoggingFactory middleware {#with_logging_factory_middleware}
@@ -63,7 +63,7 @@ The logging middleware intercepts function calls and logs the class name (when c
 ```
 
 :::info
-Here is a complete list of settings for the [`withLoggingFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withLoggingFactory.html) function.
+Here is a complete list of settings for the [`withLoggingFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Log.withLoggingFactory.html) function.
 :::
 
 ### Settings
@@ -84,12 +84,12 @@ Synchronous variant of [`withLoggingFactory`](#with_logging_factory_middleware) 
 ```
 
 :::info
-Here is a complete list of settings for the [`withSyncLoggingFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withSyncLoggingFactory.html) function.
+Here is a complete list of settings for the [`withSyncLoggingFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Log.withSyncLoggingFactory.html) function.
 :::
 
 ## withMetadataFactory middleware {#with_metadata_factory_middleware}
 
-The metadata middleware scopes `filePath`, `class` and `function` metadata to the wrapped function. The metadata is attached through the selected logger's `run` metadata setting, so it is visible only to entries logged while the wrapped function runs.
+The metadata middleware scopes `filePath`, `class` and `function` metadata to the wrapped function. The metadata is attached through the selected log's `run` metadata setting, so it is visible only to entries logged while the wrapped function runs.
 
 ### Usage
 
@@ -98,7 +98,7 @@ The metadata middleware scopes `filePath`, `class` and `function` metadata to th
 ```
 
 :::info
-Here is a complete list of settings for the [`withMetadataFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withMetadataFactory.html) function.
+Here is a complete list of settings for the [`withMetadataFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Log.withMetadataFactory.html) function.
 :::
 
 ### Settings
@@ -120,9 +120,9 @@ Synchronous variant of [`withMetadataFactory`](#with_metadata_factory_middleware
 ```
 
 :::info
-Here is a complete list of settings for the [`withSyncMetadataFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Logger.withSyncMetadataFactory.html) function.
+Here is a complete list of settings for the [`withSyncMetadataFactory`](https://eridu-tech.github.io/eridu-tech-core/functions/Log.withSyncMetadataFactory.html) function.
 :::
 
 ## Further information
 
-For further information refer to [`eridu-tech/logger`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.
+For further information refer to [`eridu-tech/log`](https://eridu-tech.github.io/eridu-tech-core/modules/Logger.html) API docs.

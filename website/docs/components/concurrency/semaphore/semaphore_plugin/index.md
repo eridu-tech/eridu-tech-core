@@ -69,7 +69,7 @@ For more information about the `withPlugin` function and applying plugins to ada
 
 ## withSemaphoreLogging plugin
 
-The Semaphore logging plugin intercepts every call to a semaphore adapter and reports it to an `ILogger`. Any semaphore backend becomes a source of observable events without changing the adapter implementation.
+The Semaphore logging plugin intercepts every call to a semaphore adapter and reports it to an `ILog`. Any semaphore backend becomes a source of observable events without changing the adapter implementation.
 
 ### Use cases
 
@@ -79,9 +79,9 @@ The Semaphore logging plugin intercepts every call to a semaphore adapter and re
 
 ### How it works
 
-The `withSemaphoreLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the logger, so any [`ILogger`](/docs/components/observability/logger/logger_usage) can be passed in.
+The `withSemaphoreLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the log, so any [`ILog`](/docs/components/observability/log/logger_usage) can be passed in.
 
-A successful call logs a `debug` entry named `semaphore.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `semaphore.args` and `semaphore.result`. A failed call logs an `error` entry named `semaphore.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `semaphore.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one logger stay distinguishable.
+A successful call logs a `debug` entry named `semaphore.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `semaphore.args` and `semaphore.result`. A failed call logs an `error` entry named `semaphore.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `semaphore.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one log stay distinguishable.
 
 | Method            | Logged arguments |
 | ----------------- | ---------------- |
@@ -98,5 +98,5 @@ A successful call logs a `debug` entry named `semaphore.<methodName> succeeded`,
 ```
 
 :::info
-Arguments are forwarded to the logger untouched. Use a logger whose transport drops metadata when semaphore keys are considered sensitive.
+Arguments are forwarded to the log untouched. Use a log whose transport drops metadata when semaphore keys are considered sensitive.
 :::

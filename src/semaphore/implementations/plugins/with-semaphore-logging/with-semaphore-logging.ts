@@ -2,7 +2,7 @@
  * @module Semaphore
  */
 
-import type { ILogger } from "@/logger/contracts/_module-exports.js";
+import type { ILog } from "@/log/contracts/_module-exports.js";
 import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 import type { ISemaphoreAdapter } from "@/semaphore/contracts/_module-exports.js";
 
@@ -16,22 +16,20 @@ import type { ISemaphoreAdapter } from "@/semaphore/contracts/_module-exports.js
  * value-returning methods, the outcome under a `has...` key or the returned
  * `state`.
  *
- * @param logger - The logger that receives the entries. Only `debug` and
+ * @param log - The log that receives the entries. Only `debug` and
  * `error` are used.
  * @returns A middleware plugin that wraps an `ISemaphoreAdapter`.
  *
  * IMPORT_PATH: `"eridu-tech/semaphore/plugins"`
  * @group Plugins
  */
-export function withSemaphoreLogging(
-    logger: ILogger,
-): PluginFn<ISemaphoreAdapter> {
+export function withSemaphoreLogging(log: ILog): PluginFn<ISemaphoreAdapter> {
     return (adapter, enhance, adapterName) => {
         enhance(adapter, "acquire", [
             async ({ args: [{ key, slotId, limit, ttl }], next }) => {
                 try {
                     const hasAcquired = await next();
-                    logger.debug(["acquire succeeded"], {
+                    log.debug(["acquire succeeded"], {
                         group: "[Semaphore]",
                         metadata: {
                             adapter: adapterName,
@@ -44,7 +42,7 @@ export function withSemaphoreLogging(
                     });
                     return hasAcquired;
                 } catch (error: unknown) {
-                    logger.error(["acquire failed"], {
+                    log.error(["acquire failed"], {
                         error,
                     });
                     throw error;
@@ -55,7 +53,7 @@ export function withSemaphoreLogging(
             async ({ args: [key], next }) => {
                 try {
                     const hasForceReleasedAll = await next();
-                    logger.debug(["forceReleaseAll succeeded"], {
+                    log.debug(["forceReleaseAll succeeded"], {
                         group: "[Semaphore]",
                         metadata: {
                             adapter: adapterName,
@@ -65,7 +63,7 @@ export function withSemaphoreLogging(
                     });
                     return hasForceReleasedAll;
                 } catch (error: unknown) {
-                    logger.error(["forceReleaseAll failed"], {
+                    log.error(["forceReleaseAll failed"], {
                         error,
                     });
                     throw error;
@@ -76,7 +74,7 @@ export function withSemaphoreLogging(
             async ({ args: [key], next }) => {
                 try {
                     const state = await next();
-                    logger.debug(["getState succeeded"], {
+                    log.debug(["getState succeeded"], {
                         group: "[Semaphore]",
                         metadata: {
                             adapter: adapterName,
@@ -86,7 +84,7 @@ export function withSemaphoreLogging(
                     });
                     return state;
                 } catch (error: unknown) {
-                    logger.error(["getState failed"], {
+                    log.error(["getState failed"], {
                         error,
                     });
                     throw error;
@@ -97,7 +95,7 @@ export function withSemaphoreLogging(
             async ({ args: [key, slotId, ttl], next }) => {
                 try {
                     const hasRefreshed = await next();
-                    logger.debug(["refresh succeeded"], {
+                    log.debug(["refresh succeeded"], {
                         group: "[Semaphore]",
                         metadata: {
                             adapter: adapterName,
@@ -109,7 +107,7 @@ export function withSemaphoreLogging(
                     });
                     return hasRefreshed;
                 } catch (error: unknown) {
-                    logger.error(["refresh failed"], {
+                    log.error(["refresh failed"], {
                         error,
                     });
                     throw error;
@@ -120,7 +118,7 @@ export function withSemaphoreLogging(
             async ({ args: [key, slotId], next }) => {
                 try {
                     const hasReleased = await next();
-                    logger.debug(["release succeeded"], {
+                    log.debug(["release succeeded"], {
                         group: "[Semaphore]",
                         metadata: {
                             adapter: adapterName,
@@ -131,7 +129,7 @@ export function withSemaphoreLogging(
                     });
                     return hasReleased;
                 } catch (error: unknown) {
-                    logger.error(["release failed"], {
+                    log.error(["release failed"], {
                         error,
                     });
                     throw error;
