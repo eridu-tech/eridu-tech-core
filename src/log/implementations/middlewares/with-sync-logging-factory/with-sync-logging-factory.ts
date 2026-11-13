@@ -1,5 +1,5 @@
 /**
- * @module Logger
+ * @module Log
  */
 import type { ILogResolver } from "@/log/contracts/_module-exports.js";
 import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";

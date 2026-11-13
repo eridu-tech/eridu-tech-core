@@ -1,3 +1,6 @@
+/**
+ * @module Log
+ */
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { NoOpExecutionContextAdapter } from "@/execution-context/implementations/adapters/no-op-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";

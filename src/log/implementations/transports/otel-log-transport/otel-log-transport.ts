@@ -1,5 +1,5 @@
 /**
- * @module Logger
+ * @module Log
  */
 
 import { logs, SeverityNumber } from "@opentelemetry/api";

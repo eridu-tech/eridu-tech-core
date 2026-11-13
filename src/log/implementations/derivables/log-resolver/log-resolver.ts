@@ -1,5 +1,5 @@
 /**
- * @module Logger
+ * @module Log
  */
 
 import { Log } from "@/log/implementations/derivables/log/_module.js";

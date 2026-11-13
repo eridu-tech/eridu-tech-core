@@ -1,5 +1,5 @@
 /**
- * @module Logger
+ * @module Log
  */
 
 import type { ILog } from "@/log/contracts/log.contract.js";
