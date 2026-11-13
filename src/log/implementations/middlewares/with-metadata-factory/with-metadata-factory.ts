@@ -13,7 +13,7 @@ import type { Invocable } from "@/utilities/_module-exports.js";
  * Details passed to the `metadata` callback of
  * {@link WithLoggingSettings}.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type MetadataSettings<
@@ -33,7 +33,7 @@ export type MetadataSettings<
 /**
  * Settings for the middleware created by {@link withMetadataFactory}.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithLoggingSettings<
@@ -79,7 +79,7 @@ export type WithLoggingSettings<
  * @typeParam TParameters - Arguments of the wrapped function.
  * @typeParam TReturn - Resolved return type of the wrapped function.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithLogging = <TParameters extends Array<unknown>, TReturn>(
@@ -94,7 +94,7 @@ export type WithLogging = <TParameters extends Array<unknown>, TReturn>(
  *
  * @typeParam TTransports - Union type of the registered transport names.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithMetadataResolver<TTransports extends string = string> = {
@@ -123,7 +123,7 @@ export type WithMetadataResolver<TTransports extends string = string> = {
  *
  * @returns A {@link WithLogging} that is also a {@link WithMetadataResolver}.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export function withMetadataFactory<TTransports extends string = string>(

@@ -16,7 +16,7 @@ import type {
 /**
  * Configuration for `OtelLogTransport`.
  *
- * IMPORT_PATH: `"eridu-tech/logger/otel-log-transport"`
+ * IMPORT_PATH: `"eridu-tech/log/otel-log-transport"`
  * @group Transports
  */
 export type OtelLogTransportSettings = {
@@ -40,7 +40,7 @@ export type OtelLogTransportSettings = {
  * the record `body`, and `group`, `metadata`, `error`, and spans in
  * milliseconds are attached as attributes.
  *
- * IMPORT_PATH: `"eridu-tech/logger/otel-log-transport"`
+ * IMPORT_PATH: `"eridu-tech/log/otel-log-transport"`
  * @group Transports
  */
 export class OtelLogTransport implements ILogTransport {

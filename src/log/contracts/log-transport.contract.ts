@@ -7,7 +7,7 @@ import type { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 /**
  * Log levels, from least to most severe.
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export const LOG_LEVEL = {
@@ -22,13 +22,13 @@ export const LOG_LEVEL = {
 /**
  * Any of the `LOG_LEVEL` values.
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type AllLogLevels = (typeof LOG_LEVEL)[keyof typeof LOG_LEVEL];
 
 /**
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type LogSpans = Partial<Record<string, TimeSpan>>;
@@ -38,7 +38,7 @@ export type LogSpans = Partial<Record<string, TimeSpan>>;
  * Holds everything a logging backend needs to format and output a record, so
  * transports stay independent of the `ILog` implementation.
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type LogData = {
@@ -91,7 +91,7 @@ export type LogData = {
  * {@link LogData | `LogData`} record, so the backend only has to format and
  * output it.
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type ILogTransport = {

@@ -7,7 +7,7 @@ import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
 /**
  * Settings for {@link WithSyncLogging}.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithSyncLoggingSettings = {
@@ -34,7 +34,7 @@ export type WithSyncLoggingSettings = {
  * @typeParam TParameters - Arguments of the wrapped function.
  * @typeParam TReturn - Return type of the wrapped function.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithSyncLogging = <TParameters extends Array<unknown>, TReturn>(
@@ -49,7 +49,7 @@ export type WithSyncLogging = <TParameters extends Array<unknown>, TReturn>(
  *
  * @typeParam TTransports - Union type of the registered transport names.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithSyncLoggingResolver<TTransports extends string = string> = {
@@ -80,7 +80,7 @@ export type WithSyncLoggingResolver<TTransports extends string = string> = {
  * @returns A {@link WithSyncLogging} that is also a
  *          {@link WithSyncLoggingResolver}.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export function withSyncLoggingFactory<TTransports extends string = string>(

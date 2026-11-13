@@ -31,7 +31,7 @@ import type { Lazy } from "@/utilities/_module-exports.js";
 /**
  * Settings shared by {@link Log} instances, without the transport.
  *
- * IMPORT_PATH: `"eridu-tech/logger"`
+ * IMPORT_PATH: `"eridu-tech/log"`
  * @group Transports
  */
 export type LogSettingsBase = {
@@ -47,7 +47,7 @@ export type LogSettingsBase = {
 /**
  * Settings for {@link Log}.
  *
- * IMPORT_PATH: `"eridu-tech/logger"`
+ * IMPORT_PATH: `"eridu-tech/log"`
  * @group Transports
  */
 export type LogSettings = LogSettingsBase & {
@@ -85,7 +85,7 @@ type Frame = {
  * execution context, so entries logged inside a scope carry its data and
  * entries logged afterwards do not.
  *
- * IMPORT_PATH: `"eridu-tech/logger"`
+ * IMPORT_PATH: `"eridu-tech/log"`
  * @group Transports
  */
 export class Log implements ILog {

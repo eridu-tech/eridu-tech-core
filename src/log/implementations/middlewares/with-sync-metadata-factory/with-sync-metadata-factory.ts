@@ -13,7 +13,7 @@ import type { Invocable } from "@/utilities/_module-exports.js";
 /**
  * Settings for the middleware created by {@link withSyncMetadataFactory}.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithSyncMetadataSettings<
@@ -60,7 +60,7 @@ export type WithSyncMetadataSettings<
  * @typeParam TParameters - Arguments of the wrapped function.
  * @typeParam TReturn - Return type of the wrapped function.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithSyncMetadata = <TParameters extends Array<unknown>, TReturn>(
@@ -75,7 +75,7 @@ export type WithSyncMetadata = <TParameters extends Array<unknown>, TReturn>(
  *
  * @typeParam TTransports - Union type of the registered transport names.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithSyncMetadataResolver<TTransports extends string = string> = {
@@ -105,7 +105,7 @@ export type WithSyncMetadataResolver<TTransports extends string = string> = {
  * @returns A {@link WithSyncMetadata} that is also a
  *          {@link WithSyncMetadataResolver}.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export function withSyncMetadataFactory<TTransports extends string = string>(

@@ -12,7 +12,7 @@ import type {
  *
  * Useful when logging is switched off or in tests.
  *
- * IMPORT_PATH: `"eridu-tech/logger/no-op-log-transport"`
+ * IMPORT_PATH: `"eridu-tech/log/no-op-log-transport"`
  * @group Transports
  */
 export class NoOpLogTransport implements ILogTransport {
