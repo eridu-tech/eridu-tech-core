@@ -11,7 +11,7 @@ import type { Invocable } from "@/utilities/_module-exports.js";
 
 /**
  * Details passed to the `metadata` callback of
- * {@link WithLoggingSettings}.
+ * {@link WithMetadataSettings}.
  *
  * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
@@ -36,7 +36,7 @@ export type MetadataSettings<
  * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
-export type WithLoggingSettings<
+export type WithMetadataSettings<
     TParameters extends Array<unknown> = Array<unknown>,
 > = {
     /**
@@ -82,14 +82,14 @@ export type WithLoggingSettings<
  * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
-export type WithLogging = <TParameters extends Array<unknown>, TReturn>(
-    settings?: WithLoggingSettings<TParameters>,
+export type WithMetadata = <TParameters extends Array<unknown>, TReturn>(
+    settings?: WithMetadataSettings<TParameters>,
 ) => MiddlewareFn<TParameters, Promise<TReturn>>;
 
 /**
  * Resolver-facing API returned by {@link withMetadataFactory}.
  *
- * Calling `use()` returns a {@link WithLogging} bound to the selected
+ * Calling `use()` returns a {@link WithMetadata} bound to the selected
  * transport.
  *
  * @typeParam TTransports - Union type of the registered transport names.
@@ -103,9 +103,9 @@ export type WithMetadataResolver<TTransports extends string = string> = {
      *
      * @param transportName - The transport to use. Defaults to the resolver's
      * default transport.
-     * @returns A {@link WithLogging} bound to the selected transport.
+     * @returns A {@link WithMetadata} bound to the selected transport.
      */
-    use(transportName?: TTransports): WithLogging;
+    use(transportName?: TTransports): WithMetadata;
 };
 
 /**
@@ -121,14 +121,14 @@ export type WithMetadataResolver<TTransports extends string = string> = {
  * @param logResolver - Resolver used to select the log that scopes the
  * metadata.
  *
- * @returns A {@link WithLogging} that is also a {@link WithMetadataResolver}.
+ * @returns A {@link WithMetadata} that is also a {@link WithMetadataResolver}.
  *
  * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export function withMetadataFactory<TTransports extends string = string>(
     logResolver: ILogResolver<TTransports>,
-): WithLogging & WithMetadataResolver<TTransports> {
+): WithMetadata & WithMetadataResolver<TTransports> {
     const withMetadataResolver: WithMetadataResolver<TTransports>["use"] = (
         transportName,
     ) => {
@@ -155,7 +155,7 @@ export function withMetadataFactory<TTransports extends string = string>(
         };
     };
 
-    const middleware = withMetadataResolver() as WithLogging &
+    const middleware = withMetadataResolver() as WithMetadata &
         WithMetadataResolver<TTransports>;
     middleware.use = withMetadataResolver;
     return middleware;
