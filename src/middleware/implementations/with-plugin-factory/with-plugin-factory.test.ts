@@ -3,6 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { enhanceFactory } from "@/middleware/implementations/enhance-factory/enhance-factory.js";
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
 import { withPluginFactory } from "@/middleware/implementations/with-plugin-factory/with-plugin-factory.js";
+import { getConstructorName } from "@/utilities/_module-exports.js";
 
 import type {
     Enhance,
@@ -355,6 +356,10 @@ describe("function: withPluginFactory", () => {
 
         withPlugin(obj, plugin);
 
-        expect(plugin).toHaveBeenCalledExactlyOnceWith(obj, enhance);
+        expect(plugin).toHaveBeenCalledExactlyOnceWith(
+            obj,
+            enhance,
+            getConstructorName(obj),
+        );
     });
 });

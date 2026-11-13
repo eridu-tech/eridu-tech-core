@@ -1,21 +1,21 @@
 import { LIFETIME, type IServiceRegister } from "eridu-tech/di/contracts";
 import { container } from "./container.js";
 import { Database } from "./database.js";
-import { FileLogger, Logger } from "./logger.js";
+import { FileLog, Log } from "./log.js";
 import { UserProvider } from "./user-provider.js";
 
 // A plain function that groups related registrations
 function registerLogging(register: IServiceRegister): void {
     register.registerFactory({
-        token: Logger,
-        factory: () => new Logger(),
+        token: Log,
+        factory: () => new Log(),
         deps: {},
         lifetime: LIFETIME.SINGLETON,
     });
 
     register.registerFactory({
-        token: FileLogger,
-        factory: () => new FileLogger(),
+        token: FileLog,
+        factory: () => new FileLog(),
         deps: {},
         lifetime: LIFETIME.SINGLETON,
     });

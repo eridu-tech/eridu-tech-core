@@ -6,6 +6,7 @@ import { enhance } from "@/middleware/implementations/enhance-factory/_module.js
 import {
     callInvocable,
     copyObj,
+    getConstructorName,
     resolveOneOrMore,
 } from "@/utilities/_module-exports.js";
 
@@ -20,13 +21,18 @@ import type { OneOrMore } from "@/utilities/_module-exports.js";
  * @internal
  */
 export function withPluginFactory(enhance_: Enhance): WithPlugin {
-    return <TInstance>(
+    return <TInstance extends object>(
         instance: TInstance,
         plugins: OneOrMore<Plugin<TInstance>>,
     ): TInstance => {
         const copyOfInstance = copyObj(instance);
         for (const plugin of resolveOneOrMore(plugins).reverse()) {
-            callInvocable(plugin, copyOfInstance, enhance_);
+            callInvocable(
+                plugin,
+                copyOfInstance,
+                enhance_,
+                getConstructorName(instance),
+            );
         }
         return copyOfInstance;
     };

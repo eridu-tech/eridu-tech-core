@@ -1,0 +1,35 @@
+---
+sidebar_position: 0
+sidebar_label: Overview
+pagination_label: Observability
+---
+
+import {
+    OBSERVABILITY_EXISTING_ITEMS,
+    OBSERVABILITY_MIDDLEWARE_ITEMS,
+} from "../../../src/data/data";
+import { ComponentIndex } from "../../../src/components/ComponentIndex";
+
+# Observability
+
+<ComponentIndex
+    sections={[
+        {
+            label: "Observability",
+            intro: "Understand what your application is doing in production, without coupling your code to a specific logging backend.",
+            items: OBSERVABILITY_EXISTING_ITEMS,
+        },
+    ]}
+/>
+
+## Existing middlewares
+
+<ComponentIndex
+    sections={[
+        {
+            label: "Existing middlewares",
+            intro: "Beyond the components themselves, every component provides middleware factories for composing component behavior around your own functions. Wrap a function with use() or method with enhance() and apply any of the following middlewares.",
+            items: OBSERVABILITY_MIDDLEWARE_ITEMS,
+        },
+    ]}
+/>

@@ -423,6 +423,42 @@
             "types": "./dist/lock/implementations/test-utilities/_module-exports.d.ts",
             "import": "./dist/lock/implementations/test-utilities/_module-exports.js"
         },
+        "./log": {
+            "types": "./dist/log/implementations/derivables/_module-exports.d.ts",
+            "import": "./dist/log/implementations/derivables/_module-exports.js"
+        },
+        "./log/di": {
+            "types": "./dist/log/implementations/derivables/di/_module-exports.d.ts",
+            "import": "./dist/log/implementations/derivables/di/_module-exports.js"
+        },
+        "./log/middlewares": {
+            "types": "./dist/log/implementations/middlewares/_module-exports.d.ts",
+            "import": "./dist/log/implementations/middlewares/_module-exports.js"
+        },
+        "./log/contracts": {
+            "types": "./dist/log/contracts/_module-exports.d.ts",
+            "import": "./dist/log/contracts/_module-exports.js"
+        },
+        "./log/console-log-transport": {
+            "types": "./dist/log/implementations/transports/console-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/console-log-transport/_module-exports.js"
+        },
+        "./log/loglayer-log-transport": {
+            "types": "./dist/log/implementations/transports/loglayer-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/loglayer-log-transport/_module-exports.js"
+        },
+        "./log/memory-log-transport": {
+            "types": "./dist/log/implementations/transports/memory-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/memory-log-transport/_module-exports.js"
+        },
+        "./log/no-op-log-transport": {
+            "types": "./dist/log/implementations/transports/no-op-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/no-op-log-transport/_module-exports.js"
+        },
+        "./log/otel-log-transport": {
+            "types": "./dist/log/implementations/transports/otel-log-transport/_module-exports.d.ts",
+            "import": "./dist/log/implementations/transports/otel-log-transport/_module-exports.js"
+        },
         "./middleware": {
             "types": "./dist/middleware/implementations/_module-exports.d.ts",
             "import": "./dist/middleware/implementations/_module-exports.js"
@@ -490,6 +526,14 @@
         "./resilience": {
             "types": "./dist/resilience/implementations/_module-exports.d.ts",
             "import": "./dist/resilience/implementations/_module-exports.js"
+        },
+        "./secret": {
+            "types": "./dist/secret/implementations/_module-exports.d.ts",
+            "import": "./dist/secret/implementations/_module-exports.js"
+        },
+        "./secret/contracts": {
+            "types": "./dist/secret/contracts/_module-exports.d.ts",
+            "import": "./dist/secret/contracts/_module-exports.js"
         },
         "./semaphore": {
             "types": "./dist/semaphore/implementations/derivables/_module-exports.d.ts",
@@ -676,6 +720,9 @@
         "@aws-sdk/client-s3": "^3.1102.0",
         "@aws-sdk/s3-request-presigner": "^3.1102.0",
         "@changesets/cli": "^2.31.1",
+        "@loglayer/transport-simple-pretty-terminal": "^3.3.0",
+        "@opentelemetry/api": "^1.10.0",
+        "@opentelemetry/sdk-logs": "^3.1.1",
         "@standard-schema/spec": "^1.1.0",
         "@testcontainers/mariadb": "^12.1.0",
         "@testcontainers/mongodb": "^12.0.4",
@@ -712,6 +759,7 @@
         "hono": "^4.13.0",
         "ioredis": "^6.0.0",
         "kysely": "^0.29.4",
+        "loglayer": "^9.4.0",
         "mongodb": "^7.5.0",
         "mysql2": "^3.23.2",
         "pg": "^8.22.0",
@@ -733,11 +781,13 @@
     "peerDependencies": {
         "@aws-sdk/client-s3": "^3.1102.0",
         "@aws-sdk/s3-request-presigner": "^3.1102.0",
+        "@opentelemetry/api": "^1.10.0",
         "@types/ssh2-sftp-client": "^9.0.6",
         "basic-ftp": "^6.2.0",
         "hono": "^4.13.0",
         "ioredis": "^6.0.0",
         "kysely": "^0.29.0",
+        "loglayer": "^9.4.0",
         "mongodb": "^7.5.0",
         "ssh2-sftp-client": "^12.1.0",
         "webdav": "^5.11.0"
@@ -747,6 +797,9 @@
             "optional": true
         },
         "kysely": {
+            "optional": true
+        },
+        "loglayer": {
             "optional": true
         },
         "mongodb": {
@@ -771,6 +824,9 @@
             "optional": true
         },
         "basic-ftp": {
+            "optional": true
+        },
+        "@opentelemetry/api": {
             "optional": true
         }
     },

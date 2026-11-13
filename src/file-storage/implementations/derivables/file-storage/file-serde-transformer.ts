@@ -64,7 +64,7 @@ export class FileSerdeTransformer implements ISerdeTransformer<
         return ["file", this.serializationId].filter((str) => str !== "");
     }
 
-    isApplicable(value: unknown): boolean {
+    isApplicable(value: unknown): value is IFile {
         if (!isInternalSerdeIdentifiable(value)) {
             return false;
         }

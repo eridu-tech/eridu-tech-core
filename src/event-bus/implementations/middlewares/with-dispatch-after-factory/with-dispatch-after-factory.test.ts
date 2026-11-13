@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/no-op-event-bus-adapter/_module-exports.js";
 import { EventBus } from "@/event-bus/implementations/derivables/_module-exports.js";
@@ -17,9 +17,9 @@ describe("function: withDispatchAfterFactory", () => {
     };
     const withDispatchAfter = withDispatchAfterFactory(eventBusResolver);
 
-    afterEach(() => {
-        vi.clearAllMocks();
+    beforeEach(() => {
         vi.restoreAllMocks();
+        vi.clearAllMocks();
     });
 
     test("Should dispatch the event with the resolved payload after the wrapped function resolves", async () => {
@@ -216,6 +216,19 @@ describe("function: withDispatchAfterFactory", () => {
         expect(dispatch).not.toHaveBeenCalled();
     });
 
+    test("Should use the default event bus adapter when use is not called", async () => {
+        const wrapped = use(
+            async (): Promise<string> => Promise.resolve("ok"),
+            withDispatchAfter({
+                type: "user.created",
+                payload: () => ({ userId: "42" }),
+            }),
+        );
+
+        await wrapped();
+
+        expect(eventBusResolver.use).toHaveBeenCalledExactlyOnceWith(undefined);
+    });
     test("Should dispatch using the selected event bus adapter", async () => {
         const dispatch = vi.spyOn(adapter, "dispatch");
         const wrapped = use(

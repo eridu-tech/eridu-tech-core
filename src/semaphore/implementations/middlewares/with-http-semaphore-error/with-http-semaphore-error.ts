@@ -47,7 +47,10 @@ function toHttpError(semaphoreError: AllSemaphoreErrors): HttpError {
         });
     }
 
-    throw UnexpectedError.create("Unhandled semaphore error type");
+    throw UnexpectedError.create(
+        "Unhandled semaphore error type",
+        semaphoreError,
+    );
 }
 
 /**

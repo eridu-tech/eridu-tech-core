@@ -47,8 +47,9 @@ export function isPromiseLike<TValue>(
 ): value is PromiseLike<TValue> {
     return (
         typeof value === "object" &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        typeof (value as any)?.then === "function"
+        value !== null &&
+        "then" in value &&
+        typeof value.then === "function"
     );
 }
 /**

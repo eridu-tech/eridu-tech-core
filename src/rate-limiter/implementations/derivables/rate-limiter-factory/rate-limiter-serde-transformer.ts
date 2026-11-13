@@ -52,7 +52,7 @@ export class RateLimiterSerdeTransformer implements ISerdeTransformer<
             (str) => str !== "",
         );
     }
-    isApplicable(value: unknown): boolean {
+    isApplicable(value: unknown): value is IRateLimiter {
         if (!isInternalSerdeIdentifiable(value)) {
             return false;
         }

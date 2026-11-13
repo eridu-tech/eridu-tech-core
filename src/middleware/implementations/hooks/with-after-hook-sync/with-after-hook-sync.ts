@@ -33,10 +33,10 @@ export type AfterHookSync<
  * Creates a synchronous middleware that runs an {@link AfterHookSync | `AfterHookSync`} after the
  * wrapped function.
  *
- * Unlike {@link withAfterHook | `withAfterHook`} the hook must be synchronous and there is no
- * `detach` option: the hook is always invoked after a successful call and can replace the result by
- * returning a value (returning nothing keeps the original result). If the wrapped function throws,
- * the hook is skipped and the error propagates.
+ * Unlike {@link withAfterHook | `withAfterHook`} the hook must be synchronous. It is always
+ * invoked after a successful call and can replace the result by returning a value (returning
+ * nothing keeps the original result). If the wrapped function throws, the hook is skipped and the
+ * error propagates.
  *
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  * @typeParam TReturn - Return type of the wrapped function

@@ -181,9 +181,9 @@ Use `registerValue()` to register values as singletons.
 
 Group related registrations into a reusable function that receives an `IServiceRegister` and calls its registration methods. The container itself implements `IServiceRegister`, so it can be passed directly.
 
-The `Logger` services:
+The `Log` services:
 
-```ts file=./samples/logger.ts
+```ts file=./samples/log.ts
 
 ```
 

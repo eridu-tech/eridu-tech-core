@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { use } from "@/middleware/implementations/_module-exports.js";
+import { NoOpTransactionAdapter } from "@/transaction-context/implementations/adapters/no-op-transaction-adapter/no-op-transaction-adapter.js";
+import { TransactionContextResolver } from "@/transaction-context/implementations/derivables/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/transaction-context/transaction-context.js";
 import { withAfterCommitFactory } from "@/transaction-context/implementations/middlewares/with-after-commit-factory/with-after-commit-factory.js";
 
@@ -55,5 +59,25 @@ describe("function: withAfterCommitFactory", () => {
             expect.any(Function),
             settings,
         );
+    });
+    test("Should register the hook within a transaction started through the resolver's use method", async () => {
+        const executionContext = new ExecutionContext(
+            new AlsExecutionContextAdapter(),
+        );
+        const resolver = new TransactionContextResolver<"memory">({
+            adapters: { memory: new NoOpTransactionAdapter(null) },
+            defaultAdapter: "memory",
+            executionContext,
+        });
+        resolver.init();
+
+        const withAfterCommit = withAfterCommitFactory(resolver);
+        const fn = vi.fn((): Promise<void> => Promise.resolve());
+
+        await resolver.use("memory").run(async () => {
+            await use(fn, withAfterCommit())();
+        });
+
+        expect(fn).toHaveBeenCalledOnce();
     });
 });

@@ -9,6 +9,7 @@ keywords:
     - RateLimiter
     - Plugins
     - withRateLimiterPrefix
+    - withRateLimiterLogging
 ---
 
 # RateLimiter Plugins
@@ -62,4 +63,36 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/foundation/middleware/#plugin) documentation.
+:::
+
+## withRateLimiterLogging plugin
+
+The RateLimiter logging plugin intercepts every call to a rate limiter adapter and reports it to an `ILog`. Any rate limiter backend becomes a source of observable events without changing the adapter implementation.
+
+### Use cases
+
+- **Throttling diagnostics** - See which keys are checked and which attempts are blocked
+- **Quota analysis** - Correlate exceeded limits with the keys and limits that caused them
+- **Auditing** - Keep a record of manual resets
+
+### How it works
+
+The `withRateLimiterLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the log, so any [`ILog`](/docs/components/observability/log/logger_usage) can be passed in.
+
+A successful call logs a `debug` entry named `rate-limiter.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `rate-limiter.args` and `rate-limiter.result`. A failed call logs an `error` entry named `rate-limiter.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `rate-limiter.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one log stay distinguishable.
+
+| Method        | Logged arguments |
+| ------------- | ---------------- |
+| `getState`    | All arguments    |
+| `reset`       | All arguments    |
+| `updateState` | All arguments    |
+
+### Usage
+
+```ts file=./samples/with-rate-limiter-logging.ts
+
+```
+
+:::info
+Arguments are forwarded to the log untouched. Use a log whose transport drops metadata when rate limiter keys are considered sensitive.
 :::

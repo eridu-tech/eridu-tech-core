@@ -5,9 +5,7 @@
 /**
  * @internal
  */
-export function objectSize(
-    object: Record<string | number | symbol, any>,
-): number {
+export function objectSize<TObject extends object>(object: TObject): number {
     let size = 0;
     for (const key in object) {
         if (object[key] === undefined) {
@@ -21,18 +19,23 @@ export function objectSize(
 /**
  * @internal
  */
-export function isObjectEmpty(
-    object: Record<string | number | symbol, any>,
-): boolean {
-    return objectSize(object) === 0;
+export function isObjectEmpty<TObject extends object>(obj: TObject): boolean {
+    for (const key in obj) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const value = obj[key];
+        if (value !== undefined) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /**
  * @internal
  */
-export function removeUndefinedProperties<
-    TObject extends Partial<Record<string, unknown>>,
->(object: TObject): TObject {
+export function removeUndefinedProperties<TObject extends object>(
+    object: TObject,
+): TObject {
     return Object.fromEntries(
         Object.entries(object).filter(([_key, value]) => value !== undefined),
     ) as TObject;

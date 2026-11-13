@@ -29,9 +29,9 @@ export type OnErrorHookSync<
  * Creates a synchronous middleware that runs an {@link OnErrorHookSync | `OnErrorHookSync`} when the
  * wrapped function throws.
  *
- * Unlike {@link withOnError | `withOnError`} the hook must be synchronous and there is no `detach`
- * option: the hook is always invoked before the error is re-thrown. The error is always re-thrown
- * unchanged, and if the wrapped function succeeds the hook is not called.
+ * Unlike {@link withOnError | `withOnError`} the hook must be synchronous. It is always invoked
+ * before the error is re-thrown, the error is always re-thrown unchanged, and if the wrapped
+ * function succeeds the hook is not called.
  *
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  * @typeParam TReturn - Return type of the wrapped function

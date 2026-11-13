@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSharedLockAdapter } from "@/shared-lock/implementations/adapters/no-op-shared-lock-adapter/_module-exports.js";
@@ -20,10 +20,8 @@ describe("function: withSharedLockFactory", () => {
         adapters: { memory: new NoOpSharedLockAdapter() },
         defaultAdapter: "memory",
     });
+    sharedLockFactoryResolver.init();
 
-    beforeAll(() => {
-        sharedLockFactoryResolver.init();
-    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
@@ -163,6 +161,23 @@ describe("function: withSharedLockFactory", () => {
         );
 
         expect(await wrapped("2", "3")).toBe("2-3");
+    });
+    test("Should use the default adapter when use is not called", async () => {
+        const spy = vi.spyOn(sharedLockFactoryResolver, "use");
+
+        const withSharedLock = withSharedLockFactory(sharedLockFactoryResolver);
+
+        async function fn(_value: string): Promise<void> {}
+        await use(
+            fn,
+            withSharedLock({
+                key: ([value]) => value,
+                limit: 4,
+                when: SHARED_LOCK_WHEN.WRITER,
+            }),
+        )("value");
+
+        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
     });
     test("Should select the adapter passed to use", async () => {
         const spy = vi.spyOn(sharedLockFactoryResolver, "use");

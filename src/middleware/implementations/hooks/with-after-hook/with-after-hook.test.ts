@@ -58,27 +58,6 @@ describe("function: withAfterHook", () => {
         );
         await expect(fn("world")).resolves.toBe("WORLD");
     });
-    test("Should not await the hook when detach is true", async () => {
-        const hook = vi.fn(async () => {
-            await new Promise<void>(() => {});
-        });
-        const fn = use(
-            (name: string): Promise<string> => Promise.resolve(name),
-            withAfterHook<[string], string>(hook, true),
-        );
-        await expect(fn("world")).resolves.toBe("world");
-        expect(hook).toHaveBeenCalledExactlyOnceWith(["world"], "world");
-    });
-    test("Should ignore the hook returned result when detach is true", async () => {
-        const fn = use(
-            (name: string): Promise<string> => Promise.resolve(name),
-            withAfterHook<[string], string>(
-                (_args: [string], _result: string): string => "modified",
-                true,
-            ),
-        );
-        await expect(fn("world")).resolves.toBe("world");
-    });
     test("Should accept an invocable object as hook", async () => {
         const invoke = vi.fn((_args: [string], result: string): string =>
             result.toUpperCase(),
@@ -115,16 +94,6 @@ describe("function: withAfterHook", () => {
         const fn = use(
             (name: string): Promise<string> => Promise.resolve(name),
             withAfterHook<[string], string>(() => Promise.reject(hookError)),
-        );
-        await expect(fn("world")).rejects.toBe(hookError);
-    });
-    test("Should propagate a synchronous hook error when detach is true", async () => {
-        const hookError = new Error("hook error");
-        const fn = use(
-            (name: string): Promise<string> => Promise.resolve(name),
-            withAfterHook<[string], string>(() => {
-                throw hookError;
-            }, true),
         );
         await expect(fn("world")).rejects.toBe(hookError);
     });

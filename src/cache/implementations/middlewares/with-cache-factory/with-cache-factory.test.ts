@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { NoOpCacheAdapter } from "@/cache/implementations/adapters/no-op-cache-adapter/_module-exports.js";
 import {
@@ -14,10 +14,8 @@ describe("function: withCacheFactory", () => {
         adapters: { memory: new NoOpCacheAdapter() },
         defaultAdapter: "memory",
     });
+    cacheResolver.init();
 
-    beforeAll(() => {
-        cacheResolver.init();
-    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
@@ -44,5 +42,23 @@ describe("function: withCacheFactory", () => {
             expect.any(Function),
             ttl,
         );
+    });
+
+    test("Should cache using the selected adapter", async () => {
+        const useSpy = vi.spyOn(cacheResolver, "use");
+        const getOrAddSpy = vi.spyOn(Cache.prototype, "getOrAdd");
+
+        const withCache = withCacheFactory(cacheResolver);
+
+        async function fn(_value: string): Promise<void> {}
+        await use(
+            fn,
+            withCache.use("memory")({
+                key: ([value]) => value,
+            }),
+        )("key");
+
+        expect(useSpy).toHaveBeenCalledExactlyOnceWith("memory");
+        expect(getOrAddSpy).toHaveBeenCalledOnce();
     });
 });

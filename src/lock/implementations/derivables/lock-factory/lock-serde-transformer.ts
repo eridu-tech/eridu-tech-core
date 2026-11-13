@@ -46,7 +46,7 @@ export class LockSerdeTransformer implements ISerdeTransformer<
         return ["lock", this.serializationId].filter((str) => str !== "");
     }
 
-    isApplicable(value: unknown): boolean {
+    isApplicable(value: unknown): value is ILock {
         if (!isInternalSerdeIdentifiable(value)) {
             return false;
         }

@@ -305,6 +305,23 @@ const EXISTING_MESSAGING_RECORD = {
     } satisfies ComponentItemProps,
 };
 
+const EXISTING_OBSERVABILITY_RECORD = {
+    // ─── Existing: Observability ──────────────────────────
+    LOGGER: {
+        name: "Logger",
+        icon: <Activity size="1.5rem" strokeWidth={1.5} />,
+        title: <>Logger</>,
+        link: "/docs/components/observability/logger/logger_usage",
+        maturity: 85,
+        description: (
+            <>
+                Leveled logging with execution-scoped spans and metadata,
+                pluggable transports, composable middlewares, and a DI proxy.
+            </>
+        ),
+    } satisfies ComponentItemProps,
+};
+
 const EXISTING_WEB_RECORD = {
     // ─── Existing: Web ───────────────────────────────────────
     HTTP_ROUTER: {
@@ -431,6 +448,19 @@ const EXISTING_UTILITIES_RECORD = {
                 Encode and decode data with a unified, type-safe interface that
                 includes a built-in Base64 codec and lets you build custom
                 codecs for any protocol.
+            </>
+        ),
+    } satisfies ComponentItemProps,
+    SECRET: {
+        name: "Secret",
+        icon: <ShieldCheck size="1.5rem" strokeWidth={1.5} />,
+        title: <>Secret</>,
+        link: "/docs/components/utilities/secret",
+        maturity: 80,
+        description: (
+            <>
+                Wrap sensitive values so string conversion is redacted, with
+                explicit access and an optional serialization transformer.
             </>
         ),
     } satisfies ComponentItemProps,
@@ -846,6 +876,7 @@ export const COMPONENT_RECORD = {
     ...EXISTING_CONCURRENCY_RECORD,
     ...EXISTING_MESSAGING_RECORD,
     ...EXISTING_WEB_RECORD,
+    ...EXISTING_OBSERVABILITY_RECORD,
     ...EXISTING_UTILITIES_RECORD,
     ...UPCOMING_FOUNDATION_RUNTIME_RECORD,
     ...UPCOMING_RELIABILITY_MESSAGING_RECORD,
@@ -891,6 +922,10 @@ export const WEB_EXISTING_ITEMS: ComponentItemProps[] = [
     COMPONENT_RECORD.HTTP_ROUTER,
 ];
 
+export const OBSERVABILITY_EXISTING_ITEMS: ComponentItemProps[] = [
+    COMPONENT_RECORD.LOGGER,
+];
+
 export const UTILITIES_EXISTING_ITEMS: ComponentItemProps[] = [
     COMPONENT_RECORD.COLLECTION,
     COMPONENT_RECORD.TIME_SPAN,
@@ -900,6 +935,7 @@ export const UTILITIES_EXISTING_ITEMS: ComponentItemProps[] = [
     COMPONENT_RECORD.ERROR_POLICY_TYPE,
     COMPONENT_RECORD.INVOCABLE,
     COMPONENT_RECORD.CODEC,
+    COMPONENT_RECORD.SECRET,
 ];
 
 export const EXISTING_ITEMS: ComponentItemProps[] = [
@@ -909,6 +945,7 @@ export const EXISTING_ITEMS: ComponentItemProps[] = [
     ...CONCURRENCY_EXISTING_ITEMS,
     ...MESSAGING_EXISTING_ITEMS,
     ...WEB_EXISTING_ITEMS,
+    ...OBSERVABILITY_EXISTING_ITEMS,
     ...UTILITIES_EXISTING_ITEMS,
 ];
 
@@ -1029,6 +1066,61 @@ export const MESSAGING_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
         title: <>withDispatchOnErrorFactory</>,
         link: "/docs/components/messaging/event_bus/event_bus_middlewares/#with_dispatch_on_error_factory_middleware",
         description: <>Dispatches an event when the wrapped function throws.</>,
+    },
+];
+
+export const OBSERVABILITY_MIDDLEWARE_ITEMS: ComponentItemProps[] = [
+    {
+        name: "withLogSpanFactory",
+        title: <>withLogSpanFactory</>,
+        link: "/docs/components/observability/logger/logger_middlewares/#with_log_span_factory_middleware",
+        description: <>Runs the wrapped function inside a named span.</>,
+    },
+    {
+        name: "withSyncLogSpanFactory",
+        title: <>withSyncLogSpanFactory</>,
+        link: "/docs/components/observability/logger/logger_middlewares/#with_sync_log_span_factory_middleware",
+        description: (
+            <>Runs the synchronous wrapped function inside a named span.</>
+        ),
+    },
+    {
+        name: "withLoggingFactory",
+        title: <>withLoggingFactory</>,
+        link: "/docs/components/observability/logger/logger_middlewares/#with_logging_factory_middleware",
+        description: (
+            <>Logs the class name, function name, arguments and return value.</>
+        ),
+    },
+    {
+        name: "withSyncLoggingFactory",
+        title: <>withSyncLoggingFactory</>,
+        link: "/docs/components/observability/logger/logger_middlewares/#with_sync_logging_factory_middleware",
+        description: (
+            <>
+                Logs the synchronous function&apos;s class name, function name,
+                arguments and return value.
+            </>
+        ),
+    },
+    {
+        name: "withMetadataFactory",
+        title: <>withMetadataFactory</>,
+        link: "/docs/components/observability/logger/logger_middlewares/#with_metadata_factory_middleware",
+        description: (
+            <>Scopes filePath, class and function metadata to the call.</>
+        ),
+    },
+    {
+        name: "withSyncMetadataFactory",
+        title: <>withSyncMetadataFactory</>,
+        link: "/docs/components/observability/logger/logger_middlewares/#with_sync_metadata_factory_middleware",
+        description: (
+            <>
+                Scopes filePath, class and function metadata to the synchronous
+                call.
+            </>
+        ),
     },
 ];
 

@@ -100,7 +100,7 @@ export type WithRateLimiterResolver<TAdapters extends string = string> = {
      * adapter.
      * @returns A {@link WithRateLimiter} bound to the selected adapter.
      */
-    use(adapter?: TAdapters): WithRateLimiter;
+    use(adapterName?: TAdapters): WithRateLimiter;
 };
 
 /**
@@ -126,18 +126,19 @@ export type WithRateLimiterResolver<TAdapters extends string = string> = {
 export function withRateLimiterFactory<TAdapters extends string = string>(
     rateLimiterFactoryResolver: CreateRateLimiterResolver<TAdapters>,
 ): WithRateLimiter & WithRateLimiterResolver<TAdapters> {
-    const withRateLimiterResolver: WithRateLimiterResolver<TAdapters>["use"] =
-        function use(adapter?: TAdapters): WithRateLimiter {
-            return (settings) => {
-                const { key, ...rest } = settings;
-                return ({ next, args }) => {
-                    return rateLimiterFactoryResolver
-                        .use(adapter)
-                        .create(callInvocable(key, args), rest)
-                        .runOrFail(next);
-                };
+    const withRateLimiterResolver: WithRateLimiterResolver<TAdapters>["use"] = (
+        adapterName,
+    ) => {
+        return (settings) => {
+            const { key, ...rest } = settings;
+            return ({ next, args }) => {
+                return rateLimiterFactoryResolver
+                    .use(adapterName)
+                    .create(callInvocable(key, args), rest)
+                    .runOrFail(next);
             };
         };
+    };
 
     const middleware = withRateLimiterResolver() as WithRateLimiter &
         WithRateLimiterResolver<TAdapters>;

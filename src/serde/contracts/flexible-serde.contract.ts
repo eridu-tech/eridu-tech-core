@@ -57,7 +57,7 @@ export type ISerdeTransformer<
      * @param value - The value to check
      * @returns True if value should be serialized by this transformer, false otherwise
      */
-    isApplicable(value: unknown): boolean;
+    isApplicable(value: unknown): value is TDeserializedValue;
 
     /**
      * Deserializes a value from the serialized format to runtime format.

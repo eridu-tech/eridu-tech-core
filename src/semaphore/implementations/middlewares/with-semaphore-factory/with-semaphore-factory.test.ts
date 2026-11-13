@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { NoOpSemaphoreAdapter } from "@/semaphore/implementations/adapters/no-op-semaphore-adapter/_module-exports.js";
@@ -17,10 +17,8 @@ describe("function: withSemaphoreFactory", () => {
         adapters: { memory: new NoOpSemaphoreAdapter() },
         defaultAdapter: "memory",
     });
+    semaphoreFactoryResolver.init();
 
-    beforeAll(() => {
-        semaphoreFactoryResolver.init();
-    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
@@ -100,6 +98,22 @@ describe("function: withSemaphoreFactory", () => {
         );
 
         expect(await wrapped("2", "3")).toBe("2-3");
+    });
+    test("Should use the default adapter when use is not called", async () => {
+        const spy = vi.spyOn(semaphoreFactoryResolver, "use");
+
+        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
+
+        async function fn(_value: string): Promise<void> {}
+        await use(
+            fn,
+            withSemaphore({
+                key: ([value]) => value,
+                limit: 4,
+            }),
+        )("value");
+
+        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
     });
     test("Should select the adapter passed to use", async () => {
         const spy = vi.spyOn(semaphoreFactoryResolver, "use");

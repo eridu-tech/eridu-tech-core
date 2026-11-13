@@ -9,6 +9,7 @@ keywords:
     - Semaphore
     - Plugins
     - withSemaphorePrefix
+    - withSemaphoreLogging
 ---
 
 # Semaphore Plugins
@@ -64,4 +65,38 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/foundation/middleware/#plugin) documentation.
+:::
+
+## withSemaphoreLogging plugin
+
+The Semaphore logging plugin intercepts every call to a semaphore adapter and reports it to an `ILog`. Any semaphore backend becomes a source of observable events without changing the adapter implementation.
+
+### Use cases
+
+- **Slot diagnostics** - See which slots are acquired, refreshed and released, and for how long
+- **Contention analysis** - Correlate failed acquisitions with the semaphore keys that caused them
+- **Auditing** - Keep a record of force releases and state lookups
+
+### How it works
+
+The `withSemaphoreLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the log, so any [`ILog`](/docs/components/observability/log/logger_usage) can be passed in.
+
+A successful call logs a `debug` entry named `semaphore.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `semaphore.args` and `semaphore.result`. A failed call logs an `error` entry named `semaphore.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `semaphore.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one log stay distinguishable.
+
+| Method            | Logged arguments |
+| ----------------- | ---------------- |
+| `acquire`         | All arguments    |
+| `forceReleaseAll` | All arguments    |
+| `getState`        | All arguments    |
+| `refresh`         | All arguments    |
+| `release`         | All arguments    |
+
+### Usage
+
+```ts file=./samples/with-semaphore-logging.ts
+
+```
+
+:::info
+Arguments are forwarded to the log untouched. Use a log whose transport drops metadata when semaphore keys are considered sensitive.
 :::

@@ -12,6 +12,7 @@ describe("function: withInvalidationFactory", () => {
     const cacheResolver = {
         use: vi.fn((_adapter?: "memory" | "secondary") => cache),
     };
+
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();

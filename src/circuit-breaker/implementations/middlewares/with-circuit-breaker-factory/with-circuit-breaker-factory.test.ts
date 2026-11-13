@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { CIRCUIT_BREAKER_TRIGGER } from "@/circuit-breaker/contracts/_module-exports.js";
 import { NoOpCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/no-op-circuit-breaker-adapter/_module-exports.js";
@@ -17,10 +17,8 @@ describe("function: withCircuitBreakerFactory", () => {
             adapters: { memory: new NoOpCircuitBreakerAdapter() },
             defaultAdapter: "memory",
         });
+    circuitBreakerFactoryResolver.init();
 
-    beforeAll(() => {
-        circuitBreakerFactoryResolver.init();
-    });
     beforeEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();
@@ -102,6 +100,23 @@ describe("function: withCircuitBreakerFactory", () => {
         );
 
         expect(await wrapped("2", "3")).toBe("2-3");
+    });
+    test("Should use the default adapter when use is not called", async () => {
+        const spy = vi.spyOn(circuitBreakerFactoryResolver, "use");
+
+        const withCircuitBreaker = withCircuitBreakerFactory(
+            circuitBreakerFactoryResolver,
+        );
+
+        async function fn(_value: string): Promise<void> {}
+        await use(
+            fn,
+            withCircuitBreaker({
+                key: ([value]) => value,
+            }),
+        )("value");
+
+        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
     });
     test("Should select the adapter passed to use", async () => {
         const spy = vi.spyOn(circuitBreakerFactoryResolver, "use");

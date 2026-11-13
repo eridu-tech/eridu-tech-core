@@ -63,32 +63,6 @@ describe("function: withBeforeHook", () => {
         );
         await expect(fn("world")).resolves.toBe("Hello WORLD");
     });
-    test("Should not await the hook when detach is true", async () => {
-        const wrappedFn = vi.fn((name: string): Promise<string> =>
-            Promise.resolve(name),
-        );
-        const hook = vi.fn(async () => {
-            await new Promise<void>(() => {});
-        });
-        const fn = use(wrappedFn, withBeforeHook<[string], string>(hook, true));
-        await expect(fn("world")).resolves.toBe("world");
-        expect(wrappedFn).toHaveBeenCalledExactlyOnceWith("world");
-        expect(hook).toHaveBeenCalledOnce();
-    });
-    test("Should ignore the hook returned arguments when detach is true", async () => {
-        const wrappedFn = vi.fn((name: string): Promise<string> =>
-            Promise.resolve(name),
-        );
-        const fn = use(
-            wrappedFn,
-            withBeforeHook<[string], string>(
-                ([name]: [string]): [string] => [name.trim()],
-                true,
-            ),
-        );
-        await expect(fn("  world  ")).resolves.toBe("  world  ");
-        expect(wrappedFn).toHaveBeenCalledExactlyOnceWith("  world  ");
-    });
     test("Should accept an invocable object as hook", async () => {
         const invoke = vi.fn(([name]: [string]): [string] => [name.trim()]);
         const fn = use(
@@ -190,19 +164,5 @@ describe("function: withBeforeHook", () => {
             withBeforeHook<[string], string>(() => {}),
         );
         await expect(fn("world")).rejects.toBe(error);
-    });
-    test("Should propagate a synchronous hook error when detach is true", async () => {
-        const hookError = new Error("hook error");
-        const wrappedFn = vi.fn((name: string): Promise<string> =>
-            Promise.resolve(name),
-        );
-        const fn = use(
-            wrappedFn,
-            withBeforeHook<[string], string>(() => {
-                throw hookError;
-            }, true),
-        );
-        await expect(fn("world")).rejects.toBe(hookError);
-        expect(wrappedFn).not.toHaveBeenCalled();
     });
 });

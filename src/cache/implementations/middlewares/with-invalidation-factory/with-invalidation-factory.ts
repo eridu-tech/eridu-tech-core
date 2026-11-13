@@ -21,7 +21,7 @@ export type RemoveCacheResolver<TAdapters extends string = string> = {
      * @param adapter - The adapter to use. Defaults to the resolver's default
      * adapter.
      */
-    use(adapter?: TAdapters): Pick<ICache, "remove">;
+    use(adapterName?: TAdapters): Pick<ICache, "remove">;
 };
 
 /**
@@ -82,7 +82,7 @@ export type WithInvalidationResolver<TAdapters extends string = string> = {
      * @param adapter - The adapter to use. Defaults to the resolver's default
      * adapter.
      */
-    use(adapter?: TAdapters): WithInvalidation;
+    use(adapterName?: TAdapters): WithInvalidation;
 };
 
 /**
@@ -104,14 +104,14 @@ export function withInvalidationFactory<TAdapters extends string = string>(
     cacheResolver: RemoveCacheResolver<TAdapters>,
 ): WithInvalidation & WithInvalidationResolver<TAdapters> {
     const withInvalidationResolver: WithInvalidationResolver<TAdapters>["use"] =
-        function use(adapter?: TAdapters): WithInvalidation {
+        (adapterName) => {
             return (settings) => {
                 const { key, shouldInvalidate = () => true } = settings;
                 return async ({ next, args }) => {
                     const value = await next();
                     if (callInvocable(shouldInvalidate, args, value)) {
                         await cacheResolver
-                            .use(adapter)
+                            .use(adapterName)
                             .remove(callInvocable(key, args));
                     }
                     return value;

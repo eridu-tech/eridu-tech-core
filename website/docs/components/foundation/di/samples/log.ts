@@ -1,20 +1,20 @@
-export interface ILogger {
+export interface ILog {
     log(message: string): void;
 }
 
-export class Logger implements ILogger {
+export class Log implements ILog {
     log(message: string): void {
         /* ... */
     }
 }
 
-export class ConsoleLogger implements ILogger {
+export class ConsoleLog implements ILog {
     log(message: string): void {
         /* ... */
     }
 }
 
-export class FileLogger implements ILogger {
+export class FileLog implements ILog {
     log(message: string): void {
         /* ... */
     }

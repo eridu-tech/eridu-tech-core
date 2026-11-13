@@ -28,12 +28,12 @@ export type BeforeHookSync<
     Invocable<[args: TParameters], TParameters | void>;
 
 /**
- * Creates a synchronous middleware that runs a {@link BeforeHookSync | `BeforeHookSync`} before
+ * Creates a synchronous middleware that runs an {@link BeforeHookSync | `BeforeHookSync`} before
  * the wrapped function.
  *
- * Unlike {@link withBeforeHook | `withBeforeHook`} the hook must be synchronous and there is no
- * `detach` option: the hook is always invoked before the wrapped function and the wrapped function
- * receives the returned arguments (or the original ones when the hook returns nothing).
+ * Unlike {@link withBeforeHook | `withBeforeHook`} the hook must be synchronous. It is always
+ * invoked before the wrapped function, which then receives the returned arguments (or the original
+ * ones when the hook returns nothing).
  *
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  * @typeParam TReturn - Return type of the wrapped function

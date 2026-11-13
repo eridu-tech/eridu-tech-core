@@ -16,6 +16,7 @@ import type { Invocable, Promisable } from "@/utilities/_module-exports.js";
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  *
  * @see {@link withBeforeHook | `withBeforeHook`}
+ * @see {@link BeforeHookSync | `BeforeHookSync`}
  *
  * IMPORT_PATH: `eridu-tech/middleware`
  * @group Implementations
@@ -28,28 +29,24 @@ export type BeforeHook<TParameters extends Array<unknown> = Array<unknown>> =
  * Creates middleware that runs a {@link BeforeHook | `BeforeHook`} before the wrapped function.
  *
  * The hook receives the arguments before execution and can replace them by returning a new tuple.
- * Returning nothing keeps the original arguments.
+ * Returning nothing keeps the original arguments. The hook is always awaited before the wrapped
+ * function is invoked.
  *
  * @typeParam TParameters - Tuple type of the arguments passed to the wrapped function
  * @typeParam TReturn - Return type of the wrapped function
  * @param callback - Hook invoked with the arguments before execution
- * @param detach - When `true`, the hook runs without being awaited and cannot change the arguments. Defaults to `false`
  * @returns Middleware function that applies the before hook
  *
  * @see {@link BeforeHook | `BeforeHook`}
+ * @see {@link withBeforeHookSync | `withBeforeHookSync`}
  *
  * IMPORT_PATH: `eridu-tech/middleware`
  * @group Implementations
  */
 export function withBeforeHook<TParameters extends Array<unknown>, TReturn>(
     callback: BeforeHook<NoInfer<TParameters>>,
-    detach = false,
 ): MiddlewareFn<TParameters, Promise<TReturn>> {
     return async ({ next, args }) => {
-        if (detach) {
-            void callInvocable(callback, args);
-            return next();
-        }
         const newArgs = await callInvocable(callback, args);
         return next(newArgs ?? args);
     };

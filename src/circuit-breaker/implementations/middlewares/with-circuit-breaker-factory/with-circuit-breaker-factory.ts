@@ -104,7 +104,7 @@ export type WithCircuitBreakerResolver<TAdapters extends string = string> = {
      * adapter.
      * @returns A {@link WithCircuitBreaker} bound to the selected adapter.
      */
-    use(adapter?: TAdapters): WithCircuitBreaker;
+    use(adapterName?: TAdapters): WithCircuitBreaker;
 };
 
 /**
@@ -130,12 +130,12 @@ export function withCircuitBreakerFactory<TAdapters extends string = string>(
     circuitBreakerFactoryResolver: CreateCircuitBreakerResolver<TAdapters>,
 ): WithCircuitBreaker & WithCircuitBreakerResolver<TAdapters> {
     const withCircuitBreakerResolver: WithCircuitBreakerResolver<TAdapters>["use"] =
-        function use(adapter?: TAdapters): WithCircuitBreaker {
+        (adapterName) => {
             return (settings) => {
                 const { key, ...rest } = settings;
                 return ({ next, args }) => {
                     return circuitBreakerFactoryResolver
-                        .use(adapter)
+                        .use(adapterName)
                         .create(callInvocable(key, args), rest)
                         .runOrFail(next);
                 };

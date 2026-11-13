@@ -1,4 +1,4 @@
 import { bindHttpMiddleware, router } from "./container.js";
-import { requestLoggerToken } from "./middleware.js";
+import { requestLogToken } from "./middleware.js";
 
-router.use(bindHttpMiddleware(requestLoggerToken));
+router.use(bindHttpMiddleware(requestLogToken));

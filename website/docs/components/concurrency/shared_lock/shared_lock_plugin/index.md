@@ -9,6 +9,7 @@ keywords:
     - SharedLock
     - Plugins
     - withSharedLockPrefix
+    - withSharedLockLogging
 ---
 
 # SharedLock Plugins
@@ -66,4 +67,41 @@ Because `withPlugin` uses `enhance` under the hood, the same edge case applies: 
 
 :::info
 For more information about the `withPlugin` function and applying plugins to adapters, see the [Middleware plugin](/docs/components/foundation/middleware/#plugin) documentation.
+:::
+
+## withSharedLockLogging plugin
+
+The SharedLock logging plugin intercepts every call to a shared lock adapter and reports it to an `ILog`. Any shared lock backend becomes a source of observable events without changing the adapter implementation.
+
+### Use cases
+
+- **Reader/writer diagnostics** - See which readers and writers acquire, refresh and release, and in what order
+- **Contention analysis** - Correlate failed reader and writer acquisitions with the keys that caused them
+- **Auditing** - Keep a record of forced releases and state lookups
+
+### How it works
+
+The `withSharedLockLogging` function returns a [`PluginFn`](/docs/components/foundation/middleware) that calls `enhance` on every adapter method. It only uses the `debug` and `error` methods of the log, so any [`ILog`](/docs/components/observability/log/logger_usage) can be passed in.
+
+A successful call logs a `debug` entry named `shared-lock.<methodName> succeeded`, after merging the call arguments and the returned value into the metadata as `shared-lock.args` and `shared-lock.result`. A failed call logs an `error` entry named `shared-lock.<methodName> failed` with the call arguments and the thrown value, then re-throws the error so the adapter keeps failing exactly as it did before. Every call also runs inside the `shared-lock.adapter` scoped metadata, which holds the adapter class name, so entries from several adapters sharing one log stay distinguishable.
+
+| Method          | Logged arguments |
+| --------------- | ---------------- |
+| `acquireReader` | All arguments    |
+| `acquireWriter` | All arguments    |
+| `forceRelease`  | All arguments    |
+| `getState`      | All arguments    |
+| `refreshReader` | All arguments    |
+| `refreshWriter` | All arguments    |
+| `releaseReader` | All arguments    |
+| `releaseWriter` | All arguments    |
+
+### Usage
+
+```ts file=./samples/with-shared-lock-logging.ts
+
+```
+
+:::info
+Arguments are forwarded to the log untouched. Use a log whose transport drops metadata when shared lock keys are considered sensitive.
 :::

@@ -21,10 +21,10 @@ const createUser = use(
     }),
 );
 
-// With `detach` set to `true` the hook is fired without being awaited.
-const createUserDetached = use(
+// A synchronous hook is also supported, and is awaited before the error is re-thrown.
+const createUserWithLogging = use(
     saveUser,
     withOnError<[name: string], User>(([name], error) => {
         console.error(`Failed to save user with name: ${name}`, error);
-    }, true),
+    }),
 );
