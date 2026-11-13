@@ -1,5 +1,5 @@
 /**
- * @module Logger
+ * @module Log
  */
 
 import { LOG_LEVEL } from "@/log/contracts/_module-exports.js";

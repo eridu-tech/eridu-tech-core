@@ -1,5 +1,5 @@
 /**
- * @module Logger
+ * @module Log
  */
 import { fileURLToPath } from "node:url";
 

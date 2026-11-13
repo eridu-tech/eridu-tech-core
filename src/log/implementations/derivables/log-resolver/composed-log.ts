@@ -1,5 +1,5 @@
 /**
- * @module Logger
+ * @module Log
  */
 
 import { UnableToLogError } from "@/log/contracts/_module-exports.js";

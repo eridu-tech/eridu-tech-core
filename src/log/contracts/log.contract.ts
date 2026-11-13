@@ -1,5 +1,5 @@
 /**
- * @module Logger
+ * @module Log
  */
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

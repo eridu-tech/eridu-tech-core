@@ -1,5 +1,5 @@
 /**
- * @module Logger
+ * @module Log
  */
 import type { LogMetadata } from "@/log/contracts/log.contract.js";
 import type { TimeSpan } from "@/time-span/implementations/_module-exports.js";
