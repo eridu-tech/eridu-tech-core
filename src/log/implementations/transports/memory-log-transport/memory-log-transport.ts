@@ -14,7 +14,7 @@ import type {
  *
  * Useful in tests to assert on the entries a log produced.
  *
- * IMPORT_PATH: `"eridu-tech/logger/memory-log-transport"`
+ * IMPORT_PATH: `"eridu-tech/log/memory-log-transport"`
  * @group Transports
  */
 export class MemoryLogTransport implements ILogTransport {

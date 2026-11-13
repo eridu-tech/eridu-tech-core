@@ -33,7 +33,7 @@ const LOG_LAYER_LEVELS: Record<AllLogLevels, LogLevelType> = {
  * Configuration for `LogLayerLogTransport`.
  * Requires a LogLayer instance that receives the entries.
  *
- * IMPORT_PATH: `"eridu-tech/logger/loglayer-log-transport"`
+ * IMPORT_PATH: `"eridu-tech/log/loglayer-log-transport"`
  * @group Transports
  */
 export type LogLayerLogTransportSettings = {
@@ -61,7 +61,7 @@ export type LogLayerLogTransportSettings = {
  * (the default); spans are attached as milliseconds. Logged values are passed
  * through untouched, leaving serialization to LogLayer.
  *
- * IMPORT_PATH: `"eridu-tech/logger/loglayer-log-transport"`
+ * IMPORT_PATH: `"eridu-tech/log/loglayer-log-transport"`
  * @group Transports
  */
 export class LogLayerLogTransport implements ILogTransport {

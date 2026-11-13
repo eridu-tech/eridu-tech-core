@@ -20,7 +20,7 @@ import type { Lazy } from "@/utilities/_module-exports.js";
 /**
  * Settings used to construct a {@link ProxyLogResolver}.
  *
- * IMPORT_PATH: `"eridu-tech/logger/di"`
+ * IMPORT_PATH: `"eridu-tech/log/di"`
  * @group Derivables
  */
 export type ProxyLogResolverSettings<TTransports extends string = string> = {
@@ -59,7 +59,7 @@ export type ProxyLogResolverSettings<TTransports extends string = string> = {
  *
  * @template TTransports - Union type of the registered transport names.
  *
- * IMPORT_PATH: `"eridu-tech/logger/di"`
+ * IMPORT_PATH: `"eridu-tech/log/di"`
  * @group Derivables
  */
 export class ProxyLogResolver<TTransports extends string = string>

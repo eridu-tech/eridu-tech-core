@@ -7,7 +7,7 @@ import type { UnableToLogError } from "@/log/contracts/log.errors.js";
 import type { Lazy } from "@/utilities/_module-exports.js";
 
 /**
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type LogMetadata = Partial<Record<string, unknown>>;
@@ -15,7 +15,7 @@ export type LogMetadata = Partial<Record<string, unknown>>;
 /**
  * Extra information attached to a single log entry, alongside its messages.
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type LogExtraInfo = {
@@ -34,7 +34,7 @@ export type LogExtraInfo = {
  * Extra information for failure entries logged by `warn`, `error`, and
  * `fatal`. Extends {@link LogExtraInfo | `LogExtraInfo`} with error details.
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type FailureLogExtraInfo = LogExtraInfo & {
@@ -49,7 +49,7 @@ export type FailureLogExtraInfo = LogExtraInfo & {
  * apply to every entry logged inside the invocation, and `span` names the span
  * that measures its duration.
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type RunLogSettings = LogExtraInfo & {
@@ -70,7 +70,7 @@ export type RunLogSettings = LogExtraInfo & {
  * The contract is backend agnostic: `ILogTransport` describes how entries
  * are forwarded to an actual logging system.
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type ILog = {

@@ -6,7 +6,7 @@
  * The error is thrown when a transport fails to log an entry.
  * The original transport error is preserved in the `cause` property.
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Errors
  */
 export class UnableToLogError extends Error {

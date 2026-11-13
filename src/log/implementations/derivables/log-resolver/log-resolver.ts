@@ -23,7 +23,7 @@ import type { IInitizable, OneOrMore } from "@/utilities/_module-exports.js";
  * corresponding value is one transport or an iterable of transports that are
  * merged for that alias.
  *
- * IMPORT_PATH: `"eridu-tech/logger"`
+ * IMPORT_PATH: `"eridu-tech/log"`
  * @group Derivables
  */
 export type LogTransports<TTransports extends string = string> = Partial<
@@ -34,7 +34,7 @@ export type LogTransports<TTransports extends string = string> = Partial<
  * Configuration for `LogResolver`.
  * Registers named log transports and designates a default.
  *
- * IMPORT_PATH: `"eridu-tech/logger"`
+ * IMPORT_PATH: `"eridu-tech/log"`
  * @group Derivables
  */
 export type LogResolverSettings<TTransports extends string = string> =
@@ -60,7 +60,7 @@ export type LogResolverSettings<TTransports extends string = string> =
  * Creates a log for each registered transport alias.
  * Call `init()` before selecting a log.
  *
- * IMPORT_PATH: `"eridu-tech/logger"`
+ * IMPORT_PATH: `"eridu-tech/log"`
  * @group Derivables
  */
 export class LogResolver<TTransports extends string = string>

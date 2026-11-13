@@ -17,7 +17,7 @@ import type { OneOrMore } from "@/utilities/_module-exports.js";
  *
  * @template TTransports - Union type of registered transport names (e.g., "console" | "no-op")
  *
- * IMPORT_PATH: `"eridu-tech/logger/contracts"`
+ * IMPORT_PATH: `"eridu-tech/log/contracts"`
  * @group Contracts
  */
 export type ILogResolver<TTransports extends string = string> = {

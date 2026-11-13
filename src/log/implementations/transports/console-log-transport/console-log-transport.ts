@@ -18,7 +18,7 @@ import type {
  * using `console.error` and `verbose` using `console.trace`. `loggedAt` is
  * rendered as a `Date` and spans in milliseconds.
  *
- * IMPORT_PATH: `"eridu-tech/logger/console-log-transport"`
+ * IMPORT_PATH: `"eridu-tech/log/console-log-transport"`
  * @group Transports
  */
 export class ConsoleLogTransport implements ILogTransport {

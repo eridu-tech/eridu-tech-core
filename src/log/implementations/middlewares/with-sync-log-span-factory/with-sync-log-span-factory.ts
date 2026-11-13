@@ -15,7 +15,7 @@ import type { MiddlewareFn } from "@/middleware/contracts/_module-exports.js";
  * @typeParam TParameters - Arguments of the wrapped function.
  * @typeParam TReturn - Return type of the wrapped function.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithSyncLogSpan = <TParameters extends Array<unknown>, TReturn>(
@@ -30,7 +30,7 @@ export type WithSyncLogSpan = <TParameters extends Array<unknown>, TReturn>(
  *
  * @typeParam TTransports - Union type of the registered transport names.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export type WithSyncLogSpanResolver<TTransports extends string = string> = {
@@ -55,7 +55,7 @@ export type WithSyncLogSpanResolver<TTransports extends string = string> = {
  * @returns A {@link WithSyncLogSpan} that is also a
  *          {@link WithSyncLogSpanResolver}.
  *
- * IMPORT_PATH: `"eridu-tech/logger/middlewares"`
+ * IMPORT_PATH: `"eridu-tech/log/middlewares"`
  * @group Middlewares
  */
 export function withSyncLogSpanFactory<TTransports extends string = string>(
