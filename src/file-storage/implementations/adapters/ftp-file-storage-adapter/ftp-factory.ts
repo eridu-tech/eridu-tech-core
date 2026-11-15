@@ -86,8 +86,18 @@ export class FtpFactory implements IResourceFactory<Client> {
         return callInvocable(clientFactory, settings);
     }
 
-    destroy(client: Client): void {
+    async destroy(client: Client): Promise<void> {
+        const socket = client.ftp.socket;
+        const isSocketClosed = socket.closed;
         client.close();
+        if (isSocketClosed) {
+            return;
+        }
+        await new Promise<void>((resolve) => {
+            socket.once("close", () => {
+                resolve();
+            });
+        });
     }
 
     async validate(client: Client): Promise<boolean> {

@@ -1,5 +1,5 @@
 import { GenericContainer, Wait } from "testcontainers";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { SftpFileStorageAdapter } from "@/file-storage/implementations/adapters/sftp-file-storage-adapter/sftp-file-storage-adapter.js";
 import { sftpPool } from "@/file-storage/implementations/adapters/sftp-file-storage-adapter/sftp-pool.js";
@@ -58,6 +58,64 @@ describe("class: SftpFileStorageAdapter", () => {
         expect,
         describe,
         enableGetMetaData: false,
+    });
+    describe("method: getStream", () => {
+        const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+
+        async function putFile(key: string): Promise<void> {
+            await adapter_.put(key, {
+                data,
+                cacheControl: null,
+                contentDisposition: null,
+                contentEncoding: null,
+                contentLanguage: null,
+                contentType: "text/plain",
+                fileSizeInBytes: data.length,
+            });
+        }
+
+        async function getStreamOrThrow(
+            key: string,
+        ): Promise<AsyncIterable<Uint8Array>> {
+            const stream = await adapter_.getStream(key);
+            if (stream === null) {
+                throw new Error("Expected a stream but got null");
+            }
+            return stream;
+        }
+
+        test("Should acquire exactly one client for a consumed stream", async () => {
+            const key = "a";
+            await putFile(key);
+            const acquireSpy = vi.spyOn(pool, "acquireOrFail");
+
+            const stream = await getStreamOrThrow(key);
+            for await (const _chunk of stream) {
+                // consume everything
+            }
+
+            expect(acquireSpy).toHaveBeenCalledOnce();
+        });
+        test("Should acquire exactly one client when the consumer stops iterating early", async () => {
+            const key = "a";
+            await putFile(key);
+            const acquireSpy = vi.spyOn(pool, "acquireOrFail");
+
+            const stream = await getStreamOrThrow(key);
+            for await (const _chunk of stream) {
+                break;
+            }
+
+            expect(acquireSpy).toHaveBeenCalledOnce();
+        });
+        test("Should acquire exactly one client when the key does not exists", async () => {
+            const acquireSpy = vi.spyOn(pool, "acquireOrFail");
+
+            const result = await adapter_.getStream("a");
+
+            expect(result).toBeNull();
+            expect(acquireSpy).toHaveBeenCalledOnce();
+        });
     });
     describe("method: getMetadata", () => {
         test("Should return null when key does not exists", async () => {

@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 
 import { QueuePool } from "@/generic-pool/implementations/queue-pool/_module.js";
+import { iterableToAsyncIterable } from "@/utilities/functions/iterable-to-async-iterable.js";
 
 import type { Mock } from "vitest";
 
@@ -415,6 +416,94 @@ describe("class: QueuePool", () => {
             const client = await pool.acquireOrFail();
 
             expect(client).toBe(created[0]);
+            expect(create).toHaveBeenCalledOnce();
+        });
+    });
+    describe("method: runStream", () => {
+        test("Should return a stream that yields the wrapped stream values and release the client", async () => {
+            const { create, destroy, created } = createFactorySpies();
+            const pool = new QueuePool(
+                { create, destroy },
+                { maxResources: 1 },
+            );
+
+            const stream = await pool.runStream({
+                stream: iterableToAsyncIterable([1, 2, 3]),
+            });
+            const result: Array<number> = [];
+            for await (const value of stream) {
+                result.push(value);
+            }
+            const client = await pool.acquireOrFail();
+
+            expect(result).toEqual([1, 2, 3]);
+            expect(client).toBe(created[0]);
+            expect(create).toHaveBeenCalledOnce();
+        });
+        test("Should release the client when the consumer stops iterating early", async () => {
+            const { create, destroy, created } = createFactorySpies();
+            const pool = new QueuePool(
+                { create, destroy },
+                { maxResources: 1 },
+            );
+
+            const stream = await pool.runStream({
+                stream: iterableToAsyncIterable([1, 2, 3]),
+            });
+            for await (const _value of stream) {
+                break;
+            }
+            const client = await pool.acquireOrFail();
+
+            expect(client).toBe(created[0]);
+            expect(create).toHaveBeenCalledOnce();
+        });
+        test("Should release the client when the wrapped stream throws", async () => {
+            const { create, destroy, created } = createFactorySpies();
+            const pool = new QueuePool(
+                { create, destroy },
+                { maxResources: 1 },
+            );
+
+            function* yieldThenThrow(): Generator<number> {
+                yield 1;
+                throw new Error("Stream failed");
+            }
+
+            const consume = async () => {
+                const stream = await pool.runStream({
+                    stream: iterableToAsyncIterable(yieldThenThrow()),
+                });
+                for await (const _value of stream) {
+                    // consume until the wrapped stream throws
+                }
+            };
+
+            await expect(consume()).rejects.toThrow("Stream failed");
+
+            const client = await pool.acquireOrFail();
+
+            expect(client).toBe(created[0]);
+            expect(create).toHaveBeenCalledOnce();
+        });
+        test("Should release the provided client without acquiring another one", async () => {
+            const { create, destroy } = createFactorySpies();
+            const pool = new QueuePool(
+                { create, destroy },
+                { maxResources: 2 },
+            );
+            const client = await pool.acquireOrFail();
+
+            const stream = await pool.runStream({
+                stream: iterableToAsyncIterable([1]),
+                client,
+            });
+            for await (const _value of stream) {
+                // consume everything
+            }
+            const releasedClient = await pool.acquireOrFail();
+
+            expect(releasedClient).toBe(client);
             expect(create).toHaveBeenCalledOnce();
         });
     });

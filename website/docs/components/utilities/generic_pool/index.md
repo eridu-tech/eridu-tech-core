@@ -15,7 +15,7 @@ The `eridu-tech/generic-pool` component reuses expensive resources instead of cr
 The contracts are exported from `eridu-tech/generic-pool/contracts`:
 
 - `IResourceFactory` creates a resource, destroys it and optionally validates it before it is reused.
-- `IGenericPoolBase` borrows a client with `acquireOrFail()`, returns it with `release()` and runs a callback with a client through `run()`.
+- `IGenericPoolBase` borrows a client with `acquireOrFail()`, returns it with `release()`, runs a callback with a client through `run()`, and holds a client for the lifetime of a stream through `runStream()`.
 - `IGenericPool` extends `IGenericPoolBase` with `close()`.
 
 ## QueuePool
@@ -40,6 +40,14 @@ Instead of `run()`, you can borrow a client manually. Always release it when you
 ```ts file=./samples/queue-pool-acquire-release.ts
 
 ```
+
+`run()` releases the client when the callback returns, which is too early for a stream that the caller keeps reading. `runStream()` keeps the client until the stream ends, whether it was read to the end, stopped early or failed, and releases it exactly once. The returned async iterable yields the same chunks as the stream you pass in:
+
+```ts file=./samples/queue-pool-run-stream.ts
+
+```
+
+`RunStreamSettings` has two fields: `stream`, the async iterable to bind, and `client`, a client you already acquired. When `client` is omitted, the pool acquires one and releases it when the stream ends.
 
 A recycled connection is checked with the optional `IResourceFactory.validate()`. When it returns `false` or throws, the connection is ended and replaced, and the caller goes back to the front of the queue. Here `cwd()` reports whether the connection still responds:
 
@@ -71,7 +79,7 @@ Closing the pool ends all idle connections and rejects every waiting caller. Con
 
 ## Usage in the library
 
-The FTP and SFTP file storage adapters use this component to pool their clients, so concurrent operations do not share one connection. For SFTP, `SftpFactory` is an `IResourceFactory<SftpClient>` and `sftpPool()` combines it with a pool, both available from `eridu-tech/file-storage/sftp-file-storage-adapter`.
+The FTP and SFTP file storage adapters use this component to pool their clients, so concurrent operations do not share one connection. Both adapters hand the stream they return to `runStream()`, so the client is not released while the stream is still being read. For SFTP, `SftpFactory` is an `IResourceFactory<SftpClient>` and `sftpPool()` combines it with a pool, both available from `eridu-tech/file-storage/sftp-file-storage-adapter`.
 
 ## Further information
 
