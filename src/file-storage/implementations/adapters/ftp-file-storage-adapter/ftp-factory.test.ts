@@ -74,7 +74,7 @@ describe("class: FtpFactory", () => {
 
             await expect(client.pwd()).resolves.toEqual(expect.any(String));
 
-            factory.destroy(client);
+            await factory.destroy(client);
         });
         test("Should connect over TLS when the client factory upgrades the connection", async () => {
             const tlsFactory = new FtpFactory({
@@ -105,7 +105,7 @@ describe("class: FtpFactory", () => {
                 ]),
             );
 
-            tlsFactory.destroy(client);
+            await tlsFactory.destroy(client);
         });
         test("Should reject when the credentials are invalid", async () => {
             const invalidFactory = new FtpFactory({
@@ -122,11 +122,11 @@ describe("class: FtpFactory", () => {
             const result = await factory.validate(client);
 
             expect(result).toBe(true);
-            factory.destroy(client);
+            await factory.destroy(client);
         });
         test("Should return false when the client is closed", async () => {
             const client = await factory.create();
-            factory.destroy(client);
+            await factory.destroy(client);
 
             const result = await factory.validate(client);
 
@@ -137,7 +137,7 @@ describe("class: FtpFactory", () => {
         test("Should close the client connection", async () => {
             const client = await factory.create();
 
-            factory.destroy(client);
+            await factory.destroy(client);
 
             await expect(client.pwd()).rejects.toThrow();
         });

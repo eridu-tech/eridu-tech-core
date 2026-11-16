@@ -4,10 +4,12 @@
 
 import { UnableToAcquireError } from "@/generic-pool/contracts/_module-exports.js";
 import { callInvocable } from "@/utilities/_module-exports.js";
+import { OnStreamEnd } from "@/utilities/on-stream-end.js";
 
 import type {
     IGenericPool,
     IResourceFactory,
+    RunStreamSettings,
 } from "@/generic-pool/contracts/_module-exports.js";
 import type { Invocable, Promisable } from "@/utilities/_module-exports.js";
 
@@ -136,7 +138,7 @@ export class QueuePool<TClient> implements IGenericPool<TClient> {
     /**
      * Releasing a client that was not acquired from the pool is a no-op.
      */
-    async release(client: TClient): Promise<void> {
+    private async _release(client: TClient): Promise<void> {
         if (!this.borrowedClients.delete(client)) {
             return;
         }
@@ -149,10 +151,10 @@ export class QueuePool<TClient> implements IGenericPool<TClient> {
         this.dispense();
     }
 
-    /**
-     * Destroys all idle clients and rejects all waiting callers. Clients that are in use
-     * are destroyed when they are released.
-     */
+    async release(client: TClient): Promise<void> {
+        return this._release(client);
+    }
+
     async close(): Promise<void> {
         if (this.isClosed) {
             return;
@@ -288,7 +290,14 @@ export class QueuePool<TClient> implements IGenericPool<TClient> {
         try {
             return await callInvocable(fn, client);
         } finally {
-            await this.release(client);
+            await this._release(client);
         }
+    }
+
+    async runStream<TValue>(
+        settings: RunStreamSettings<TValue, TClient>,
+    ): Promise<AsyncIterable<TValue>> {
+        const client = settings.client ?? (await this.acquireOrFail());
+        return new OnStreamEnd(settings.stream, () => this._release(client));
     }
 }

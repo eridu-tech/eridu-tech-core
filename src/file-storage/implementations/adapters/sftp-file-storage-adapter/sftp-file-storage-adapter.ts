@@ -4,14 +4,14 @@
 
 import * as posix from "node:path/posix";
 import * as win32 from "node:path/win32";
-import { Readable, finished } from "node:stream";
+import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
 import etag from "etag";
 
 import { Base64UrlCodec } from "@/codec/implementations/base-64-url-codec/_module-exports.js";
 import { FsKeyPathMapper } from "@/file-storage/implementations/adapters/_shared/_module.js";
-import { UnexpectedError } from "@/utilities/errors.js";
+import { UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type SftpClient from "ssh2-sftp-client";
 
@@ -210,12 +210,10 @@ export class SftpFileStorageAdapter implements IFileStorageAdapter {
             return null;
         }
 
-        const readStream = client.createReadStream(filePath);
-        const cleanup = finished(readStream, () => {
-            cleanup();
-            void this.pool.release(client);
+        return this.pool.runStream<Uint8Array>({
+            stream: client.createReadStream(filePath),
+            client,
         });
-        return readStream;
     }
 
     async getBytes(key: string): Promise<Uint8Array | null> {
