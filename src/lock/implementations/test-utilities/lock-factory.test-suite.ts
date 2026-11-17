@@ -378,6 +378,238 @@ export function lockFactoryTestSuite(
                     );
                 });
             });
+            describe("method: runStream", () => {
+                const VALUES = ["a", "b", "c"];
+
+                class StreamError extends Error {}
+
+                function createStream(): AsyncIterable<string> {
+                    return {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            for (const value of VALUES) {
+                                yield await Promise.resolve(value);
+                            }
+                        },
+                    };
+                }
+
+                async function collect(
+                    stream: AsyncIterable<string>,
+                ): Promise<Array<string>> {
+                    const result: Array<string> = [];
+                    for await (const value of stream) {
+                        result.push(value);
+                    }
+                    return result;
+                }
+
+                test("Should yield every value of the stream", async () => {
+                    const key = "a";
+                    const ttl = null;
+
+                    const result = await collect(
+                        lockFactory
+                            .create(key, { ttl })
+                            .runStream(createStream()),
+                    );
+
+                    expect(result).toEqual(VALUES);
+                });
+                test("Should not call acquireOrFail before the stream is iterated", () => {
+                    const key = "a";
+                    const ttl = null;
+                    const lock = lockFactory.create(key, { ttl });
+
+                    const acquireSpy = vi.spyOn(lock, "acquireOrFail");
+
+                    lock.runStream(createStream());
+
+                    expect(acquireSpy).not.toHaveBeenCalled();
+                });
+                test("Should not call release when the stream is never iterated", () => {
+                    const key = "a";
+                    const ttl = null;
+                    const lock = lockFactory.create(key, { ttl });
+
+                    const releaseSpy = vi.spyOn(lock, "release");
+
+                    lock.runStream(createStream());
+
+                    expect(releaseSpy).not.toHaveBeenCalled();
+                });
+                test("Should call acquireOrFail method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const lock = lockFactory.create(key, { ttl });
+
+                    const acquireSpy = vi.spyOn(lock, "acquireOrFail");
+
+                    await collect(lock.runStream(createStream()));
+
+                    expect(acquireSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call release method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const lock = lockFactory.create(key, { ttl });
+
+                    const releaseSpy = vi.spyOn(lock, "release");
+
+                    await collect(lock.runStream(createStream()));
+
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call acquireOrFail before release method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const lock = lockFactory.create(key, { ttl });
+
+                    const acquireSpy = vi.spyOn(lock, "acquireOrFail");
+                    const releaseSpy = vi.spyOn(lock, "release");
+
+                    await collect(lock.runStream(createStream()));
+
+                    expect(acquireSpy).toHaveBeenCalledBefore(releaseSpy);
+                });
+                test("Should call release after acquireOrFail method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const lock = lockFactory.create(key, { ttl });
+
+                    const releaseSpy = vi.spyOn(lock, "release");
+                    const acquireSpy = vi.spyOn(lock, "acquireOrFail");
+
+                    await collect(lock.runStream(createStream()));
+
+                    expect(releaseSpy).toHaveBeenCalledAfter(acquireSpy);
+                });
+                test("Should call release when the consumer stops iterating early", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const lock = lockFactory.create(key, { ttl });
+
+                    const releaseSpy = vi.spyOn(lock, "release");
+
+                    for await (const _value of lock.runStream(createStream())) {
+                        break;
+                    }
+
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call release when the stream throws", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const lock = lockFactory.create(key, { ttl });
+
+                    const releaseSpy = vi.spyOn(lock, "release");
+
+                    const stream: AsyncIterable<string> = {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            yield await Promise.resolve("a");
+                            throw new StreamError();
+                        },
+                    };
+
+                    const consume = async () => {
+                        for await (const _value of lock.runStream(stream)) {
+                            // consume until the stream throws
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(StreamError);
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should propagate thrown error", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const lock = lockFactory.create(key, { ttl });
+
+                    const stream: AsyncIterable<string> = {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            yield await Promise.resolve("a");
+                            throw new StreamError();
+                        },
+                    };
+
+                    const consume = async () => {
+                        for await (const _value of lock.runStream(stream)) {
+                            // consume until the stream throws
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(StreamError);
+                });
+                test("Should call acquireOrFail when key is expired", async () => {
+                    const key = "a";
+                    const ttl = TimeSpan.fromMilliseconds(50);
+
+                    await lockFactory.create(key, { ttl }).acquire();
+                    await delayWithBuffer(ttl);
+
+                    const lock = lockFactory.create(key, { ttl });
+                    const acquireSpy = vi.spyOn(lock, "acquireOrFail");
+
+                    await collect(lock.runStream(createStream()));
+
+                    expect(acquireSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should throw FailedAcquireLockError when key is unexpireable and acquired by different lock-id", async () => {
+                    const key = "a";
+                    const ttl = null;
+
+                    await lockFactory.create(key, { ttl }).acquire();
+
+                    const consume = async () => {
+                        for await (const _value of lockFactory
+                            .create(key, { ttl })
+                            .runStream(createStream())) {
+                            // the lock cannot be acquired
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(
+                        FailedAcquireLockError,
+                    );
+                });
+                test("Should throw FailedAcquireLockError when key is unexpired and acquired by different lock-id", async () => {
+                    const key = "a";
+                    const ttl = TimeSpan.fromMilliseconds(50);
+
+                    await lockFactory.create(key, { ttl }).acquire();
+
+                    const consume = async () => {
+                        for await (const _value of lockFactory
+                            .create(key, { ttl })
+                            .runStream(createStream())) {
+                            // the lock cannot be acquired
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(
+                        FailedAcquireLockError,
+                    );
+                });
+                test("Should not yield values when key is unexpireable and acquired by different lock-id", async () => {
+                    const key = "a";
+                    const ttl = null;
+
+                    await lockFactory.create(key, { ttl }).acquire();
+                    const result: Array<string> = [];
+                    try {
+                        for await (const value of lockFactory
+                            .create(key, { ttl })
+                            .runStream(createStream())) {
+                            result.push(value);
+                        }
+                    } catch (error: unknown) {
+                        if (!(error instanceof FailedAcquireLockError)) {
+                            throw error;
+                        }
+                    }
+
+                    expect(result).toEqual([]);
+                });
+            });
             describe("method: acquire", () => {
                 test("Should return true when key doesnt exists", async () => {
                     const key = "a";

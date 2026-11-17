@@ -67,6 +67,23 @@ export type ILockBase = {
     ): Promise<TValue>;
 
     /**
+     * Executes an async iterable while holding the lock.
+     * Acquires the lock when iteration starts and releases it once iteration
+     * finishes, fails or is stopped early.
+     *
+     * @template TValue - The type of the values yielded by the stream
+     * @param stream - The stream to consume under lock
+     * @returns The values of `stream`, wrapped in a lock-aware async iterable
+     * @throws {FailedAcquireLockError} If the lock is already held by a different owner
+     * @throws {UnableToAcquireLockError} If the lock adapter fails with an unexpected error while acquiring the lock
+     * @throws {FailedReleaseLockError} If the lock is no longer held by this owner when the stream ends
+     * @throws {UnableToReleaseLockError} If the lock adapter fails with an unexpected error while releasing the lock
+     */
+    runStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext>;
+
+    /**
      * Attempts to acquire the lock if not already held by another owner.
      *
      * @returns true if lock was successfully acquired, false if already held by a different owner
