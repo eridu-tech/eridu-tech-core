@@ -94,6 +94,12 @@ export class ProxySemaphore<
         return this.getSemaphore().runOrFail(asyncInvocable);
     }
 
+    runStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext> {
+        return this.getSemaphore().runStream(stream);
+    }
+
     async acquire(): Promise<boolean> {
         return this.getSemaphore().acquire();
     }

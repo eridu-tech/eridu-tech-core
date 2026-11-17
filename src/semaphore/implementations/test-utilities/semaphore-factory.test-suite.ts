@@ -502,6 +502,315 @@ export function semaphoreFactoryTestSuite(
                     );
                 });
             });
+            describe("method: runStream", () => {
+                const VALUES = ["a", "b", "c"];
+
+                class StreamError extends Error {}
+
+                function createStream(): AsyncIterable<string> {
+                    return {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            for (const value of VALUES) {
+                                yield await Promise.resolve(value);
+                            }
+                        },
+                    };
+                }
+
+                async function collect(
+                    stream: AsyncIterable<string>,
+                ): Promise<Array<string>> {
+                    const result: Array<string> = [];
+                    for await (const value of stream) {
+                        result.push(value);
+                    }
+                    return result;
+                }
+
+                test("Should yield every value of the stream", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+
+                    const result = await collect(
+                        semaphoreFactory
+                            .create(key, { ttl, limit })
+                            .runStream(createStream()),
+                    );
+
+                    expect(result).toEqual(VALUES);
+                });
+                test("Should not call acquireOrFail before the stream is iterated", () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const acquireOrFailSpy = vi.spyOn(
+                        semaphore,
+                        "acquireOrFail",
+                    );
+
+                    semaphore.runStream(createStream());
+
+                    expect(acquireOrFailSpy).not.toHaveBeenCalled();
+                });
+                test("Should not call release when the stream is never iterated", () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(semaphore, "release");
+
+                    semaphore.runStream(createStream());
+
+                    expect(releaseSpy).not.toHaveBeenCalled();
+                });
+                test("Should call acquireOrFail method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const acquireOrFailSpy = vi.spyOn(
+                        semaphore,
+                        "acquireOrFail",
+                    );
+
+                    await collect(semaphore.runStream(createStream()));
+
+                    expect(acquireOrFailSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call release method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(semaphore, "release");
+
+                    await collect(semaphore.runStream(createStream()));
+
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call acquireOrFail before release method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const acquireOrFailSpy = vi.spyOn(
+                        semaphore,
+                        "acquireOrFail",
+                    );
+                    const releaseSpy = vi.spyOn(semaphore, "release");
+
+                    await collect(semaphore.runStream(createStream()));
+
+                    expect(acquireOrFailSpy).toHaveBeenCalledBefore(releaseSpy);
+                });
+                test("Should call release after acquireOrFail method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(semaphore, "release");
+                    const acquireOrFailSpy = vi.spyOn(
+                        semaphore,
+                        "acquireOrFail",
+                    );
+
+                    await collect(semaphore.runStream(createStream()));
+
+                    expect(releaseSpy).toHaveBeenCalledAfter(acquireOrFailSpy);
+                });
+                test("Should call release when the consumer stops iterating early", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(semaphore, "release");
+
+                    for await (const _value of semaphore.runStream(
+                        createStream(),
+                    )) {
+                        break;
+                    }
+
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call release when the stream throws", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(semaphore, "release");
+
+                    const stream: AsyncIterable<string> = {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            yield await Promise.resolve("a");
+                            throw new StreamError();
+                        },
+                    };
+
+                    const consume = async () => {
+                        for await (const _value of semaphore.runStream(
+                            stream,
+                        )) {
+                            // consume until the stream throws
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(StreamError);
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should propagate thrown error", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const stream: AsyncIterable<string> = {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            yield await Promise.resolve("a");
+                            throw new StreamError();
+                        },
+                    };
+
+                    const consume = async () => {
+                        for await (const _value of semaphore.runStream(
+                            stream,
+                        )) {
+                            // consume until the stream throws
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(StreamError);
+                });
+                test("Should call acquireOrFail when slot is expired", async () => {
+                    const key = "a";
+                    const ttl = TimeSpan.fromMilliseconds(50);
+                    const limit = 1;
+
+                    await semaphoreFactory
+                        .create(key, { ttl, limit })
+                        .acquire();
+                    await delayWithBuffer(ttl);
+
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+                    const acquireOrFailSpy = vi.spyOn(
+                        semaphore,
+                        "acquireOrFail",
+                    );
+
+                    await collect(semaphore.runStream(createStream()));
+
+                    expect(acquireOrFailSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should throw LimitReachedSemaphoreError when slot is unexpireable", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+                    await semaphore.acquire();
+
+                    const consume = async () => {
+                        for await (const _value of semaphore.runStream(
+                            createStream(),
+                        )) {
+                            // no slot is available
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(
+                        LimitReachedSemaphoreError,
+                    );
+                });
+                test("Should throw LimitReachedSemaphoreError when slot is unexpired", async () => {
+                    const key = "a";
+                    const ttl = TimeSpan.fromMilliseconds(50);
+                    const limit = 1;
+
+                    const semaphore = semaphoreFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+                    await semaphore.acquire();
+
+                    const consume = async () => {
+                        for await (const _value of semaphore.runStream(
+                            createStream(),
+                        )) {
+                            // no slot is available
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(
+                        LimitReachedSemaphoreError,
+                    );
+                });
+                test("Should not yield values when slot is unexpireable and limit is reached", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+
+                    await semaphoreFactory
+                        .create(key, { ttl, limit })
+                        .acquire();
+                    const result: Array<string> = [];
+                    try {
+                        for await (const value of semaphoreFactory
+                            .create(key, { ttl, limit })
+                            .runStream(createStream())) {
+                            result.push(value);
+                        }
+                    } catch (error: unknown) {
+                        if (!(error instanceof LimitReachedSemaphoreError)) {
+                            throw error;
+                        }
+                    }
+
+                    expect(result).toEqual([]);
+                });
+            });
             describe("method: acquire", () => {
                 test("Should return true when key doesnt exists", async () => {
                     const key = "a";

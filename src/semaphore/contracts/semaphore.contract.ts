@@ -72,6 +72,22 @@ export type ISemaphoreBase = {
     ): Promise<TValue>;
 
     /**
+     * Executes an async iterable while holding a semaphore slot.
+     * Acquires a slot when iteration starts and releases it once iteration
+     * finishes, fails or is stopped early.
+     *
+     * @template TValue - The type of the values yielded by the stream
+     * @param stream - The stream to consume under semaphore protection
+     * @returns The values of `stream`, wrapped in a semaphore-aware async iterable
+     * @throws {LimitReachedSemaphoreError} If all slots are already acquired
+     * @throws {UnableToAcquireSemaphoreError} If the semaphore adapter fails with an unexpected error while acquiring a slot
+     * @throws {UnableToReleaseSemaphoreError} If the semaphore adapter fails with an unexpected error while releasing the slot
+     */
+    runStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext>;
+
+    /**
      * Attempts to acquire a semaphore slot if the limit is not reached.
      *
      * @returns true if a slot was successfully acquired, false if the limit is reached
