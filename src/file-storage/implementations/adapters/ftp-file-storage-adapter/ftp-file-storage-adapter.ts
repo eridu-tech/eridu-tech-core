@@ -11,7 +11,10 @@ import etag from "etag";
 
 import { Base64UrlCodec } from "@/codec/implementations/base-64-url-codec/_module-exports.js";
 import { FsKeyPathMapper } from "@/file-storage/implementations/adapters/_shared/_module.js";
-import { OnStreamEnd, UnexpectedError } from "@/utilities/_module-exports.js";
+import {
+    OnStreamLifeCycle,
+    UnexpectedError,
+} from "@/utilities/_module-exports.js";
 
 import type { Client } from "basic-ftp";
 
@@ -258,9 +261,9 @@ export class FtpFileStorageAdapter implements IFileStorageAdapter {
         download.catch(() => {});
 
         return this.pool.runStream({
-            stream: new OnStreamEnd(
-                new ToUint8ArrayStream(stream),
-                async () => {
+            stream: new OnStreamLifeCycle({
+                stream: new ToUint8ArrayStream(stream),
+                onEnd: async () => {
                     try {
                         await download;
                     } catch (error: unknown) {
@@ -270,7 +273,7 @@ export class FtpFileStorageAdapter implements IFileStorageAdapter {
                         throw error;
                     }
                 },
-            ),
+            }),
             client,
         });
     }

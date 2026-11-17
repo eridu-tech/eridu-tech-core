@@ -9,7 +9,10 @@ import {
     LOCK_STATE,
 } from "@/lock/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { resolveLazyable } from "@/utilities/_module-exports.js";
+import {
+    OnStreamLifeCycle,
+    resolveLazyable,
+} from "@/utilities/_module-exports.js";
 
 import type {
     ILock,
@@ -110,6 +113,20 @@ export class Lock implements ILock, InternalSerdeIdentifiable {
         } finally {
             await this.release();
         }
+    }
+
+    runStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext> {
+        return new OnStreamLifeCycle({
+            stream,
+            onBeforeStart: async () => {
+                await this.acquireOrFail();
+            },
+            onEnd: async () => {
+                await this.release();
+            },
+        });
     }
 
     async acquire(): Promise<boolean> {

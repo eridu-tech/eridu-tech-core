@@ -493,6 +493,311 @@ export function sharedLockFactoryTestSuite(
                     );
                 });
             });
+            describe("method: runWriterStream", () => {
+                const VALUES = ["a", "b", "c"];
+
+                class StreamError extends Error {}
+
+                function createStream(): AsyncIterable<string> {
+                    return {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            for (const value of VALUES) {
+                                yield await Promise.resolve(value);
+                            }
+                        },
+                    };
+                }
+
+                async function collect(
+                    stream: AsyncIterable<string>,
+                ): Promise<Array<string>> {
+                    const result: Array<string> = [];
+                    for await (const value of stream) {
+                        result.push(value);
+                    }
+                    return result;
+                }
+
+                test("Should yield every value of the stream", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+
+                    const result = await collect(
+                        sharedLockFactory
+                            .create(key, { ttl, limit })
+                            .runWriterStream(createStream()),
+                    );
+
+                    expect(result).toEqual(VALUES);
+                });
+                test("Should not call acquireWriterOrFail before the stream is iterated", () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireWriterOrFail",
+                    );
+
+                    sharedLock.runWriterStream(createStream());
+
+                    expect(acquireSpy).not.toHaveBeenCalled();
+                });
+                test("Should not call releaseWriter when the stream is never iterated", () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseWriter");
+
+                    sharedLock.runWriterStream(createStream());
+
+                    expect(releaseSpy).not.toHaveBeenCalled();
+                });
+                test("Should call acquireWriterOrFail method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireWriterOrFail",
+                    );
+
+                    await collect(sharedLock.runWriterStream(createStream()));
+
+                    expect(acquireSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call releaseWriter method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseWriter");
+
+                    await collect(sharedLock.runWriterStream(createStream()));
+
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call acquireWriterOrFail before releaseWriter method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireWriterOrFail",
+                    );
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseWriter");
+
+                    await collect(sharedLock.runWriterStream(createStream()));
+
+                    expect(acquireSpy).toHaveBeenCalledBefore(releaseSpy);
+                });
+                test("Should call releaseWriter after acquireWriterOrFail method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseWriter");
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireWriterOrFail",
+                    );
+
+                    await collect(sharedLock.runWriterStream(createStream()));
+
+                    expect(releaseSpy).toHaveBeenCalledAfter(acquireSpy);
+                });
+                test("Should call releaseWriter when the consumer stops iterating early", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseWriter");
+
+                    for await (const _value of sharedLock.runWriterStream(
+                        createStream(),
+                    )) {
+                        break;
+                    }
+
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call releaseWriter when the stream throws", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseWriter");
+
+                    const stream: AsyncIterable<string> = {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            yield await Promise.resolve("a");
+                            throw new StreamError();
+                        },
+                    };
+
+                    const consume = async () => {
+                        for await (const _value of sharedLock.runWriterStream(
+                            stream,
+                        )) {
+                            // consume until the stream throws
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(StreamError);
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should propagate thrown error", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const stream: AsyncIterable<string> = {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            yield await Promise.resolve("a");
+                            throw new StreamError();
+                        },
+                    };
+
+                    const consume = async () => {
+                        for await (const _value of sharedLock.runWriterStream(
+                            stream,
+                        )) {
+                            // consume until the stream throws
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(StreamError);
+                });
+                test("Should call acquireWriterOrFail when key is expired", async () => {
+                    const key = "a";
+                    const ttl = TimeSpan.fromMilliseconds(50);
+                    const limit = 4;
+
+                    await sharedLockFactory
+                        .create(key, { ttl, limit })
+                        .acquireWriter();
+                    await delayWithBuffer(ttl);
+
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireWriterOrFail",
+                    );
+
+                    await collect(sharedLock.runWriterStream(createStream()));
+
+                    expect(acquireSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should throw FailedAcquireWriterLockError when key is unexpireable and acquired by different shared-lock-id", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+
+                    await sharedLockFactory
+                        .create(key, { ttl, limit })
+                        .acquireWriter();
+
+                    const consume = async () => {
+                        for await (const _value of sharedLockFactory
+                            .create(key, { ttl, limit })
+                            .runWriterStream(createStream())) {
+                            // the writer lock cannot be acquired
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(
+                        FailedAcquireWriterLockError,
+                    );
+                });
+                test("Should throw FailedAcquireWriterLockError when key is unexpired and acquired by different shared-lock-id", async () => {
+                    const key = "a";
+                    const ttl = TimeSpan.fromMilliseconds(50);
+                    const limit = 4;
+
+                    await sharedLockFactory
+                        .create(key, { ttl, limit })
+                        .acquireWriter();
+
+                    const consume = async () => {
+                        for await (const _value of sharedLockFactory
+                            .create(key, { ttl, limit })
+                            .runWriterStream(createStream())) {
+                            // the writer lock cannot be acquired
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(
+                        FailedAcquireWriterLockError,
+                    );
+                });
+                test("Should not yield values when key is acquired by different shared-lock-id", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 4;
+
+                    await sharedLockFactory
+                        .create(key, { ttl, limit })
+                        .acquireWriter();
+                    const result: Array<string> = [];
+                    try {
+                        for await (const value of sharedLockFactory
+                            .create(key, { ttl, limit })
+                            .runWriterStream(createStream())) {
+                            result.push(value);
+                        }
+                    } catch (error: unknown) {
+                        if (!(error instanceof FailedAcquireWriterLockError)) {
+                            throw error;
+                        }
+                    }
+
+                    expect(result).toEqual([]);
+                });
+            });
             describe("method: acquireWriter", () => {
                 test("Should return true when key doesnt exists", async () => {
                     const key = "a";
@@ -2144,6 +2449,317 @@ export function sharedLockFactoryTestSuite(
                     await expect(result).rejects.toThrow(
                         LimitReachedReaderSemaphoreError,
                     );
+                });
+            });
+            describe("method: runReaderStream", () => {
+                const VALUES = ["a", "b", "c"];
+
+                class StreamError extends Error {}
+
+                function createStream(): AsyncIterable<string> {
+                    return {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            for (const value of VALUES) {
+                                yield await Promise.resolve(value);
+                            }
+                        },
+                    };
+                }
+
+                async function collect(
+                    stream: AsyncIterable<string>,
+                ): Promise<Array<string>> {
+                    const result: Array<string> = [];
+                    for await (const value of stream) {
+                        result.push(value);
+                    }
+                    return result;
+                }
+
+                test("Should yield every value of the stream", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+
+                    const result = await collect(
+                        sharedLockFactory
+                            .create(key, { ttl, limit })
+                            .runReaderStream(createStream()),
+                    );
+
+                    expect(result).toEqual(VALUES);
+                });
+                test("Should not call acquireReaderOrFail before the stream is iterated", () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireReaderOrFail",
+                    );
+
+                    sharedLock.runReaderStream(createStream());
+
+                    expect(acquireSpy).not.toHaveBeenCalled();
+                });
+                test("Should not call releaseReader when the stream is never iterated", () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseReader");
+
+                    sharedLock.runReaderStream(createStream());
+
+                    expect(releaseSpy).not.toHaveBeenCalled();
+                });
+                test("Should call acquireReaderOrFail method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireReaderOrFail",
+                    );
+
+                    await collect(sharedLock.runReaderStream(createStream()));
+
+                    expect(acquireSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call releaseReader method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseReader");
+
+                    await collect(sharedLock.runReaderStream(createStream()));
+
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call acquireReaderOrFail before releaseReader method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireReaderOrFail",
+                    );
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseReader");
+
+                    await collect(sharedLock.runReaderStream(createStream()));
+
+                    expect(acquireSpy).toHaveBeenCalledBefore(releaseSpy);
+                });
+                test("Should call releaseReader after acquireReaderOrFail method", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseReader");
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireReaderOrFail",
+                    );
+
+                    await collect(sharedLock.runReaderStream(createStream()));
+
+                    expect(releaseSpy).toHaveBeenCalledAfter(acquireSpy);
+                });
+                test("Should call releaseReader when the consumer stops iterating early", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseReader");
+
+                    for await (const _value of sharedLock.runReaderStream(
+                        createStream(),
+                    )) {
+                        break;
+                    }
+
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should call releaseReader when the stream throws", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const releaseSpy = vi.spyOn(sharedLock, "releaseReader");
+
+                    const stream: AsyncIterable<string> = {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            yield await Promise.resolve("a");
+                            throw new StreamError();
+                        },
+                    };
+
+                    const consume = async () => {
+                        for await (const _value of sharedLock.runReaderStream(
+                            stream,
+                        )) {
+                            // consume until the stream throws
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(StreamError);
+                    expect(releaseSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should propagate thrown error", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 2;
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+
+                    const stream: AsyncIterable<string> = {
+                        async *[Symbol.asyncIterator](): AsyncIterator<string> {
+                            yield await Promise.resolve("a");
+                            throw new StreamError();
+                        },
+                    };
+
+                    const consume = async () => {
+                        for await (const _value of sharedLock.runReaderStream(
+                            stream,
+                        )) {
+                            // consume until the stream throws
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(StreamError);
+                });
+                test("Should call acquireReaderOrFail when shared-lock-slot is expired", async () => {
+                    const key = "a";
+                    const ttl = TimeSpan.fromMilliseconds(50);
+                    const limit = 2;
+
+                    await sharedLockFactory
+                        .create(key, { ttl, limit })
+                        .acquireReader();
+                    await delayWithBuffer(ttl);
+
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+                    const acquireSpy = vi.spyOn(
+                        sharedLock,
+                        "acquireReaderOrFail",
+                    );
+
+                    await collect(sharedLock.runReaderStream(createStream()));
+
+                    expect(acquireSpy).toHaveBeenCalledTimes(1);
+                });
+                test("Should throw LimitReachedReaderSemaphoreError when shared-lock-slot is unexpireable", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+                    await sharedLock.acquireReader();
+
+                    const consume = async () => {
+                        for await (const _value of sharedLock.runReaderStream(
+                            createStream(),
+                        )) {
+                            // no reader slot is available
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(
+                        LimitReachedReaderSemaphoreError,
+                    );
+                });
+                test("Should throw LimitReachedReaderSemaphoreError when shared-lock-slot is unexpired", async () => {
+                    const key = "a";
+                    const ttl = TimeSpan.fromMilliseconds(50);
+                    const limit = 1;
+
+                    const sharedLock = sharedLockFactory.create(key, {
+                        ttl,
+                        limit,
+                    });
+                    await sharedLock.acquireReader();
+
+                    const consume = async () => {
+                        for await (const _value of sharedLock.runReaderStream(
+                            createStream(),
+                        )) {
+                            // no reader slot is available
+                        }
+                    };
+
+                    await expect(consume()).rejects.toThrow(
+                        LimitReachedReaderSemaphoreError,
+                    );
+                });
+                test("Should not yield values when reader slots are exhausted", async () => {
+                    const key = "a";
+                    const ttl = null;
+                    const limit = 1;
+
+                    await sharedLockFactory
+                        .create(key, { ttl, limit })
+                        .acquireReader();
+                    const result: Array<string> = [];
+                    try {
+                        for await (const value of sharedLockFactory
+                            .create(key, { ttl, limit })
+                            .runReaderStream(createStream())) {
+                            result.push(value);
+                        }
+                    } catch (error: unknown) {
+                        if (
+                            !(error instanceof LimitReachedReaderSemaphoreError)
+                        ) {
+                            throw error;
+                        }
+                    }
+
+                    expect(result).toEqual([]);
                 });
             });
             describe("method: acquireReader", () => {

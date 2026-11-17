@@ -88,6 +88,12 @@ export class ProxyLock<TAdapters extends string = string> implements ILock {
         return this.getLock().runOrFail(asyncInvocable);
     }
 
+    runStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext> {
+        return this.getLock().runStream(stream);
+    }
+
     async acquire(): Promise<boolean> {
         return this.getLock().acquire();
     }

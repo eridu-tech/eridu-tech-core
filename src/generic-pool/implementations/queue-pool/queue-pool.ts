@@ -4,7 +4,7 @@
 
 import { UnableToAcquireError } from "@/generic-pool/contracts/_module-exports.js";
 import { callInvocable } from "@/utilities/_module-exports.js";
-import { OnStreamEnd } from "@/utilities/on-stream-end.js";
+import { OnStreamLifeCycle } from "@/utilities/on-stream-life-cycle.js";
 
 import type {
     IGenericPool,
@@ -298,6 +298,9 @@ export class QueuePool<TClient> implements IGenericPool<TClient> {
         settings: RunStreamSettings<TValue, TClient>,
     ): Promise<AsyncIterable<TValue>> {
         const client = settings.client ?? (await this.acquireOrFail());
-        return new OnStreamEnd(settings.stream, () => this._release(client));
+        return new OnStreamLifeCycle({
+            stream: settings.stream,
+            onEnd: () => this._release(client),
+        });
     }
 }

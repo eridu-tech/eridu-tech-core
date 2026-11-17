@@ -121,6 +121,21 @@ Note the method throws an error when the lock cannot be acquired.
 You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/components/utilities/invocable) as values for the `runOrFail` method.
 :::
 
+The `runStream` method keeps the lock acquired for the whole lifetime of a stream.
+It calls `acquireOrFail` when iteration starts and calls `release` once iteration finishes, whether the stream is drained, the consumer stops early or the stream throws.
+
+```ts file=./samples/lock-run-stream.ts
+
+```
+
+:::info
+The lock is not acquired until the first value is requested, so creating the stream does not lock anything yet.
+:::
+
+:::info
+Note the stream throws an error, before yielding any value, when the lock cannot be acquired.
+:::
+
 ### Lock instance variables
 
 The `Lock` class exposes instance variables such as:

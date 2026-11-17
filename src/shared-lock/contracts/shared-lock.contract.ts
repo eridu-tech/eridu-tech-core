@@ -24,6 +24,21 @@ export type IReaderSemaphore = {
     ): Promise<TValue>;
 
     /**
+     * The `runReaderStream` method wraps an async iterable with the `acquireReaderOrFail` and `releaseReader` method.
+     * The reader slot is acquired when iteration starts and released once iteration finishes, fails or is stopped early.
+     *
+     * @template TValue - The type of the values yielded by the stream
+     * @param stream - The stream to consume while holding the reader slot
+     * @returns The values of `stream`, wrapped in a shared-lock-aware async iterable
+     * @throws {LimitReachedReaderSemaphoreError} If all reader slots are already acquired
+     * @throws {UnableToAcquireReaderSemaphoreError} If the shared-lock adapter fails with an unexpected error while acquiring a reader slot
+     * @throws {UnableToReleaseReaderSemaphoreError} If the shared-lock adapter fails with an unexpected error while releasing the reader slot
+     */
+    runReaderStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext>;
+
+    /**
      * The `acquireReader` method acquires an slots only if the slot limit is not reached.
      *
      * @returns Returns true if the slot limit is not reached otherwise false is returned.
@@ -87,6 +102,21 @@ export type IWriterLock = {
     runWriterOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue>;
+
+    /**
+     * The `runWriterStream` method wraps an async iterable with the `acquireWriterOrFail` and `releaseWriter` method.
+     * The writer lock is acquired when iteration starts and released once iteration finishes, fails or is stopped early.
+     *
+     * @template TValue - The type of the values yielded by the stream
+     * @param stream - The stream to consume while holding the writer lock
+     * @returns The values of `stream`, wrapped in a shared-lock-aware async iterable
+     * @throws {FailedAcquireWriterLockError} If the lock is already acquired by a different owner
+     * @throws {UnableToAcquireWriterLockError} If the shared-lock adapter fails with an unexpected error while acquiring a writer lock
+     * @throws {UnableToReleaseWriterLockError} If the shared-lock adapter fails with an unexpected error while releasing the writer lock
+     */
+    runWriterStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext>;
 
     /**
      * The `acquireWriter` method acquires a lock only if the key is not already acquired by different owner.

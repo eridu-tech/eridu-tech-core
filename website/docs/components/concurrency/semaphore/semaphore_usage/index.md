@@ -121,6 +121,21 @@ Note the method throws an error when the semaphore cannot be acquired.
 You can provide synchronous or asynchronous [`Invocable<[], TValue | Promise<TValue>>`](/docs/components/utilities/invocable) as values for the `runOrFail` method.
 :::
 
+The `runStream` method keeps a semaphore slot acquired for the whole lifetime of a stream.
+It calls `acquireOrFail` when iteration starts and calls `release` once iteration finishes, whether the stream is drained, the consumer stops early or the stream throws.
+
+```ts file=./samples/semaphore-run-stream.ts
+
+```
+
+:::info
+The slot is not acquired until the first value is requested, so creating the stream does not take a slot yet.
+:::
+
+:::info
+Note the stream throws an error, before yielding any value, when the semaphore cannot be acquired.
+:::
+
 ### Semaphore instance variables
 
 The `Semaphore` class exposes instance variables such as:

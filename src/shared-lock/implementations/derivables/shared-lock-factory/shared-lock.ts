@@ -13,6 +13,7 @@ import {
 } from "@/shared-lock/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
+    OnStreamLifeCycle,
     OPTION,
     optionNone,
     optionSome,
@@ -129,6 +130,20 @@ export class SharedLock implements ISharedLock, InternalSerdeIdentifiable {
         }
     }
 
+    runReaderStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext> {
+        return new OnStreamLifeCycle({
+            stream,
+            onBeforeStart: async () => {
+                await this.acquireReaderOrFail();
+            },
+            onEnd: async () => {
+                await this.releaseReader();
+            },
+        });
+    }
+
     async acquireReader(): Promise<boolean> {
         return await this.adapter.acquireReader({
             key: this.internalKey,
@@ -192,6 +207,20 @@ export class SharedLock implements ISharedLock, InternalSerdeIdentifiable {
         } finally {
             await this.releaseWriter();
         }
+    }
+
+    runWriterStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext> {
+        return new OnStreamLifeCycle({
+            stream,
+            onBeforeStart: async () => {
+                await this.acquireWriterOrFail();
+            },
+            onEnd: async () => {
+                await this.releaseWriter();
+            },
+        });
     }
 
     async acquireWriter(): Promise<boolean> {

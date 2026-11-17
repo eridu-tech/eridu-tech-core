@@ -3,4 +3,4 @@ export type * from "@/utilities/types/_module.js";
 export * from "@/utilities/functions/_module.js";
 export * from "@/utilities/constants.js";
 export * from "@/utilities/errors.js";
-export * from "@/utilities/on-stream-end.js";
+export * from "@/utilities/on-stream-life-cycle.js";
