@@ -94,6 +94,12 @@ export class ProxySharedLock<
         return this.getSharedLock().runReaderOrFail(asyncInvocable);
     }
 
+    runReaderStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext> {
+        return this.getSharedLock().runReaderStream(stream);
+    }
+
     async acquireReader(): Promise<boolean> {
         return this.getSharedLock().acquireReader();
     }
@@ -122,6 +128,12 @@ export class ProxySharedLock<
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue> {
         return this.getSharedLock().runWriterOrFail(asyncInvocable);
+    }
+
+    runWriterStream<TValue, TNext>(
+        stream: AsyncIterable<TValue, TNext>,
+    ): AsyncIterable<TValue, TNext> {
+        return this.getSharedLock().runWriterStream(stream);
     }
 
     async acquireWriter(): Promise<boolean> {
