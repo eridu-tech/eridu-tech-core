@@ -139,6 +139,21 @@ Note the method throws an error when the shared-lock cannot be acquired as write
 You can provide synchronous Invocable or async/promisable invocable as values for the `runWriterOrFail` method.
 :::
 
+The `runWriterStream` method keeps the shared-lock acquired as writer for the whole lifetime of a stream.
+It calls `acquireWriterOrFail` when iteration starts and calls `releaseWriter` once iteration finishes, whether the stream is drained, the consumer stops early or the stream throws.
+
+```ts file=./samples/shared-lock-run-writer-stream.ts
+
+```
+
+:::info
+The writer lock is not acquired until the first value is requested, so creating the stream does not lock anything yet.
+:::
+
+:::info
+Note the stream throws an error, before yielding any value, when the shared-lock cannot be acquired as writer.
+:::
+
 ### Additional reader methods
 
 The `releaseReaderOrFail` method is the same `releaseReader` method but it throws an error when not enable to release the shared-lock as reader:
@@ -166,6 +181,21 @@ Note the method throws an error when the shared-lock cannot be acquired as reade
 
 :::info
 You can provide synchronous Invocable or async/promisable invocable as values for the `runReaderOrFail` method.
+:::
+
+The `runReaderStream` method keeps a reader slot acquired for the whole lifetime of a stream.
+It calls `acquireReaderOrFail` when iteration starts and calls `releaseReader` once iteration finishes, whether the stream is drained, the consumer stops early or the stream throws.
+
+```ts file=./samples/shared-lock-run-reader-stream.ts
+
+```
+
+:::info
+A reader slot is not acquired until the first value is requested, so creating the stream does not take a slot yet.
+:::
+
+:::info
+Note the stream throws an error, before yielding any value, when the shared-lock cannot be acquired as reader.
 :::
 
 ### Additional methods
