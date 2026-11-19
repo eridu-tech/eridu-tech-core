@@ -1,5 +1,40 @@
 # @daiso-tech/core
 
+## 0.76.0
+
+### Minor Changes
+
+- fd35dbb: Add `runStream` to the generic pool so a stream can borrow a client for its whole lifetime.
+
+    - `IGenericPoolBase.runStream(stream, client)` binds an `AsyncIterable` to an already acquired client and releases that client exactly once when iteration ends: after the stream is drained, when the consumer stops early (`break` or `iterator.return()`), and when the iterable throws. The release is awaited after the wrapped stream has closed, so the client is never handed back midway through teardown.
+    - `runStream` is synchronous and returns the bound `AsyncIterable` directly. It does not acquire a client, so the caller passes one obtained with `acquireOrFail`.
+    - A stream that is never iterated does not release its client. Call `release` in your own `finally` block when you bind a stream and never consume it.
+    - `QueuePool` and `NoOpPool` implement the new member, and `runStream` is part of `IGenericPoolBase` exported from `eridu-tech/generic-pool/contracts`.
+
+- cbeb345: Add `runStream` to the lock, semaphore and shared lock so a stream can run while holding the lock or slot for its whole lifetime.
+
+    - `ILock.runStream(stream)` wraps an `AsyncIterable` so the lock is acquired when iteration starts and released exactly once when it ends: after the stream is drained, when the consumer stops early (`break` or `iterator.return()`), and when the iterable throws. Nothing is acquired until the first value is requested, so building the stream is free.
+    - `ISemaphore.runStream(stream)` does the same for a semaphore slot: a slot is acquired before the first value is yielded and released exactly once afterwards.
+    - `ISharedLock.runReaderStream(stream)` and `ISharedLock.runWriterStream(stream)` add the reader and writer variants: a reader slot or the writer lock is acquired before the first value and released exactly once afterwards.
+    - When acquiring fails, iteration throws before any value is yielded (`FailedAcquireLockError`, `LimitReachedSemaphoreError`, `FailedAcquireWriterLockError`, `LimitReachedReaderSemaphoreError`, ...) and no release is attempted, because nothing was acquired.
+    - The release is awaited, so the held lock or slot is never given back midway through teardown.
+    - `ProxyLock`, `ProxySemaphore` and `ProxySharedLock` implement the new members, and the lock, semaphore and shared-lock factory test suites now cover them.
+
+- fd35dbb: `FtpFactory.destroy` now waits for the client connection to close.
+
+    - `destroy(client)` returns `Promise<void>` and resolves only after the FTP control socket has emitted `close`, so a destroyed client is fully shut down before the pool frees the resource slot and creates or hands out another one.
+    - `Client.close()` from `basic-ftp` is synchronous and only starts the teardown, so the previous `void` implementation released the slot while the socket was still closing.
+    - `IResourceFactory.destroy` already accepts `Promisable<void>`, so the resource factory contract is unchanged. Only direct callers of `FtpFactory.destroy` are affected: they must `await` the returned promise if they relied on the connection being gone afterwards.
+
+### Patch Changes
+
+- fd35dbb: `FtpFileStorageAdapter.getStream` no longer produces unhandled rejections when a download is aborted, and a failed download now fails the read instead of quietly ending it.
+
+    - Stopping a download early is now a normal end of the read: it no longer leaves an unhandled rejection behind, so it can no longer crash the server.
+    - When a download fails for any other reason, the consumer's `for await` throws instead of handing back a truncated file.
+    - The pooled client is returned exactly once when the stream ends, and the return completes before the read is reported as finished.
+    - `getStream` still resolves as soon as the existence check completes; it does not wait for the download to finish.
+
 ## 0.75.1
 
 ### Patch Changes
