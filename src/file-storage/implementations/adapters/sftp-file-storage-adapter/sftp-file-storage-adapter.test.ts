@@ -1,9 +1,22 @@
+import { randomUUID } from "node:crypto";
+
 import { GenericContainer, Wait } from "testcontainers";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+    vi,
+} from "vitest";
 
 import { SftpFileStorageAdapter } from "@/file-storage/implementations/adapters/sftp-file-storage-adapter/sftp-file-storage-adapter.js";
 import { sftpPool } from "@/file-storage/implementations/adapters/sftp-file-storage-adapter/sftp-pool.js";
+import { withFileStoragePrefix } from "@/file-storage/implementations/plugins/_module-exports.js";
 import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
+import { QueuePool } from "@/generic-pool/implementations/_module-exports.js";
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type SftpClient from "ssh2-sftp-client";
@@ -19,180 +32,205 @@ const SFTP_PORT = 22;
 const USERNAME = "eridu";
 const PASSWORD = "eridu";
 
-describe("class: SftpFileStorageAdapter", () => {
-    let pool: IGenericPool<SftpClient>;
-    let adapter_: SftpFileStorageAdapter;
-    let startedContainer: StartedTestContainer;
-    beforeEach(async () => {
-        startedContainer = await new GenericContainer(SFTP_IMAGE)
-            .withExposedPorts(SFTP_PORT)
-            .withCommand([`${USERNAME}:${PASSWORD}:::upload`])
-            .withWaitStrategy(
-                Wait.forListeningPorts().withStartupTimeout(
-                    timeout.toMilliseconds(),
-                ),
-            )
-            .start();
+describe(
+    "class: SftpFileStorageAdapter",
+    {
+        timeout: TimeSpan.fromSeconds(10).toMilliseconds(),
+    },
+    () => {
+        let pool: IGenericPool<SftpClient>;
+        let adapter_: SftpFileStorageAdapter;
+        let startedContainer: StartedTestContainer;
+        beforeAll(async () => {
+            startedContainer = await new GenericContainer(SFTP_IMAGE)
+                .withExposedPorts(SFTP_PORT)
+                .withCommand([`${USERNAME}:${PASSWORD}:::upload`])
+                .withWaitStrategy(
+                    Wait.forAll([
+                        Wait.forListeningPorts(),
+                        // `forLogMessage` does a plain substring match for string
+                        // arguments, so regex syntax such as `\\.` or the surrounding
+                        // slashes would never match the container output.
+                        Wait.forLogMessage(
+                            `Server listening on 0.0.0.0 port ${String(SFTP_PORT)}.`,
+                        ),
+                    ]).withStartupTimeout(timeout.toMilliseconds()),
+                )
+                .start();
 
-        pool = sftpPool({
-            name: "sftp-file-storage-adapter",
-            connectionSettings: {
-                host: startedContainer.getHost(),
-                port: startedContainer.getMappedPort(SFTP_PORT),
-                username: USERNAME,
-                password: PASSWORD,
-            },
-        });
-        adapter_ = new SftpFileStorageAdapter({
-            pool,
-            location: "/upload",
-        });
-    }, timeout.toMilliseconds());
-    afterEach(async () => {
-        await startedContainer.stop();
-    }, timeout.toMilliseconds());
-    fileStorageAdapterTestSuite({
-        createAdapter: () => adapter_,
-        test,
-        beforeEach,
-        expect,
-        describe,
-        enableGetMetaData: false,
-    });
-    describe("method: getStream", () => {
-        const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-
-        async function putFile(key: string): Promise<void> {
-            await adapter_.put(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType: "text/plain",
-                fileSizeInBytes: data.length,
+            pool = sftpPool({
+                name: "sftp-file-storage-adapter",
+                connectionSettings: {
+                    host: startedContainer.getHost(),
+                    port: startedContainer.getMappedPort(SFTP_PORT),
+                    username: USERNAME,
+                    password: PASSWORD,
+                },
+                poolFactory: (resourceFactory) => {
+                    return new QueuePool(resourceFactory, {
+                        maxResources: 5,
+                    });
+                },
             });
-        }
-
-        async function getStreamOrThrow(
-            key: string,
-        ): Promise<AsyncIterable<Uint8Array>> {
-            const stream = await adapter_.getStream(key);
-            if (stream === null) {
-                throw new Error("Expected a stream but got null");
-            }
-            return stream;
-        }
-
-        test("Should acquire exactly one client for a consumed stream", async () => {
-            const key = "a";
-            await putFile(key);
-            const acquireSpy = vi.spyOn(pool, "acquireOrFail");
-
-            const stream = await getStreamOrThrow(key);
-            for await (const _chunk of stream) {
-                // consume everything
-            }
-
-            expect(acquireSpy).toHaveBeenCalledOnce();
+        }, timeout.toMilliseconds());
+        beforeEach(() => {
+            adapter_ = withPlugin(
+                new SftpFileStorageAdapter({
+                    pool,
+                    location: "/upload",
+                }),
+                withFileStoragePrefix(randomUUID()),
+            );
+            vi.clearAllMocks();
+            vi.resetAllMocks();
         });
-        test("Should acquire exactly one client when the consumer stops iterating early", async () => {
-            const key = "a";
-            await putFile(key);
-            const acquireSpy = vi.spyOn(pool, "acquireOrFail");
+        afterAll(async () => {
+            await pool.close();
+            await startedContainer.stop();
+        }, timeout.toMilliseconds());
+        fileStorageAdapterTestSuite({
+            createAdapter: () => adapter_,
+            test,
+            beforeEach,
+            expect,
+            describe,
+            enableGetMetaData: false,
+        });
+        describe("method: getStream", () => {
+            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
 
-            const stream = await getStreamOrThrow(key);
-            for await (const _chunk of stream) {
-                break;
+            async function putFile(key: string): Promise<void> {
+                await adapter_.put(key, {
+                    data,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType: "text/plain",
+                    fileSizeInBytes: data.length,
+                });
             }
 
-            expect(acquireSpy).toHaveBeenCalledOnce();
-        });
-        test("Should acquire exactly one client when the key does not exists", async () => {
-            const acquireSpy = vi.spyOn(pool, "acquireOrFail");
+            async function getStreamOrThrow(
+                key: string,
+            ): Promise<AsyncIterable<Uint8Array>> {
+                const stream = await adapter_.getStream(key);
+                if (stream === null) {
+                    throw new Error("Expected a stream but got null");
+                }
+                return stream;
+            }
 
-            const result = await adapter_.getStream("a");
+            test("Should acquire exactly one client for a consumed stream", async () => {
+                const key = "a";
+                await putFile(key);
+                const acquireSpy = vi.spyOn(pool, "acquireOrFail");
 
-            expect(result).toBeNull();
-            expect(acquireSpy).toHaveBeenCalledOnce();
-        });
-    });
-    describe("method: getMetadata", () => {
-        test("Should return null when key does not exists", async () => {
-            const noneExistingKey = "a";
+                const stream = await getStreamOrThrow(key);
+                for await (const _chunk of stream) {
+                    // consume everything
+                }
 
-            const result = await adapter_.getMetaData(noneExistingKey);
-
-            expect(result).toBeNull();
-        });
-        test("Should return content-type null when file name contains json extension", async () => {
-            const key = "a.json";
-
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/json";
-            await adapter_.put(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
+                expect(acquireSpy).toHaveBeenCalledOnce();
             });
-            const result = await adapter_.getMetaData(key);
+            test("Should acquire exactly one client when the consumer stops iterating early", async () => {
+                const key = "a";
+                await putFile(key);
+                const acquireSpy = vi.spyOn(pool, "acquireOrFail");
 
-            expect(result).toEqual({
-                etag: expect.any(String) as string,
-                contentType: null,
-                fileSizeInBytes: data.byteLength,
-                updatedAt: expect.any(Date) as Date,
-            } satisfies FileAdapterMetadata);
-        });
-        test("Should return content-type null when file name contains txt extension", async () => {
-            const key = "a.txt";
+                const stream = await getStreamOrThrow(key);
+                for await (const _chunk of stream) {
+                    break;
+                }
 
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/json";
-            await adapter_.put(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
+                expect(acquireSpy).toHaveBeenCalledTimes(2);
             });
-            const result = await adapter_.getMetaData(key);
+            test("Should acquire exactly one client when the key does not exists", async () => {
+                const acquireSpy = vi.spyOn(pool, "acquireOrFail");
 
-            expect(result).toEqual({
-                etag: expect.any(String) as string,
-                contentType: null,
-                fileSizeInBytes: data.byteLength,
-                updatedAt: expect.any(Date) as Date,
-            } satisfies FileAdapterMetadata);
-        });
-        test("Should return content-type null when file name contains unknown extension", async () => {
-            const key = "a.unknown";
+                const result = await adapter_.getStream("a");
 
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/json";
-            await adapter_.put(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
+                expect(result).toBeNull();
+                expect(acquireSpy).toHaveBeenCalledOnce();
             });
-            const result = await adapter_.getMetaData(key);
-
-            expect(result).toEqual({
-                etag: expect.any(String) as string,
-                contentType: null,
-                fileSizeInBytes: data.byteLength,
-                updatedAt: expect.any(Date) as Date,
-            } satisfies FileAdapterMetadata);
         });
-    });
-});
+        describe("method: getMetadata", () => {
+            test("Should return null when key does not exists", async () => {
+                const noneExistingKey = "a";
+
+                const result = await adapter_.getMetaData(noneExistingKey);
+
+                expect(result).toBeNull();
+            });
+            test("Should return content-type null when file name contains json extension", async () => {
+                const key = "a.json";
+
+                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+                const contentType = "application/json";
+                await adapter_.put(key, {
+                    data,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: data.length,
+                });
+                const result = await adapter_.getMetaData(key);
+
+                expect(result).toEqual({
+                    etag: expect.any(String) as string,
+                    contentType: null,
+                    fileSizeInBytes: data.byteLength,
+                    updatedAt: expect.any(Date) as Date,
+                } satisfies FileAdapterMetadata);
+            });
+            test("Should return content-type null when file name contains txt extension", async () => {
+                const key = "a.txt";
+
+                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+                const contentType = "application/json";
+                await adapter_.put(key, {
+                    data,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: data.length,
+                });
+                const result = await adapter_.getMetaData(key);
+
+                expect(result).toEqual({
+                    etag: expect.any(String) as string,
+                    contentType: null,
+                    fileSizeInBytes: data.byteLength,
+                    updatedAt: expect.any(Date) as Date,
+                } satisfies FileAdapterMetadata);
+            });
+            test("Should return content-type null when file name contains unknown extension", async () => {
+                const key = "a.unknown";
+
+                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+                const contentType = "application/json";
+                await adapter_.put(key, {
+                    data,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: data.length,
+                });
+                const result = await adapter_.getMetaData(key);
+
+                expect(result).toEqual({
+                    etag: expect.any(String) as string,
+                    contentType: null,
+                    fileSizeInBytes: data.byteLength,
+                    updatedAt: expect.any(Date) as Date,
+                } satisfies FileAdapterMetadata);
+            });
+        });
+    },
+);

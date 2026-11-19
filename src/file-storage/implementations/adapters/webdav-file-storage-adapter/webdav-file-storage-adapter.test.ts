@@ -1,9 +1,20 @@
+import { randomUUID } from "node:crypto";
+
 import { GenericContainer, Wait } from "testcontainers";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+} from "vitest";
 import { createClient } from "webdav";
 
 import { WebdavFileStorageAdapter } from "@/file-storage/implementations/adapters/webdav-file-storage-adapter/webdav-file-storage-adapter.js";
+import { withFileStoragePrefix } from "@/file-storage/implementations/plugins/_module-exports.js";
 import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedTestContainer } from "testcontainers";
@@ -34,7 +45,7 @@ describe("class: WebdavFileStorageAdapter", () => {
     let client: WebDAVClient;
     let adapter_: WebdavFileStorageAdapter;
     let startedContainer: StartedTestContainer;
-    beforeEach(async () => {
+    beforeAll(async () => {
         startedContainer = await new GenericContainer(WEBDAV_IMAGE)
             .withCopyContentToContainer([
                 { content: WEBDAV_CONFIG, target: "/config.yml" },
@@ -58,9 +69,14 @@ describe("class: WebdavFileStorageAdapter", () => {
                 password: PASSWORD,
             },
         );
-        adapter_ = new WebdavFileStorageAdapter({ client });
     }, timeout.toMilliseconds());
-    afterEach(async () => {
+    beforeEach(() => {
+        adapter_ = withPlugin(
+            new WebdavFileStorageAdapter({ client }),
+            withFileStoragePrefix(randomUUID()),
+        );
+    });
+    afterAll(async () => {
         await startedContainer.stop();
     }, timeout.toMilliseconds());
     fileStorageAdapterTestSuite({

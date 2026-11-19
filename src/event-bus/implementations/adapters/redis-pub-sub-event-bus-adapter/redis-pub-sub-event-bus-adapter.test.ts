@@ -2,7 +2,15 @@ import { RedisContainer } from "@testcontainers/redis";
 import Sqlite from "better-sqlite3";
 import { Redis } from "ioredis";
 import { Kysely, SqliteDialect } from "kysely";
-import { describe, test, beforeEach, expect, afterEach, vi } from "vitest";
+import {
+    describe,
+    test,
+    beforeEach,
+    expect,
+    vi,
+    beforeAll,
+    afterAll,
+} from "vitest";
 
 import { RedisPubSubEventBusAdapter } from "@/event-bus/implementations/adapters/redis-pub-sub-event-bus-adapter/redis-pub-sub-event-bus-adapter.js";
 import { eventBusAdapterTestSuite } from "@/event-bus/implementations/test-utilities/_module-exports.js";
@@ -22,11 +30,11 @@ const timeout = TimeSpan.fromMinutes(2);
 describe("class: RedisPubSubEventBusAdapter", () => {
     let client: Redis;
     let startedContainer: StartedRedisContainer;
-    beforeEach(async () => {
+    beforeAll(async () => {
         startedContainer = await new RedisContainer("redis:7.2").start();
         client = new Redis(startedContainer.getConnectionUrl());
     }, timeout.toMilliseconds());
-    afterEach(async () => {
+    afterAll(async () => {
         await client.quit();
         await startedContainer.stop();
     }, timeout.toMilliseconds());
