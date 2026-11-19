@@ -20,10 +20,10 @@ const sftpPool = new QueuePool<SftpClient>({
 const client = await sftpPool.acquireOrFail();
 
 // The client stays out of the pool until this stream is drained, stopped early or fails.
-const fileStream = await sftpPool.runStream({
-    stream: client.createReadStream("/uploads/report.pdf"),
+const fileStream = sftpPool.runStream(
+    client.createReadStream("/uploads/report.pdf"),
     client,
-});
+);
 
 for await (const chunk of fileStream) {
     process.stdout.write(chunk);

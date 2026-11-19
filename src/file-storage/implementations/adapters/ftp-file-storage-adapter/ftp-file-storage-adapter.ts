@@ -260,8 +260,8 @@ export class FtpFileStorageAdapter implements IFileStorageAdapter {
         // iterates, and the transfer may fail while nobody is awaiting it.
         download.catch(() => {});
 
-        return this.pool.runStream({
-            stream: new OnStreamLifeCycle({
+        return this.pool.runStream(
+            new OnStreamLifeCycle({
                 stream: new ToUint8ArrayStream(stream),
                 onEnd: async () => {
                     try {
@@ -275,7 +275,7 @@ export class FtpFileStorageAdapter implements IFileStorageAdapter {
                 },
             }),
             client,
-        });
+        );
     }
 
     async getBytes(key: string): Promise<Uint8Array | null> {

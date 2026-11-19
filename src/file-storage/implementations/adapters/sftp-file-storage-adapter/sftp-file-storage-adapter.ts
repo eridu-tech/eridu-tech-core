@@ -210,10 +210,10 @@ export class SftpFileStorageAdapter implements IFileStorageAdapter {
             return null;
         }
 
-        return this.pool.runStream<Uint8Array>({
-            stream: client.createReadStream(filePath),
+        return this.pool.runStream<Uint8Array>(
+            client.createReadStream(filePath),
             client,
-        });
+        );
     }
 
     async getBytes(key: string): Promise<Uint8Array | null> {

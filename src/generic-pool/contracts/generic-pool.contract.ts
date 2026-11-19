@@ -30,26 +30,6 @@ export type IResourceFactory<TClient> = {
 };
 
 /**
- * Settings for `IGenericPoolBase.runStream`.
- *
- * IMPORT_PATH: `"eridu-tech/generic-pool/contracts"`
- * @group Contracts
- */
-export type RunStreamSettings<TValue, TClient = unknown> = {
-    /**
-     * The stream to bind to a client.
-     */
-    stream: AsyncIterable<TValue>;
-
-    /**
-     * An already acquired client to bind to the stream.
-     *
-     * When omitted, the pool acquires a client and releases it when the stream ends.
-     */
-    client?: TClient;
-};
-
-/**
  * Defines how callers borrow a client from the pool.
  *
  * `IGenericPool` extends it with pool shutdown.
@@ -73,12 +53,14 @@ export type IGenericPoolBase<TClient = unknown> = {
      * Binds a stream to a pooled client and releases that client once iteration
      * ends, including when the consumer stops early or the stream throws.
      *
-     * @param settings - The stream to bind plus optional settings, see `RunStreamSettings`.
+     * @param stream - The stream to bind to the client.
+     * @param client - An already acquired client, released once the stream ends.
      * @returns The stream, which releases its client back to the pool when it ends.
      */
     runStream<TValue>(
-        settings: RunStreamSettings<TValue, TClient>,
-    ): Promise<AsyncIterable<TValue>>;
+        stream: AsyncIterable<TValue>,
+        client: TClient,
+    ): AsyncIterable<TValue>;
 
     /**
      * Gets an available client from the pool.
