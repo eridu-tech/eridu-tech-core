@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { RedisContainer } from "@testcontainers/redis";
 import Sqlite from "better-sqlite3";
 import { Redis } from "ioredis";
@@ -13,10 +15,12 @@ import {
 } from "vitest";
 
 import { RedisPubSubEventBusAdapter } from "@/event-bus/implementations/adapters/redis-pub-sub-event-bus-adapter/redis-pub-sub-event-bus-adapter.js";
+import { withEventBusPrefix } from "@/event-bus/implementations/plugins/_module-exports.js";
 import { eventBusAdapterTestSuite } from "@/event-bus/implementations/test-utilities/_module-exports.js";
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/kysely-transaction-adapter.js";
@@ -24,27 +28,34 @@ import { TransactionContext } from "@/transaction-context/implementations/deriva
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
 
+import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("class: RedisPubSubEventBusAdapter", () => {
     let client: Redis;
     let startedContainer: StartedRedisContainer;
+    let adapter: IEventBusAdapter;
+    const serde = new SuperJsonSerde();
     beforeAll(async () => {
         startedContainer = await new RedisContainer("redis:7.2").start();
         client = new Redis(startedContainer.getConnectionUrl());
     }, timeout.toMilliseconds());
-    afterAll(async () => {
-        await client.quit();
-        await startedContainer.stop();
-    }, timeout.toMilliseconds());
-    const serde = new SuperJsonSerde();
-    eventBusAdapterTestSuite({
-        createAdapter: () =>
+    beforeEach(() => {
+        adapter = withPlugin(
             new RedisPubSubEventBusAdapter({
                 client,
                 serde,
             }),
+            withEventBusPrefix(randomUUID()),
+        );
+    });
+    afterAll(async () => {
+        await client.quit();
+        await startedContainer.stop();
+    }, timeout.toMilliseconds());
+    eventBusAdapterTestSuite({
+        createAdapter: () => adapter,
         test,
         beforeEach,
         expect,
