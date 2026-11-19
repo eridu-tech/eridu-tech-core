@@ -332,4 +332,192 @@ describe("class: OnStreamLifeCycle", () => {
         expect(result).toEqual([1, 2]);
         expect(onBeforeStart).toHaveBeenCalledOnce();
     });
+    test("Should call onBeforeProcess before each value and onAfterProcess after it", async () => {
+        const events: Array<string> = [];
+
+        for await (const value of new OnStreamLifeCycle({
+            stream: iterableToAsyncIterable([1, 2]),
+            onBeforeProcess: (item) => {
+                events.push(`beforeProcess:${String(item)}`);
+            },
+            onAfterProcess: (item) => {
+                events.push(`afterProcess:${String(item)}`);
+            },
+        })) {
+            events.push(`value:${String(value)}`);
+        }
+
+        expect(events).toEqual([
+            "beforeProcess:1",
+            "value:1",
+            "afterProcess:1",
+            "beforeProcess:2",
+            "value:2",
+            "afterProcess:2",
+        ]);
+    });
+    test("Should await an async onBeforeProcess before yielding the value", async () => {
+        const events: Array<string> = [];
+
+        for await (const value of new OnStreamLifeCycle({
+            stream: iterableToAsyncIterable([1]),
+            onBeforeProcess: async () => {
+                await Promise.resolve();
+                events.push("beforeProcess");
+            },
+        })) {
+            events.push(`value:${String(value)}`);
+        }
+
+        expect(events).toEqual(["beforeProcess", "value:1"]);
+    });
+    test("Should not call onAfterProcess for the value the consumer stops at", async () => {
+        const onAfterProcess = vi.fn();
+
+        for await (const _value of new OnStreamLifeCycle({
+            stream: iterableToAsyncIterable([1, 2, 3]),
+            onAfterProcess,
+        })) {
+            break;
+        }
+
+        expect(onAfterProcess).not.toHaveBeenCalled();
+    });
+    test("Should not call the process callbacks when the instance is never iterated", () => {
+        const onBeforeProcess = vi.fn();
+        const onAfterProcess = vi.fn();
+
+        new OnStreamLifeCycle({
+            stream: iterableToAsyncIterable([1]),
+            onBeforeProcess,
+            onAfterProcess,
+        });
+
+        expect(onBeforeProcess).not.toHaveBeenCalled();
+        expect(onAfterProcess).not.toHaveBeenCalled();
+    });
+    test("Should call onFailure before onEnd and rethrow when the wrapped iterable throws", async () => {
+        const error = new Error("Stream failed");
+        const events: Array<string> = [];
+
+        function* yieldThenThrow(): Generator<number> {
+            yield 1;
+            throw error;
+        }
+
+        const consume = async () => {
+            for await (const _value of new OnStreamLifeCycle({
+                stream: iterableToAsyncIterable(yieldThenThrow()),
+                onFailure: () => {
+                    events.push("error");
+                },
+                onEnd: () => {
+                    events.push("end");
+                },
+            })) {
+                // consume until the wrapped iterable throws
+            }
+        };
+
+        await expect(consume()).rejects.toThrow(error);
+        expect(events).toEqual(["error", "end"]);
+    });
+    test("Should call onFailure and rethrow when onStart throws", async () => {
+        const error = new Error("Acquire failed");
+        const onFailure = vi.fn();
+
+        const consume = async () => {
+            for await (const _value of new OnStreamLifeCycle({
+                stream: iterableToAsyncIterable([1]),
+                onStart: () => {
+                    throw error;
+                },
+                onFailure,
+            })) {
+                // onStart throws before any value is yielded
+            }
+        };
+
+        await expect(consume()).rejects.toThrow(error);
+        expect(onFailure).toHaveBeenCalledExactlyOnceWith(error);
+    });
+    test("Should call onFailure and rethrow when onBeforeProcess throws", async () => {
+        const error = new Error("Before process failed");
+        const onFailure = vi.fn();
+
+        const consume = async () => {
+            for await (const _value of new OnStreamLifeCycle({
+                stream: iterableToAsyncIterable([1]),
+                onBeforeProcess: () => {
+                    throw error;
+                },
+                onFailure,
+            })) {
+                // onBeforeProcess throws before any value is yielded
+            }
+        };
+
+        await expect(consume()).rejects.toThrow(error);
+        expect(onFailure).toHaveBeenCalledExactlyOnceWith(error);
+    });
+    test("Should call onFailure and rethrow when onAfterProcess throws", async () => {
+        const error = new Error("After process failed");
+        const onFailure = vi.fn();
+
+        const consume = async () => {
+            for await (const _value of new OnStreamLifeCycle({
+                stream: iterableToAsyncIterable([1]),
+                onAfterProcess: () => {
+                    throw error;
+                },
+                onFailure,
+            })) {
+                // consume everything
+            }
+        };
+
+        await expect(consume()).rejects.toThrow(error);
+        expect(onFailure).toHaveBeenCalledExactlyOnceWith(error);
+    });
+    test("Should not call onFailure when the stream finishes or the consumer stops early", async () => {
+        const onFailure = vi.fn();
+
+        for await (const _value of new OnStreamLifeCycle({
+            stream: iterableToAsyncIterable([1]),
+            onFailure,
+        })) {
+            // consume everything
+        }
+        for await (const _value of new OnStreamLifeCycle({
+            stream: iterableToAsyncIterable([1, 2]),
+            onFailure,
+        })) {
+            break;
+        }
+
+        expect(onFailure).not.toHaveBeenCalled();
+    });
+    test("Should call onFailure only once when the same instance keeps failing", async () => {
+        const error = new Error("Stream failed");
+        const onFailure = vi.fn();
+        const stream = new OnStreamLifeCycle({
+            stream: {
+                [Symbol.asyncIterator]: () => ({
+                    next: () => Promise.reject(error),
+                }),
+            },
+            onFailure,
+        });
+
+        const consume = async () => {
+            for await (const _value of stream) {
+                // the wrapped iterable fails on the first item
+            }
+        };
+
+        await expect(consume()).rejects.toThrow(error);
+        await expect(consume()).rejects.toThrow(error);
+
+        expect(onFailure).toHaveBeenCalledOnce();
+    });
 });
