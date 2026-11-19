@@ -6,10 +6,7 @@ import { UnexpectedError } from "@/utilities/_module-exports.js";
 import type SftpClient from "ssh2-sftp-client";
 import type { StartedTestContainer } from "testcontainers";
 
-import type {
-    IAsyncDeinitizable,
-    IAsyncInitizable,
-} from "@/utilities/_module-exports.js";
+import type { ITestServer } from "@/test-utilities/servers/_shared.js";
 
 /**
  * @internal
@@ -53,7 +50,7 @@ export type SftpServerSettings = {
 /**
  * @internal
  */
-export class SftpServer implements IAsyncInitizable, IAsyncDeinitizable {
+export class SftpServer implements ITestServer<SftpClient.ConnectOptions> {
     private static readonly SFTP_IMAGE = "atmoz/sftp";
     private startedContainer: StartedTestContainer | null = null;
     private readonly settings: Required<SftpServerSettings>;
@@ -116,7 +113,7 @@ export class SftpServer implements IAsyncInitizable, IAsyncDeinitizable {
         return this.startedContainer;
     }
 
-    getConnectionSettings(): SftpClient.ConnectOptions {
+    getSettings(): SftpClient.ConnectOptions {
         const container = this.requireContainer();
         return {
             host: container.getHost(),

@@ -6,10 +6,7 @@ import { UnexpectedError } from "@/utilities/_module-exports.js";
 import type { S3ClientConfig } from "@aws-sdk/client-s3";
 import type { StartedTestContainer } from "testcontainers";
 
-import type {
-    IAsyncDeinitizable,
-    IAsyncInitizable,
-} from "@/utilities/_module-exports.js";
+import type { ITestServer } from "@/test-utilities/servers/_shared.js";
 
 /**
  * @internal
@@ -76,7 +73,7 @@ export type S3ServerSettings = {
 /**
  * @internal
  */
-export class S3Server implements IAsyncInitizable, IAsyncDeinitizable {
+export class S3Server implements ITestServer<S3ClientConfig> {
     private static readonly S3_IMAGE = "dxflrs/garage:v2.4.1";
     private startedContainer: StartedTestContainer | null = null;
     private readonly settings: Required<S3ServerSettings>;
@@ -192,7 +189,7 @@ index = "index.html"
         return `http://${bucket}${this.settings.ROOT_DOMAIN}:${String(container.getMappedPort(this.settings.WEB_PORT))}`;
     }
 
-    getClientConfig(): S3ClientConfig {
+    getSettings(): S3ClientConfig {
         return {
             endpoint: this.getEndpoint(),
             region: this.settings.REGION,

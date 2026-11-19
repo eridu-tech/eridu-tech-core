@@ -18,7 +18,7 @@ describe(
         beforeAll(async () => {
             await sftpServer.init();
             factory = new SftpFactory({
-                connectionSettings: sftpServer.getConnectionSettings(),
+                connectionSettings: sftpServer.getSettings(),
             });
         }, timeout.toMilliseconds());
         afterAll(async () => {

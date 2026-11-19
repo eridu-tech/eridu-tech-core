@@ -32,7 +32,7 @@ describe(
         });
         beforeAll(async () => {
             await ftpServer.init();
-            accessSettings = ftpServer.getBasicFtpOptions();
+            accessSettings = ftpServer.getSettings();
             factory = new FtpFactory({ accessSettings });
         }, timeout.toMilliseconds());
         afterAll(async () => {

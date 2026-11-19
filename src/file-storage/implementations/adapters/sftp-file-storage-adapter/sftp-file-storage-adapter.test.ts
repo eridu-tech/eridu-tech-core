@@ -40,7 +40,7 @@ describe(
 
             pool = sftpPool({
                 name: "sftp-file-storage-adapter",
-                connectionSettings: sftpServer.getConnectionSettings(),
+                connectionSettings: sftpServer.getSettings(),
                 poolFactory: (resourceFactory) => {
                     return new QueuePool(resourceFactory, {
                         maxResources: 5,

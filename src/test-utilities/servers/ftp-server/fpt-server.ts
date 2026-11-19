@@ -6,10 +6,7 @@ import { UnexpectedError } from "@/utilities/_module-exports.js";
 import type { AccessOptions } from "basic-ftp";
 import type { StartedTestContainer } from "testcontainers";
 
-import type {
-    IAsyncInitizable,
-    IAsyncDeinitizable,
-} from "@/utilities/_module-exports.js";
+import type { ITestServer } from "@/test-utilities/servers/_shared.js";
 
 /**
  * @internal
@@ -86,7 +83,7 @@ export type FtpServerSettings = {
 /**
  * @internal
  */
-export class FtpServer implements IAsyncInitizable, IAsyncDeinitizable {
+export class FtpServer implements ITestServer<AccessOptions> {
     private static readonly FTP_IMAGE = "stilliard/pure-ftpd:hardened";
     private startedContainer: StartedTestContainer | null = null;
     private readonly settings: Required<FtpServerSettings>;
@@ -176,7 +173,7 @@ export class FtpServer implements IAsyncInitizable, IAsyncDeinitizable {
         await this.startedContainer?.stop();
     }
 
-    getBasicFtpOptions(): AccessOptions {
+    getSettings(): AccessOptions {
         if (this.startedContainer === null) {
             throw UnexpectedError.create("!!__MESSAGE__!!");
         }

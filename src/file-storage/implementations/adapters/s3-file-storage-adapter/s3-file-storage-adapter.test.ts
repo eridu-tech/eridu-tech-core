@@ -37,7 +37,7 @@ describe(
         const s3Server = new S3Server({ BUCKET });
         beforeAll(async () => {
             await s3Server.init();
-            client = new S3Client(s3Server.getClientConfig());
+            client = new S3Client(s3Server.getSettings());
         }, timeout.toMilliseconds());
         beforeEach(() => {
             adapter_ = withPlugin(

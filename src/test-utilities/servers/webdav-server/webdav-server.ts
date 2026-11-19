@@ -5,10 +5,7 @@ import { UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type { StartedTestContainer } from "testcontainers";
 
-import type {
-    IAsyncDeinitizable,
-    IAsyncInitizable,
-} from "@/utilities/_module-exports.js";
+import type { ITestServer } from "@/test-utilities/servers/_shared.js";
 
 /**
  * @internal
@@ -59,7 +56,7 @@ export type WebdavServerConnectionSettings = {
 /**
  * @internal
  */
-export class WebdavServer implements IAsyncInitizable, IAsyncDeinitizable {
+export class WebdavServer implements ITestServer<WebdavServerConnectionSettings> {
     private static readonly WEBDAV_IMAGE = "hacdias/webdav:v5.17.1";
     private startedContainer: StartedTestContainer | null = null;
     private readonly settings: Required<WebdavServerSettings>;
@@ -129,7 +126,7 @@ users:
         await this.startedContainer?.stop();
     }
 
-    getConnectionSettings(): WebdavServerConnectionSettings {
+    getSettings(): WebdavServerConnectionSettings {
         if (this.startedContainer === null) {
             throw UnexpectedError.create(
                 "WebdavServer.init() must be called before using the server",

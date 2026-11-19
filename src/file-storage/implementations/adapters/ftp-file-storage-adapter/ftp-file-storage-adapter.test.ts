@@ -38,7 +38,7 @@ describe(
         beforeAll(async () => {
             await ftpServer.init();
             pool = ftpPool({
-                accessSettings: ftpServer.getBasicFtpOptions(),
+                accessSettings: ftpServer.getSettings(),
                 poolFactory: (resourceFactory) => {
                     return new QueuePool(resourceFactory, {
                         maxResources: 5,

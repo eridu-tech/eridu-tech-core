@@ -29,8 +29,7 @@ describe("class: WebdavFileStorageAdapter", () => {
     const webdavServer = new WebdavServer();
     beforeAll(async () => {
         await webdavServer.init();
-        const { url, username, password } =
-            webdavServer.getConnectionSettings();
+        const { url, username, password } = webdavServer.getSettings();
         client = createClient(url, {
             username,
             password,
