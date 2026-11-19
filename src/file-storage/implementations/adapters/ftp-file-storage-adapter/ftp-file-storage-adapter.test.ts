@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 
-import { GenericContainer, Wait } from "testcontainers";
 import {
     beforeEach,
     beforeAll,
@@ -17,27 +16,15 @@ import { withFileStoragePrefix } from "@/file-storage/implementations/plugins/_m
 import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
 import { QueuePool } from "@/generic-pool/implementations/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/_module-exports.js";
+import { FtpServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { AccessOptions, Client } from "basic-ftp";
-import type { StartedTestContainer } from "testcontainers";
+import type { Client } from "basic-ftp";
 
 import type { FileAdapterMetadata } from "@/file-storage/contracts/_module-exports.js";
 import type { IGenericPool } from "@/generic-pool/contracts/generic-pool.contract.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-
-const FTP_IMAGE = "stilliard/pure-ftpd:hardened";
-const FTP_PORT = 21;
-// Passive ports are published 1:1 on the host, so each FTP test file needs its own range.
-const PASSIVE_PORT_START = 32010;
-const PASSIVE_PORT_END = 32019;
-const PASSIVE_PORTS = Array.from(
-    { length: PASSIVE_PORT_END - PASSIVE_PORT_START + 1 },
-    (_, index) => PASSIVE_PORT_START + index,
-);
-const USERNAME = "eridu";
-const PASSWORD = "eridu";
 
 describe(
     "class: FtpFileStorageAdapter",
@@ -47,46 +34,11 @@ describe(
     () => {
         let pool: IGenericPool<Client>;
         let adapter_: FtpFileStorageAdapter;
-        let startedContainer: StartedTestContainer;
+        const ftpServer = new FtpServer();
         beforeAll(async () => {
-            startedContainer = await new GenericContainer(FTP_IMAGE)
-                // The server advertises the passive ports itself, so they must be published 1:1.
-                .withExposedPorts(
-                    FTP_PORT,
-                    ...PASSIVE_PORTS.map((port) => ({
-                        container: port,
-                        host: port,
-                    })),
-                )
-                .withEnvironment({
-                    FTP_USER_NAME: USERNAME,
-                    FTP_USER_PASS: PASSWORD,
-                    FTP_USER_HOME: `/home/ftpusers/${USERNAME}`,
-                    FTP_PASSIVE_PORTS: [
-                        PASSIVE_PORT_START,
-                        PASSIVE_PORT_END,
-                    ].join(":"),
-                    PUBLICHOST: "127.0.0.1",
-                    ADDED_FLAGS: "--tls=1",
-                    TLS_CN: "localhost",
-                    TLS_ORG: "eridu-tech",
-                    TLS_C: "DE",
-                    TLS_USE_DSAPRAM: "true",
-                })
-                .withWaitStrategy(
-                    Wait.forSuccessfulCommand(
-                        "bash -c 'exec 3<>/dev/tcp/127.0.0.1/21'",
-                    ).withStartupTimeout(timeout.toMilliseconds()),
-                )
-                .start();
-            const accessSettings: AccessOptions = {
-                host: startedContainer.getHost(),
-                port: startedContainer.getMappedPort(FTP_PORT),
-                user: USERNAME,
-                password: PASSWORD,
-            };
+            await ftpServer.init();
             pool = ftpPool({
-                accessSettings,
+                accessSettings: ftpServer.getBasicFtpOptions(),
                 poolFactory: (resourceFactory) => {
                     return new QueuePool(resourceFactory, {
                         maxResources: 5,
@@ -94,6 +46,7 @@ describe(
                 },
             });
         }, timeout.toMilliseconds());
+
         beforeEach(() => {
             adapter_ = withPlugin(
                 new FtpFileStorageAdapter({ pool }),
@@ -102,9 +55,11 @@ describe(
             vi.clearAllMocks();
             vi.resetAllMocks();
         });
+
         afterAll(async () => {
-            await startedContainer.stop();
+            await ftpServer.deInit();
         }, timeout.toMilliseconds());
+
         fileStorageAdapterTestSuite({
             createAdapter: () => adapter_,
             test,
@@ -113,6 +68,7 @@ describe(
             describe,
             enableGetMetaData: false,
         });
+
         describe("method: getStream", () => {
             const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
 

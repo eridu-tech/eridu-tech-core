@@ -1,27 +1,21 @@
 import { Readable } from "node:stream";
 
 import { Client } from "basic-ftp";
-import { GenericContainer, Wait } from "testcontainers";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
 import { FtpFactory } from "@/file-storage/implementations/adapters/ftp-file-storage-adapter/_module-exports.js";
+import { FtpServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { AccessOptions } from "basic-ftp";
-import type { StartedTestContainer } from "testcontainers";
 
 const timeout = TimeSpan.fromMinutes(2);
 
-const FTP_IMAGE = "stilliard/pure-ftpd:hardened";
-const FTP_PORT = 21;
+// The FTP adapter test uses the server defaults (32010-32019). Test files run
+// in parallel and passive ports are published 1:1, so this file binds another
+// range to avoid clashing with it.
 const PASSIVE_PORT_START = 32000;
 const PASSIVE_PORT_END = 32009;
-const PASSIVE_PORTS = Array.from(
-    { length: PASSIVE_PORT_END - PASSIVE_PORT_START + 1 },
-    (_, index) => PASSIVE_PORT_START + index,
-);
-const USERNAME = "eridu";
-const PASSWORD = "eridu";
 
 describe(
     "class: FtpFactory",
@@ -32,48 +26,17 @@ describe(
     () => {
         let factory: FtpFactory;
         let accessSettings: AccessOptions;
-        let startedContainer: StartedTestContainer;
+        const ftpServer = new FtpServer({
+            PASSIVE_PORT_START,
+            PASSIVE_PORT_END,
+        });
         beforeAll(async () => {
-            startedContainer = await new GenericContainer(FTP_IMAGE)
-                // The server advertises the passive ports itself, so they must be published 1:1.
-                .withExposedPorts(
-                    FTP_PORT,
-                    ...PASSIVE_PORTS.map((port) => ({
-                        container: port,
-                        host: port,
-                    })),
-                )
-                .withEnvironment({
-                    FTP_USER_NAME: USERNAME,
-                    FTP_USER_PASS: PASSWORD,
-                    FTP_USER_HOME: `/home/ftpusers/${USERNAME}`,
-                    FTP_PASSIVE_PORTS: [
-                        PASSIVE_PORT_START,
-                        PASSIVE_PORT_END,
-                    ].join(":"),
-                    PUBLICHOST: "127.0.0.1",
-                    ADDED_FLAGS: "--tls=1",
-                    TLS_CN: "localhost",
-                    TLS_ORG: "eridu-tech",
-                    TLS_C: "DE",
-                    TLS_USE_DSAPRAM: "true",
-                })
-                .withWaitStrategy(
-                    Wait.forSuccessfulCommand(
-                        "bash -c 'exec 3<>/dev/tcp/127.0.0.1/21'",
-                    ).withStartupTimeout(timeout.toMilliseconds()),
-                )
-                .start();
-            accessSettings = {
-                host: startedContainer.getHost(),
-                port: startedContainer.getMappedPort(FTP_PORT),
-                user: USERNAME,
-                password: PASSWORD,
-            };
+            await ftpServer.init();
+            accessSettings = ftpServer.getBasicFtpOptions();
             factory = new FtpFactory({ accessSettings });
         }, timeout.toMilliseconds());
         afterAll(async () => {
-            await startedContainer.stop();
+            await ftpServer.deInit();
         }, timeout.toMilliseconds());
         describe("method: create", () => {
             test("Should return a connected client", async () => {

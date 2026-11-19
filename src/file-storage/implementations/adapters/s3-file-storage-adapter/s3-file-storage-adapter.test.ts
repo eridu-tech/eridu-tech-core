@@ -6,7 +6,6 @@ import {
     PutBucketWebsiteCommand,
     S3Client,
 } from "@aws-sdk/client-s3";
-import { GenericContainer, Wait } from "testcontainers";
 import {
     afterAll,
     beforeAll,
@@ -20,43 +19,12 @@ import { S3FileStorageAdapter } from "@/file-storage/implementations/adapters/s3
 import { withFileStoragePrefix } from "@/file-storage/implementations/plugins/_module-exports.js";
 import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/_module-exports.js";
+import { S3Server } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-
-import type { StartedTestContainer } from "testcontainers";
 
 const timeout = TimeSpan.fromMinutes(2);
 
-const GARAGE_IMAGE = "dxflrs/garage:v2.4.1";
-const S3_PORT = 3900;
-const WEB_PORT = 3902;
 const BUCKET = "files";
-const ACCESS_KEY_ID = "GK0123456789abcdef0123456789abcdef";
-const SECRET_ACCESS_KEY =
-    "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
-
-// Garage requires a configuration file, the `--single-node` and
-// `--default-bucket` flags create the cluster layout, the access key and the
-// bucket used by the tests.
-const GARAGE_CONFIG = `
-metadata_dir = "/tmp/meta"
-data_dir = "/tmp/data"
-db_engine = "sqlite"
-
-replication_factor = 1
-
-rpc_bind_addr = "[::]:3901"
-rpc_public_addr = "127.0.0.1:3901"
-rpc_secret = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-
-[s3_api]
-s3_region = "garage"
-api_bind_addr = "[::]:${String(S3_PORT)}"
-
-[s3_web]
-bind_addr = "[::]:${String(WEB_PORT)}"
-root_domain = ".web.garage.localhost"
-index = "index.html"
-`;
 
 describe(
     "class: S3FileStorageAdapter",
@@ -66,43 +34,10 @@ describe(
     () => {
         let client: S3Client;
         let adapter_: S3FileStorageAdapter;
-        let startedContainer: StartedTestContainer;
+        const s3Server = new S3Server({ BUCKET });
         beforeAll(async () => {
-            startedContainer = await new GenericContainer(GARAGE_IMAGE)
-                .withCopyContentToContainer([
-                    { content: GARAGE_CONFIG, target: "/etc/garage.toml" },
-                ])
-                .withEnvironment({
-                    GARAGE_DEFAULT_ACCESS_KEY: ACCESS_KEY_ID,
-                    GARAGE_DEFAULT_SECRET_KEY: SECRET_ACCESS_KEY,
-                    GARAGE_DEFAULT_BUCKET: BUCKET,
-                })
-                .withExposedPorts(S3_PORT, WEB_PORT)
-                .withCommand([
-                    "/garage",
-                    "server",
-                    "--single-node",
-                    "--default-bucket",
-                ])
-                .withWaitStrategy(
-                    Wait.forLogMessage(
-                        /S3 API server listening on/,
-                    ).withStartupTimeout(timeout.toMilliseconds()),
-                )
-                .start();
-            client = new S3Client({
-                endpoint: `http://${startedContainer.getHost()}:${String(startedContainer.getMappedPort(S3_PORT))}`,
-                region: "garage",
-                credentials: {
-                    accessKeyId: ACCESS_KEY_ID,
-                    secretAccessKey: SECRET_ACCESS_KEY,
-                },
-                forcePathStyle: true,
-                // Garage rejects presigned uploads when the SDK attaches a
-                // precomputed checksum for the empty body.
-                requestChecksumCalculation: "WHEN_REQUIRED",
-                responseChecksumValidation: "WHEN_REQUIRED",
-            });
+            await s3Server.init();
+            client = new S3Client(s3Server.getClientConfig());
         }, timeout.toMilliseconds());
         beforeEach(() => {
             adapter_ = withPlugin(
@@ -116,7 +51,7 @@ describe(
         });
         afterAll(async () => {
             client.destroy();
-            await startedContainer.stop();
+            await s3Server.deInit();
         }, timeout.toMilliseconds());
         fileStorageAdapterTestSuite({
             createAdapter: async () => {
@@ -148,7 +83,7 @@ describe(
                 const adapter = new S3FileStorageAdapter({
                     client,
                     bucket: BUCKET,
-                    cdnUrl: `http://${BUCKET}.web.garage.localhost:${String(startedContainer.getMappedPort(WEB_PORT))}`,
+                    cdnUrl: s3Server.getBucketWebUrl(),
                 });
                 await adapter.init();
                 await client.send(

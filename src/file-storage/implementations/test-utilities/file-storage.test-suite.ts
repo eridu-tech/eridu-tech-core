@@ -7,7 +7,7 @@ import { KeyNotFoundFileError } from "@/file-storage/contracts/_module-exports.j
 import {
     isBytesArrayEqualityTester,
     resolveStream,
-} from "@/test-utilities/_module.js";
+} from "@/test-utilities/functions/_module.js";
 
 import type { beforeEach, ExpectStatic, SuiteAPI, TestAPI } from "vitest";
 

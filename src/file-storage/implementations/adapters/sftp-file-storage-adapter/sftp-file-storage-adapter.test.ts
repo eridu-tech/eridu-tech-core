@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 
-import { GenericContainer, Wait } from "testcontainers";
 import {
     afterAll,
     beforeAll,
@@ -17,20 +16,15 @@ import { withFileStoragePrefix } from "@/file-storage/implementations/plugins/_m
 import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test-utilities/_module-exports.js";
 import { QueuePool } from "@/generic-pool/implementations/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/_module-exports.js";
+import { SftpServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type SftpClient from "ssh2-sftp-client";
-import type { StartedTestContainer } from "testcontainers";
 
 import type { FileAdapterMetadata } from "@/file-storage/contracts/_module-exports.js";
 import type { IGenericPool } from "@/generic-pool/contracts/generic-pool.contract.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-
-const SFTP_IMAGE = "atmoz/sftp";
-const SFTP_PORT = 22;
-const USERNAME = "eridu";
-const PASSWORD = "eridu";
 
 describe(
     "class: SftpFileStorageAdapter",
@@ -40,32 +34,13 @@ describe(
     () => {
         let pool: IGenericPool<SftpClient>;
         let adapter_: SftpFileStorageAdapter;
-        let startedContainer: StartedTestContainer;
+        const sftpServer = new SftpServer();
         beforeAll(async () => {
-            startedContainer = await new GenericContainer(SFTP_IMAGE)
-                .withExposedPorts(SFTP_PORT)
-                .withCommand([`${USERNAME}:${PASSWORD}:::upload`])
-                .withWaitStrategy(
-                    Wait.forAll([
-                        Wait.forListeningPorts(),
-                        // `forLogMessage` does a plain substring match for string
-                        // arguments, so regex syntax such as `\\.` or the surrounding
-                        // slashes would never match the container output.
-                        Wait.forLogMessage(
-                            `Server listening on 0.0.0.0 port ${String(SFTP_PORT)}.`,
-                        ),
-                    ]).withStartupTimeout(timeout.toMilliseconds()),
-                )
-                .start();
+            await sftpServer.init();
 
             pool = sftpPool({
                 name: "sftp-file-storage-adapter",
-                connectionSettings: {
-                    host: startedContainer.getHost(),
-                    port: startedContainer.getMappedPort(SFTP_PORT),
-                    username: USERNAME,
-                    password: PASSWORD,
-                },
+                connectionSettings: sftpServer.getConnectionSettings(),
                 poolFactory: (resourceFactory) => {
                     return new QueuePool(resourceFactory, {
                         maxResources: 5,
@@ -77,7 +52,7 @@ describe(
             adapter_ = withPlugin(
                 new SftpFileStorageAdapter({
                     pool,
-                    location: "/upload",
+                    location: sftpServer.getHomeDirectory(),
                 }),
                 withFileStoragePrefix(randomUUID()),
             );
@@ -86,7 +61,7 @@ describe(
         });
         afterAll(async () => {
             await pool.close();
-            await startedContainer.stop();
+            await sftpServer.deInit();
         }, timeout.toMilliseconds());
         fileStorageAdapterTestSuite({
             createAdapter: () => adapter_,

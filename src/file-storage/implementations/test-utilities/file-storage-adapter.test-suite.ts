@@ -5,7 +5,7 @@
 import {
     isUint8ByteArrayEqualityTester,
     resolveStream,
-} from "@/test-utilities/_module.js";
+} from "@/test-utilities/functions/_module.js";
 
 import type { beforeEach, ExpectStatic, SuiteAPI, TestAPI } from "vitest";
 

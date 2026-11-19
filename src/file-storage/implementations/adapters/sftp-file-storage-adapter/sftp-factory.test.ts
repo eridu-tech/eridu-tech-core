@@ -1,17 +1,10 @@
-import { GenericContainer, Wait } from "testcontainers";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
 import { SftpFactory } from "@/file-storage/implementations/adapters/sftp-file-storage-adapter/_module-exports.js";
+import { SftpServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { StartedTestContainer } from "testcontainers";
-
 const timeout = TimeSpan.fromMinutes(2);
-
-const SFTP_IMAGE = "atmoz/sftp";
-const SFTP_PORT = 22;
-const USERNAME = "eridu";
-const PASSWORD = "eridu";
 
 describe(
     "class: SftpFactory",
@@ -21,28 +14,15 @@ describe(
     },
     () => {
         let factory: SftpFactory;
-        let startedContainer: StartedTestContainer;
-        beforeEach(async () => {
-            startedContainer = await new GenericContainer(SFTP_IMAGE)
-                .withExposedPorts(SFTP_PORT)
-                .withCommand([`${USERNAME}:${PASSWORD}:::upload`])
-                .withWaitStrategy(
-                    Wait.forListeningPorts().withStartupTimeout(
-                        timeout.toMilliseconds(),
-                    ),
-                )
-                .start();
+        const sftpServer = new SftpServer();
+        beforeAll(async () => {
+            await sftpServer.init();
             factory = new SftpFactory({
-                connectionSettings: {
-                    host: startedContainer.getHost(),
-                    port: startedContainer.getMappedPort(SFTP_PORT),
-                    username: USERNAME,
-                    password: PASSWORD,
-                },
+                connectionSettings: sftpServer.getConnectionSettings(),
             });
         }, timeout.toMilliseconds());
-        afterEach(async () => {
-            await startedContainer.stop();
+        afterAll(async () => {
+            await sftpServer.deInit();
         }, timeout.toMilliseconds());
         describe("method: create", () => {
             test("Should return a connected client", async () => {
