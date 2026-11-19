@@ -9,7 +9,6 @@ import { OnStreamLifeCycle } from "@/utilities/on-stream-life-cycle.js";
 import type {
     IGenericPool,
     IResourceFactory,
-    RunStreamSettings,
 } from "@/generic-pool/contracts/_module-exports.js";
 import type { Invocable, Promisable } from "@/utilities/_module-exports.js";
 
@@ -294,12 +293,12 @@ export class QueuePool<TClient> implements IGenericPool<TClient> {
         }
     }
 
-    async runStream<TValue>(
-        settings: RunStreamSettings<TValue, TClient>,
-    ): Promise<AsyncIterable<TValue>> {
-        const client = settings.client ?? (await this.acquireOrFail());
+    runStream<TValue>(
+        stream: AsyncIterable<TValue>,
+        client: TClient,
+    ): AsyncIterable<TValue> {
         return new OnStreamLifeCycle({
-            stream: settings.stream,
+            stream,
             onEnd: () => this._release(client),
         });
     }

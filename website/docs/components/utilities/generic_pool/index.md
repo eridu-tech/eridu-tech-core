@@ -47,7 +47,7 @@ Instead of `run()`, you can borrow a client manually. Always release it when you
 
 ```
 
-`RunStreamSettings` has two fields: `stream`, the async iterable to bind, and `client`, a client you already acquired. When `client` is omitted, the pool acquires one and releases it when the stream ends.
+`runStream(stream, client)` takes the async iterable to bind and a client you already acquired, and returns the async iterable directly. The pool never acquires a client for you, and a stream that is never iterated does not release its client, so release it yourself in that case.
 
 A recycled connection is checked with the optional `IResourceFactory.validate()`. When it returns `false` or throws, the connection is ended and replaced, and the caller goes back to the front of the queue. Here `cwd()` reports whether the connection still responds:
 

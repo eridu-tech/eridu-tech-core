@@ -4,10 +4,7 @@
 
 import { callInvocable } from "@/utilities/_module-exports.js";
 
-import type {
-    IGenericPool,
-    RunStreamSettings,
-} from "@/generic-pool/contracts/_module-exports.js";
+import type { IGenericPool } from "@/generic-pool/contracts/_module-exports.js";
 import type { Invocable, Promisable } from "@/utilities/_module-exports.js";
 
 /**
@@ -35,9 +32,10 @@ export class NoOpPool<TClient> implements IGenericPool<TClient> {
     constructor(private readonly settings: NoOpPoolSettings<TClient>) {}
 
     runStream<TValue>(
-        settings: RunStreamSettings<TValue, TClient>,
-    ): Promise<AsyncIterable<TValue>> {
-        return Promise.resolve(settings.stream);
+        stream: AsyncIterable<TValue>,
+        _client: TClient,
+    ): AsyncIterable<TValue> {
+        return stream;
     }
 
     acquireOrFail(): Promise<TClient> {
