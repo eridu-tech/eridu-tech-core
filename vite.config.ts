@@ -23,6 +23,10 @@ export default defineConfig({
                 description: "All Memory tests",
             },
             {
+                name: "FS",
+                description: "All file system tests",
+            },
+            {
                 name: "FTP",
                 description: "All FTP tests",
             },
