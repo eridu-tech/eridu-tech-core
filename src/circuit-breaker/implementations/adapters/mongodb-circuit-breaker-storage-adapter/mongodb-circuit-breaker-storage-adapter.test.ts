@@ -1,5 +1,14 @@
+import { randomUUID } from "node:crypto";
+
 import { MongoClient } from "mongodb";
-import { describe, test, expect, beforeEach, afterEach } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+} from "vitest";
 
 import { MongodbCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementations/adapters/mongodb-circuit-breaker-storage-adapter/mongodb-circuit-breaker-storage-adapter.js";
 import { circuitBreakerStorageAdapterTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
@@ -7,12 +16,11 @@ import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
-import { startMongoReplicaSet } from "@/test-utilities/functions/_module.js";
+import { MongodbServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
 import type { ClientSession, Db } from "mongodb";
 
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
@@ -20,42 +28,43 @@ import type { ITransactionContext } from "@/transaction-context/contracts/_modul
 const timeout = TimeSpan.fromMinutes(2);
 describe("class: MongodbCircuitBreakerStorageAdapter", () => {
     let client: MongoClient;
-    let startedContainer: StartedMongoDBContainer;
-    beforeEach(async () => {
-        const { container, uri } = await startMongoReplicaSet();
-        startedContainer = container;
-        client = new MongoClient(uri, {
+    const mongodbServer = new MongodbServer();
+    let adapter: MongodbCircuitBreakerStorageAdapter;
+    let database: Db;
+    let collectionName: string;
+    let trxCtx: ITransactionContext<Db, ClientSession>;
+
+    beforeAll(async () => {
+        await mongodbServer.init();
+        client = new MongoClient(mongodbServer.getSettings().url, {
             directConnection: true,
         });
     }, timeout.toMilliseconds());
-    afterEach(async () => {
+    afterAll(async () => {
         await client.close();
-        await startedContainer.stop();
+        await mongodbServer.deInit();
     }, timeout.toMilliseconds());
-
-    function createTrxCtx(
-        client_: MongoClient,
-        database: Db,
-    ): ITransactionContext<Db, ClientSession> {
-        return new TransactionContext({
+    beforeEach(() => {
+        database = client.db("database");
+        collectionName = randomUUID();
+        trxCtx = new TransactionContext({
             token: contextToken("mongodb"),
             executionContext: new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             ),
             adapter: new MongodbTransactionAdapter({
-                client: client_,
+                client,
                 database,
             }),
         });
-    }
-
+        adapter = new MongodbCircuitBreakerStorageAdapter({
+            transactionContext: trxCtx,
+            collectionName,
+            serde: new SuperJsonSerde(),
+        });
+    });
     circuitBreakerStorageAdapterTestSuite({
         createAdapter: async () => {
-            const adapter = new MongodbCircuitBreakerStorageAdapter({
-                transactionContext: createTrxCtx(client, client.db("database")),
-                collectionName: "circuitBreakers",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             return adapter;
         },
@@ -66,16 +75,6 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
     });
     describe("method: init", () => {
         test("Should not throw error when called multiple times", async () => {
-            const databaseName = "database";
-            const collectionName = "circuitBreakers";
-            const adapter = new MongodbCircuitBreakerStorageAdapter({
-                transactionContext: createTrxCtx(
-                    client,
-                    client.db(databaseName),
-                ),
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             const promise = adapter.init();
@@ -85,41 +84,21 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove collection", async () => {
-            const databaseName = "database";
-            const collectionName = "circuitBreakers";
-            const adapter = new MongodbCircuitBreakerStorageAdapter({
-                transactionContext: createTrxCtx(
-                    client,
-                    client.db(databaseName),
-                ),
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             await adapter.deInit();
 
             const collections = await client
-                .db(databaseName)
+                .db("database")
                 .listCollections()
                 .toArray();
 
             const collection = collections.find(
-                (collection_) => collection_.name === "circuitBreakers",
+                (collection_) => collection_.name === collectionName,
             );
 
             expect(collection).toBeUndefined();
         });
         test("Should not throw error when called multiple times", async () => {
-            const databaseName = "database";
-            const collectionName = "circuitBreakers";
-            const adapter = new MongodbCircuitBreakerStorageAdapter({
-                transactionContext: createTrxCtx(
-                    client,
-                    client.db(databaseName),
-                ),
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -128,17 +107,6 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             await expect(promise).resolves.toBeUndefined();
         });
         test("Should not throw error when called before init", async () => {
-            const databaseName = "database";
-            const collectionName = "circuitBreakers";
-            const adapter = new MongodbCircuitBreakerStorageAdapter({
-                transactionContext: createTrxCtx(
-                    client,
-                    client.db(databaseName),
-                ),
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
-
             const promise = adapter.deInit();
 
             await expect(promise).resolves.toBeUndefined();
@@ -146,13 +114,6 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
     });
     describe("Transaction tests:", () => {
         test("Should not persist changes when the transaction fails", async () => {
-            const trxCtx = createTrxCtx(client, client.db("database"));
-            const collectionName = "circuit-breaker";
-            const adapter = new MongodbCircuitBreakerStorageAdapter({
-                transactionContext: trxCtx,
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             try {
@@ -173,13 +134,6 @@ describe("class: MongodbCircuitBreakerStorageAdapter", () => {
             expect(docs.length).toBe(0);
         });
         test("Should persist changes when the transaction succeeds", async () => {
-            const trxCtx = createTrxCtx(client, client.db("database"));
-            const collectionName = "circuit-breaker";
-            const adapter = new MongodbCircuitBreakerStorageAdapter({
-                transactionContext: trxCtx,
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             await trxCtx.run(async () => {

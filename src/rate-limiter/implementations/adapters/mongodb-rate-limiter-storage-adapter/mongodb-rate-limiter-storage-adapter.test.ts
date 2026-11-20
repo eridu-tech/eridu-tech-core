@@ -1,5 +1,14 @@
+import { randomUUID } from "node:crypto";
+
 import { MongoClient } from "mongodb";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+} from "vitest";
 
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
@@ -7,12 +16,11 @@ import { ExecutionContext } from "@/execution-context/implementations/derivables
 import { MongodbRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/mongodb-rate-limiter-storage-adapter/_module-exports.js";
 import { rateLimiterStorageAdapterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
-import { startMongoReplicaSet } from "@/test-utilities/functions/_module.js";
+import { MongodbServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
 import type { ClientSession, Db } from "mongodb";
 
 import type { MongodbRateLimiterDocument } from "@/rate-limiter/implementations/adapters/mongodb-rate-limiter-storage-adapter/_module-exports.js";
@@ -21,42 +29,43 @@ import type { ITransactionContext } from "@/transaction-context/contracts/_modul
 const timeout = TimeSpan.fromMinutes(2);
 describe("class: MongodbRateLimiterStorageAdapter", () => {
     let client: MongoClient;
-    let startedContainer: StartedMongoDBContainer;
+    const mongodbServer = new MongodbServer();
+    let adapter: MongodbRateLimiterStorageAdapter<unknown>;
+    let database: Db;
+    let collectionName: string;
+    let trxCtx: ITransactionContext<Db, ClientSession>;
 
-    function createTrxCtx(
-        client_: MongoClient,
-        database: Db,
-    ): ITransactionContext<Db, ClientSession> {
-        return new TransactionContext({
+    beforeAll(async () => {
+        await mongodbServer.init();
+        client = new MongoClient(mongodbServer.getSettings().url, {
+            directConnection: true,
+        });
+    }, timeout.toMilliseconds());
+    afterAll(async () => {
+        await client.close();
+        await mongodbServer.deInit();
+    }, timeout.toMilliseconds());
+    beforeEach(() => {
+        database = client.db("database");
+        collectionName = randomUUID();
+        trxCtx = new TransactionContext({
             token: contextToken("mongodb"),
             executionContext: new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             ),
             adapter: new MongodbTransactionAdapter({
-                client: client_,
+                client,
                 database,
             }),
         });
-    }
-
-    beforeEach(async () => {
-        const { container, uri } = await startMongoReplicaSet();
-        startedContainer = container;
-        client = new MongoClient(uri, {
-            directConnection: true,
+        adapter = new MongodbRateLimiterStorageAdapter({
+            transactionContext: trxCtx,
+            collectionName,
+            serde: new SuperJsonSerde(),
         });
-    }, timeout.toMilliseconds());
-    afterEach(async () => {
-        await client.close();
-        await startedContainer.stop();
-    }, timeout.toMilliseconds());
+    });
     rateLimiterStorageAdapterTestSuite({
         createAdapter: async () => {
-            const adapter = new MongodbRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(client, client.db("database")),
-                collectionName: "rateLimiter",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             return adapter;
         },
@@ -67,11 +76,6 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
     });
     describe("method: init", () => {
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new MongodbRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(client, client.db("database")),
-                collectionName: "rateLimiter",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             const promise = adapter.init();
@@ -81,11 +85,6 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove collection", async () => {
-            const adapter = new MongodbRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(client, client.db("database")),
-                collectionName: "rateLimiter",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -95,17 +94,12 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
                 .toArray();
 
             const collection = collections.find(
-                (collection_) => collection_.name === "rateLimiter",
+                (collection_) => collection_.name === collectionName,
             );
 
             expect(collection).toBeUndefined();
         });
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new MongodbRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(client, client.db("database")),
-                collectionName: "rateLimiter",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -114,12 +108,6 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             await expect(promise).resolves.toBeUndefined();
         });
         test("Should not throw error when called before init", async () => {
-            const adapter = new MongodbRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(client, client.db("database")),
-                collectionName: "rateLimiter",
-                serde: new SuperJsonSerde(),
-            });
-
             const promise = adapter.deInit();
 
             await expect(promise).resolves.toBeUndefined();
@@ -127,15 +115,8 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
     });
     describe("Expiration tests:", () => {
         test("Should set expiration field to null when given no expiration", async () => {
-            const database = client.db("database");
-            const collectionName = "rateLimiter";
             const collection =
                 database.collection<MongodbRateLimiterDocument>(collectionName);
-            const adapter = new MongodbRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(client, client.db("database")),
-                collectionName: "rateLimiter",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             const key = "a";
@@ -157,15 +138,8 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             );
         });
         test("Should set expiration field to Date when given expiration", async () => {
-            const database = client.db("database");
-            const collectionName = "rateLimiter";
             const collection =
                 database.collection<MongodbRateLimiterDocument>(collectionName);
-            const adapter = new MongodbRateLimiterStorageAdapter({
-                transactionContext: createTrxCtx(client, client.db("database")),
-                collectionName: "rateLimiter",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             const key = "a";
@@ -185,13 +159,6 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
     });
     describe("Transaction tests:", () => {
         test("Should not persist changes when the transaction fails", async () => {
-            const trxCtx = createTrxCtx(client, client.db("database"));
-            const collectionName = "circuit-breaker";
-            const adapter = new MongodbRateLimiterStorageAdapter({
-                transactionContext: trxCtx,
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             try {
@@ -212,13 +179,6 @@ describe("class: MongodbRateLimiterStorageAdapter", () => {
             expect(docs.length).toBe(0);
         });
         test("Should persist changes when the transaction succeeds", async () => {
-            const trxCtx = createTrxCtx(client, client.db("database"));
-            const collectionName = "circuit-breaker";
-            const adapter = new MongodbRateLimiterStorageAdapter({
-                transactionContext: trxCtx,
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             await trxCtx.run(async () => {

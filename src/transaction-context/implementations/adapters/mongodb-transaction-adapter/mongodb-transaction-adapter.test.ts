@@ -1,33 +1,49 @@
-import { MongoDBContainer } from "@testcontainers/mongodb";
-import { MongoClient } from "mongodb";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { randomUUID } from "node:crypto";
 
+import { MongoClient } from "mongodb";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+    vi,
+} from "vitest";
+
+import { MongodbServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/mongodb-transaction-adapter.js";
 
-import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
-import type { TransactionOptions } from "mongodb";
+import type { Db, TransactionOptions } from "mongodb";
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("class: MongodbTransactionAdapter", () => {
     let client: MongoClient;
-    let startedContainer: StartedMongoDBContainer;
+    const mongodbServer = new MongodbServer();
+    let database: Db;
+    let collectionName: string;
 
-    beforeEach(async () => {
-        startedContainer = await new MongoDBContainer("mongo:5.0.0").start();
-        client = new MongoClient(startedContainer.getConnectionString(), {
+    beforeAll(async () => {
+        await mongodbServer.init();
+        client = new MongoClient(mongodbServer.getSettings().url, {
             directConnection: true,
         });
         await client.connect();
+        vi.clearAllMocks();
+        vi.resetAllMocks();
     }, timeout.toMilliseconds());
-    afterEach(async () => {
+    afterAll(async () => {
         await client.close();
-        await startedContainer.stop();
+        await mongodbServer.deInit();
     }, timeout.toMilliseconds());
+    beforeEach(() => {
+        database = client.db(randomUUID());
+        collectionName = randomUUID();
+    });
 
     describe("getter: client", () => {
         test("Should return the configured database", () => {
-            const database = client.db("database");
             const adapter = new MongodbTransactionAdapter({
                 client,
                 database,
@@ -38,7 +54,6 @@ describe("class: MongodbTransactionAdapter", () => {
     });
     describe("method: start", () => {
         test("Should start a transaction on a new session", async () => {
-            const database = client.db("database");
             const adapter = new MongodbTransactionAdapter({
                 client,
                 database,
@@ -51,11 +66,10 @@ describe("class: MongodbTransactionAdapter", () => {
             await transaction.abort();
         });
         test("Should persist the changes when the transaction is committed", async () => {
-            const database = client.db("database");
             const collection = database.collection<{
                 _id: string;
                 value: string;
-            }>("collection");
+            }>(collectionName);
             const adapter = new MongodbTransactionAdapter({
                 client,
                 database,
@@ -75,11 +89,10 @@ describe("class: MongodbTransactionAdapter", () => {
             ).resolves.toEqual({ _id: "committed", value: "value" });
         });
         test("Should discard the changes when the transaction is aborted", async () => {
-            const database = client.db("database");
             const collection = database.collection<{
                 _id: string;
                 value: string;
-            }>("collection");
+            }>(collectionName);
             const adapter = new MongodbTransactionAdapter({
                 client,
                 database,
@@ -116,7 +129,6 @@ describe("class: MongodbTransactionAdapter", () => {
             await transaction.abort();
         });
         test("Should forward the session, transaction, commit timeout and end-session settings to the underlying MongoDB client", async () => {
-            const database = client.db("database");
             const startSessionSettings = { causalConsistency: false };
             const startTransactionSettings: TransactionOptions = {
                 readConcern: { level: "local" },
@@ -165,7 +177,6 @@ describe("class: MongodbTransactionAdapter", () => {
             expect(endSessionSpy).toHaveBeenCalledWith(endSessionSettings);
         });
         test("Should forward the abort timeout and end-session settings to the underlying MongoDB client", async () => {
-            const database = client.db("database");
             const endSessionSettings = {};
             const abortTimeout = TimeSpan.fromSeconds(15);
             const adapter = new MongodbTransactionAdapter({

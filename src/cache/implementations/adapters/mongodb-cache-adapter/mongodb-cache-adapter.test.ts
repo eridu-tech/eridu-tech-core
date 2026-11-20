@@ -1,6 +1,14 @@
-import { MongoDBContainer } from "@testcontainers/mongodb";
+import { randomUUID } from "node:crypto";
+
 import { MongoClient } from "mongodb";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+} from "vitest";
 
 import { MongodbCacheAdapter } from "@/cache/implementations/adapters/mongodb-cache-adapter/mongodb-cache-adapter.js";
 import { cacheAdapterTestSuite } from "@/cache/implementations/test-utilities/_module-exports.js";
@@ -8,12 +16,12 @@ import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
+import { MongodbServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
-import type { ClientSession } from "mongodb";
+import type { ClientSession, Db } from "mongodb";
 
 import type { MongodbCacheEntryDocument } from "@/cache/implementations/adapters/mongodb-cache-adapter/mongodb-cache-adapter.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
@@ -21,24 +29,33 @@ import type { ITransactionData } from "@/transaction-context/implementations/der
 const timeout = TimeSpan.fromMinutes(2);
 describe("class: MongodbCacheAdapter", () => {
     let client: MongoClient;
-    let startedContainer: StartedMongoDBContainer;
-    beforeEach(async () => {
-        startedContainer = await new MongoDBContainer("mongo:5.0.0").start();
-        client = new MongoClient(startedContainer.getConnectionString(), {
+    const mongodbServer = new MongodbServer();
+    let adapter: MongodbCacheAdapter;
+    let database: Db;
+    let collectionName: string;
+
+    beforeAll(async () => {
+        await mongodbServer.init();
+        client = new MongoClient(mongodbServer.getSettings().url, {
             directConnection: true,
         });
         await client.connect();
     }, timeout.toMilliseconds());
-    afterEach(async () => {
+    afterAll(async () => {
         await client.close();
-        await startedContainer.stop();
+        await mongodbServer.deInit();
     }, timeout.toMilliseconds());
+    beforeEach(() => {
+        database = client.db("database");
+        collectionName = randomUUID();
+        adapter = new MongodbCacheAdapter({
+            database,
+            collectionName,
+            serde: new SuperJsonSerde(),
+        });
+    });
     cacheAdapterTestSuite({
         createAdapter: async () => {
-            const adapter = new MongodbCacheAdapter({
-                database: client.db("database"),
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             return adapter;
         },
@@ -49,11 +66,6 @@ describe("class: MongodbCacheAdapter", () => {
     });
     describe("method: init", () => {
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new MongodbCacheAdapter({
-                database: client.db("database"),
-                collectionName: "cache",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             const promise = adapter.init();
@@ -63,31 +75,18 @@ describe("class: MongodbCacheAdapter", () => {
     });
     describe("method: deInit:", () => {
         test("Should remove collection", async () => {
-            const adapter = new MongodbCacheAdapter({
-                database: client.db("database"),
-                collectionName: "cache",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             await adapter.deInit();
 
-            const collections = await client
-                .db("database")
-                .listCollections()
-                .toArray();
+            const collections = await database.listCollections().toArray();
 
             const collection = collections.find(
-                (collection_) => collection_.name === "cache",
+                (collection_) => collection_.name === collectionName,
             );
 
             expect(collection).toBeUndefined();
         });
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new MongodbCacheAdapter({
-                database: client.db("database"),
-                collectionName: "cache",
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -96,12 +95,6 @@ describe("class: MongodbCacheAdapter", () => {
             await expect(promise).resolves.toBeUndefined();
         });
         test("Should not throw error when called before init", async () => {
-            const adapter = new MongodbCacheAdapter({
-                database: client.db("database"),
-                collectionName: "cache",
-                serde: new SuperJsonSerde(),
-            });
-
             const promise = adapter.deInit();
 
             await expect(promise).resolves.toBeUndefined();
@@ -109,15 +102,8 @@ describe("class: MongodbCacheAdapter", () => {
     });
     describe("Expiration tests:", () => {
         test("Should set expiration field to null when given no expiration", async () => {
-            const database = client.db("database");
-            const collectionName = "cache";
             const collection =
                 database.collection<MongodbCacheEntryDocument>(collectionName);
-            const adapter = new MongodbCacheAdapter({
-                database,
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             const key = "a";
@@ -137,15 +123,8 @@ describe("class: MongodbCacheAdapter", () => {
             );
         });
         test("Should set expiration field to Date when given expiration", async () => {
-            const database = client.db("database");
-            const collectionName = "cache";
             const collection =
                 database.collection<MongodbCacheEntryDocument>(collectionName);
-            const adapter = new MongodbCacheAdapter({
-                database,
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             const key = "a";
@@ -162,12 +141,13 @@ describe("class: MongodbCacheAdapter", () => {
         });
     });
     describe("Transaction tests:", () => {
-        test("Should not persist changes when the transaction fails", async () => {
-            const database = client.db("database");
+        let trxAdapter: MongodbCacheAdapter;
+        let trxCtx: TransactionContext<Db, ClientSession>;
+        beforeEach(async () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const trxCtx = new TransactionContext({
+            trxCtx = new TransactionContext({
                 token: contextToken<ITransactionData<ClientSession>>("mongodb"),
                 adapter: new MongodbTransactionAdapter({
                     database,
@@ -175,18 +155,18 @@ describe("class: MongodbCacheAdapter", () => {
                 }),
                 executionContext,
             });
-            const collectionName = "cache";
-            const adapter = new MongodbCacheAdapter({
+            trxAdapter = new MongodbCacheAdapter({
                 database: trxCtx,
                 collectionName,
                 serde: new SuperJsonSerde(),
             });
-            await adapter.init();
-
+            await trxAdapter.init();
+        });
+        test("Should not persist changes when the transaction fails", async () => {
             try {
                 await trxCtx.run(async () => {
-                    await adapter.add("a", 1, null);
-                    await adapter.add("b", 1, null);
+                    await trxAdapter.add("a", 1, null);
+                    await trxAdapter.add("b", 1, null);
                     throw new Error("Transaction failure");
                 });
             } catch {
@@ -199,29 +179,9 @@ describe("class: MongodbCacheAdapter", () => {
             expect(docs.length).toBe(0);
         });
         test("Should persist changes when the transaction succeeds", async () => {
-            const database = client.db("database");
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            const trxCtx = new TransactionContext({
-                token: contextToken<ITransactionData<ClientSession>>("mongodb"),
-                adapter: new MongodbTransactionAdapter({
-                    database,
-                    client,
-                }),
-                executionContext,
-            });
-            const collectionName = "cache";
-            const adapter = new MongodbCacheAdapter({
-                database: trxCtx,
-                collectionName,
-                serde: new SuperJsonSerde(),
-            });
-            await adapter.init();
-
             await trxCtx.run(async () => {
-                await adapter.add("a", 1, null);
-                await adapter.add("b", 1, null);
+                await trxAdapter.add("a", 1, null);
+                await trxAdapter.add("b", 1, null);
             });
 
             const collection = trxCtx.client.collection(collectionName);

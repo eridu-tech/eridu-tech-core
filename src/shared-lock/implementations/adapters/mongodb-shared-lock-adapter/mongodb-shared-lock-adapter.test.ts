@@ -1,18 +1,26 @@
-import { MongoDBContainer } from "@testcontainers/mongodb";
+import { randomUUID } from "node:crypto";
+
 import { MongoClient } from "mongodb";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+} from "vitest";
 
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { MongodbSharedLockAdapter } from "@/shared-lock/implementations/adapters/mongodb-shared-lock-adapter/mongodb-shared-lock-adapter.js";
 import { sharedLockAdapterTestSuite } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
+import { MongodbServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
-import type { ClientSession } from "mongodb";
+import type { ClientSession, Db } from "mongodb";
 
 import type { MongodbSharedLockEntryDocument } from "@/shared-lock/implementations/adapters/mongodb-shared-lock-adapter/mongodb-shared-lock-adapter.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
@@ -20,24 +28,32 @@ import type { ITransactionData } from "@/transaction-context/implementations/der
 const timeout = TimeSpan.fromMinutes(2);
 describe("class: MongodbSharedLockAdapter", () => {
     let client: MongoClient;
-    let startedContainer: StartedMongoDBContainer;
-    beforeEach(async () => {
-        startedContainer = await new MongoDBContainer("mongo:5.0.0").start();
-        client = new MongoClient(startedContainer.getConnectionString(), {
+    const mongodbServer = new MongodbServer();
+    let adapter: MongodbSharedLockAdapter;
+    let database: Db;
+    let collectionName: string;
+
+    beforeAll(async () => {
+        await mongodbServer.init();
+        client = new MongoClient(mongodbServer.getSettings().url, {
             directConnection: true,
         });
         await client.connect();
     }, timeout.toMilliseconds());
-    afterEach(async () => {
+    afterAll(async () => {
         await client.close();
-        await startedContainer.stop();
+        await mongodbServer.deInit();
     }, timeout.toMilliseconds());
+    beforeEach(() => {
+        database = client.db("database");
+        collectionName = randomUUID();
+        adapter = new MongodbSharedLockAdapter({
+            database,
+            collectionName,
+        });
+    });
     sharedLockAdapterTestSuite({
         createAdapter: async () => {
-            const adapter = new MongodbSharedLockAdapter({
-                database: client.db("database"),
-                collectionName: "shared-locks",
-            });
             await adapter.init();
             return adapter;
         },
@@ -48,10 +64,6 @@ describe("class: MongodbSharedLockAdapter", () => {
     });
     describe("method: init", () => {
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new MongodbSharedLockAdapter({
-                database: client.db("database"),
-                collectionName: "shared-locks",
-            });
             await adapter.init();
 
             const promise = adapter.init();
@@ -61,29 +73,18 @@ describe("class: MongodbSharedLockAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove collection", async () => {
-            const adapter = new MongodbSharedLockAdapter({
-                database: client.db("database"),
-                collectionName: "shared-locks",
-            });
             await adapter.init();
             await adapter.deInit();
 
-            const collections = await client
-                .db("database")
-                .listCollections()
-                .toArray();
+            const collections = await database.listCollections().toArray();
 
             const collection = collections.find(
-                (collection_) => collection_.name === "shared-locks",
+                (collection_) => collection_.name === collectionName,
             );
 
             expect(collection).toBeUndefined();
         });
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new MongodbSharedLockAdapter({
-                database: client.db("database"),
-                collectionName: "shared-locks",
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -92,11 +93,6 @@ describe("class: MongodbSharedLockAdapter", () => {
             await expect(promise).resolves.toBeUndefined();
         });
         test("Should not throw error when called before init", async () => {
-            const adapter = new MongodbSharedLockAdapter({
-                database: client.db("database"),
-                collectionName: "shared-locks",
-            });
-
             const promise = adapter.deInit();
 
             await expect(promise).resolves.toBeUndefined();
@@ -104,16 +100,10 @@ describe("class: MongodbSharedLockAdapter", () => {
     });
     describe("Writer expiration tests:", () => {
         test("Should set expiration field to null when given no expiration", async () => {
-            const database = client.db("database");
-            const collectionName = "shared-locks";
             const collection =
                 database.collection<MongodbSharedLockEntryDocument>(
                     collectionName,
                 );
-            const adapter = new MongodbSharedLockAdapter({
-                database,
-                collectionName,
-            });
             await adapter.init();
 
             const key = "a";
@@ -133,16 +123,10 @@ describe("class: MongodbSharedLockAdapter", () => {
             );
         });
         test("Should set expiration field to Date when given expiration", async () => {
-            const database = client.db("database");
-            const collectionName = "shared-locks";
             const collection =
                 database.collection<MongodbSharedLockEntryDocument>(
                     collectionName,
                 );
-            const adapter = new MongodbSharedLockAdapter({
-                database,
-                collectionName,
-            });
             await adapter.init();
 
             const key = "a";
@@ -160,16 +144,10 @@ describe("class: MongodbSharedLockAdapter", () => {
     });
     describe("Reader expiration tests:", () => {
         test("Should set expiration to null when slot is unexpireable", async () => {
-            const database = client.db("database");
-            const collectionName = "shared-locks";
             const collection =
                 database.collection<MongodbSharedLockEntryDocument>(
                     collectionName,
                 );
-            const adapter = new MongodbSharedLockAdapter({
-                database,
-                collectionName,
-            });
 
             const key = "a";
             const lockId = "1";
@@ -192,16 +170,10 @@ describe("class: MongodbSharedLockAdapter", () => {
             );
         });
         test("Should set expiration of the first acquired slot when slot is unexpired", async () => {
-            const database = client.db("database");
-            const collectionName = "shared-locks";
             const collection =
                 database.collection<MongodbSharedLockEntryDocument>(
                     collectionName,
                 );
-            const adapter = new MongodbSharedLockAdapter({
-                database,
-                collectionName,
-            });
 
             const key = "a";
             const limit = 3;
@@ -220,16 +192,10 @@ describe("class: MongodbSharedLockAdapter", () => {
             expect(doc?.expiration).toEqual(expiration);
         });
         test("Should set expiration to null when first slot is unexpireable and seconds slot is unexpired", async () => {
-            const database = client.db("database");
-            const collectionName = "shared-locks";
             const collection =
                 database.collection<MongodbSharedLockEntryDocument>(
                     collectionName,
                 );
-            const adapter = new MongodbSharedLockAdapter({
-                database,
-                collectionName,
-            });
 
             const key = "a";
             const limit = 3;
@@ -261,16 +227,10 @@ describe("class: MongodbSharedLockAdapter", () => {
             );
         });
         test("Should set expiration to null when first slot is unexpired and seconds slot is unexpireable", async () => {
-            const database = client.db("database");
-            const collectionName = "shared-locks";
             const collection =
                 database.collection<MongodbSharedLockEntryDocument>(
                     collectionName,
                 );
-            const adapter = new MongodbSharedLockAdapter({
-                database,
-                collectionName,
-            });
 
             const key = "a";
             const limit = 3;
@@ -302,16 +262,10 @@ describe("class: MongodbSharedLockAdapter", () => {
             );
         });
         test("Should set expiration to longest expiration when first slot is unexpired and seconds slot is unexpired and has longest expiration", async () => {
-            const database = client.db("database");
-            const collectionName = "shared-locks";
             const collection =
                 database.collection<MongodbSharedLockEntryDocument>(
                     collectionName,
                 );
-            const adapter = new MongodbSharedLockAdapter({
-                database,
-                collectionName,
-            });
 
             const key = "a";
             const limit = 3;
@@ -339,16 +293,10 @@ describe("class: MongodbSharedLockAdapter", () => {
             expect(doc?.expiration).toEqual(expiration2);
         });
         test("Should set expiration to longest expiration when first slot is unexpired and has longest expiration and seconds slot is unexpired", async () => {
-            const database = client.db("database");
-            const collectionName = "shared-locks";
             const collection =
                 database.collection<MongodbSharedLockEntryDocument>(
                     collectionName,
                 );
-            const adapter = new MongodbSharedLockAdapter({
-                database,
-                collectionName,
-            });
 
             const key = "a";
             const limit = 3;
@@ -376,16 +324,10 @@ describe("class: MongodbSharedLockAdapter", () => {
             expect(doc?.expiration).toEqual(expiration1);
         });
         test("Should set expiration to less than current date when each slot is individually removed", async () => {
-            const database = client.db("database");
-            const collectionName = "shared-locks";
             const collection =
                 database.collection<MongodbSharedLockEntryDocument>(
                     collectionName,
                 );
-            const adapter = new MongodbSharedLockAdapter({
-                database,
-                collectionName,
-            });
 
             const key = "a";
             const limit = 3;
@@ -416,12 +358,13 @@ describe("class: MongodbSharedLockAdapter", () => {
         });
     });
     describe("Transaction tests:", () => {
-        test("Should not persist changes when the transaction fails", async () => {
-            const database = client.db("database");
+        let trxAdapter: MongodbSharedLockAdapter;
+        let trxCtx: TransactionContext<Db, ClientSession>;
+        beforeEach(async () => {
             const executionContext = new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             );
-            const trxCtx = new TransactionContext({
+            trxCtx = new TransactionContext({
                 token: contextToken<ITransactionData<ClientSession>>("mongodb"),
                 adapter: new MongodbTransactionAdapter({
                     database,
@@ -429,22 +372,22 @@ describe("class: MongodbSharedLockAdapter", () => {
                 }),
                 executionContext,
             });
-            const collectionName = "circuit-breaker";
-            const adapter = new MongodbSharedLockAdapter({
+            trxAdapter = new MongodbSharedLockAdapter({
                 database: trxCtx,
                 collectionName,
             });
-            await adapter.init();
-
+            await trxAdapter.init();
+        });
+        test("Should not persist changes when the transaction fails", async () => {
             try {
                 await trxCtx.run(async () => {
-                    await adapter.acquireReader({
+                    await trxAdapter.acquireReader({
                         key: "a",
                         lockId: "1",
                         limit: 4,
                         ttl: null,
                     });
-                    await adapter.acquireReader({
+                    await trxAdapter.acquireReader({
                         key: "b",
                         lockId: "1",
                         limit: 4,
@@ -462,33 +405,14 @@ describe("class: MongodbSharedLockAdapter", () => {
             expect(docs.length).toBe(0);
         });
         test("Should persist changes when the transaction succeeds", async () => {
-            const database = client.db("database");
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            const trxCtx = new TransactionContext({
-                token: contextToken<ITransactionData<ClientSession>>("mongodb"),
-                adapter: new MongodbTransactionAdapter({
-                    database,
-                    client,
-                }),
-                executionContext,
-            });
-            const collectionName = "circuit-breaker";
-            const adapter = new MongodbSharedLockAdapter({
-                database: trxCtx,
-                collectionName,
-            });
-            await adapter.init();
-
             await trxCtx.run(async () => {
-                await adapter.acquireReader({
+                await trxAdapter.acquireReader({
                     key: "a",
                     lockId: "1",
                     limit: 4,
                     ttl: null,
                 });
-                await adapter.acquireReader({
+                await trxAdapter.acquireReader({
                     key: "b",
                     lockId: "1",
                     limit: 4,
