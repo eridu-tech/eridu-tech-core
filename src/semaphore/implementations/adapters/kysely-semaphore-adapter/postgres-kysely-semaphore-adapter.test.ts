@@ -30,8 +30,7 @@ import type { KyselySemaphoreTables } from "@/semaphore/implementations/adapters
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-const tags = ["Postgres"];
-describe("postgres class: KyselySemaphoreAdapter", { tags }, () => {
+describe("postgres class: KyselySemaphoreAdapter", { tags: ["postgres"] }, () => {
     let container: StartedPostgreSqlContainer;
     let database: Pool;
     let trxCtx: ITransactionContext<Kysely<KyselySemaphoreTables>>;

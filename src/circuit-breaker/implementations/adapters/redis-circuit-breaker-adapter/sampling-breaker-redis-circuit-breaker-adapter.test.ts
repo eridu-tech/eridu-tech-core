@@ -9,8 +9,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import type { StartedRedisContainer } from "@testcontainers/redis";
 
 const timeout = TimeSpan.fromMinutes(2);
-const tags = ["Redis"];
-describe("sampling-breaker class: RedisCircuitBreakerAdapter", { tags }, () => {
+describe("sampling-breaker class: RedisCircuitBreakerAdapter", { tags: ["redis"] }, () => {
     let client: Redis;
     let startedContainer: StartedRedisContainer;
     beforeEach(async () => {

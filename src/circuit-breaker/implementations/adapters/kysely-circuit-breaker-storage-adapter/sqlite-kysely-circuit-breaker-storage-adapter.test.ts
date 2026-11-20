@@ -17,8 +17,7 @@ import type { ColumnMetadata, TableMetadata } from "kysely";
 import type { KyselyCircuitBreakerStorageTables } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-storage-adapter/kysely-circuit-breaker-storage-adapter.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-const tags = ["Memory"];
-describe("sqlite class: KyselyCircuitBreakerStorageAdapter", { tags }, () => {
+describe("sqlite class: KyselyCircuitBreakerStorageAdapter", { tags: ["memory"] }, () => {
     let database: Database;
 
     beforeEach(() => {

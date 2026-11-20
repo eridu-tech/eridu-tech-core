@@ -20,8 +20,7 @@ import { KyselyTransactionAdapter } from "@/transaction-context/implementations/
 import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 
 const timeout = TimeSpan.fromMinutes(2);
-const tags = ["Postgres"];
-describe("postgres class: KyselyTransactionAdapter", { tags }, () => {
+describe("postgres class: KyselyTransactionAdapter", { tags: ["postgres"] }, () => {
     let container: StartedPostgreSqlContainer;
     let database: Pool;
     let kysely: Kysely<Database>;

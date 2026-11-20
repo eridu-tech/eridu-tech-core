@@ -17,8 +17,7 @@ import type { ColumnMetadata, TableMetadata } from "kysely";
 import type { KyselyRateLimiterStorageTables } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-storage-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-const tags = ["Memory"];
-describe("sqlite class: KyselyRateLimiterStorageAdapter", { tags }, () => {
+describe("sqlite class: KyselyRateLimiterStorageAdapter", { tags: ["memory"] }, () => {
     let database: Database;
 
     beforeEach(() => {

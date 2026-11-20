@@ -11,8 +11,7 @@ import type {
     WritableFileAdapterContent,
 } from "@/file-storage/contracts/_module-exports.js";
 
-const tags = ["Memory"];
-describe("function: withFileStorageInferContentTypeOnWrite", { tags }, () => {
+describe("function: withFileStorageInferContentTypeOnWrite", { tags: ["memory"] }, () => {
     const adapter = new NoOpFileStorageAdapter();
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
 

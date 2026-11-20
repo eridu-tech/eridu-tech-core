@@ -31,8 +31,7 @@ import type { KyselyRateLimiterStorageTables } from "@/rate-limiter/implementati
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-const tags = ["Postgres"];
-describe("postgres class: KyselyRateLimiterStorageAdapter", { tags }, () => {
+describe("postgres class: KyselyRateLimiterStorageAdapter", { tags: ["postgres"] }, () => {
     let container: StartedPostgreSqlContainer;
     let database: Pool;
     let trxCtx: ITransactionContext<Kysely<KyselyRateLimiterStorageTables>>;

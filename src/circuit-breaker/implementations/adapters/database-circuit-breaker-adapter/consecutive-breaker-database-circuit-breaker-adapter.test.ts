@@ -6,10 +6,9 @@ import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementa
 import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 import { consecutiveBreakerTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
 
-const tags = ["Memory"];
 describe(
     "consecutive-breaker class: DatabaseCircuitBreakerAdapter",
-    { tags },
+    { tags: ["memory"] },
     () => {
         consecutiveBreakerTestSuite({
             createAdapter: () => {

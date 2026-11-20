@@ -6,10 +6,9 @@ import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/
 import { FixedWindowLimiter } from "@/rate-limiter/implementations/policies/_module-exports.js";
 import { slidingWindowLimiterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
 
-const tags = ["Memory"];
 describe(
     "sliding-window-limiter class: DatabaseRateLimiterAdapter",
-    { tags },
+    { tags: ["memory"] },
     () => {
         slidingWindowLimiterTestSuite({
             createAdapter: () => {

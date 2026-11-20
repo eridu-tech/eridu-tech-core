@@ -6,10 +6,9 @@ import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementa
 import { SamplingBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 import { samplingBreakerTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
 
-const tags = ["Memory"];
 describe(
     "sampling-breaker class: DatabaseCircuitBreakerAdapter",
-    { tags },
+    { tags: ["memory"] },
     () => {
         samplingBreakerTestSuite({
             createAdapter: () => {

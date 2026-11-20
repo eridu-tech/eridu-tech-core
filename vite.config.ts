@@ -22,6 +22,22 @@ export default defineConfig({
                 name: "Memory",
                 description: "All Memory tests",
             },
+            {
+                name: "FTP",
+                description: "All FTP tests",
+            },
+            {
+                name: "SFTP",
+                description: "All SFTP tests",
+            },
+            {
+                name: "WebDAV",
+                description: "All SFTP tests",
+            },
+            {
+                name: "S3",
+                description: "All S3 tests",
+            },
         ],
     },
 });

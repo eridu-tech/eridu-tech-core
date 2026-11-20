@@ -8,8 +8,7 @@ import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { callInvocable } from "@/utilities/_module-exports.js";
 
-const tags = ["Memory"];
-describe("function: resolveExponentialBackoffSettings", { tags }, () => {
+describe("function: resolveExponentialBackoffSettings", { tags: ["memory"] }, () => {
     test("Should use default values when no settings are provided", () => {
         const resolved = resolveExponentialBackoffSettings({});
 
@@ -131,7 +130,7 @@ describe("function: resolveExponentialBackoffSettings", { tags }, () => {
     });
 });
 
-describe("function: exponentialBackoff", { tags }, () => {
+describe("function: exponentialBackoff", { tags: ["memory"] }, () => {
     test("Should return minDelay on attempt 0 when jitter is null", () => {
         const backoff = exponentialBackoff({
             minDelay: TimeSpan.fromMilliseconds(500),

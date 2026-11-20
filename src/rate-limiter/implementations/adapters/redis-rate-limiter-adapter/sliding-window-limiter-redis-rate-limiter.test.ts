@@ -9,10 +9,9 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import type { StartedRedisContainer } from "@testcontainers/redis";
 
 const timeout = TimeSpan.fromMinutes(2);
-const tags = ["Redis"];
 describe(
     "sliding-window-limiter class: RedisRateLimiterAdapter",
-    { tags },
+    { tags: ["redis"] },
     () => {
         let client: Redis;
         let startedContainer: StartedRedisContainer;
