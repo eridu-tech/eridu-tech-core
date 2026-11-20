@@ -1,27 +1,47 @@
+import { randomUUID } from "node:crypto";
+
 import { RedisContainer } from "@testcontainers/redis";
 import { Redis } from "ioredis";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+} from "vitest";
 
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { RedisSharedLockAdapter } from "@/shared-lock/implementations/adapters/redis-shared-lock-adapter/_module-exports.js";
+import { withSharedLockPrefix } from "@/shared-lock/implementations/plugins/_module-exports.js";
 import { sharedLockAdapterTestSuite } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
 
+import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports.js";
+
 const timeout = TimeSpan.fromMinutes(2);
 describe("class: RedisSharedLockAdapter", { tags: ["Redis"] }, () => {
     let client: Redis;
     let startedContainer: StartedRedisContainer;
-    beforeEach(async () => {
+    let adapter: ISharedLockAdapter;
+    beforeAll(async () => {
         startedContainer = await new RedisContainer("redis:7.4.2").start();
         client = new Redis(startedContainer.getConnectionUrl());
     }, timeout.toMilliseconds());
-    afterEach(async () => {
+    beforeEach(() => {
+        adapter = withPlugin(
+            new RedisSharedLockAdapter(client),
+            withSharedLockPrefix(randomUUID()),
+        );
+    });
+    afterAll(async () => {
         await client.quit();
         await startedContainer.stop();
     }, timeout.toMilliseconds());
     sharedLockAdapterTestSuite({
-        createAdapter: () => new RedisSharedLockAdapter(client),
+        createAdapter: () => adapter,
         test,
         beforeEach,
         expect,
