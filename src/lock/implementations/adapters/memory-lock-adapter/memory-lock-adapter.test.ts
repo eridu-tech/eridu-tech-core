@@ -7,7 +7,7 @@ import { delay } from "@/utilities/_module-exports.js";
 
 import type { ILockAdapterState } from "@/lock/contracts/_module-exports.js";
 
-describe("class: MemoryLockAdapter", () => {
+describe("class: MemoryLockAdapter", { tags: ["Memory"] }, () => {
     lockAdapterTestSuite({
         createAdapter: () => new MemoryLockAdapter(),
         test,

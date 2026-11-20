@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { withBeforeHook } from "@/middleware/implementations/hooks/with-before-hook/with-before-hook.js";
 
-describe("function: withBeforeHook", () => {
+describe("function: withBeforeHook", { tags: ["Memory"] }, () => {
     test("Should run the hook before the wrapped function", async () => {
         const order: Array<string> = [];
         const fn = use(

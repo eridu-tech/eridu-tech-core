@@ -45,7 +45,8 @@ async function fetchWithError(error: unknown): Promise<Response> {
     return router.fetch(new Request("https://example.com/error"));
 }
 
-describe("file: with-http-circuit-breaker-error.ts", () => {
+const tags = ["Memory"];
+describe("file: with-http-circuit-breaker-error.ts", { tags }, () => {
     describe("function: withHttpCircuitBreakerError", () => {
         const testCases: Array<TestData> = [
             {

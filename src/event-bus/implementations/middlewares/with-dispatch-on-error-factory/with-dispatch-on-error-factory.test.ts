@@ -7,7 +7,7 @@ import { use } from "@/middleware/implementations/_module-exports.js";
 
 import type { WithDispatchOnErrorPayloadSettings } from "@/event-bus/implementations/middlewares/with-dispatch-on-error-factory/with-dispatch-on-error-factory.js";
 
-describe("function: withDispatchOnErrorFactory", () => {
+describe("function: withDispatchOnErrorFactory", { tags: ["Memory"] }, () => {
     const adapter = new NoOpEventBusAdapter();
     const eventDispatcher = new EventBus({
         adapter,

@@ -7,7 +7,7 @@ import { delay } from "@/utilities/_module-exports.js";
 
 import type { ISemaphoreAdapterState } from "@/semaphore/contracts/_module-exports.js";
 
-describe("class: MemorySemaphoreAdapter", () => {
+describe("class: MemorySemaphoreAdapter", { tags: ["Memory"] }, () => {
     semaphoreAdapterTestSuite({
         createAdapter: () => new MemorySemaphoreAdapter(new Map()),
         test,

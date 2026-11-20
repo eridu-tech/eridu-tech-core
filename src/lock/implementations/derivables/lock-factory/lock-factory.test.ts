@@ -23,7 +23,7 @@ import type { ILock } from "@/lock/contracts/_module-exports.js";
 import type { KyselyLockTables } from "@/lock/implementations/adapters/kysely-lock-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-describe("class: LockFactory", () => {
+describe("class: LockFactory", { tags: ["Memory"] }, () => {
     function createLockFactory() {
         const serde = new SuperJsonSerde();
         const lockFactory = new LockFactory({

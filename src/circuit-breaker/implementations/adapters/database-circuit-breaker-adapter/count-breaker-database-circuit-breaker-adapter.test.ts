@@ -6,7 +6,8 @@ import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementa
 import { CountBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 import { countBreakerTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
 
-describe("count-breaker class: DatabaseCircuitBreakerAdapter", () => {
+const tags = ["Memory"];
+describe("count-breaker class: DatabaseCircuitBreakerAdapter", { tags }, () => {
     countBreakerTestSuite({
         createAdapter: () => {
             const adapter = new DatabaseCircuitBreakerAdapter({

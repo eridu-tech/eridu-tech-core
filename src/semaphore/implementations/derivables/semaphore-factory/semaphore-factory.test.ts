@@ -23,7 +23,7 @@ import type { ISemaphore } from "@/semaphore/contracts/_module-exports.js";
 import type { KyselySemaphoreTables } from "@/semaphore/implementations/adapters/kysely-semaphore-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-describe("class: SemaphoreFactory", () => {
+describe("class: SemaphoreFactory", { tags: ["Memory"] }, () => {
     function createSemaphoreFactory() {
         const serde = new SuperJsonSerde();
         const semaphoreFactory = new SemaphoreFactory({

@@ -9,7 +9,7 @@ import type { NextFn } from "@/middleware/contracts/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type { InvocableFn } from "@/utilities/_module-exports.js";
 
-describe("function: retry", () => {
+describe("function: retry", { tags: ["Memory"] }, () => {
     describe("setting: maxAttempts", () => {
         test("Should throw TypeError when maxAttempts is less than 1", () => {
             expect(() => retry({ maxAttempts: 0 })).toThrow(TypeError);

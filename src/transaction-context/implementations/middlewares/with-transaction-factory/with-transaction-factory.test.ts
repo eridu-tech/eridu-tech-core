@@ -9,7 +9,7 @@ import { TransactionContextResolver } from "@/transaction-context/implementation
 import { TransactionContext } from "@/transaction-context/implementations/derivables/transaction-context/transaction-context.js";
 import { withTransactionFactory } from "@/transaction-context/implementations/middlewares/with-transaction-factory/with-transaction-factory.js";
 
-describe("function: withTransactionFactory", () => {
+describe("function: withTransactionFactory", { tags: ["Memory"] }, () => {
     const transactionContextResolver = new TransactionContextResolver<"memory">(
         {
             adapters: {

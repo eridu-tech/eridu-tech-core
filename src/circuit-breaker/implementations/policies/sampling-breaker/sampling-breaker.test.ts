@@ -10,7 +10,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { SamplingBreakerState } from "@/circuit-breaker/implementations/policies/sampling-breaker/sampling-breaker.js";
 
-describe("class: SamplingBreaker", () => {
+describe("class: SamplingBreaker", { tags: ["Memory"] }, () => {
     describe("constructor", () => {
         test(`Should throw TypeError when failureThreshold is an integer`, () => {
             expect(

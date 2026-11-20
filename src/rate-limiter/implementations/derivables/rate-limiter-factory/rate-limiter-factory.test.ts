@@ -23,7 +23,7 @@ import type {
     IRateLimiter,
 } from "@/rate-limiter/contracts/_module-exports.js";
 
-describe("class: RateLimiterFactory", () => {
+describe("class: RateLimiterFactory", { tags: ["Memory"] }, () => {
     const adapter: IRateLimiterAdapter = {
         getState(_key: string): Promise<IRateLimiterAdapterState | null> {
             throw new Error("Function not implemented.");

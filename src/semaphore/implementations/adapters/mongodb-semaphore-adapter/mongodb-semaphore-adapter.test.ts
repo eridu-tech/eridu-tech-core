@@ -26,7 +26,7 @@ import type { MongodbSemaphoreEntryDocument } from "@/semaphore/implementations/
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: MongodbSemaphoreAdapter", () => {
+describe("class: MongodbSemaphoreAdapter", { tags: ["Mongodb"] }, () => {
     let client: MongoClient;
     const mongodbServer = new MongodbServer();
     let adapter: MongodbSemaphoreAdapter;

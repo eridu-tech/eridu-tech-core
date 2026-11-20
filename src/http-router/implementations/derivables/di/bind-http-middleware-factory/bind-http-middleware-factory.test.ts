@@ -40,7 +40,7 @@ function fetchPath(router: HttpRouter, path: string): Promise<Response> {
     return router.fetch(new Request(`https://example.com${path}`));
 }
 
-describe("function: bindHttpMiddlewareFactory", () => {
+describe("function: bindHttpMiddlewareFactory", { tags: ["Memory"] }, () => {
     test("Should resolve the middleware from the container and run it around the handler", async () => {
         const token = genericToken<HttpMiddleware>("loggingMiddleware");
         const container = createContainer();

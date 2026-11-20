@@ -31,7 +31,8 @@ function iterableOf(chunk: Uint8Array): AsyncIterable<Uint8Array> {
     };
 }
 
-describe("function: withFileStorageInferFileTypeOnRead", () => {
+const tags = ["Memory"];
+describe("function: withFileStorageInferFileTypeOnRead", { tags }, () => {
     const adapter = new NoOpFileStorageAdapter();
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
     const metadata: FileAdapterMetadata = {

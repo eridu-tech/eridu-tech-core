@@ -8,7 +8,7 @@ import { withRateLimiterPrefix } from "@/rate-limiter/implementations/plugins/wi
 
 import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-exports.js";
 
-describe("function: withRateLimiterPrefix", () => {
+describe("function: withRateLimiterPrefix", { tags: ["Memory"] }, () => {
     const adapter = new NoOpRateLimiterAdapter();
     const prefix = "test-prefix:";
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));

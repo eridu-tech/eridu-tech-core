@@ -11,7 +11,7 @@ import {
 
 import type { HttpHandlerFn } from "@/http-router/contracts/_module-exports.js";
 
-describe("function: bindHttpFactory", () => {
+describe("function: bindHttpFactory", { tags: ["Memory"] }, () => {
     test("Should resolve the controller from the container and invoke the bound method", async () => {
         const executionContext = new ExecutionContext(
             new AlsExecutionContextAdapter(),

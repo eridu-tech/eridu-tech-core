@@ -51,7 +51,7 @@ async function fetchWithError(error: unknown): Promise<Response> {
     return router.fetch(new Request("https://example.com/error"));
 }
 
-describe("file: with-http-shared-lock-error.ts", () => {
+describe("file: with-http-shared-lock-error.ts", { tags: ["Memory"] }, () => {
     describe("function: withHttpSharedLockError", () => {
         const testCases: Array<TestData> = [
             {

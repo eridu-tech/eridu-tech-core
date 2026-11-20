@@ -23,7 +23,7 @@ import type { ISharedLock } from "@/shared-lock/contracts/_module-exports.js";
 import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-describe("class: SharedLockFactory", () => {
+describe("class: SharedLockFactory", { tags: ["Memory"] }, () => {
     function createSharedLockFactory() {
         const serde = new SuperJsonSerde();
         const sharedLockFactory = new SharedLockFactory({

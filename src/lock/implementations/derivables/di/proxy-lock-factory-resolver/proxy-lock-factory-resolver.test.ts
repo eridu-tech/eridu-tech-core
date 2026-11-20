@@ -19,7 +19,7 @@ import type {
 } from "@/lock/contracts/_module-exports.js";
 import type { IFlexibleSerde } from "@/serde/contracts/_module-exports.js";
 
-describe("class: ProxyLockFactoryResolver", () => {
+describe("class: ProxyLockFactoryResolver", { tags: ["Memory"] }, () => {
     type Adapters = "adapter1" | "adapter2";
     let lockFactory: ILockFactoryResolver<Adapters> & ILockFactory;
     let container: Container;

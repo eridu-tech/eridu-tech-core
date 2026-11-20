@@ -6,7 +6,7 @@ import { ValidationError } from "@/utilities/_module-exports.js";
 
 import type { BaseConfig } from "@/config-accessor/contracts/_module-exports.js";
 
-describe("class: ConfigAccessor", () => {
+describe("class: ConfigAccessor", { tags: ["Memory"] }, () => {
     describe("class: ConfigAccessor", () => {
         describe("constructor:", () => {
             test("Should throw ValidationError when given a schema and invalid config object", () => {

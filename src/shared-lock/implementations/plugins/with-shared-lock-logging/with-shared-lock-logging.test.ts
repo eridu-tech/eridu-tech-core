@@ -10,7 +10,7 @@ import { withSharedLockLogging } from "@/shared-lock/implementations/plugins/wit
 
 import type { SharedLockAcquireSettings } from "@/shared-lock/contracts/_module-exports.js";
 
-describe("function: withSharedLockLogging", () => {
+describe("function: withSharedLockLogging", { tags: ["Memory"] }, () => {
     const currentDate = new Date();
 
     function createAcquireSettings(): SharedLockAcquireSettings {

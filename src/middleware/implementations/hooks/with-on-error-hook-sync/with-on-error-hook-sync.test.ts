@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { withOnErrorSync } from "@/middleware/implementations/hooks/with-on-error-hook-sync/with-on-error-hook-sync.js";
 
-describe("function: withOnErrorSync", () => {
+describe("function: withOnErrorSync", { tags: ["Memory"] }, () => {
     test("Should pass the original arguments and the error to the hook", () => {
         const error = new Error("fail");
         const hook = vi.fn();

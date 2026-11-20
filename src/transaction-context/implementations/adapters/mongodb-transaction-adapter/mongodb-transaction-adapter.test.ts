@@ -18,7 +18,7 @@ import { MongodbTransactionAdapter } from "@/transaction-context/implementations
 import type { Db, TransactionOptions } from "mongodb";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: MongodbTransactionAdapter", () => {
+describe("class: MongodbTransactionAdapter", { tags: ["Mongodb"] }, () => {
     let client: MongoClient;
     const mongodbServer = new MongodbServer();
     let database: Db;

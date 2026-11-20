@@ -10,7 +10,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { Mock } from "vitest";
 
-describe("function: withSyncLogSpanFactory", () => {
+describe("function: withSyncLogSpanFactory", { tags: ["Memory"] }, () => {
     const transport = new NoOpLogTransport();
     const log = new Log({
         transport,

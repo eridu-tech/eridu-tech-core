@@ -21,7 +21,7 @@ import type {
 } from "@/file-storage/contracts/_module-exports.js";
 import type { IFlexibleSerde } from "@/serde/contracts/_module-exports.js";
 
-describe("class: ProxyFileStorageResolver", () => {
+describe("class: ProxyFileStorageResolver", { tags: ["Memory"] }, () => {
     type Adapters = "adapter1" | "adapter2";
     let fileStorage: IFileStorageResolver<Adapters> & IFileStorage;
     let container: Container;

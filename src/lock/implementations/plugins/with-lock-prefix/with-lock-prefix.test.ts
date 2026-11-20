@@ -8,7 +8,7 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 
 import type { ILockAdapter } from "@/lock/contracts/_module-exports.js";
 
-describe("function: withLockPrefix", () => {
+describe("function: withLockPrefix", { tags: ["Memory"] }, () => {
     const adapter = new NoOpLockAdapter();
     const prefix = "test-prefix:";
     const currentDate = new Date();

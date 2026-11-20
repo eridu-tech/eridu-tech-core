@@ -8,7 +8,7 @@ import { Log } from "@/log/implementations/derivables/_module-exports.js";
 import { NoOpLogTransport } from "@/log/implementations/transports/no-op-log-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
-describe("function: withLockLogging", () => {
+describe("function: withLockLogging", { tags: ["Memory"] }, () => {
     const currentDate = new Date();
 
     beforeEach(() => {

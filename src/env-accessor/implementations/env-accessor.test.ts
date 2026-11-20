@@ -5,7 +5,7 @@ import { UninitializedEnvAccessorError } from "@/env-accessor/contracts/_module-
 import { EnvAccessor } from "@/env-accessor/implementations/_module-exports.js";
 import { ValidationError } from "@/utilities/_module-exports.js";
 
-describe("class: EnvAccessor", () => {
+describe("class: EnvAccessor", { tags: ["Memory"] }, () => {
     describe("method: init", () => {
         test("Should throw ValidationError when schema doesnt match", async () => {
             const schema = z.object({ a: z.string() });

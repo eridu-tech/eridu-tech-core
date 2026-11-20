@@ -8,7 +8,7 @@ import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_mo
 import { NoOpRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/no-op-rate-limiter-adapter/_module-exports.js";
 import { withRateLimiterLogging } from "@/rate-limiter/implementations/plugins/with-rate-limiter-logging/with-rate-limiter-logging.js";
 
-describe("function: withRateLimiterLogging", () => {
+describe("function: withRateLimiterLogging", { tags: ["Memory"] }, () => {
     beforeEach(() => {
         vi.restoreAllMocks();
     });

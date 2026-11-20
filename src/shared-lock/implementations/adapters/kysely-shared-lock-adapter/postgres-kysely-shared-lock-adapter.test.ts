@@ -30,7 +30,8 @@ import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapt
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("postgres class: KyselySharedLockAdapter", () => {
+const tags = ["Postgres"];
+describe("postgres class: KyselySharedLockAdapter", { tags }, () => {
     let container: StartedPostgreSqlContainer;
     let database: Pool;
     let trxCtx: ITransactionContext<Kysely<KyselySharedLockTables>>;

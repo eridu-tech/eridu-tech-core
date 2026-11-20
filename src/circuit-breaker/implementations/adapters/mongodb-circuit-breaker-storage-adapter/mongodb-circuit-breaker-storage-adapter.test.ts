@@ -26,7 +26,8 @@ import type { ClientSession, Db } from "mongodb";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: MongodbCircuitBreakerStorageAdapter", () => {
+const tags = ["Mongodb"];
+describe("class: MongodbCircuitBreakerStorageAdapter", { tags }, () => {
     let client: MongoClient;
     const mongodbServer = new MongodbServer();
     let adapter: MongodbCircuitBreakerStorageAdapter;

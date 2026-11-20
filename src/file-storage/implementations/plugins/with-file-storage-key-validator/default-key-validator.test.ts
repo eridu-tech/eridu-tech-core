@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { defaultKeyValidator } from "@/file-storage/implementations/plugins/with-file-storage-key-validator/default-key-validator.js";
 
-describe("function: defaultKeyValidator", () => {
+describe("function: defaultKeyValidator", { tags: ["Memory"] }, () => {
     test("Should return null for a valid key", () => {
         expect(defaultKeyValidator("folder/file.txt")).toBeNull();
     });

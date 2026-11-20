@@ -16,7 +16,7 @@ import type { ColumnMetadata, TableMetadata } from "kysely";
 import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-describe("sqlite class: KyselySharedLockAdapter", () => {
+describe("sqlite class: KyselySharedLockAdapter", { tags: ["Memory"] }, () => {
     let database: Database;
 
     beforeEach(() => {

@@ -7,7 +7,7 @@ import {
 } from "@/collection/contracts/_module-exports.js";
 import { AsyncIterableCollection } from "@/collection/implementations/async-iterable-collection/_module.js";
 
-describe("class: AsyncIterableCollection", () => {
+describe("class: AsyncIterableCollection", { tags: ["Memory"] }, () => {
     describe("method: filter", () => {
         test(`Should filter in all "a" of ["a", "bc", "c", "a", "d", "a"]`, async () => {
             const arr = ["a", "bc", "c", "a", "d", "a"],

@@ -7,7 +7,7 @@ import {
 } from "@/collection/contracts/_module-exports.js";
 import { IterableCollection } from "@/collection/implementations/iterable-collection/_module.js";
 
-describe("class: IterableCollection", () => {
+describe("class: IterableCollection", { tags: ["Memory"] }, () => {
     describe("method: filter", () => {
         test(`Should filter in all "a" of ["a", "bc", "c", "a", "d", "a"]`, () => {
             const arr = ["a", "bc", "c", "a", "d", "a"],

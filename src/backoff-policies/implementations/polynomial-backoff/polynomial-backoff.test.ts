@@ -8,7 +8,8 @@ import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { callInvocable } from "@/utilities/_module-exports.js";
 
-describe("function: resolvePolynomialBackoffSettings", () => {
+const tags = ["Memory"];
+describe("function: resolvePolynomialBackoffSettings", { tags }, () => {
     test("Should use default values when no settings are provided", () => {
         const resolved = resolvePolynomialBackoffSettings({});
 
@@ -130,7 +131,7 @@ describe("function: resolvePolynomialBackoffSettings", () => {
     });
 });
 
-describe("function: polynomialBackoff", () => {
+describe("function: polynomialBackoff", { tags }, () => {
     test("Should grow polynomially with each attempt", () => {
         const backoff = polynomialBackoff({
             minDelay: TimeSpan.fromMilliseconds(500),

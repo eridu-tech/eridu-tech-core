@@ -11,7 +11,7 @@ import { NoOpEventBusAdapter } from "@/event-bus/implementations/adapters/no-op-
 import { EventBus } from "@/event-bus/implementations/derivables/event-bus/event-bus.js";
 import { eventBusTestSuite } from "@/event-bus/implementations/test-utilities/_module-exports.js";
 
-describe("class: EventBus", () => {
+describe("class: EventBus", { tags: ["Memory"] }, () => {
     let eventEmitter: EventEmitter;
     beforeEach(() => {
         eventEmitter = new EventEmitter();

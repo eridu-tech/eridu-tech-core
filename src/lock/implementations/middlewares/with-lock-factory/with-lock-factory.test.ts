@@ -12,7 +12,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { LockFactoryCreateSettings } from "@/lock/contracts/_module-exports.js";
 
-describe("function: withLockFactory", () => {
+describe("function: withLockFactory", { tags: ["Memory"] }, () => {
     const lockFactoryResolver = new LockFactoryResolver<"memory">({
         adapters: { memory: new NoOpLockAdapter() },
         defaultAdapter: "memory",

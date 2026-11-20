@@ -9,7 +9,7 @@ import { delay } from "@/utilities/functions/delay.js";
 
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
-describe("function: timeout", () => {
+describe("function: timeout", { tags: ["Memory"] }, () => {
     describe("basic timeout behavior", () => {
         test("Should return the result when function completes before timeout", async () => {
             const fn = use(

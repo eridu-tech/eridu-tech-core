@@ -26,7 +26,7 @@ import type { MongodbSharedLockEntryDocument } from "@/shared-lock/implementatio
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: MongodbSharedLockAdapter", () => {
+describe("class: MongodbSharedLockAdapter", { tags: ["Mongodb"] }, () => {
     let client: MongoClient;
     const mongodbServer = new MongodbServer();
     let adapter: MongodbSharedLockAdapter;

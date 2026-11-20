@@ -11,7 +11,7 @@ import type {
     WritableFileAdapterContent,
 } from "@/file-storage/contracts/_module-exports.js";
 
-describe("function: withFileStorageLowerCase", () => {
+describe("function: withFileStorageLowerCase", { tags: ["Memory"] }, () => {
     const adapter = new NoOpFileStorageAdapter();
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
 

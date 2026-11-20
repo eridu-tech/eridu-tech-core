@@ -11,7 +11,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { CircuitBreakerFactoryCreateSettings } from "@/circuit-breaker/contracts/_module-exports.js";
 
-describe("function: withCircuitBreakerFactory", () => {
+describe("function: withCircuitBreakerFactory", { tags: ["Memory"] }, () => {
     const circuitBreakerFactoryResolver =
         new CircuitBreakerFactoryResolver<"memory">({
             adapters: { memory: new NoOpCircuitBreakerAdapter() },

@@ -20,7 +20,7 @@ import type { KyselyCacheTables } from "@/cache/implementations/adapters/kysely-
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("postgres class: KyselyCacheAdapter", () => {
+describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
     let database: Pool;
     let container: StartedPostgreSqlContainer;
     beforeEach(async () => {

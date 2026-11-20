@@ -9,7 +9,7 @@ import { enhanceFactory } from "@/middleware/implementations/enhance-factory/enh
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
 import { withPluginFactory } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
-describe("function: withCacheWriteLock", () => {
+describe("function: withCacheWriteLock", { tags: ["Memory"] }, () => {
     const lockFactory = new LockFactory({ adapter: new NoOpLockAdapter() });
     const adapter = new NoOpCacheAdapter();
     const currentDate = new Date();

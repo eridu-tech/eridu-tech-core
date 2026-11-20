@@ -27,7 +27,7 @@ import type { MongodbCacheEntryDocument } from "@/cache/implementations/adapters
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: MongodbCacheAdapter", () => {
+describe("class: MongodbCacheAdapter", { tags: ["Mongodb"] }, () => {
     let client: MongoClient;
     const mongodbServer = new MongodbServer();
     let adapter: MongodbCacheAdapter;

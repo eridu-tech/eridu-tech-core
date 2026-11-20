@@ -17,7 +17,7 @@ import type { ColumnMetadata, TableMetadata } from "kysely";
 import type { KyselyCacheTables } from "@/cache/implementations/adapters/kysely-cache-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-describe("sqlite class: KyselyCacheAdapter", () => {
+describe("sqlite class: KyselyCacheAdapter", { tags: ["Memory"] }, () => {
     let database: Database;
 
     beforeEach(() => {

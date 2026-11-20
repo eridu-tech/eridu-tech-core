@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { withAfterHook } from "@/middleware/implementations/hooks/with-after-hook/with-after-hook.js";
 
-describe("function: withAfterHook", () => {
+describe("function: withAfterHook", { tags: ["Memory"] }, () => {
     test("Should run the hook after the wrapped function", async () => {
         const order: Array<string> = [];
         const fn = use(

@@ -18,7 +18,7 @@ import type { Mock } from "vitest";
 
 import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
 
-describe("class: ProxyEventBusResolver", () => {
+describe("class: ProxyEventBusResolver", { tags: ["Memory"] }, () => {
     type Adapters = "adapter1" | "adapter2";
     type Events = {
         userCreated: {

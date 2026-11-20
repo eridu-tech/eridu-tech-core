@@ -12,7 +12,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { SemaphoreFactoryCreateSettings } from "@/semaphore/contracts/_module-exports.js";
 
-describe("function: withSemaphoreFactory", () => {
+describe("function: withSemaphoreFactory", { tags: ["Memory"] }, () => {
     const semaphoreFactoryResolver = new SemaphoreFactoryResolver<"memory">({
         adapters: { memory: new NoOpSemaphoreAdapter() },
         defaultAdapter: "memory",

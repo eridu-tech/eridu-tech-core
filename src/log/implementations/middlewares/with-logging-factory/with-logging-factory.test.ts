@@ -8,7 +8,7 @@ import { use } from "@/middleware/implementations/_module-exports.js";
 
 import type { Mock } from "vitest";
 
-describe("function: withLoggingFactory", () => {
+describe("function: withLoggingFactory", { tags: ["Memory"] }, () => {
     const transport = new NoOpLogTransport();
     const log = new Log({ transport });
     let logSpy: Mock<NoOpLogTransport["log"]>;

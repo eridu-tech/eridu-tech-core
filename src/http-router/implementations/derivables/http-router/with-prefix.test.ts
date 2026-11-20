@@ -6,7 +6,7 @@ import { describe, expect, test } from "vitest";
 
 import { withPrefix } from "@/http-router/implementations/derivables/http-router/with-prefix.js";
 
-describe("function: withPrefix", () => {
+describe("function: withPrefix", { tags: ["Memory"] }, () => {
     describe("When every path is made only of slashes:", () => {
         test("Should resolve to the root path", () => {
             expect(withPrefix("///", "///")).toBe("/");

@@ -32,7 +32,7 @@ import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js"
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: RedisPubSubEventBusAdapter", () => {
+describe("class: RedisPubSubEventBusAdapter", { tags: ["Redis"] }, () => {
     let client: Redis;
     let startedContainer: StartedRedisContainer;
     let adapter: IEventBusAdapter;

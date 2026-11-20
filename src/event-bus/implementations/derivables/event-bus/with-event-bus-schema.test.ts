@@ -10,7 +10,7 @@ import { ValidationError } from "@/utilities/_module-exports.js";
 
 import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
 
-describe("function: withEventBusSchema", () => {
+describe("function: withEventBusSchema", { tags: ["Memory"] }, () => {
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
     const passingSchema = z.object({
         userId: z.string(),

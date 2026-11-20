@@ -10,7 +10,7 @@ import { withSemaphoreLogging } from "@/semaphore/implementations/plugins/with-s
 
 import type { SemaphoreAcquireSettings } from "@/semaphore/contracts/_module-exports.js";
 
-describe("function: withSemaphoreLogging", () => {
+describe("function: withSemaphoreLogging", { tags: ["Memory"] }, () => {
     const currentDate = new Date();
 
     function createAcquireSettings(): SemaphoreAcquireSettings {

@@ -65,7 +65,7 @@ function textFile(name = "doc.txt", content = "hello"): File {
     return new File([content], name, { type: "text/plain" });
 }
 
-describe("class: HttpRouter", () => {
+describe("class: HttpRouter", { tags: ["Memory"] }, () => {
     describe("constructor:", () => {
         test("Create a router with only the required router setting and dispatch requests using the default baseUrl of '/'", async () => {
             const instance = new HttpRouter({

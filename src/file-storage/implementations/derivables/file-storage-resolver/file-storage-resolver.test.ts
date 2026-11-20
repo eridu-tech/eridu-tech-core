@@ -12,7 +12,7 @@ import {
     UnregisteredAdapterError,
 } from "@/utilities/_module-exports.js";
 
-describe("class: FileStorageResolver", () => {
+describe("class: FileStorageResolver", { tags: ["Memory"] }, () => {
     type Adapters = "adapter1" | "adapter2" | "adapter3";
     let resolver: FileStorageResolver<Adapters>;
     let adapter1: SignedFileStorageAdapter;

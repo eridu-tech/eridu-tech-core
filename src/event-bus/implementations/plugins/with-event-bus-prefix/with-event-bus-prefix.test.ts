@@ -8,7 +8,7 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 
 import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
 
-describe("function: withEventBusPrefix", () => {
+describe("function: withEventBusPrefix", { tags: ["Memory"] }, () => {
     const adapter = new NoOpEventBusAdapter();
     const prefix = "test-prefix:";
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));

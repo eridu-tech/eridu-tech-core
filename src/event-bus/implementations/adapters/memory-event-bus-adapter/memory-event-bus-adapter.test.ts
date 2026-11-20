@@ -14,7 +14,7 @@ import { TransactionContext } from "@/transaction-context/implementations/deriva
 
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-describe("class: MemoryEventBusAdapter", () => {
+describe("class: MemoryEventBusAdapter", { tags: ["Memory"] }, () => {
     eventBusAdapterTestSuite({
         createAdapter: () =>
             new MemoryEventBusAdapter({

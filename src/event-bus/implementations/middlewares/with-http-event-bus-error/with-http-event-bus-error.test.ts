@@ -40,7 +40,7 @@ async function fetchWithError(error: unknown): Promise<Response> {
     return router.fetch(new Request("https://example.com/error"));
 }
 
-describe("file: with-http-event-bus-error.ts", () => {
+describe("file: with-http-event-bus-error.ts", { tags: ["Memory"] }, () => {
     describe("function: withHttpEventBusError", () => {
         const testCases: Array<TestData> = [
             {

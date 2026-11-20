@@ -9,7 +9,7 @@ import { CountBreaker } from "@/circuit-breaker/implementations/policies/count-b
 
 import type { CountBreakerState } from "@/circuit-breaker/implementations/policies/count-breaker/count-breaker.js";
 
-describe("class: CountBreaker", () => {
+describe("class: CountBreaker", { tags: ["Memory"] }, () => {
     describe("method: initialMetrics", () => {
         test(`Should return an object with an empty "samples" array field`, () => {
             const policy = new CountBreaker({

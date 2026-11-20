@@ -5,7 +5,7 @@ import { TimeSpan } from "@/time-span/implementations/time-span.js";
 
 import type { FixedWindowLimiterState } from "@/rate-limiter/implementations/policies/fixed-window-limiter/fixed-window-limiter.js";
 
-describe("class: FixedWindowLimiter", () => {
+describe("class: FixedWindowLimiter", { tags: ["Memory"] }, () => {
     describe("method: initialMetrics", () => {
         test("Should return state with attempt 0 and lastAttemptAt set to currentDate", () => {
             const limiter = new FixedWindowLimiter({

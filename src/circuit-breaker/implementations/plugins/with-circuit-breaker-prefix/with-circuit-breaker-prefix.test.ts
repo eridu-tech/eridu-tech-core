@@ -8,7 +8,7 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 
 import type { ICircuitBreakerAdapter } from "@/circuit-breaker/contracts/_module-exports.js";
 
-describe("function: withCircuitBreakerPrefix", () => {
+describe("function: withCircuitBreakerPrefix", { tags: ["Memory"] }, () => {
     const adapter = new NoOpCircuitBreakerAdapter();
     const prefix = "test-prefix:";
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));

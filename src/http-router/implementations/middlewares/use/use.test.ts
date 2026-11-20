@@ -8,7 +8,7 @@ function createRequest(): Request {
     return new Request("https://example.com/test");
 }
 
-describe("function: use", () => {
+describe("function: use", { tags: ["Memory"] }, () => {
     test("Should invoke the core handler when no middleware is provided", async () => {
         const request = createRequest();
         const core = vi.fn((): Promise<Response> => {

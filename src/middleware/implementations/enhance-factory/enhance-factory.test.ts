@@ -9,7 +9,7 @@ import type {
     Use,
 } from "@/middleware/contracts/_module-exports.js";
 
-describe("function: enhanceFactory", () => {
+describe("function: enhanceFactory", { tags: ["Memory"] }, () => {
     afterEach(() => {
         vi.restoreAllMocks();
         vi.clearAllMocks();

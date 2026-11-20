@@ -40,7 +40,7 @@ function fetchPath(router: HttpRouter, path: string): Promise<Response> {
     return router.fetch(new Request(`https://example.com${path}`));
 }
 
-describe("function: toHttpMiddleware", () => {
+describe("function: toHttpMiddleware", { tags: ["Memory"] }, () => {
     describe("When registered as router middleware", () => {
         test("Should run before and after the endpoint handler", async () => {
             const order: Array<string> = [];

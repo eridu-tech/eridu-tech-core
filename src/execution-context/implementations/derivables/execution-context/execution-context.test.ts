@@ -7,7 +7,7 @@ import { ExecutionContext } from "@/execution-context/implementations/derivables
 
 import type { InvocableFn } from "@/utilities/_module-exports.js";
 
-describe("class: ExecutionContext", () => {
+describe("class: ExecutionContext", { tags: ["Memory"] }, () => {
     let context: ExecutionContext;
     beforeEach(() => {
         context = new ExecutionContext(new AlsExecutionContextAdapter());

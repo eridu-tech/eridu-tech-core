@@ -9,7 +9,7 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
 import type { PluginFn } from "@/middleware/contracts/_module-exports.js";
 
-describe("function: withListenerTracking", () => {
+describe("function: withListenerTracking", { tags: ["Memory"] }, () => {
     let adapter: IEventBusAdapter;
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
 

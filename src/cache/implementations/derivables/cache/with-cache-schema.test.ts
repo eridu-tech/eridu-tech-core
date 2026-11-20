@@ -6,7 +6,7 @@ import { withCacheSchema } from "@/cache/implementations/derivables/cache/with-c
 import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { ValidationError } from "@/utilities/_module-exports.js";
 
-describe("function: withCacheSchema", () => {
+describe("function: withCacheSchema", { tags: ["Memory"] }, () => {
     let adapter = new MemoryCacheAdapter<string>();
     const passingSchema = z.string();
     const failingSchema = z.string().min(100);

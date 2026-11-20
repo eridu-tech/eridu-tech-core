@@ -19,7 +19,7 @@ import type {
     ISharedLockFactoryResolver,
 } from "@/shared-lock/contracts/_module-exports.js";
 
-describe("class: ProxySharedLockFactoryResolver", () => {
+describe("class: ProxySharedLockFactoryResolver", { tags: ["Memory"] }, () => {
     type Adapters = "adapter1" | "adapter2";
     let sharedLockFactory: ISharedLockFactoryResolver<Adapters> &
         ISharedLockFactory;

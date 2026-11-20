@@ -9,7 +9,7 @@ import { Log } from "@/log/implementations/derivables/_module-exports.js";
 import { NoOpLogTransport } from "@/log/implementations/transports/no-op-log-transport/_module-exports.js";
 import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
-describe("function: withCircuitBreakerLogging", () => {
+describe("function: withCircuitBreakerLogging", { tags: ["Memory"] }, () => {
     beforeEach(() => {
         vi.restoreAllMocks();
     });

@@ -23,7 +23,7 @@ import type {
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 
-describe("class: FileStorage", () => {
+describe("class: FileStorage", { tags: ["Memory"] }, () => {
     function createFileStorage() {
         const serde = new SuperJsonSerde();
         const fileStorage = new FileStorage({

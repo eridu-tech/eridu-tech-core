@@ -10,7 +10,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import type { StartedRedisContainer } from "@testcontainers/redis";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: RedisCacheAdapter", () => {
+describe("class: RedisCacheAdapter", { tags: ["Redis"] }, () => {
     let client: Redis;
     let startedContainer: StartedRedisContainer;
     beforeEach(async () => {

@@ -7,7 +7,7 @@ import { delay } from "@/utilities/_module-exports.js";
 
 import type { MemoryCacheEntryData } from "@/cache/implementations/adapters/memory-cache-adapter/_module-exports.js";
 
-describe("class: MemoryCacheAdapter", () => {
+describe("class: MemoryCacheAdapter", { tags: ["Memory"] }, () => {
     cacheAdapterTestSuite({
         createAdapter: () => new MemoryCacheAdapter(),
         test,

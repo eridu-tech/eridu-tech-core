@@ -8,7 +8,7 @@ import { FileSize } from "@/file-size/implementations/_module-exports.js";
 import { HttpRes } from "@/http-router/implementations/derivables/http-router/http-res.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-describe("class: HttpRes", () => {
+describe("class: HttpRes", { tags: ["Memory"] }, () => {
     describe("constructor", () => {
         test("Should create an HttpRes with empty defaults when no settings are provided", () => {
             const res = new HttpRes();

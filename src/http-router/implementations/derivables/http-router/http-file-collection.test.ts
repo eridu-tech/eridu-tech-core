@@ -10,7 +10,7 @@ import { HttpFile } from "@/http-router/implementations/derivables/http-router/h
 
 import type { IHttpFile } from "@/http-router/contracts/_module-exports.js";
 
-describe("class: HttpFileCollection", () => {
+describe("class: HttpFileCollection", { tags: ["Memory"] }, () => {
     describe("constructor", () => {
         test("Should create an empty collection that reports isEmpty() as true", () => {
             const collection = new HttpFileCollection("avatar", []);

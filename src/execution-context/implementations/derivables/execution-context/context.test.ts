@@ -4,7 +4,7 @@ import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { NotFoundExecutionContextError } from "@/execution-context/contracts/execution-context.errors.js";
 import { Context } from "@/execution-context/implementations/derivables/execution-context/context.js";
 
-describe("class: Context", () => {
+describe("class: Context", { tags: ["Memory"] }, () => {
     let context: Context;
 
     beforeEach(() => {

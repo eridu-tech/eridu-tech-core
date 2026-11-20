@@ -8,7 +8,8 @@ import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { callInvocable } from "@/utilities/_module-exports.js";
 
-describe("function: resolveLinearBackoffSettings", () => {
+const tags = ["Memory"];
+describe("function: resolveLinearBackoffSettings", { tags }, () => {
     test("Should use default values when no settings are provided", () => {
         const resolved = resolveLinearBackoffSettings({});
 
@@ -103,7 +104,7 @@ describe("function: resolveLinearBackoffSettings", () => {
     });
 });
 
-describe("function: linearBackoff", () => {
+describe("function: linearBackoff", { tags }, () => {
     test("Should grow linearly with each attempt", () => {
         const backoff = linearBackoff({
             minDelay: TimeSpan.fromMilliseconds(500),

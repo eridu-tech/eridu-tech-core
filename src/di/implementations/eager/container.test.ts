@@ -177,7 +177,8 @@ function createContainerAndExecutionContext(): {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("class: Container", () => {
+const tags = ["Memory"];
+describe("class: Container", { tags }, () => {
     // -----------------------------------------------------------------------
     // constructor
     // -----------------------------------------------------------------------
@@ -968,228 +969,238 @@ describe("class: Container", () => {
     });
 });
 
-describe("Illegal method call before Container.init or after Container.deInit (when container not active)", () => {
-    let container: IContainer;
-    beforeEach(() => {
-        container = createContainerAndExecutionContext().container;
-    });
+describe(
+    "Illegal method call before Container.init or after Container.deInit (when container not active)",
+    { tags },
+    () => {
+        let container: IContainer;
+        beforeEach(() => {
+            container = createContainerAndExecutionContext().container;
+        });
 
-    type TestData = {
-        func: () => Promisable<void>;
-        name: string;
-    };
-    const captureError = async (func: TestData["func"]): Promise<unknown> => {
-        try {
-            await func();
-        } catch (error) {
-            return error;
-        }
-        return null;
-    };
-    /**
-     * Declared as a list so the shared cases below can be reused for additional
-     * token kinds without rewriting the table.
-     */
-    const createTokens = [() => genericToken<string>("_")];
-    const testCases1: Array<TestData> = createTokens.flatMap(
-        (createToken) =>
-            [
-                {
-                    func: () => {
-                        const token = createToken();
-                        container.resolve(token);
-                    },
-                    name: "resolve",
-                },
-                {
-                    func: () => {
-                        const token = createToken();
-                        container.resolveOr(token, "_");
-                    },
-                    name: "resolveOr",
-                },
-                {
-                    func: () => {
-                        const token = createToken();
-                        container.resolveOrFail(token);
-                    },
-                    name: "resolveOrFail",
-                },
-                {
-                    func: () => {
-                        const token = createToken();
-                        container.has(token);
-                    },
-                    name: "has",
-                },
-            ] satisfies Array<TestData>,
-    );
-
-    const testCases2: Array<TestData> = [
-        {
-            func: async () => {
-                await container.deInit();
-            },
-            name: "deInit",
-        },
-        {
-            func: async () => {
-                await container.run({
-                    scope: () => {},
-                });
-            },
-            name: "run",
-        },
-    ];
-
-    const testCases = [...testCases1, ...testCases2];
-
-    test.each(testCases)(
-        "When method Container.$name is called before Container.init then should fail with InvalidMethodCallDiError",
-        async (testCase) => {
-            const error = await captureError(testCase.func);
-            expect(error).toBeInstanceOf(InvalidMethodCallDiError);
-            expect(error).toHaveProperty(
-                "flag",
-                InvalidMethodCallDiError.FLAG.NOT_ACTIVE,
-            );
-        },
-    );
-
-    test.each(testCases)(
-        "When $name is called after Container.init then should not fail with InvalidMethodCallDiError",
-        async (testCase) => {
-            await container.init();
-            let error: unknown = null;
-
+        type TestData = {
+            func: () => Promisable<void>;
+            name: string;
+        };
+        const captureError = async (
+            func: TestData["func"],
+        ): Promise<unknown> => {
             try {
-                await testCase.func();
-            } catch (unknownError) {
-                error = unknownError;
+                await func();
+            } catch (error) {
+                return error;
             }
+            return null;
+        };
+        /**
+         * Declared as a list so the shared cases below can be reused for additional
+         * token kinds without rewriting the table.
+         */
+        const createTokens = [() => genericToken<string>("_")];
+        const testCases1: Array<TestData> = createTokens.flatMap(
+            (createToken) =>
+                [
+                    {
+                        func: () => {
+                            const token = createToken();
+                            container.resolve(token);
+                        },
+                        name: "resolve",
+                    },
+                    {
+                        func: () => {
+                            const token = createToken();
+                            container.resolveOr(token, "_");
+                        },
+                        name: "resolveOr",
+                    },
+                    {
+                        func: () => {
+                            const token = createToken();
+                            container.resolveOrFail(token);
+                        },
+                        name: "resolveOrFail",
+                    },
+                    {
+                        func: () => {
+                            const token = createToken();
+                            container.has(token);
+                        },
+                        name: "has",
+                    },
+                ] satisfies Array<TestData>,
+        );
 
-            expect(error).not.toBeInstanceOf(InvalidMethodCallDiError);
-        },
-    );
-
-    test.each(testCases)(
-        "When Container.$name is called after Container.deInit then should fail with InvalidMethodCallDiError",
-        async (testCase) => {
-            await container.init();
-            await container.deInit();
-            const error = await captureError(testCase.func);
-            expect(error).toBeInstanceOf(InvalidMethodCallDiError);
-            expect(error).toHaveProperty(
-                "flag",
-                InvalidMethodCallDiError.FLAG.NOT_ACTIVE,
-            );
-        },
-    );
-});
-
-describe("illegal method call after Container.init (when container is active)", () => {
-    class A {
-        private: unknown;
-    }
-    let container: IContainer;
-    beforeEach(() => {
-        container = createContainerAndExecutionContext().container;
-    });
-
-    type TestData = {
-        func: () => Promise<void> | void;
-        name: string;
-    };
-
-    const allRegistration = [
-        {
-            func: () => {
-                container.registerFactory({
-                    deps: {},
-                    factory: () => new A(),
-                    token: A,
-                    lifetime: LIFETIME.SINGLETON,
-                });
+        const testCases2: Array<TestData> = [
+            {
+                func: async () => {
+                    await container.deInit();
+                },
+                name: "deInit",
             },
-
-            name: "registerFactory",
-        },
-
-        {
-            func: () => {
-                container.registerDynamic(A);
+            {
+                func: async () => {
+                    await container.run({
+                        scope: () => {},
+                    });
+                },
+                name: "run",
             },
-            name: "registerDynamic",
-        },
-        {
-            func: () => {
-                container.registerValue({ token: A, value: new A() });
-            },
-            name: "registerValue",
-        },
-    ];
+        ];
 
-    const overrides: Array<TestData> = [
-        {
-            func() {
-                container.overrideFactory({
-                    deps: {},
-                    token: A,
-                    factory: () => new A(),
-                });
-            },
-            name: "overrideFactory",
-        },
-        {
-            func() {
-                container.overrideValue({ token: A, value: new A() });
-            },
-            name: "overrideValue",
-        },
-    ];
+        const testCases = [...testCases1, ...testCases2];
 
-    const init: Array<TestData> = [
-        {
-            async func() {
+        test.each(testCases)(
+            "When method Container.$name is called before Container.init then should fail with InvalidMethodCallDiError",
+            async (testCase) => {
+                const error = await captureError(testCase.func);
+                expect(error).toBeInstanceOf(InvalidMethodCallDiError);
+                expect(error).toHaveProperty(
+                    "flag",
+                    InvalidMethodCallDiError.FLAG.NOT_ACTIVE,
+                );
+            },
+        );
+
+        test.each(testCases)(
+            "When $name is called after Container.init then should not fail with InvalidMethodCallDiError",
+            async (testCase) => {
                 await container.init();
+                let error: unknown = null;
+
+                try {
+                    await testCase.func();
+                } catch (unknownError) {
+                    error = unknownError;
+                }
+
+                expect(error).not.toBeInstanceOf(InvalidMethodCallDiError);
             },
-            name: "init",
-        },
-    ];
+        );
 
-    const fork: Array<TestData> = [
-        {
-            func() {
-                container.fork();
+        test.each(testCases)(
+            "When Container.$name is called after Container.deInit then should fail with InvalidMethodCallDiError",
+            async (testCase) => {
+                await container.init();
+                await container.deInit();
+                const error = await captureError(testCase.func);
+                expect(error).toBeInstanceOf(InvalidMethodCallDiError);
+                expect(error).toHaveProperty(
+                    "flag",
+                    InvalidMethodCallDiError.FLAG.NOT_ACTIVE,
+                );
             },
-            name: "fork",
-        },
-    ];
+        );
+    },
+);
 
-    const testCases: Array<TestData> = [
-        ...allRegistration,
-        ...init,
-        ...overrides,
-        ...fork,
-    ];
+describe(
+    "illegal method call after Container.init (when container is active)",
+    { tags },
+    () => {
+        class A {
+            private: unknown;
+        }
+        let container: IContainer;
+        beforeEach(() => {
+            container = createContainerAndExecutionContext().container;
+        });
 
-    test.each(testCases)(
-        "When Container.$name is called after Container.init then should fail with InvalidMethodCallDiError",
-        async (testCase) => {
-            await container.init();
-            const promise = (async () => {
-                await testCase.func();
-            })();
-            await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
-            await expect(promise).rejects.toHaveProperty(
-                "flag",
-                InvalidMethodCallDiError.FLAG.ALREADY_INITIALIZED,
-            );
-        },
-    );
-});
+        type TestData = {
+            func: () => Promise<void> | void;
+            name: string;
+        };
 
-describe("illegal method call inside Container.run", () => {
+        const allRegistration = [
+            {
+                func: () => {
+                    container.registerFactory({
+                        deps: {},
+                        factory: () => new A(),
+                        token: A,
+                        lifetime: LIFETIME.SINGLETON,
+                    });
+                },
+
+                name: "registerFactory",
+            },
+
+            {
+                func: () => {
+                    container.registerDynamic(A);
+                },
+                name: "registerDynamic",
+            },
+            {
+                func: () => {
+                    container.registerValue({ token: A, value: new A() });
+                },
+                name: "registerValue",
+            },
+        ];
+
+        const overrides: Array<TestData> = [
+            {
+                func() {
+                    container.overrideFactory({
+                        deps: {},
+                        token: A,
+                        factory: () => new A(),
+                    });
+                },
+                name: "overrideFactory",
+            },
+            {
+                func() {
+                    container.overrideValue({ token: A, value: new A() });
+                },
+                name: "overrideValue",
+            },
+        ];
+
+        const init: Array<TestData> = [
+            {
+                async func() {
+                    await container.init();
+                },
+                name: "init",
+            },
+        ];
+
+        const fork: Array<TestData> = [
+            {
+                func() {
+                    container.fork();
+                },
+                name: "fork",
+            },
+        ];
+
+        const testCases: Array<TestData> = [
+            ...allRegistration,
+            ...init,
+            ...overrides,
+            ...fork,
+        ];
+
+        test.each(testCases)(
+            "When Container.$name is called after Container.init then should fail with InvalidMethodCallDiError",
+            async (testCase) => {
+                await container.init();
+                const promise = (async () => {
+                    await testCase.func();
+                })();
+                await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
+                await expect(promise).rejects.toHaveProperty(
+                    "flag",
+                    InvalidMethodCallDiError.FLAG.ALREADY_INITIALIZED,
+                );
+            },
+        );
+    },
+);
+
+describe("illegal method call inside Container.run", { tags }, () => {
     /**
      * Despite the test name the operation exercised inside run() is deInit();
      * the point is that container lifecycle calls made from a run() scope are rejected.
@@ -1212,63 +1223,67 @@ describe("illegal method call inside Container.run", () => {
     });
 });
 
-describe("illegal method call inside DynamicServiceProvider in Container.run block", () => {
-    test("resolve method should fail inside DynamicServiceProvider", async () => {
-        const container = createContainerAndExecutionContext().container;
-        await container.init();
-        const tokenA = genericToken("A");
+describe(
+    "illegal method call inside DynamicServiceProvider in Container.run block",
+    { tags },
+    () => {
+        test("resolve method should fail inside DynamicServiceProvider", async () => {
+            const container = createContainerAndExecutionContext().container;
+            await container.init();
+            const tokenA = genericToken("A");
 
-        const promise = container.run({
-            registration: () => {
-                container.resolve(tokenA);
-            },
-            scope: () => {},
+            const promise = container.run({
+                registration: () => {
+                    container.resolve(tokenA);
+                },
+                scope: () => {},
+            });
+            await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
+            await expect(promise).rejects.toHaveProperty(
+                "flag",
+                InvalidMethodCallDiError.FLAG.INSIDE_DYNAMIC_REGISTRATION,
+            );
         });
-        await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
-        await expect(promise).rejects.toHaveProperty(
-            "flag",
-            InvalidMethodCallDiError.FLAG.INSIDE_DYNAMIC_REGISTRATION,
-        );
-    });
 
-    test("resolveOr method should fail inside DynamicServiceProvider", async () => {
-        const container = createContainerAndExecutionContext().container;
-        await container.init();
-        const tokenA = genericToken("A");
+        test("resolveOr method should fail inside DynamicServiceProvider", async () => {
+            const container = createContainerAndExecutionContext().container;
+            await container.init();
+            const tokenA = genericToken("A");
 
-        const promise = container.run({
-            registration: () => {
-                container.resolveOr(tokenA, "_");
-            },
-            scope: () => {},
+            const promise = container.run({
+                registration: () => {
+                    container.resolveOr(tokenA, "_");
+                },
+                scope: () => {},
+            });
+            await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
+            await expect(promise).rejects.toHaveProperty(
+                "flag",
+                InvalidMethodCallDiError.FLAG.INSIDE_DYNAMIC_REGISTRATION,
+            );
         });
-        await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
-        await expect(promise).rejects.toHaveProperty(
-            "flag",
-            InvalidMethodCallDiError.FLAG.INSIDE_DYNAMIC_REGISTRATION,
-        );
-    });
 
-    test("resolveOrFail method should fail inside DynamicServiceProvider", async () => {
-        const container = createContainerAndExecutionContext().container;
-        await container.init();
-        const tokenA = genericToken("A");
+        test("resolveOrFail method should fail inside DynamicServiceProvider", async () => {
+            const container = createContainerAndExecutionContext().container;
+            await container.init();
+            const tokenA = genericToken("A");
 
-        const promise = container.run({
-            registration: () => {
-                container.resolveOrFail(tokenA);
-            },
-            scope: () => {},
+            const promise = container.run({
+                registration: () => {
+                    container.resolveOrFail(tokenA);
+                },
+                scope: () => {},
+            });
+            await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
+            await expect(promise).rejects.toHaveProperty(
+                "flag",
+                InvalidMethodCallDiError.FLAG.INSIDE_DYNAMIC_REGISTRATION,
+            );
         });
-        await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
-        await expect(promise).rejects.toHaveProperty(
-            "flag",
-            InvalidMethodCallDiError.FLAG.INSIDE_DYNAMIC_REGISTRATION,
-        );
-    });
-});
+    },
+);
 
-describe("init / deInit failure semantics", () => {
+describe("init / deInit failure semantics", { tags }, () => {
     test("Should move to a non-active state when an onInit hook rejects", async () => {
         const { container } = createContainerAndExecutionContext();
 
@@ -1333,7 +1348,7 @@ describe("init / deInit failure semantics", () => {
     });
 });
 
-describe("has", () => {
+describe("has", { tags }, () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -1397,7 +1412,7 @@ describe("has", () => {
     });
 });
 
-describe("register", () => {
+describe("register", { tags }, () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -1424,7 +1439,7 @@ describe("register", () => {
     });
 });
 
-describe("resolve & Container.init & Container.run", () => {
+describe("resolve & Container.init & Container.run", { tags }, () => {
     let container: IContainer;
     let tokenA: DiToken<string>;
     beforeEach(async () => {
@@ -1525,7 +1540,7 @@ describe("resolve & Container.init & Container.run", () => {
     });
 });
 
-describe("register & Container.init & resolve", () => {
+describe("register & Container.init & resolve", { tags }, () => {
     let container: IContainer;
     let executionContext: IExecutionContext;
     beforeEach(() => {
@@ -3027,7 +3042,7 @@ describe("register & Container.init & resolve", () => {
     });
 });
 
-describe("graph validation", () => {
+describe("graph validation", { tags }, () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -3227,7 +3242,7 @@ describe("graph validation", () => {
  * container.overrideFactory & overrideClass can implemented independent of node type.
  * Therefore only singleton tested.
  */
-describe("override", () => {
+describe("override", { tags }, () => {
     let container: IContainer;
     let executionContext: IExecutionContext;
     beforeEach(() => {
@@ -3523,7 +3538,7 @@ describe("override", () => {
     });
 });
 
-describe("graph validation & override", () => {
+describe("graph validation & override", { tags }, () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -3613,7 +3628,7 @@ describe("graph validation & override", () => {
     });
 });
 
-describe("forked container", () => {
+describe("forked container", { tags }, () => {
     let containerA: Container;
     beforeEach(() => {
         const executionContext = new ExecutionContext(
@@ -3694,7 +3709,7 @@ describe("forked container", () => {
     });
 });
 
-describe("forked container & override", () => {
+describe("forked container & override", { tags }, () => {
     let containerA: Container;
     let executionContext: IExecutionContext;
     beforeEach(() => {
@@ -3792,7 +3807,7 @@ describe("forked container & override", () => {
     });
 });
 
-describe("forked container & hooks", () => {
+describe("forked container & hooks", { tags }, () => {
     let containerA: Container;
     beforeEach(() => {
         const executionContext = new ExecutionContext(
@@ -3906,7 +3921,7 @@ describe("forked container & hooks", () => {
 // ---------------------------------------------------------------------------
 // feature: optional tokens
 // ---------------------------------------------------------------------------
-describe("feature: optional tokens", () => {
+describe("feature: optional tokens", { tags }, () => {
     let container: IContainer;
 
     beforeEach(() => {
@@ -4665,7 +4680,7 @@ describe("feature: optional tokens", () => {
 // ---------------------------------------------------------------------------
 // container hooks: onInit / onDeInit with a deps record (IContainerHooks)
 // ---------------------------------------------------------------------------
-describe("feature: container hooks", () => {
+describe("feature: container hooks", { tags }, () => {
     let container: IContainer;
 
     beforeEach(() => {

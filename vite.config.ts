@@ -5,29 +5,23 @@ export default defineConfig({
         tsconfigPaths: true,
     },
     test: {
-        forceRerunTriggers: ["./src/**/*"],
-        exclude: [
-            "./package.json",
-            "./.changeset/**",
-            "./.github/**",
-            "./.vscode/**",
-            "./dist/**",
-            "./docs/**",
-            "./node_modules/**",
-            "./website/**",
-            "./.eslintignore",
-            "./.eslintrc.json",
-            "./.gitattributes",
-            "./.gitignore",
-            "./.prettierignore",
-            "./.prettierrc.json",
-            "./.CHANGELOG.md",
-            "./LICENSE.md",
-            "./README.md",
-            "./tsconfig.base.json",
-            "./tsconfig.build.json",
-            "./tsconfig.json",
-            "./typedoc.json",
+        tags: [
+            {
+                name: "Postgres",
+                description: "All Postgres tests",
+            },
+            {
+                name: "Mongodb",
+                description: "All Mongodb tests",
+            },
+            {
+                name: "Redis",
+                description: "All Redis tests",
+            },
+            {
+                name: "Memory",
+                description: "All Memory tests",
+            },
         ],
     },
 });

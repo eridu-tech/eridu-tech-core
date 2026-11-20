@@ -18,7 +18,7 @@ function makeLogData(overrides: Partial<LogData> = {}): LogData {
     };
 }
 
-describe("class: MemoryLogTransport", () => {
+describe("class: MemoryLogTransport", { tags: ["Memory"] }, () => {
     beforeEach(() => {
         vi.useFakeTimers({ now: LOGGED_AT, toFake: ["Date", "performance"] });
     });

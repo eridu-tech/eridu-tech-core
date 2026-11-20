@@ -4,7 +4,7 @@ import { MemoryCacheAdapter } from "@/cache/implementations/adapters/memory-cach
 import { Cache } from "@/cache/implementations/derivables/_module-exports.js";
 import { cacheTestSuite } from "@/cache/implementations/test-utilities/_module-exports.js";
 
-describe("class: Cache", () => {
+describe("class: Cache", { tags: ["Memory"] }, () => {
     cacheTestSuite({
         createCache: () =>
             new Cache({

@@ -9,7 +9,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
 
-describe("function: withCacheJitter", () => {
+describe("function: withCacheJitter", { tags: ["Memory"] }, () => {
     const adapter = new NoOpCacheAdapter<string>();
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
 

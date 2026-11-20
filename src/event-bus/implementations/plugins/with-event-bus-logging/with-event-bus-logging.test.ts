@@ -10,7 +10,7 @@ import { withPlugin } from "@/middleware/implementations/with-plugin-factory/_mo
 
 import type { EventListenerFn } from "@/event-bus/contracts/_module-exports.js";
 
-describe("function: withEventBusLogging", () => {
+describe("function: withEventBusLogging", { tags: ["Memory"] }, () => {
     beforeEach(() => {
         vi.restoreAllMocks();
     });

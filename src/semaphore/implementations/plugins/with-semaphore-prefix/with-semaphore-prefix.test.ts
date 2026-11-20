@@ -8,7 +8,7 @@ import { withSemaphorePrefix } from "@/semaphore/implementations/plugins/with-se
 
 import type { ISemaphoreAdapter } from "@/semaphore/contracts/_module-exports.js";
 
-describe("function: withSemaphorePrefix", () => {
+describe("function: withSemaphorePrefix", { tags: ["Memory"] }, () => {
     const adapter = new NoOpSemaphoreAdapter();
     const prefix = "test-prefix:";
     const currentDate = new Date();

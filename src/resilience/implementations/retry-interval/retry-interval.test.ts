@@ -6,7 +6,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { NextFn } from "@/middleware/contracts/_module-exports.js";
 
-describe("function: retryInterval", () => {
+describe("function: retryInterval", { tags: ["Memory"] }, () => {
     describe("setting: time and interval", () => {
         test("Should retry within the time window until success", async () => {
             const nextFn: NextFn<Array<unknown>, Promise<unknown>> = vi

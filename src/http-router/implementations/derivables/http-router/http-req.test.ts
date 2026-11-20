@@ -9,7 +9,7 @@ import { FileSize } from "@/file-size/implementations/_module-exports.js";
 import { HttpError } from "@/http-router/contracts/_module-exports.js";
 import { HttpReq } from "@/http-router/implementations/derivables/http-router/http-req.js";
 
-describe("class: HttpReq", () => {
+describe("class: HttpReq", { tags: ["Memory"] }, () => {
     describe("static method: fromWebReq", () => {
         test("Should create an HttpReq from a Web Request", () => {
             const request = new Request("https://example.com/api/test", {

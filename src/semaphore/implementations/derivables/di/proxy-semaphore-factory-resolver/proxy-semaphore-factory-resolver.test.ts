@@ -20,7 +20,7 @@ import type {
 } from "@/semaphore/contracts/_module-exports.js";
 import type { IFlexibleSerde } from "@/serde/contracts/_module-exports.js";
 
-describe("class: ProxySemaphoreFactoryResolver", () => {
+describe("class: ProxySemaphoreFactoryResolver", { tags: ["Memory"] }, () => {
     type Adapters = "adapter1" | "adapter2";
     let semaphoreFactory: ISemaphoreFactoryResolver<Adapters> &
         ISemaphoreFactory;

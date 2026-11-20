@@ -8,7 +8,7 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 
 import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
 
-describe("function: withCachePrefix", () => {
+describe("function: withCachePrefix", { tags: ["Memory"] }, () => {
     const adapter = new NoOpCacheAdapter();
     const prefix = "test-prefix:";
     const currentDate = new Date();

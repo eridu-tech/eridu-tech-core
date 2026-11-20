@@ -8,7 +8,7 @@ import { MiddlewareBuilder } from "@/http-router/implementations/derivables/http
 
 import type { HttpMiddleware } from "@/http-router/contracts/_module-exports.js";
 
-describe("class: MiddlewareBuilder", () => {
+describe("class: MiddlewareBuilder", { tags: ["Memory"] }, () => {
     describe("method: use", () => {
         test("Should add the middleware to the internal list via push", () => {
             const middlewares: Array<HttpMiddleware> = [];

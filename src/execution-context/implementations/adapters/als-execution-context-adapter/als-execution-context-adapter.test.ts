@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/als-execution-context-adapter.js";
 
-describe("class: AlsExecutionContextAdapter", () => {
+describe("class: AlsExecutionContextAdapter", { tags: ["Memory"] }, () => {
     describe("method: get", () => {
         test("Should return null when no context is set", () => {
             const adapter = new AlsExecutionContextAdapter<string>();

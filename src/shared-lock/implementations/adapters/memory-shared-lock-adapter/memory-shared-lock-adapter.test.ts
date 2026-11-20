@@ -7,7 +7,7 @@ import { delay } from "@/utilities/_module-exports.js";
 
 import type { MemorySharedLockData } from "@/shared-lock/implementations/adapters/memory-shared-lock-adapter/_module-exports.js";
 
-describe("class: MemorySharedLockAdapter", () => {
+describe("class: MemorySharedLockAdapter", { tags: ["Memory"] }, () => {
     sharedLockAdapterTestSuite({
         createAdapter: () => new MemorySharedLockAdapter(new Map()),
         test,

@@ -6,7 +6,7 @@ import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test
 import type { WritableFileAdapterContent } from "@/file-storage/contracts/_module-exports.js";
 import type { MemoryFile } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js";
 
-describe("class: MemoryFileStorageAdapter", () => {
+describe("class: MemoryFileStorageAdapter", { tags: ["Memory"] }, () => {
     let map = new Map<string, MemoryFile>();
     let adapter: MemoryFileStorageAdapter;
     beforeEach(() => {

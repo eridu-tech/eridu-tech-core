@@ -15,7 +15,7 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { SharedLockFactoryCreateSettings } from "@/shared-lock/contracts/_module-exports.js";
 
-describe("function: withSharedLockFactory", () => {
+describe("function: withSharedLockFactory", { tags: ["Memory"] }, () => {
     const sharedLockFactoryResolver = new SharedLockFactoryResolver<"memory">({
         adapters: { memory: new NoOpSharedLockAdapter() },
         defaultAdapter: "memory",

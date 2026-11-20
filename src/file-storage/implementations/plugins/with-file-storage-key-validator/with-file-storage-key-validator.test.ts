@@ -13,7 +13,7 @@ import type {
 } from "@/file-storage/contracts/_module-exports.js";
 import type { InvocableFn } from "@/utilities/_module-exports.js";
 
-describe("function: withFileStorageKeyValidator", () => {
+describe("function: withFileStorageKeyValidator", { tags: ["Memory"] }, () => {
     const adapter = new NoOpFileStorageAdapter();
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
     const succeedingKeyValidator = vi

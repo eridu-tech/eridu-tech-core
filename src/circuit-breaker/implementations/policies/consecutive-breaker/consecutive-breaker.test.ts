@@ -9,7 +9,7 @@ import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/c
 
 import type { ConsecutiveBreakerState } from "@/circuit-breaker/implementations/policies/consecutive-breaker/consecutive-breaker.js";
 
-describe("class: ConsecutiveBreaker", () => {
+describe("class: ConsecutiveBreaker", { tags: ["Memory"] }, () => {
     describe("method: initialMetrics", () => {
         test(`Should return an object with "failureCount" and "successCount" set to 0`, () => {
             const policy = new ConsecutiveBreaker();

@@ -6,23 +6,28 @@ import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/
 import { FixedWindowLimiter } from "@/rate-limiter/implementations/policies/_module-exports.js";
 import { fixedWindowLimiterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
 
-describe("fixed-window-limiter class: DatabaseRateLimiterAdapter", () => {
-    fixedWindowLimiterTestSuite({
-        createAdapter: () => {
-            const adapter = new DatabaseRateLimiterAdapter({
-                backoffPolicy: constantBackoff(
-                    fixedWindowLimiterTestSuite.backoffPolicySettings,
-                ),
-                adapter: new MemoryRateLimiterStorageAdapter(),
-                rateLimiterPolicy: new FixedWindowLimiter(
-                    fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
-                ),
-            });
-            return adapter;
-        },
-        beforeEach,
-        describe,
-        expect,
-        test,
-    });
-});
+const tags = ["Memory"];
+describe(
+    "fixed-window-limiter class: DatabaseRateLimiterAdapter",
+    { tags },
+    () => {
+        fixedWindowLimiterTestSuite({
+            createAdapter: () => {
+                const adapter = new DatabaseRateLimiterAdapter({
+                    backoffPolicy: constantBackoff(
+                        fixedWindowLimiterTestSuite.backoffPolicySettings,
+                    ),
+                    adapter: new MemoryRateLimiterStorageAdapter(),
+                    rateLimiterPolicy: new FixedWindowLimiter(
+                        fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
+                    ),
+                });
+                return adapter;
+            },
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
+    },
+);

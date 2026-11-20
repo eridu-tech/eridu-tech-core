@@ -5,7 +5,7 @@ import { TimeSpan } from "@/time-span/implementations/time-span.js";
 
 import type { SlidingWindowLimiterState } from "@/rate-limiter/implementations/policies/sliding-window-limiter/sliding-window-limiter.js";
 
-describe("class: SlidingWindowLimiter", () => {
+describe("class: SlidingWindowLimiter", { tags: ["Memory"] }, () => {
     describe("constructor", () => {
         test("Should use default 1-second window when no settings provided", () => {
             const limiter = new SlidingWindowLimiter();

@@ -7,7 +7,7 @@ import {
     MultipleItemsFoundCollectionError,
 } from "@/collection/contracts/collection.errors.js";
 
-describe("file: collection.errors.ts", () => {
+describe("file: collection.errors.ts", { tags: ["Memory"] }, () => {
     describe("function: isCollectionError", () => {
         test("Should return true when given ItemNotFoundCollectionError instance", () => {
             const error = ItemNotFoundCollectionError.create();

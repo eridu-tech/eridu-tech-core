@@ -9,7 +9,7 @@ import { withCacheFactory } from "@/cache/implementations/middlewares/with-cache
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-describe("function: withCacheFactory", () => {
+describe("function: withCacheFactory", { tags: ["Memory"] }, () => {
     const cacheResolver = new CacheResolver<"memory">({
         adapters: { memory: new NoOpCacheAdapter() },
         defaultAdapter: "memory",

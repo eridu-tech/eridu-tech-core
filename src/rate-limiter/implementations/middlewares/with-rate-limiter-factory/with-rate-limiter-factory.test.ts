@@ -9,7 +9,7 @@ import { withRateLimiterFactory } from "@/rate-limiter/implementations/middlewar
 
 import type { RateLimiterFactoryCreateSettings } from "@/rate-limiter/contracts/_module-exports.js";
 
-describe("function: withRateLimiterFactory", () => {
+describe("function: withRateLimiterFactory", { tags: ["Memory"] }, () => {
     const rateLimiterFactoryResolver = new RateLimiterFactoryResolver<"memory">(
         {
             adapters: { memory: new NoOpRateLimiterAdapter() },

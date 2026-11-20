@@ -7,7 +7,7 @@ import {
 } from "@/collection/contracts/_module-exports.js";
 import { ListCollection } from "@/collection/implementations/list-collection/_module.js";
 
-describe("class: ListCollection", () => {
+describe("class: ListCollection", { tags: ["Memory"] }, () => {
     describe("method: filter", () => {
         test(`Should filter in all "a" of ["a", "bc", "c", "a", "d", "a"]`, () => {
             const arr = ["a", "bc", "c", "a", "d", "a"],

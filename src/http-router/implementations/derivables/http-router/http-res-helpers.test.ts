@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { httpResHelpers } from "@/http-router/implementations/derivables/http-router/http-res-helpers.js";
 
-describe("object: httpResHelpers", () => {
+describe("object: httpResHelpers", { tags: ["Memory"] }, () => {
     describe("method: text", () => {
         test("Should return an HttpRes with text/plain content type", () => {
             const res = httpResHelpers.text("hello");

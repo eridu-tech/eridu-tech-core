@@ -10,7 +10,7 @@ import { withAfterCommitFactory } from "@/transaction-context/implementations/mi
 
 import type { AfterCommitSettings } from "@/transaction-context/contracts/_module-exports.js";
 
-describe("function: withAfterCommitFactory", () => {
+describe("function: withAfterCommitFactory", { tags: ["Memory"] }, () => {
     const transactionContext = TransactionContext.noOp(null);
 
     beforeEach(() => {

@@ -10,7 +10,7 @@ import { AlsExecutionContextAdapter } from "@/execution-context/implementations/
 import { ProxyExecutionContext } from "@/execution-context/implementations/derivables/di/proxy-execution-context/proxy-execution-context.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/execution-context/execution-context.js";
 
-describe("class: ProxyExecutionContext", () => {
+describe("class: ProxyExecutionContext", { tags: ["Memory"] }, () => {
     let container: Container;
     let executionContext: ProxyExecutionContext;
 

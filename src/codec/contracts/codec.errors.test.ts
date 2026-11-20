@@ -6,7 +6,7 @@ import {
     isCodecError,
 } from "@/codec/contracts/codec.errors.js";
 
-describe("file: codec.errors.ts", () => {
+describe("file: codec.errors.ts", { tags: ["Memory"] }, () => {
     describe("function: isCodecError", () => {
         test("Should return true when given UnableToEncodeCodecError instance", () => {
             const error = UnableToEncodeCodecError.create("boom");

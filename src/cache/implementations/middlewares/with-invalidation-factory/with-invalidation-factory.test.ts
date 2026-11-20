@@ -5,7 +5,7 @@ import { Cache } from "@/cache/implementations/derivables/_module-exports.js";
 import { withInvalidationFactory } from "@/cache/implementations/middlewares/with-invalidation-factory/with-invalidation-factory.js";
 import { use } from "@/middleware/implementations/_module-exports.js";
 
-describe("function: withInvalidationFactory", () => {
+describe("function: withInvalidationFactory", { tags: ["Memory"] }, () => {
     const cache = new Cache<string>({
         adapter: new NoOpCacheAdapter(),
     });

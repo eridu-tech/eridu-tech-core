@@ -9,7 +9,7 @@ import { use } from "@/middleware/implementations/_module-exports.js";
 
 import type { Mock } from "vitest";
 
-describe("function: withSyncMetadataFactory", () => {
+describe("function: withSyncMetadataFactory", { tags: ["Memory"] }, () => {
     const transport = new NoOpLogTransport();
     const log = new Log({
         transport,

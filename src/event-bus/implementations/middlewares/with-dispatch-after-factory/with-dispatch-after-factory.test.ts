@@ -7,7 +7,7 @@ import { use } from "@/middleware/implementations/_module-exports.js";
 
 import type { WithDispatchAfterPayloadSettings } from "@/event-bus/implementations/middlewares/with-dispatch-after-factory/with-dispatch-after-factory.js";
 
-describe("function: withDispatchAfterFactory", () => {
+describe("function: withDispatchAfterFactory", { tags: ["Memory"] }, () => {
     const adapter = new NoOpEventBusAdapter();
     const eventDispatcher = new EventBus({
         adapter,

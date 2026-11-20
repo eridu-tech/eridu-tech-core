@@ -13,7 +13,7 @@ import type {
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 
-describe("function: withFileStorageLogging", () => {
+describe("function: withFileStorageLogging", { tags: ["Memory"] }, () => {
     const commonSettings = {
         contentType: "text/plain",
         contentLanguage: null,

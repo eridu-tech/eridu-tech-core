@@ -8,7 +8,7 @@ import { withSharedLockPrefix } from "@/shared-lock/implementations/plugins/with
 
 import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports.js";
 
-describe("function: withSharedLockPrefix", () => {
+describe("function: withSharedLockPrefix", { tags: ["Memory"] }, () => {
     const adapter = new NoOpSharedLockAdapter();
     const prefix = "test-prefix:";
     const currentDate = new Date();

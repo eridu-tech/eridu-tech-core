@@ -11,7 +11,7 @@ import type {
     WritableFileAdapterContent,
 } from "@/file-storage/contracts/_module-exports.js";
 
-describe("function: withFileStoragePrefix", () => {
+describe("function: withFileStoragePrefix", { tags: ["Memory"] }, () => {
     const adapter = new NoOpFileStorageAdapter();
     const prefix = "test-prefix:";
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));

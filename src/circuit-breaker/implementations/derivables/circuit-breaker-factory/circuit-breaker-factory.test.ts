@@ -25,7 +25,7 @@ import type {
     ICircuitBreaker,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 
-describe("class: CircuitBreakerFactory", () => {
+describe("class: CircuitBreakerFactory", { tags: ["Memory"] }, () => {
     const adapter: ICircuitBreakerAdapter = {
         getState(_key: string): Promise<CircuitBreakerState> {
             throw new Error("Function not implemented.");

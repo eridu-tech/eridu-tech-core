@@ -27,7 +27,8 @@ import type { MongodbRateLimiterDocument } from "@/rate-limiter/implementations/
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: MongodbRateLimiterStorageAdapter", () => {
+const tags = ["Mongodb"];
+describe("class: MongodbRateLimiterStorageAdapter", { tags }, () => {
     let client: MongoClient;
     const mongodbServer = new MongodbServer();
     let adapter: MongodbRateLimiterStorageAdapter<unknown>;

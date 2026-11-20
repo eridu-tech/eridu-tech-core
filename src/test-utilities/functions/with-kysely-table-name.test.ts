@@ -11,7 +11,7 @@ type Database = {
     };
 };
 
-describe("class: WithKyselyTableName", () => {
+describe("class: WithKyselyTableName", { tags: ["Postgres"] }, () => {
     const pool = new Pool();
     const kysely = new Kysely<Database>({
         dialect: new PostgresDialect({ pool }),

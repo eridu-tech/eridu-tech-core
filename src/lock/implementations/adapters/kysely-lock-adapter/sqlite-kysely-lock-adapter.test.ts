@@ -16,7 +16,7 @@ import type { ColumnMetadata, TableMetadata } from "kysely";
 import type { KyselyLockTables } from "@/lock/implementations/adapters/kysely-lock-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-describe("sqlite class: KyselyLockAdapter", () => {
+describe("sqlite class: KyselyLockAdapter", { tags: ["Memory"] }, () => {
     let database: Database;
 
     beforeEach(() => {

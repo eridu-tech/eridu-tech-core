@@ -7,7 +7,7 @@ import type {
     NextFn,
 } from "@/middleware/contracts/_module-exports.js";
 
-describe("function: useFactory", () => {
+describe("function: useFactory", { tags: ["Memory"] }, () => {
     test("Should call middleware before next function", () => {
         const order: Array<string> = [];
         const use = useFactory();

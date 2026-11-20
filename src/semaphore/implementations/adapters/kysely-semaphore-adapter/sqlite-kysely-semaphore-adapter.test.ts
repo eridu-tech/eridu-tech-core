@@ -16,7 +16,7 @@ import type { ColumnMetadata, TableMetadata } from "kysely";
 import type { KyselySemaphoreTables } from "@/semaphore/implementations/adapters/kysely-semaphore-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-describe("sqlite class: KyselySemaphoreAdapter", () => {
+describe("sqlite class: KyselySemaphoreAdapter", { tags: ["Memory"] }, () => {
     let database: Database;
 
     beforeEach(() => {

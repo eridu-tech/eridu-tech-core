@@ -22,7 +22,7 @@ function predecessorsFromDependencies(
             .map(([dependent]) => dependent);
 }
 
-describe("findEffectedNodes", () => {
+describe("findEffectedNodes", { tags: ["Memory"] }, () => {
     test("should return only the start node when nothing depends on it", () => {
         const result = findEffectedNodes({
             predecessorOf: predecessorsFromDependencies({
@@ -77,7 +77,7 @@ describe("findEffectedNodes", () => {
     });
 });
 
-describe("visitedNodes", () => {
+describe("visitedNodes", { tags: ["Memory"] }, () => {
     test("should return the start node when it has no neighbors", () => {
         const result = visitedNodes({
             node: "A",
@@ -137,7 +137,7 @@ describe("visitedNodes", () => {
     });
 });
 
-describe("findAllCycles", () => {
+describe("findAllCycles", { tags: ["Memory"] }, () => {
     test("should return no cycles for an acyclic graph", () => {
         const result = findAllCycles({
             getSuccessor: (n) => (n === "A" ? ["B"] : n === "B" ? ["C"] : []),
@@ -186,7 +186,7 @@ describe("findAllCycles", () => {
     });
 });
 
-describe("getMissingNodes", () => {
+describe("getMissingNodes", { tags: ["Memory"] }, () => {
     test("should return an empty array when all dependencies are declared", () => {
         const result = getMissingNodes({
             getSuccessor: (n) => (n === "A" ? ["B"] : []),
@@ -233,7 +233,7 @@ describe("getMissingNodes", () => {
     });
 });
 
-describe("eagerInitialization", () => {
+describe("eagerInitialization", { tags: ["Memory"] }, () => {
     test("should initialize nodes in correct dependency order", async () => {
         // Graph: A -> B -> C
         const nodeIds = ["A", "B", "C"];

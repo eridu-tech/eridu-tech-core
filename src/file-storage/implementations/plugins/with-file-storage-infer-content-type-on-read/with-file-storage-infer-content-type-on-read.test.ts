@@ -11,7 +11,8 @@ import type {
     ISignedFileStorageAdapter,
 } from "@/file-storage/contracts/_module-exports.js";
 
-describe("function: withFileStorageInferContentTypeOnRead", () => {
+const tags = ["Memory"];
+describe("function: withFileStorageInferContentTypeOnRead", { tags }, () => {
     const adapter = new NoOpFileStorageAdapter();
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
     const metadata: FileAdapterMetadata = {
