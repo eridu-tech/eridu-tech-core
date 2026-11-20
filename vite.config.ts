@@ -1,7 +1,9 @@
-import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+    resolve: {
+        tsconfigPaths: true,
+    },
     test: {
         forceRerunTriggers: ["./src/**/*"],
         exclude: [
@@ -28,9 +30,4 @@ export default defineConfig({
             "./typedoc.json",
         ],
     },
-    plugins: [
-        tsconfigPaths({
-            ignoreConfigErrors: true,
-        }),
-    ],
 });
