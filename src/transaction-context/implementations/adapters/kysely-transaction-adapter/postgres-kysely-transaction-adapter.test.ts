@@ -1,19 +1,23 @@
+import { randomUUID } from "node:crypto";
+
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+    vi,
+} from "vitest";
 
+import { WithKyselyTableName } from "@/test-utilities/functions/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/kysely-transaction-adapter.js";
 
 import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
-
-type Database = {
-    person: {
-        id: number;
-        name: string;
-    };
-};
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("postgres class: KyselyTransactionAdapter", () => {
@@ -21,7 +25,15 @@ describe("postgres class: KyselyTransactionAdapter", () => {
     let database: Pool;
     let kysely: Kysely<Database>;
 
-    beforeEach(async () => {
+    type Person = {
+        id: number;
+        name: string;
+    };
+    type Database = {
+        person: Person;
+    };
+
+    beforeAll(async () => {
         container = await new PostgreSqlContainer("postgres:17.5").start();
         database = new Pool({
             database: container.getDatabase(),
@@ -31,21 +43,30 @@ describe("postgres class: KyselyTransactionAdapter", () => {
             password: container.getPassword(),
             max: 10,
         });
+    }, timeout.toMilliseconds());
+    afterAll(async () => {
+        await database.end();
+        await container.stop();
+    }, timeout.toMilliseconds());
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        vi.resetAllMocks();
+
+        const tableNames: Record<keyof Database, string> = {
+            person: randomUUID(),
+        };
         kysely = new Kysely({
             dialect: new PostgresDialect({
                 pool: database,
             }),
+            plugins: [new WithKyselyTableName(tableNames)],
         });
         await kysely.schema
             .createTable("person")
             .addColumn("id", "integer", (column) => column.primaryKey())
             .addColumn("name", "varchar(255)", (column) => column.notNull())
             .execute();
-    }, timeout.toMilliseconds());
-    afterEach(async () => {
-        await database.end();
-        await container.stop();
-    }, timeout.toMilliseconds());
+    });
 
     describe("getter: client", () => {
         test("Should return the configured Kysely client", () => {

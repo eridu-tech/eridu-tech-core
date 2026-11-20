@@ -4,3 +4,4 @@ export * from "@/test-utilities/functions/is-binary-data.js";
 export * from "@/test-utilities/functions/is-bytes-array-equality-tester.js";
 export * from "@/test-utilities/functions/is-uint8-byte-array-equality-tester.js";
 export * from "@/test-utilities/functions/resolve-stream.js";
+export * from "@/test-utilities/functions/with-kysely-table-name.js";

@@ -1,13 +1,24 @@
+import { randomUUID } from "node:crypto";
+
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+    afterAll,
+    afterEach,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+    vi,
+} from "vitest";
 
-import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { KyselySharedLockAdapter } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
 import { sharedLockAdapterTestSuite } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
+import { WithKyselyTableName } from "@/test-utilities/functions/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
@@ -20,10 +31,13 @@ import type { ITransactionContext } from "@/transaction-context/contracts/_modul
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("postgres class: KyselySharedLockAdapter", () => {
-    let database: Pool;
     let container: StartedPostgreSqlContainer;
+    let database: Pool;
+    let trxCtx: ITransactionContext<Kysely<KyselySharedLockTables>>;
+    let adapter: KyselySharedLockAdapter;
+    let tableNames: Record<keyof KyselySharedLockTables, string>;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         container = await new PostgreSqlContainer("postgres:17.5").start();
         database = new Pool({
             database: container.getDatabase(),
@@ -34,33 +48,48 @@ describe("postgres class: KyselySharedLockAdapter", () => {
             max: 10,
         });
     }, timeout.toMilliseconds());
-    afterEach(async () => {
+    afterAll(async () => {
         await database.end();
         await container.stop();
     }, timeout.toMilliseconds());
-    function createTrxCtx(
-        database_: Pool,
-    ): ITransactionContext<Kysely<KyselySharedLockTables>> {
-        return new TransactionContext({
-            token: contextToken("kysely"),
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.resetAllMocks();
+        tableNames = {
+            writerLock: randomUUID(),
+            readerSemaphore: randomUUID(),
+            readerSemaphoreSlot: randomUUID(),
+        };
+        const kysely = new Kysely<KyselySharedLockTables>({
+            dialect: new PostgresDialect({
+                pool: database,
+            }),
+            plugins: [new WithKyselyTableName(tableNames)],
+        });
+        trxCtx = new TransactionContext({
             executionContext: new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             ),
             adapter: new KyselyTransactionAdapter({
-                database: new Kysely({
-                    dialect: new PostgresDialect({
-                        pool: database_,
-                    }),
-                }),
+                database: kysely,
             }),
         });
-    }
+        adapter = new KyselySharedLockAdapter({ transactionContext: trxCtx });
+    });
+    afterEach(async () => {
+        await trxCtx.client.schema
+            .dropTable("readerSemaphoreSlot")
+            .ifExists()
+            .execute();
+        await trxCtx.client.schema
+            .dropTable("readerSemaphore")
+            .ifExists()
+            .execute();
+        await trxCtx.client.schema.dropTable("writerLock").ifExists().execute();
+    });
 
     sharedLockAdapterTestSuite({
         createAdapter: async () => {
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: createTrxCtx(database),
-            });
             await adapter.init();
             return adapter;
         },
@@ -71,10 +100,6 @@ describe("postgres class: KyselySharedLockAdapter", () => {
     });
     describe("method: removeAllExpired", () => {
         test("Should remove all expired writer locks", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
 
             await trxCtx.client
@@ -127,10 +152,6 @@ describe("postgres class: KyselySharedLockAdapter", () => {
             ).toBeDefined();
         });
         test("Should remove all expired reader semaphores", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
 
             const limit = 3;
@@ -209,17 +230,13 @@ describe("postgres class: KyselySharedLockAdapter", () => {
     });
     describe("method: init", () => {
         test("Should create writerLock table", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
 
             const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
-                    name: "writerLock",
+                    name: tableNames.writerLock,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
                     columns: expect.arrayContaining<Partial<ColumnMetadata>>([
                         expect.objectContaining<Partial<ColumnMetadata>>({
@@ -245,17 +262,13 @@ describe("postgres class: KyselySharedLockAdapter", () => {
             );
         });
         test("Should create readerSemaphore table", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
 
             const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
-                    name: "readerSemaphore",
+                    name: tableNames.readerSemaphore,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
                     columns: expect.arrayContaining<Partial<ColumnMetadata>>([
                         expect.objectContaining<Partial<ColumnMetadata>>({
@@ -275,17 +288,13 @@ describe("postgres class: KyselySharedLockAdapter", () => {
             );
         });
         test("Should create readerSemaphoreSlot table", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
 
             const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
-                    name: "readerSemaphoreSlot",
+                    name: tableNames.readerSemaphoreSlot,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
                     columns: expect.arrayContaining<Partial<ColumnMetadata>>([
                         expect.objectContaining<Partial<ColumnMetadata>>({
@@ -311,9 +320,6 @@ describe("postgres class: KyselySharedLockAdapter", () => {
             );
         });
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: createTrxCtx(database),
-            });
             await adapter.init();
 
             const promise = adapter.init();
@@ -323,10 +329,6 @@ describe("postgres class: KyselySharedLockAdapter", () => {
     });
     describe("method: deInit", () => {
         test("Should remove writer lock table", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -334,15 +336,11 @@ describe("postgres class: KyselySharedLockAdapter", () => {
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
-                    name: "writerLock",
+                    name: tableNames.writerLock,
                 }),
             );
         });
         test("Should remove readerSemaphore table", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -350,15 +348,11 @@ describe("postgres class: KyselySharedLockAdapter", () => {
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
-                    name: "readerSemaphore",
+                    name: tableNames.readerSemaphore,
                 }),
             );
         });
         test("Should remove readerSemaphoreSlot table", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -366,14 +360,11 @@ describe("postgres class: KyselySharedLockAdapter", () => {
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
-                    name: "readerSemaphoreSlot",
+                    name: tableNames.readerSemaphoreSlot,
                 }),
             );
         });
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: createTrxCtx(database),
-            });
             await adapter.init();
             await adapter.deInit();
             const promise = adapter.deInit();
@@ -381,9 +372,6 @@ describe("postgres class: KyselySharedLockAdapter", () => {
             await expect(promise).resolves.toBeUndefined();
         });
         test("Should not throw error when called before init", async () => {
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: createTrxCtx(database),
-            });
             const promise = adapter.deInit();
             await adapter.init();
 
@@ -392,10 +380,6 @@ describe("postgres class: KyselySharedLockAdapter", () => {
     });
     describe("Transaction tests:", () => {
         test("Should not persist changes when the transaction fails", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
 
             try {
@@ -431,10 +415,6 @@ describe("postgres class: KyselySharedLockAdapter", () => {
             expect(slotRows.length).toBe(0);
         });
         test("Should persist changes when the transaction succeeds", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
             await adapter.init();
 
             await trxCtx.run(async () => {

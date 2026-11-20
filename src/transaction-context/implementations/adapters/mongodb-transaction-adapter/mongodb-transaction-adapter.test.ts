@@ -23,6 +23,10 @@ describe("class: MongodbTransactionAdapter", () => {
     const mongodbServer = new MongodbServer();
     let database: Db;
     let collectionName: string;
+    type Document = {
+        _id: string;
+        value: string;
+    };
 
     beforeAll(async () => {
         await mongodbServer.init();
@@ -30,14 +34,14 @@ describe("class: MongodbTransactionAdapter", () => {
             directConnection: true,
         });
         await client.connect();
-        vi.clearAllMocks();
-        vi.resetAllMocks();
     }, timeout.toMilliseconds());
     afterAll(async () => {
         await client.close();
         await mongodbServer.deInit();
     }, timeout.toMilliseconds());
     beforeEach(() => {
+        vi.clearAllMocks();
+        vi.resetAllMocks();
         database = client.db(randomUUID());
         collectionName = randomUUID();
     });
@@ -66,10 +70,7 @@ describe("class: MongodbTransactionAdapter", () => {
             await transaction.abort();
         });
         test("Should persist the changes when the transaction is committed", async () => {
-            const collection = database.collection<{
-                _id: string;
-                value: string;
-            }>(collectionName);
+            const collection = database.collection<Document>(collectionName);
             const adapter = new MongodbTransactionAdapter({
                 client,
                 database,
@@ -89,10 +90,7 @@ describe("class: MongodbTransactionAdapter", () => {
             ).resolves.toEqual({ _id: "committed", value: "value" });
         });
         test("Should discard the changes when the transaction is aborted", async () => {
-            const collection = database.collection<{
-                _id: string;
-                value: string;
-            }>(collectionName);
+            const collection = database.collection<Document>(collectionName);
             const adapter = new MongodbTransactionAdapter({
                 client,
                 database,
