@@ -3,7 +3,7 @@ import { describe, test, expect, beforeEach } from "vitest";
 import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementations/adapters/memory-circuit-breaker-storage-adapter/memory-circuit-breaker-storage-adapter.js";
 import { circuitBreakerStorageAdapterTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
 
-describe("class: MemoryCircuitBreakerStorageAdapter", { tags: ["memory"] }, () => {
+describe("class: MemoryCircuitBreakerStorageAdapter", { tags: ["Memory"] }, () => {
     describe("method: deInit", () => {
         test("Should clear map", async () => {
             const map = new Map<string, unknown>();

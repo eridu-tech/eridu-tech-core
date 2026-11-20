@@ -8,7 +8,7 @@ import { fixedWindowLimiterTestSuite } from "@/rate-limiter/implementations/test
 
 describe(
     "fixed-window-limiter class: DatabaseRateLimiterAdapter",
-    { tags: ["memory"] },
+    { tags: ["Memory"] },
     () => {
         fixedWindowLimiterTestSuite({
             createAdapter: () => {

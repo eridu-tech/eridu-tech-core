@@ -31,7 +31,7 @@ import type { KyselyCircuitBreakerStorageTables } from "@/circuit-breaker/implem
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("postgres class: KyselyCircuitBreakerStorageAdapter", { tags: ["postgres"] }, () => {
+describe("postgres class: KyselyCircuitBreakerStorageAdapter", { tags: ["Postgres"] }, () => {
     let container: StartedPostgreSqlContainer;
     let database: Pool;
     let trxCtx: ITransactionContext<Kysely<KyselyCircuitBreakerStorageTables>>;

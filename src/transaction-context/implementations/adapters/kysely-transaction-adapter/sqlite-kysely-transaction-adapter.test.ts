@@ -13,7 +13,7 @@ type Database = {
     };
 };
 
-describe("sqlite class: KyselyTransactionAdapter", { tags: ["memory"] }, () => {
+describe("sqlite class: KyselyTransactionAdapter", { tags: ["Memory"] }, () => {
     let database: SqliteDatabase;
     let kysely: Kysely<Database>;
 

@@ -177,7 +177,7 @@ function createContainerAndExecutionContext(): {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("class: Container", { tags: ["memory"] }, () => {
+describe("class: Container", { tags: ["Memory"] }, () => {
     // -----------------------------------------------------------------------
     // constructor
     // -----------------------------------------------------------------------
@@ -970,7 +970,7 @@ describe("class: Container", { tags: ["memory"] }, () => {
 
 describe(
     "Illegal method call before Container.init or after Container.deInit (when container not active)",
-    { tags: ["memory"] },
+    { tags: ["Memory"] },
     () => {
         let container: IContainer;
         beforeEach(() => {
@@ -1095,7 +1095,7 @@ describe(
 
 describe(
     "illegal method call after Container.init (when container is active)",
-    { tags: ["memory"] },
+    { tags: ["Memory"] },
     () => {
         class A {
             private: unknown;
@@ -1199,7 +1199,7 @@ describe(
     },
 );
 
-describe("illegal method call inside Container.run", { tags: ["memory"] }, () => {
+describe("illegal method call inside Container.run", { tags: ["Memory"] }, () => {
     /**
      * Despite the test name the operation exercised inside run() is deInit();
      * the point is that container lifecycle calls made from a run() scope are rejected.
@@ -1224,7 +1224,7 @@ describe("illegal method call inside Container.run", { tags: ["memory"] }, () =>
 
 describe(
     "illegal method call inside DynamicServiceProvider in Container.run block",
-    { tags: ["memory"] },
+    { tags: ["Memory"] },
     () => {
         test("resolve method should fail inside DynamicServiceProvider", async () => {
             const container = createContainerAndExecutionContext().container;
@@ -1282,7 +1282,7 @@ describe(
     },
 );
 
-describe("init / deInit failure semantics", { tags: ["memory"] }, () => {
+describe("init / deInit failure semantics", { tags: ["Memory"] }, () => {
     test("Should move to a non-active state when an onInit hook rejects", async () => {
         const { container } = createContainerAndExecutionContext();
 
@@ -1347,7 +1347,7 @@ describe("init / deInit failure semantics", { tags: ["memory"] }, () => {
     });
 });
 
-describe("has", { tags: ["memory"] }, () => {
+describe("has", { tags: ["Memory"] }, () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -1411,7 +1411,7 @@ describe("has", { tags: ["memory"] }, () => {
     });
 });
 
-describe("register", { tags: ["memory"] }, () => {
+describe("register", { tags: ["Memory"] }, () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -1438,7 +1438,7 @@ describe("register", { tags: ["memory"] }, () => {
     });
 });
 
-describe("resolve & Container.init & Container.run", { tags: ["memory"] }, () => {
+describe("resolve & Container.init & Container.run", { tags: ["Memory"] }, () => {
     let container: IContainer;
     let tokenA: DiToken<string>;
     beforeEach(async () => {
@@ -1539,7 +1539,7 @@ describe("resolve & Container.init & Container.run", { tags: ["memory"] }, () =>
     });
 });
 
-describe("register & Container.init & resolve", { tags: ["memory"] }, () => {
+describe("register & Container.init & resolve", { tags: ["Memory"] }, () => {
     let container: IContainer;
     let executionContext: IExecutionContext;
     beforeEach(() => {
@@ -3041,7 +3041,7 @@ describe("register & Container.init & resolve", { tags: ["memory"] }, () => {
     });
 });
 
-describe("graph validation", { tags: ["memory"] }, () => {
+describe("graph validation", { tags: ["Memory"] }, () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -3241,7 +3241,7 @@ describe("graph validation", { tags: ["memory"] }, () => {
  * container.overrideFactory & overrideClass can implemented independent of node type.
  * Therefore only singleton tested.
  */
-describe("override", { tags: ["memory"] }, () => {
+describe("override", { tags: ["Memory"] }, () => {
     let container: IContainer;
     let executionContext: IExecutionContext;
     beforeEach(() => {
@@ -3537,7 +3537,7 @@ describe("override", { tags: ["memory"] }, () => {
     });
 });
 
-describe("graph validation & override", { tags: ["memory"] }, () => {
+describe("graph validation & override", { tags: ["Memory"] }, () => {
     let container: IContainer;
     beforeEach(() => {
         container = createContainerAndExecutionContext().container;
@@ -3627,7 +3627,7 @@ describe("graph validation & override", { tags: ["memory"] }, () => {
     });
 });
 
-describe("forked container", { tags: ["memory"] }, () => {
+describe("forked container", { tags: ["Memory"] }, () => {
     let containerA: Container;
     beforeEach(() => {
         const executionContext = new ExecutionContext(
@@ -3708,7 +3708,7 @@ describe("forked container", { tags: ["memory"] }, () => {
     });
 });
 
-describe("forked container & override", { tags: ["memory"] }, () => {
+describe("forked container & override", { tags: ["Memory"] }, () => {
     let containerA: Container;
     let executionContext: IExecutionContext;
     beforeEach(() => {
@@ -3806,7 +3806,7 @@ describe("forked container & override", { tags: ["memory"] }, () => {
     });
 });
 
-describe("forked container & hooks", { tags: ["memory"] }, () => {
+describe("forked container & hooks", { tags: ["Memory"] }, () => {
     let containerA: Container;
     beforeEach(() => {
         const executionContext = new ExecutionContext(
@@ -3920,7 +3920,7 @@ describe("forked container & hooks", { tags: ["memory"] }, () => {
 // ---------------------------------------------------------------------------
 // feature: optional tokens
 // ---------------------------------------------------------------------------
-describe("feature: optional tokens", { tags: ["memory"] }, () => {
+describe("feature: optional tokens", { tags: ["Memory"] }, () => {
     let container: IContainer;
 
     beforeEach(() => {
@@ -4679,7 +4679,7 @@ describe("feature: optional tokens", { tags: ["memory"] }, () => {
 // ---------------------------------------------------------------------------
 // container hooks: onInit / onDeInit with a deps record (IContainerHooks)
 // ---------------------------------------------------------------------------
-describe("feature: container hooks", { tags: ["memory"] }, () => {
+describe("feature: container hooks", { tags: ["Memory"] }, () => {
     let container: IContainer;
 
     beforeEach(() => {

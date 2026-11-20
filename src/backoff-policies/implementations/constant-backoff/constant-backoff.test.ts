@@ -8,7 +8,7 @@ import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { callInvocable } from "@/utilities/_module-exports.js";
 
-describe("function: resolveConstantBackoffSettings", { tags: ["memory"] }, () => {
+describe("function: resolveConstantBackoffSettings", { tags: ["Memory"] }, () => {
     test("Should use default values when no settings are provided", () => {
         const resolved = resolveConstantBackoffSettings({});
 
@@ -89,7 +89,7 @@ describe("function: resolveConstantBackoffSettings", { tags: ["memory"] }, () =>
     });
 });
 
-describe("function: constantBackoff", { tags: ["memory"] }, () => {
+describe("function: constantBackoff", { tags: ["Memory"] }, () => {
     test("Should return the fixed delay when jitter is null", () => {
         const backoff = constantBackoff({
             delay: TimeSpan.fromMilliseconds(500),

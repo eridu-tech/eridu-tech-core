@@ -31,7 +31,7 @@ function iterableOf(chunk: Uint8Array): AsyncIterable<Uint8Array> {
     };
 }
 
-describe("function: withFileStorageInferFileTypeOnWrite", { tags: ["memory"] }, () => {
+describe("function: withFileStorageInferFileTypeOnWrite", { tags: ["Memory"] }, () => {
     const adapter = new NoOpFileStorageAdapter();
     const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
     const zipBytes = new Uint8Array([

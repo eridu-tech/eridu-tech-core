@@ -7,7 +7,7 @@ import { delay } from "@/utilities/_module-exports.js";
 
 import type { MemoryRateLimiterData } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-storage-adapter/_module-exports.js";
 
-describe("class: MemoryRateLimiterStorageAdapter", { tags: ["memory"] }, () => {
+describe("class: MemoryRateLimiterStorageAdapter", { tags: ["Memory"] }, () => {
     rateLimiterStorageAdapterTestSuite({
         createAdapter: () => new MemoryRateLimiterStorageAdapter(),
         test,
