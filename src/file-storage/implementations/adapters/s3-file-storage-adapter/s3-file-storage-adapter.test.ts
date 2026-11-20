@@ -29,6 +29,7 @@ const BUCKET = "files";
 describe(
     "class: S3FileStorageAdapter",
     {
+        tags: ["S3"],
         timeout: TimeSpan.fromSeconds(10).toMilliseconds(),
     },
     () => {

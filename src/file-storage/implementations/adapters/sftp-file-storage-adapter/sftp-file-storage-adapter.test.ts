@@ -29,6 +29,7 @@ const timeout = TimeSpan.fromMinutes(2);
 describe(
     "class: SftpFileStorageAdapter",
     {
+        tags: ["SFTP"],
         timeout: TimeSpan.fromSeconds(10).toMilliseconds(),
     },
     () => {

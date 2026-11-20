@@ -9,6 +9,7 @@ const timeout = TimeSpan.fromMinutes(2);
 describe(
     "class: SftpFactory",
     {
+        tags: ["SFTP"],
         concurrent: false,
         timeout: TimeSpan.fromSeconds(10).toMilliseconds(),
     },

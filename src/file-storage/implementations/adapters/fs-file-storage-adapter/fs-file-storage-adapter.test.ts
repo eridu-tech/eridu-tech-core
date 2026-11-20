@@ -10,7 +10,7 @@ import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test
 
 import type { FileAdapterMetadata } from "@/file-storage/contracts/_module-exports.js";
 
-describe("class: FsFileStorageAdapter", () => {
+describe("class: FsFileStorageAdapter", { tags: ["FS"] }, () => {
     let adapter_: FsFileStorageAdapter;
     let folderPath_: string;
     beforeEach(async () => {

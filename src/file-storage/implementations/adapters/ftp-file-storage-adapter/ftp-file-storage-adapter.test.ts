@@ -29,6 +29,7 @@ const timeout = TimeSpan.fromMinutes(2);
 describe(
     "class: FtpFileStorageAdapter",
     {
+        tags: ["FTP"],
         timeout: TimeSpan.fromSeconds(10).toMilliseconds(),
     },
     () => {

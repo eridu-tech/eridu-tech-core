@@ -23,7 +23,7 @@ import type { FileAdapterMetadata } from "@/file-storage/contracts/_module-expor
 
 const timeout = TimeSpan.fromMinutes(2);
 
-describe("class: WebdavFileStorageAdapter", () => {
+describe("class: WebdavFileStorageAdapter", { tags: ["WebDAV"] }, () => {
     let client: WebDAVClient;
     let adapter_: WebdavFileStorageAdapter;
     const webdavServer = new WebdavServer();
