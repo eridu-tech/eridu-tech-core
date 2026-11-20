@@ -1,14 +1,25 @@
+import { randomUUID } from "node:crypto";
+
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+    afterAll,
+    afterEach,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+    vi,
+} from "vitest";
 
 import { KyselyCacheAdapter } from "@/cache/implementations/adapters/kysely-cache-adapter/_module-exports.js";
 import { cacheAdapterTestSuite } from "@/cache/implementations/test-utilities/_module-exports.js";
-import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
+import { WithKyselyTableName } from "@/test-utilities/functions/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
@@ -21,9 +32,13 @@ import type { ITransactionContext } from "@/transaction-context/contracts/_modul
 
 const timeout = TimeSpan.fromMinutes(2);
 describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
-    let database: Pool;
     let container: StartedPostgreSqlContainer;
-    beforeEach(async () => {
+    let database: Pool;
+    let trxCtx: ITransactionContext<Kysely<KyselyCacheTables>>;
+    let adapter: KyselyCacheAdapter;
+    let tableNames: Record<keyof KyselyCacheTables, string>;
+
+    beforeAll(async () => {
         container = await new PostgreSqlContainer("postgres:17.5").start();
         database = new Pool({
             database: container.getDatabase(),
@@ -34,34 +49,41 @@ describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
             max: 10,
         });
     }, timeout.toMilliseconds());
-    afterEach(async () => {
+    afterAll(async () => {
         await database.end();
         await container.stop();
     }, timeout.toMilliseconds());
-    function createTrxCtx(
-        database_: Pool,
-    ): ITransactionContext<Kysely<KyselyCacheTables>> {
-        return new TransactionContext({
-            token: contextToken("kysely"),
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.resetAllMocks();
+        tableNames = {
+            cache: randomUUID(),
+        };
+        const kysely = new Kysely<KyselyCacheTables>({
+            dialect: new PostgresDialect({
+                pool: database,
+            }),
+            plugins: [new WithKyselyTableName(tableNames)],
+        });
+        trxCtx = new TransactionContext({
             executionContext: new ExecutionContext(
                 new AlsExecutionContextAdapter(),
             ),
             adapter: new KyselyTransactionAdapter({
-                database: new Kysely({
-                    dialect: new PostgresDialect({
-                        pool: database_,
-                    }),
-                }),
+                database: kysely,
             }),
         });
-    }
+        adapter = new KyselyCacheAdapter({
+            transactionContext: trxCtx,
+            serde: new SuperJsonSerde(),
+        });
+    });
+    afterEach(async () => {
+        await trxCtx.client.schema.dropTable("cache").ifExists().execute();
+    });
 
     cacheAdapterTestSuite({
         createAdapter: async () => {
-            const adapter = new KyselyCacheAdapter({
-                transactionContext: createTrxCtx(database),
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             return adapter;
         },
@@ -72,11 +94,6 @@ describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
     });
     describe("method: removeAllExpired", () => {
         test("Should remove all expired keys", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselyCacheAdapter({
-                transactionContext: trxCtx,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             await trxCtx.client
@@ -131,18 +148,13 @@ describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
     });
     describe("method: init", () => {
         test("Should create cache table", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselyCacheAdapter({
-                transactionContext: trxCtx,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             const tables = await trxCtx.client.introspection.getTables();
 
             expect(tables).toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
-                    name: "cache",
+                    name: tableNames.cache,
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
                     columns: expect.arrayContaining<Partial<ColumnMetadata>>([
                         expect.objectContaining<Partial<ColumnMetadata>>({
@@ -168,10 +180,6 @@ describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
             );
         });
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new KyselyCacheAdapter({
-                transactionContext: createTrxCtx(database),
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             const promise = adapter.init();
@@ -181,11 +189,6 @@ describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
     });
     describe("method: deInit", () => {
         test("Should remove cache table", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselyCacheAdapter({
-                transactionContext: trxCtx,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -193,15 +196,11 @@ describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
 
             expect(tables).not.toContainEqual(
                 expect.objectContaining<Partial<TableMetadata>>({
-                    name: "cache",
+                    name: tableNames.cache,
                 }),
             );
         });
         test("Should not throw error when called multiple times", async () => {
-            const adapter = new KyselyCacheAdapter({
-                transactionContext: createTrxCtx(database),
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
             await adapter.deInit();
 
@@ -210,11 +209,6 @@ describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
             await expect(promise).resolves.toBeUndefined();
         });
         test("Should not throw error when called before init", async () => {
-            const adapter = new KyselyCacheAdapter({
-                transactionContext: createTrxCtx(database),
-                serde: new SuperJsonSerde(),
-            });
-
             const promise = adapter.deInit();
 
             await expect(promise).resolves.toBeUndefined();
@@ -222,11 +216,6 @@ describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
     });
     describe("Transaction tests:", () => {
         test("Should not persist changes when the transaction fails", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselyCacheAdapter({
-                transactionContext: trxCtx,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             try {
@@ -247,11 +236,6 @@ describe("postgres class: KyselyCacheAdapter", { tags: ["Postgres"] }, () => {
             expect(rows.length).toBe(0);
         });
         test("Should persist changes when the transaction succeeds", async () => {
-            const trxCtx = createTrxCtx(database);
-            const adapter = new KyselyCacheAdapter({
-                transactionContext: trxCtx,
-                serde: new SuperJsonSerde(),
-            });
             await adapter.init();
 
             await trxCtx.run(async () => {
