@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { copyObj } from "@/utilities/functions/copy-obj.js";
 
-describe("function: copyObj", () => {
+describe("function: copyObj", { tags: ["Utilities"] }, () => {
     test("Should return false for referential equality for object literals", () => {
         const obj = { a: 1, b: "hello", c: true };
         const copiedObj = copyObj(obj);

@@ -1,40 +1,61 @@
+import { randomUUID } from "node:crypto";
+
 import { RedisContainer } from "@testcontainers/redis";
 import { Redis } from "ioredis";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+} from "vitest";
 
+import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { RedisRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/redis-rate-limiter-adapter.js";
+import { withRateLimiterPrefix } from "@/rate-limiter/implementations/plugins/_module-exports.js";
 import { fixedWindowLimiterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
 
-const timeout = TimeSpan.fromMinutes(2);
-describe("fixed-window-limiter class: RedisRateLimiterAdapter", () => {
-    let client: Redis;
-    let startedContainer: StartedRedisContainer;
-    beforeEach(async () => {
-        startedContainer = await new RedisContainer("redis:7.4.2").start();
-        client = new Redis(startedContainer.getConnectionUrl());
-    }, timeout.toMilliseconds());
-    afterEach(async () => {
-        await client.quit();
-        await startedContainer.stop();
-    }, timeout.toMilliseconds());
+import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-exports.js";
 
-    fixedWindowLimiterTestSuite({
-        createAdapter: () => {
-            const adapter = new RedisRateLimiterAdapter({
-                database: client,
-                backoffPolicy:
-                    fixedWindowLimiterTestSuite.backoffPolicySettings,
-                rateLimiterPolicy:
-                    fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
-            });
-            return adapter;
-        },
-        beforeEach,
-        describe,
-        expect,
-        test,
-    });
-});
+const timeout = TimeSpan.fromMinutes(2);
+describe(
+    "fixed-window-limiter class: RedisRateLimiterAdapter",
+    { tags: ["Redis", "Adapters", "Implementations", "RateLimiter"] },
+    () => {
+        let client: Redis;
+        let startedContainer: StartedRedisContainer;
+        let adapter: IRateLimiterAdapter;
+        beforeAll(async () => {
+            startedContainer = await new RedisContainer("redis:7.4.2").start();
+            client = new Redis(startedContainer.getConnectionUrl());
+        }, timeout.toMilliseconds());
+        beforeEach(() => {
+            adapter = withPlugin(
+                new RedisRateLimiterAdapter({
+                    database: client,
+                    backoffPolicy:
+                        fixedWindowLimiterTestSuite.backoffPolicySettings,
+                    rateLimiterPolicy:
+                        fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
+                }),
+                withRateLimiterPrefix(randomUUID()),
+            );
+        });
+        afterAll(async () => {
+            await client.quit();
+            await startedContainer.stop();
+        }, timeout.toMilliseconds());
+
+        fixedWindowLimiterTestSuite({
+            createAdapter: () => adapter,
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
+    },
+);

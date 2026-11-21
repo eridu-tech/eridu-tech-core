@@ -8,53 +8,66 @@ import { withRateLimiterPrefix } from "@/rate-limiter/implementations/plugins/wi
 
 import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-exports.js";
 
-describe("function: withRateLimiterPrefix", () => {
-    const adapter = new NoOpRateLimiterAdapter();
-    const prefix = "test-prefix:";
-    const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
+describe(
+    "function: withRateLimiterPrefix",
+    { tags: ["Memory", "Plugins", "Implementations", "RateLimiter"] },
+    () => {
+        const adapter = new NoOpRateLimiterAdapter();
+        const prefix = "test-prefix:";
+        const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
-
-    describe("method: getState", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "getState");
-
-            const enhanced = withPlugin(adapter, withRateLimiterPrefix(prefix));
-
-            await enhanced.getState("myKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<IRateLimiterAdapter["getState"]>
-            >(`${prefix}myKey`);
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
         });
-    });
-    describe("method: reset", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "reset");
 
-            const enhanced = withPlugin(adapter, withRateLimiterPrefix(prefix));
+        describe("method: getState", () => {
+            test("Should prefix the key", async () => {
+                const spy = vi.spyOn(adapter, "getState");
 
-            await enhanced.reset("myKey");
+                const enhanced = withPlugin(
+                    adapter,
+                    withRateLimiterPrefix(prefix),
+                );
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<IRateLimiterAdapter["reset"]>
-            >(`${prefix}myKey`);
+                await enhanced.getState("myKey");
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<IRateLimiterAdapter["getState"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-    describe("method: updateState", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "updateState");
+        describe("method: reset", () => {
+            test("Should prefix the key", async () => {
+                const spy = vi.spyOn(adapter, "reset");
 
-            const enhanced = withPlugin(adapter, withRateLimiterPrefix(prefix));
+                const enhanced = withPlugin(
+                    adapter,
+                    withRateLimiterPrefix(prefix),
+                );
 
-            await enhanced.updateState("myKey", 10);
+                await enhanced.reset("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<IRateLimiterAdapter["updateState"]>
-            >(`${prefix}myKey`, 10);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<IRateLimiterAdapter["reset"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-});
+        describe("method: updateState", () => {
+            test("Should prefix the key", async () => {
+                const spy = vi.spyOn(adapter, "updateState");
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withRateLimiterPrefix(prefix),
+                );
+
+                await enhanced.updateState("myKey", 10);
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<IRateLimiterAdapter["updateState"]>
+                >(`${prefix}myKey`, 10);
+            });
+        });
+    },
+);

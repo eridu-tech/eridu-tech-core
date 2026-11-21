@@ -11,39 +11,45 @@ import {
 
 import type { HttpHandlerFn } from "@/http-router/contracts/_module-exports.js";
 
-describe("function: bindHttpFactory", () => {
-    test("Should resolve the controller from the container and invoke the bound method", async () => {
-        const executionContext = new ExecutionContext(
-            new AlsExecutionContextAdapter(),
-        );
-        const container = new Container({
-            executionContext,
+describe(
+    "function: bindHttpFactory",
+    { tags: ["Memory", "Derivables", "Implementations", "HttpRouter"] },
+    () => {
+        test("Should resolve the controller from the container and invoke the bound method", async () => {
+            const executionContext = new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            );
+            const container = new Container({
+                executionContext,
+            });
+
+            class UsersController {
+                getUser: HttpHandlerFn = (args) => {
+                    return args.text("Hi from UsersController");
+                };
+            }
+            container.registerValue({
+                token: UsersController,
+                value: new UsersController(),
+            });
+
+            await container.init();
+
+            const router = new HttpRouter({
+                router: defaultHttpRouterAdapter(),
+            });
+            router.endpoint({
+                method: ["GET"],
+                url: "/users/:id",
+                handler: bindHttpFactory(container)(UsersController, "getUser"),
+            });
+
+            const response = await router.fetch(
+                new Request("https://example.com/users/42"),
+            );
+
+            expect(response.status).toBe(200);
+            expect(await response.text()).toBe("Hi from UsersController");
         });
-
-        class UsersController {
-            getUser: HttpHandlerFn = (args) => {
-                return args.text("Hi from UsersController");
-            };
-        }
-        container.registerValue({
-            token: UsersController,
-            value: new UsersController(),
-        });
-
-        await container.init();
-
-        const router = new HttpRouter({ router: defaultHttpRouterAdapter() });
-        router.endpoint({
-            method: ["GET"],
-            url: "/users/:id",
-            handler: bindHttpFactory(container)(UsersController, "getUser"),
-        });
-
-        const response = await router.fetch(
-            new Request("https://example.com/users/42"),
-        );
-
-        expect(response.status).toBe(200);
-        expect(await response.text()).toBe("Hi from UsersController");
-    });
-});
+    },
+);

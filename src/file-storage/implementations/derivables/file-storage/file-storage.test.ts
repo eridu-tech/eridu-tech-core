@@ -23,265 +23,293 @@ import type {
     WritableFileAdapterStream,
 } from "@/file-storage/contracts/_module-exports.js";
 
-describe("class: FileStorage", () => {
-    function createFileStorage() {
-        const serde = new SuperJsonSerde();
-        const fileStorage = new FileStorage({
-            serde,
-            adapter: new SignedFileStorageAdapter({
-                adapter: new MemoryFileStorageAdapter(),
-                urlAdapter: {},
-            }),
-        });
-        fileStorage.init();
-        return {
-            fileStorage,
-            serde,
-        };
-    }
-
-    fileStorageTestSuite({
-        createFileStorage,
-        beforeEach,
-        describe,
-        expect,
-        test,
-    });
-
-    fileStorageSerdeTestSuite({
-        createFileStorage,
-        beforeEach,
-        describe,
-        expect,
-        test,
-    });
-
-    describe("Serde tests:", () => {
-        test("Should differentiate between different adapters", async () => {
+describe(
+    "class: FileStorage",
+    { tags: ["Memory", "Derivables", "Implementations", "FileStorage"] },
+    () => {
+        function createFileStorage() {
             const serde = new SuperJsonSerde();
-            const key = "a";
-
-            class Adapter1 implements ISignedFileStorageAdapter {
-                private readonly adapter: SignedFileStorageAdapter;
-                constructor() {
-                    this.adapter = new SignedFileStorageAdapter({
-                        adapter: new MemoryFileStorageAdapter(),
-                        urlAdapter: {},
-                    });
-                }
-                getPublicUrl(key: string): Promise<string> {
-                    return this.adapter.getPublicUrl(key);
-                }
-                getSignedDownloadUrl(
-                    key: string,
-                    settings: FileAdapterSignedDownloadUrlSettings,
-                ): Promise<string> {
-                    return this.adapter.getSignedDownloadUrl(key, settings);
-                }
-                getSignedUploadUrl(
-                    key: string,
-                    settings: FileAdapterSignedUploadUrlSettings,
-                ): Promise<string> {
-                    return this.adapter.getSignedUploadUrl(key, settings);
-                }
-                exists(key: string): Promise<boolean> {
-                    return this.adapter.exists(key);
-                }
-                getStream(key: string): Promise<FileAdapterStream | null> {
-                    return this.adapter.getStream(key);
-                }
-                getBytes(key: string): Promise<Uint8Array | null> {
-                    return this.adapter.getBytes(key);
-                }
-                getMetaData(key: string): Promise<FileAdapterMetadata | null> {
-                    return this.adapter.getMetaData(key);
-                }
-                put(
-                    key: string,
-                    content: WritableFileAdapterContent,
-                ): Promise<void> {
-                    return this.adapter.put(key, content);
-                }
-                putStream(
-                    key: string,
-                    stream: WritableFileAdapterStream,
-                ): Promise<void> {
-                    return this.adapter.putStream(key, stream);
-                }
-                copy(source: string, destination: string): Promise<boolean> {
-                    return this.adapter.copy(source, destination);
-                }
-                move(source: string, destination: string): Promise<boolean> {
-                    return this.adapter.move(source, destination);
-                }
-                removeMany(keys: Array<string>): Promise<void> {
-                    return this.adapter.removeMany(keys);
-                }
-                removeByPrefix(prefix: string): Promise<void> {
-                    return this.adapter.removeByPrefix(prefix);
-                }
-            }
-            const adapter1 = new Adapter1();
-            const fileStorage1 = new FileStorage({
-                adapter: adapter1,
+            const fileStorage = new FileStorage({
                 serde,
-            });
-            fileStorage1.init();
-            const file1 = fileStorage1.create(key);
-
-            const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
-            await file1.put({ data: data1 });
-
-            class Adapter2 implements ISignedFileStorageAdapter {
-                private readonly adapter: SignedFileStorageAdapter;
-                constructor() {
-                    this.adapter = new SignedFileStorageAdapter({
-                        adapter: new MemoryFileStorageAdapter(),
-                        urlAdapter: {},
-                    });
-                }
-                getPublicUrl(key: string): Promise<string> {
-                    return this.adapter.getPublicUrl(key);
-                }
-                getSignedDownloadUrl(
-                    key: string,
-                    settings: FileAdapterSignedDownloadUrlSettings,
-                ): Promise<string> {
-                    return this.adapter.getSignedDownloadUrl(key, settings);
-                }
-                getSignedUploadUrl(
-                    key: string,
-                    settings: FileAdapterSignedUploadUrlSettings,
-                ): Promise<string> {
-                    return this.adapter.getSignedUploadUrl(key, settings);
-                }
-                exists(key: string): Promise<boolean> {
-                    return this.adapter.exists(key);
-                }
-                getStream(key: string): Promise<FileAdapterStream | null> {
-                    return this.adapter.getStream(key);
-                }
-                getBytes(key: string): Promise<Uint8Array | null> {
-                    return this.adapter.getBytes(key);
-                }
-                getMetaData(key: string): Promise<FileAdapterMetadata | null> {
-                    return this.adapter.getMetaData(key);
-                }
-                put(
-                    key: string,
-                    content: WritableFileAdapterContent,
-                ): Promise<void> {
-                    return this.adapter.put(key, content);
-                }
-                putStream(
-                    key: string,
-                    stream: WritableFileAdapterStream,
-                ): Promise<void> {
-                    return this.adapter.putStream(key, stream);
-                }
-                copy(source: string, destination: string): Promise<boolean> {
-                    return this.adapter.copy(source, destination);
-                }
-                move(source: string, destination: string): Promise<boolean> {
-                    return this.adapter.move(source, destination);
-                }
-                removeMany(keys: Array<string>): Promise<void> {
-                    return this.adapter.removeMany(keys);
-                }
-                removeByPrefix(prefix: string): Promise<void> {
-                    return this.adapter.removeByPrefix(prefix);
-                }
-            }
-            const adapter2 = new Adapter2();
-            const fileStorage2 = new FileStorage({
-                adapter: adapter2,
-                serde,
-            });
-            fileStorage2.init();
-            const file2 = fileStorage2.create(key);
-
-            const deserializeFile2 = serde.deserialize<IFile>(
-                serde.serialize(file2),
-            );
-            const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
-            await deserializeFile2.put({ data: data2 });
-            const result = await deserializeFile2.exists();
-
-            expect(result).toBe(true);
-        });
-        test("Should differentiate between different serializationIds", async () => {
-            const serde = new SuperJsonSerde();
-            const key = "a";
-
-            const fileStorage1 = new FileStorage({
                 adapter: new SignedFileStorageAdapter({
                     adapter: new MemoryFileStorageAdapter(),
                     urlAdapter: {},
                 }),
-                serializationId: "adapter1",
-                serde,
             });
-            fileStorage1.init();
-            const file1 = fileStorage1.create(key);
-
-            const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
-            await file1.put({ data: data1 });
-
-            const fileStorage2 = new FileStorage({
-                adapter: new SignedFileStorageAdapter({
-                    adapter: new MemoryFileStorageAdapter(),
-                    urlAdapter: {},
-                }),
-                serializationId: "adapter2",
+            fileStorage.init();
+            return {
+                fileStorage,
                 serde,
+            };
+        }
+
+        fileStorageTestSuite({
+            createFileStorage,
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
+
+        fileStorageSerdeTestSuite({
+            createFileStorage,
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
+
+        describe("Serde tests:", () => {
+            test("Should differentiate between different adapters", async () => {
+                const serde = new SuperJsonSerde();
+                const key = "a";
+
+                class Adapter1 implements ISignedFileStorageAdapter {
+                    private readonly adapter: SignedFileStorageAdapter;
+                    constructor() {
+                        this.adapter = new SignedFileStorageAdapter({
+                            adapter: new MemoryFileStorageAdapter(),
+                            urlAdapter: {},
+                        });
+                    }
+                    getPublicUrl(key: string): Promise<string> {
+                        return this.adapter.getPublicUrl(key);
+                    }
+                    getSignedDownloadUrl(
+                        key: string,
+                        settings: FileAdapterSignedDownloadUrlSettings,
+                    ): Promise<string> {
+                        return this.adapter.getSignedDownloadUrl(key, settings);
+                    }
+                    getSignedUploadUrl(
+                        key: string,
+                        settings: FileAdapterSignedUploadUrlSettings,
+                    ): Promise<string> {
+                        return this.adapter.getSignedUploadUrl(key, settings);
+                    }
+                    exists(key: string): Promise<boolean> {
+                        return this.adapter.exists(key);
+                    }
+                    getStream(key: string): Promise<FileAdapterStream | null> {
+                        return this.adapter.getStream(key);
+                    }
+                    getBytes(key: string): Promise<Uint8Array | null> {
+                        return this.adapter.getBytes(key);
+                    }
+                    getMetaData(
+                        key: string,
+                    ): Promise<FileAdapterMetadata | null> {
+                        return this.adapter.getMetaData(key);
+                    }
+                    put(
+                        key: string,
+                        content: WritableFileAdapterContent,
+                    ): Promise<void> {
+                        return this.adapter.put(key, content);
+                    }
+                    putStream(
+                        key: string,
+                        stream: WritableFileAdapterStream,
+                    ): Promise<void> {
+                        return this.adapter.putStream(key, stream);
+                    }
+                    copy(
+                        source: string,
+                        destination: string,
+                    ): Promise<boolean> {
+                        return this.adapter.copy(source, destination);
+                    }
+                    move(
+                        source: string,
+                        destination: string,
+                    ): Promise<boolean> {
+                        return this.adapter.move(source, destination);
+                    }
+                    removeMany(keys: Array<string>): Promise<void> {
+                        return this.adapter.removeMany(keys);
+                    }
+                    removeByPrefix(prefix: string): Promise<void> {
+                        return this.adapter.removeByPrefix(prefix);
+                    }
+                }
+                const adapter1 = new Adapter1();
+                const fileStorage1 = new FileStorage({
+                    adapter: adapter1,
+                    serde,
+                });
+                fileStorage1.init();
+                const file1 = fileStorage1.create(key);
+
+                const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
+                await file1.put({ data: data1 });
+
+                class Adapter2 implements ISignedFileStorageAdapter {
+                    private readonly adapter: SignedFileStorageAdapter;
+                    constructor() {
+                        this.adapter = new SignedFileStorageAdapter({
+                            adapter: new MemoryFileStorageAdapter(),
+                            urlAdapter: {},
+                        });
+                    }
+                    getPublicUrl(key: string): Promise<string> {
+                        return this.adapter.getPublicUrl(key);
+                    }
+                    getSignedDownloadUrl(
+                        key: string,
+                        settings: FileAdapterSignedDownloadUrlSettings,
+                    ): Promise<string> {
+                        return this.adapter.getSignedDownloadUrl(key, settings);
+                    }
+                    getSignedUploadUrl(
+                        key: string,
+                        settings: FileAdapterSignedUploadUrlSettings,
+                    ): Promise<string> {
+                        return this.adapter.getSignedUploadUrl(key, settings);
+                    }
+                    exists(key: string): Promise<boolean> {
+                        return this.adapter.exists(key);
+                    }
+                    getStream(key: string): Promise<FileAdapterStream | null> {
+                        return this.adapter.getStream(key);
+                    }
+                    getBytes(key: string): Promise<Uint8Array | null> {
+                        return this.adapter.getBytes(key);
+                    }
+                    getMetaData(
+                        key: string,
+                    ): Promise<FileAdapterMetadata | null> {
+                        return this.adapter.getMetaData(key);
+                    }
+                    put(
+                        key: string,
+                        content: WritableFileAdapterContent,
+                    ): Promise<void> {
+                        return this.adapter.put(key, content);
+                    }
+                    putStream(
+                        key: string,
+                        stream: WritableFileAdapterStream,
+                    ): Promise<void> {
+                        return this.adapter.putStream(key, stream);
+                    }
+                    copy(
+                        source: string,
+                        destination: string,
+                    ): Promise<boolean> {
+                        return this.adapter.copy(source, destination);
+                    }
+                    move(
+                        source: string,
+                        destination: string,
+                    ): Promise<boolean> {
+                        return this.adapter.move(source, destination);
+                    }
+                    removeMany(keys: Array<string>): Promise<void> {
+                        return this.adapter.removeMany(keys);
+                    }
+                    removeByPrefix(prefix: string): Promise<void> {
+                        return this.adapter.removeByPrefix(prefix);
+                    }
+                }
+                const adapter2 = new Adapter2();
+                const fileStorage2 = new FileStorage({
+                    adapter: adapter2,
+                    serde,
+                });
+                fileStorage2.init();
+                const file2 = fileStorage2.create(key);
+
+                const deserializeFile2 = serde.deserialize<IFile>(
+                    serde.serialize(file2),
+                );
+                const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
+                await deserializeFile2.put({ data: data2 });
+                const result = await deserializeFile2.exists();
+
+                expect(result).toBe(true);
             });
-            fileStorage2.init();
-            const file2 = fileStorage2.create(key);
+            test("Should differentiate between different serializationIds", async () => {
+                const serde = new SuperJsonSerde();
+                const key = "a";
 
-            const deserializeFile2 = serde.deserialize<IFile>(
-                serde.serialize(file2),
-            );
-            const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
-            await deserializeFile2.put({ data: data2 });
-            const result = await deserializeFile2.exists();
+                const fileStorage1 = new FileStorage({
+                    adapter: new SignedFileStorageAdapter({
+                        adapter: new MemoryFileStorageAdapter(),
+                        urlAdapter: {},
+                    }),
+                    serializationId: "adapter1",
+                    serde,
+                });
+                fileStorage1.init();
+                const file1 = fileStorage1.create(key);
 
-            expect(result).toBe(true);
+                const data1 = new Uint8Array(Buffer.from("CONTENT_1"));
+                await file1.put({ data: data1 });
+
+                const fileStorage2 = new FileStorage({
+                    adapter: new SignedFileStorageAdapter({
+                        adapter: new MemoryFileStorageAdapter(),
+                        urlAdapter: {},
+                    }),
+                    serializationId: "adapter2",
+                    serde,
+                });
+                fileStorage2.init();
+                const file2 = fileStorage2.create(key);
+
+                const deserializeFile2 = serde.deserialize<IFile>(
+                    serde.serialize(file2),
+                );
+                const data2 = new Uint8Array(Buffer.from("CONTENT_2"));
+                await deserializeFile2.put({ data: data2 });
+                const result = await deserializeFile2.exists();
+
+                expect(result).toBe(true);
+            });
         });
-    });
-    describe("Unexpected adapter error handling:", () => {
-        test("Should reject with UnableToGetBytesFileError when adapter getBytes fails", async () => {
-            const unexpectedError = new Error("Unexpected adapter error");
-            const adapter = new NoOpFileStorageAdapter();
-            vi.spyOn(adapter, "getBytes").mockRejectedValue(unexpectedError);
-            const fileStorage = new FileStorage({ adapter });
-            fileStorage.init();
+        describe("Unexpected adapter error handling:", () => {
+            test("Should reject with UnableToGetBytesFileError when adapter getBytes fails", async () => {
+                const unexpectedError = new Error("Unexpected adapter error");
+                const adapter = new NoOpFileStorageAdapter();
+                vi.spyOn(adapter, "getBytes").mockRejectedValue(
+                    unexpectedError,
+                );
+                const fileStorage = new FileStorage({ adapter });
+                fileStorage.init();
 
-            const promise = fileStorage.create("a").getBytes();
+                const promise = fileStorage.create("a").getBytes();
 
-            await expect(promise).rejects.toThrow(UnableToGetBytesFileError);
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
+                await expect(promise).rejects.toThrow(
+                    UnableToGetBytesFileError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
+            test("Should reject with UnableToGetBytesFileError when deserialized file getBytes fails", async () => {
+                const serde = new SuperJsonSerde();
+                const unexpectedError = new Error("Unexpected adapter error");
+                const adapter = new NoOpFileStorageAdapter();
+                vi.spyOn(adapter, "getBytes").mockRejectedValue(
+                    unexpectedError,
+                );
+                const fileStorage = new FileStorage({ adapter, serde });
+                fileStorage.init();
+
+                const deserializedFile = serde.deserialize<IFile>(
+                    serde.serialize(fileStorage.create("a")),
+                );
+                const promise = deserializedFile.getBytes();
+
+                await expect(promise).rejects.toThrow(
+                    UnableToGetBytesFileError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-        test("Should reject with UnableToGetBytesFileError when deserialized file getBytes fails", async () => {
-            const serde = new SuperJsonSerde();
-            const unexpectedError = new Error("Unexpected adapter error");
-            const adapter = new NoOpFileStorageAdapter();
-            vi.spyOn(adapter, "getBytes").mockRejectedValue(unexpectedError);
-            const fileStorage = new FileStorage({ adapter, serde });
-            fileStorage.init();
-
-            const deserializedFile = serde.deserialize<IFile>(
-                serde.serialize(fileStorage.create("a")),
-            );
-            const promise = deserializedFile.getBytes();
-
-            await expect(promise).rejects.toThrow(UnableToGetBytesFileError);
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-    });
-});
+    },
+);

@@ -6,7 +6,7 @@ import {
     optionSome,
 } from "@/utilities/functions/option.js";
 
-describe("file: option.ts", () => {
+describe("file: option.ts", { tags: ["Utilities"] }, () => {
     describe("constant: OPTION", () => {
         test("Should expose the some type", () => {
             expect(OPTION.SOME).toBe("some");

@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { isAsyncIterable } from "@/utilities/functions/is-async-iterable.js";
 
-describe("function: isAsyncIterable", () => {
+describe("function: isAsyncIterable", { tags: ["Utilities"] }, () => {
     test("Should return true when AsyncIterable", () => {
         const asyncIterable: AsyncIterable<unknown> = {
             async *[Symbol.asyncIterator](): AsyncIterator<unknown> {

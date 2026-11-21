@@ -11,128 +11,138 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { CircuitBreakerFactoryCreateSettings } from "@/circuit-breaker/contracts/_module-exports.js";
 
-describe("function: withCircuitBreakerFactory", () => {
-    const circuitBreakerFactoryResolver =
-        new CircuitBreakerFactoryResolver<"memory">({
-            adapters: { memory: new NoOpCircuitBreakerAdapter() },
-            defaultAdapter: "memory",
+describe(
+    "function: withCircuitBreakerFactory",
+    { tags: ["Memory", "Middlewares", "Implementations", "CircuitBreaker"] },
+    () => {
+        const circuitBreakerFactoryResolver =
+            new CircuitBreakerFactoryResolver<"memory">({
+                adapters: { memory: new NoOpCircuitBreakerAdapter() },
+                defaultAdapter: "memory",
+            });
+        circuitBreakerFactoryResolver.init();
+
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
         });
-    circuitBreakerFactoryResolver.init();
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
+        test("Should call CircuitBreakerFactory.create method", async () => {
+            const spy = vi.spyOn(CircuitBreakerFactory.prototype, "create");
 
-    test("Should call CircuitBreakerFactory.create method", async () => {
-        const spy = vi.spyOn(CircuitBreakerFactory.prototype, "create");
+            const withCircuitBreaker = withCircuitBreakerFactory(
+                circuitBreakerFactoryResolver,
+            );
 
-        const withCircuitBreaker = withCircuitBreakerFactory(
-            circuitBreakerFactoryResolver,
-        );
+            async function fn(_value: string): Promise<void> {}
+            const key = "key";
+            const settings: CircuitBreakerFactoryCreateSettings = {
+                errorPolicy: Error,
+                slowCallTime: TimeSpan.fromMinutes(1),
+                trigger: CIRCUIT_BREAKER_TRIGGER.ONLY_SLOW_CALL,
+            };
+            await use(
+                fn,
+                withCircuitBreaker({
+                    ...settings,
+                    key: ([value]) => value,
+                }),
+            )(key);
 
-        async function fn(_value: string): Promise<void> {}
-        const key = "key";
-        const settings: CircuitBreakerFactoryCreateSettings = {
-            errorPolicy: Error,
-            slowCallTime: TimeSpan.fromMinutes(1),
-            trigger: CIRCUIT_BREAKER_TRIGGER.ONLY_SLOW_CALL,
-        };
-        await use(
-            fn,
-            withCircuitBreaker({
-                ...settings,
-                key: ([value]) => value,
-            }),
-        )(key);
+            expect(spy).toHaveBeenCalledExactlyOnceWith(key, settings);
+        });
+        test("Should call CircuitBreaker.run method", async () => {
+            const spy = vi.spyOn(CircuitBreaker.prototype, "runOrFail");
 
-        expect(spy).toHaveBeenCalledExactlyOnceWith(key, settings);
-    });
-    test("Should call CircuitBreaker.run method", async () => {
-        const spy = vi.spyOn(CircuitBreaker.prototype, "runOrFail");
+            const withCircuitBreaker = withCircuitBreakerFactory(
+                circuitBreakerFactoryResolver,
+            );
 
-        const withCircuitBreaker = withCircuitBreakerFactory(
-            circuitBreakerFactoryResolver,
-        );
+            async function fn(_value: string): Promise<void> {}
+            const argValue = "value";
+            await use(
+                fn,
+                withCircuitBreaker({
+                    key: ([value]) => value,
+                }),
+            )(argValue);
 
-        async function fn(_value: string): Promise<void> {}
-        const argValue = "value";
-        await use(
-            fn,
-            withCircuitBreaker({
-                key: ([value]) => value,
-            }),
-        )(argValue);
+            expect(spy).toHaveBeenCalledOnce();
+        });
+        test("Should derive the key from multiple wrapped function arguments", async () => {
+            const spy = vi.spyOn(CircuitBreakerFactory.prototype, "create");
 
-        expect(spy).toHaveBeenCalledOnce();
-    });
-    test("Should derive the key from multiple wrapped function arguments", async () => {
-        const spy = vi.spyOn(CircuitBreakerFactory.prototype, "create");
+            const withCircuitBreaker = withCircuitBreakerFactory(
+                circuitBreakerFactoryResolver,
+            );
 
-        const withCircuitBreaker = withCircuitBreakerFactory(
-            circuitBreakerFactoryResolver,
-        );
+            async function fn(
+                _userId: string,
+                _postId: string,
+            ): Promise<void> {}
+            await use(
+                fn,
+                withCircuitBreaker({
+                    key: ([userId, postId]) => `user:${userId}:post:${postId}`,
+                }),
+            )("u1", "p2");
 
-        async function fn(_userId: string, _postId: string): Promise<void> {}
-        await use(
-            fn,
-            withCircuitBreaker({
-                key: ([userId, postId]) => `user:${userId}:post:${postId}`,
-            }),
-        )("u1", "p2");
+            expect(spy).toHaveBeenCalledWith(
+                "user:u1:post:p2",
+                expect.anything(),
+            );
+        });
+        test("Should pass through the wrapped function's arguments and return value", async () => {
+            const withCircuitBreaker = withCircuitBreakerFactory(
+                circuitBreakerFactoryResolver,
+            );
 
-        expect(spy).toHaveBeenCalledWith("user:u1:post:p2", expect.anything());
-    });
-    test("Should pass through the wrapped function's arguments and return value", async () => {
-        const withCircuitBreaker = withCircuitBreakerFactory(
-            circuitBreakerFactoryResolver,
-        );
+            function fn(a: string, b: string): Promise<string> {
+                return Promise.resolve(`${a}-${b}`);
+            }
 
-        function fn(a: string, b: string): Promise<string> {
-            return Promise.resolve(`${a}-${b}`);
-        }
+            const wrapped = use(
+                fn,
+                withCircuitBreaker({
+                    key: ([a, b]) => `${a}:${b}`,
+                }),
+            );
 
-        const wrapped = use(
-            fn,
-            withCircuitBreaker({
-                key: ([a, b]) => `${a}:${b}`,
-            }),
-        );
+            expect(await wrapped("2", "3")).toBe("2-3");
+        });
+        test("Should use the default adapter when use is not called", async () => {
+            const spy = vi.spyOn(circuitBreakerFactoryResolver, "use");
 
-        expect(await wrapped("2", "3")).toBe("2-3");
-    });
-    test("Should use the default adapter when use is not called", async () => {
-        const spy = vi.spyOn(circuitBreakerFactoryResolver, "use");
+            const withCircuitBreaker = withCircuitBreakerFactory(
+                circuitBreakerFactoryResolver,
+            );
 
-        const withCircuitBreaker = withCircuitBreakerFactory(
-            circuitBreakerFactoryResolver,
-        );
+            async function fn(_value: string): Promise<void> {}
+            await use(
+                fn,
+                withCircuitBreaker({
+                    key: ([value]) => value,
+                }),
+            )("value");
 
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withCircuitBreaker({
-                key: ([value]) => value,
-            }),
-        )("value");
+            expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
+        });
+        test("Should select the adapter passed to use", async () => {
+            const spy = vi.spyOn(circuitBreakerFactoryResolver, "use");
 
-        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
-    });
-    test("Should select the adapter passed to use", async () => {
-        const spy = vi.spyOn(circuitBreakerFactoryResolver, "use");
+            const withCircuitBreaker = withCircuitBreakerFactory(
+                circuitBreakerFactoryResolver,
+            );
 
-        const withCircuitBreaker = withCircuitBreakerFactory(
-            circuitBreakerFactoryResolver,
-        );
+            async function fn(_value: string): Promise<void> {}
+            await use(
+                fn,
+                withCircuitBreaker.use("memory")({
+                    key: ([value]) => value,
+                }),
+            )("value");
 
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withCircuitBreaker.use("memory")({
-                key: ([value]) => value,
-            }),
-        )("value");
-
-        expect(spy).toHaveBeenCalledWith("memory");
-    });
-});
+            expect(spy).toHaveBeenCalledWith("memory");
+        });
+    },
+);

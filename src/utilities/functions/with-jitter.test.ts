@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { withJitter } from "@/utilities/functions/with-jitter.js";
 
-describe("function: withJitter", () => {
+describe("function: withJitter", { tags: ["Utilities"] }, () => {
     test("Should return the value unchanged when jitter is null", () => {
         const result = withJitter({
             jitter: null,

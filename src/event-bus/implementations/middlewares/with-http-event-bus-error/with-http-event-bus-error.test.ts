@@ -40,64 +40,70 @@ async function fetchWithError(error: unknown): Promise<Response> {
     return router.fetch(new Request("https://example.com/error"));
 }
 
-describe("file: with-http-event-bus-error.ts", () => {
-    describe("function: withHttpEventBusError", () => {
-        const testCases: Array<TestData> = [
-            {
-                name: "UnableToDispatchEventBusError",
-                status: 503,
-                message: "Event bus adapter failed",
-                error: UnableToDispatchEventBusError.create("event-1"),
-            },
-            {
-                name: "UnableToAddListenerEventBusError",
-                status: 503,
-                message: "Event bus adapter failed",
-                error: UnableToAddListenerEventBusError.create("event-1"),
-            },
-            {
-                name: "UnableToRemoveListenerEventBusError",
-                status: 503,
-                message: "Event bus adapter failed",
-                error: UnableToRemoveListenerEventBusError.create("event-1"),
-            },
-        ];
+describe(
+    "file: with-http-event-bus-error.ts",
+    { tags: ["Memory", "Middlewares", "Implementations", "EventBus"] },
+    () => {
+        describe("function: withHttpEventBusError", () => {
+            const testCases: Array<TestData> = [
+                {
+                    name: "UnableToDispatchEventBusError",
+                    status: 503,
+                    message: "Event bus adapter failed",
+                    error: UnableToDispatchEventBusError.create("event-1"),
+                },
+                {
+                    name: "UnableToAddListenerEventBusError",
+                    status: 503,
+                    message: "Event bus adapter failed",
+                    error: UnableToAddListenerEventBusError.create("event-1"),
+                },
+                {
+                    name: "UnableToRemoveListenerEventBusError",
+                    status: 503,
+                    message: "Event bus adapter failed",
+                    error: UnableToRemoveListenerEventBusError.create(
+                        "event-1",
+                    ),
+                },
+            ];
 
-        test.each(testCases)(
-            "Should convert $name to an HttpError response with status $status",
-            async (testCase) => {
-                const response = await fetchWithError(testCase.error);
+            test.each(testCases)(
+                "Should convert $name to an HttpError response with status $status",
+                async (testCase) => {
+                    const response = await fetchWithError(testCase.error);
 
-                expect(response.status).toBe(testCase.status);
-                await expect(response.json()).resolves.toEqual({
-                    name: "HttpError",
-                    status: String(testCase.status),
-                    message: testCase.message,
-                });
-            },
-        );
-        test("Should return a generic 500 response when the error is not an event bus error", async () => {
-            const response = await fetchWithError(new Error("generic"));
-
-            expect(response.status).toBe(500);
-            await expect(response.text()).resolves.toBe(
-                "Unexpected error occurred",
+                    expect(response.status).toBe(testCase.status);
+                    await expect(response.json()).resolves.toEqual({
+                        name: "HttpError",
+                        status: String(testCase.status),
+                        message: testCase.message,
+                    });
+                },
             );
-        });
-        test("Should return the endpoint response when nothing is thrown", async () => {
-            const router = createRouter();
-            router.endpoint({
-                url: "/ok",
-                method: ["GET"],
-                handler: (args) => args.json({ ok: true }),
+            test("Should return a generic 500 response when the error is not an event bus error", async () => {
+                const response = await fetchWithError(new Error("generic"));
+
+                expect(response.status).toBe(500);
+                await expect(response.text()).resolves.toBe(
+                    "Unexpected error occurred",
+                );
             });
+            test("Should return the endpoint response when nothing is thrown", async () => {
+                const router = createRouter();
+                router.endpoint({
+                    url: "/ok",
+                    method: ["GET"],
+                    handler: (args) => args.json({ ok: true }),
+                });
 
-            const response = await router.fetch(
-                new Request("https://example.com/ok"),
-            );
+                const response = await router.fetch(
+                    new Request("https://example.com/ok"),
+                );
 
-            expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({ ok: true });
+                expect(response.status).toBe(200);
+                await expect(response.json()).resolves.toEqual({ ok: true });
+            });
         });
-    });
-});
+    },
+);

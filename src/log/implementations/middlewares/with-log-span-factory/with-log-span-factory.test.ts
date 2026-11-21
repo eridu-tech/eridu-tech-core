@@ -10,167 +10,184 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { Mock } from "vitest";
 
-describe("function: withLogSpanFactory", () => {
-    const transport = new NoOpLogTransport();
-    const log = new Log({
-        transport,
-        executionContext: new ExecutionContext(
-            new AlsExecutionContextAdapter(),
-        ),
-    });
-    let logSpy: Mock<NoOpLogTransport["log"]>;
-
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-
-        logSpy = vi.spyOn(transport, "log");
-    });
-
-    test("Should select the transport passed to use", async () => {
-        const runSpy = vi.spyOn(log, "run");
-        const logResolver = {
-            use: vi.fn((_transportName?: "primary" | "secondary") => log),
-        };
-        const fn = use(
-            (name: string): Promise<string> => Promise.resolve(name),
-            withLogSpanFactory(logResolver).use("secondary")<[string], string>(
-                "db",
+describe(
+    "function: withLogSpanFactory",
+    { tags: ["Memory", "Middlewares", "Implementations", "Log"] },
+    () => {
+        const transport = new NoOpLogTransport();
+        const log = new Log({
+            transport,
+            executionContext: new ExecutionContext(
+                new AlsExecutionContextAdapter(),
             ),
-        );
-
-        await fn("query");
-
-        expect(logResolver.use).toHaveBeenCalledExactlyOnceWith("secondary");
-        expect(runSpy).toHaveBeenCalledExactlyOnceWith(expect.any(Function), {
-            span: "db",
         });
-    });
+        let logSpy: Mock<NoOpLogTransport["log"]>;
 
-    test("Should open a span named after the middleware label", async () => {
-        const fn = use(
-            (name: string): Promise<string> => {
-                log.info(["inside"]);
-                return Promise.resolve(name);
-            },
-            withLogSpanFactory({ use: () => log })<[string], string>("db"),
-        );
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
 
-        await fn("query");
+            logSpy = vi.spyOn(transport, "log");
+        });
 
-        expect(logSpy).toHaveBeenCalledExactlyOnceWith(
-            expect.objectContaining({
-                messages: ["inside"],
-                spans: { db: expect.any(TimeSpan) as TimeSpan },
-            }),
-        );
-    });
+        test("Should select the transport passed to use", async () => {
+            const runSpy = vi.spyOn(log, "run");
+            const logResolver = {
+                use: vi.fn((_transportName?: "primary" | "secondary") => log),
+            };
+            const fn = use(
+                (name: string): Promise<string> => Promise.resolve(name),
+                withLogSpanFactory(logResolver).use("secondary")<
+                    [string],
+                    string
+                >("db"),
+            );
 
-    test("Should not attach the span to entries logged after the call", async () => {
-        const fn = use(
-            (name: string): Promise<string> => Promise.resolve(name),
-            withLogSpanFactory({ use: () => log })<[string], string>("db"),
-        );
+            await fn("query");
 
-        await fn("query");
-        log.info(["after"]);
+            expect(logResolver.use).toHaveBeenCalledExactlyOnceWith(
+                "secondary",
+            );
+            expect(runSpy).toHaveBeenCalledExactlyOnceWith(
+                expect.any(Function),
+                {
+                    span: "db",
+                },
+            );
+        });
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.spans).toBeUndefined();
-    });
-
-    test("Should nest the spans of stacked middlewares", async () => {
-        const fn = use(
-            (_name: string): Promise<string> => {
-                log.info(["inside"]);
-                return Promise.resolve("ok");
-            },
-            [
+        test("Should open a span named after the middleware label", async () => {
+            const fn = use(
+                (name: string): Promise<string> => {
+                    log.info(["inside"]);
+                    return Promise.resolve(name);
+                },
                 withLogSpanFactory({ use: () => log })<[string], string>("db"),
-                withLogSpanFactory({ use: () => log })<[string], string>(
-                    "http",
-                ),
-            ],
-        );
+            );
 
-        await fn("query");
+            await fn("query");
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(Object.keys(entry?.spans ?? {}).sort()).toStrictEqual([
-            "db",
-            "http",
-        ]);
-    });
+            expect(logSpy).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining({
+                    messages: ["inside"],
+                    spans: { db: expect.any(TimeSpan) as TimeSpan },
+                }),
+            );
+        });
 
-    test("Should not set the other extra info of the entry", async () => {
-        const fn = use(
-            (name: string): Promise<string> => {
-                log.info(["inside"]);
-                return Promise.resolve(name);
-            },
-            withLogSpanFactory({ use: () => log })<[string], string>("db"),
-        );
+        test("Should not attach the span to entries logged after the call", async () => {
+            const fn = use(
+                (name: string): Promise<string> => Promise.resolve(name),
+                withLogSpanFactory({ use: () => log })<[string], string>("db"),
+            );
 
-        await fn("query");
+            await fn("query");
+            log.info(["after"]);
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.group).toBeUndefined();
-        expect(entry?.metadata).toBeUndefined();
-        expect(entry?.error).toBeUndefined();
-    });
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.spans).toBeUndefined();
+        });
 
-    test("Should return the resolved value of the wrapped function", async () => {
-        const fn = use(
-            (name: string): Promise<string> => Promise.resolve(`Hello ${name}`),
-            withLogSpanFactory({ use: () => log })<[string], string>("db"),
-        );
+        test("Should nest the spans of stacked middlewares", async () => {
+            const fn = use(
+                (_name: string): Promise<string> => {
+                    log.info(["inside"]);
+                    return Promise.resolve("ok");
+                },
+                [
+                    withLogSpanFactory({ use: () => log })<[string], string>(
+                        "db",
+                    ),
+                    withLogSpanFactory({ use: () => log })<[string], string>(
+                        "http",
+                    ),
+                ],
+            );
 
-        await expect(fn("world")).resolves.toBe("Hello world");
-    });
+            await fn("query");
 
-    test("Should pass the original arguments to the wrapped function", async () => {
-        const wrappedFn = vi.fn(
-            (firstName: string, lastName: string): Promise<string> =>
-                Promise.resolve(`${firstName} ${lastName}`),
-        );
-        const fn = use(
-            wrappedFn,
-            withLogSpanFactory({ use: () => log })<[string, string], string>(
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(Object.keys(entry?.spans ?? {}).sort()).toStrictEqual([
                 "db",
-            ),
-        );
+                "http",
+            ]);
+        });
 
-        await fn("Ada", "Lovelace");
+        test("Should not set the other extra info of the entry", async () => {
+            const fn = use(
+                (name: string): Promise<string> => {
+                    log.info(["inside"]);
+                    return Promise.resolve(name);
+                },
+                withLogSpanFactory({ use: () => log })<[string], string>("db"),
+            );
 
-        expect(wrappedFn).toHaveBeenCalledExactlyOnceWith("Ada", "Lovelace");
-    });
+            await fn("query");
 
-    test("Should open a span for every invocation", async () => {
-        const fn = use(
-            (_name: string): Promise<string> => {
-                log.info(["inside"]);
-                return Promise.resolve("ok");
-            },
-            withLogSpanFactory({ use: () => log })<[string], string>("db"),
-        );
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.group).toBeUndefined();
+            expect(entry?.metadata).toBeUndefined();
+            expect(entry?.error).toBeUndefined();
+        });
 
-        await fn("first");
-        await fn("second");
+        test("Should return the resolved value of the wrapped function", async () => {
+            const fn = use(
+                (name: string): Promise<string> =>
+                    Promise.resolve(`Hello ${name}`),
+                withLogSpanFactory({ use: () => log })<[string], string>("db"),
+            );
 
-        expect(logSpy).toHaveBeenCalledTimes(2);
-        for (const [entry] of logSpy.mock.calls) {
-            expect(entry.spans).toStrictEqual({
-                db: expect.any(TimeSpan) as TimeSpan,
-            });
-        }
-    });
+            await expect(fn("world")).resolves.toBe("Hello world");
+        });
 
-    test("Should propagate a rejection from the wrapped function", async () => {
-        const fn = use(
-            (): Promise<string> => Promise.reject(new Error("boom")),
-            withLogSpanFactory({ use: () => log })<[], string>("db"),
-        );
+        test("Should pass the original arguments to the wrapped function", async () => {
+            const wrappedFn = vi.fn(
+                (firstName: string, lastName: string): Promise<string> =>
+                    Promise.resolve(`${firstName} ${lastName}`),
+            );
+            const fn = use(
+                wrappedFn,
+                withLogSpanFactory({ use: () => log })<
+                    [string, string],
+                    string
+                >("db"),
+            );
 
-        await expect(fn()).rejects.toThrow("boom");
-    });
-});
+            await fn("Ada", "Lovelace");
+
+            expect(wrappedFn).toHaveBeenCalledExactlyOnceWith(
+                "Ada",
+                "Lovelace",
+            );
+        });
+
+        test("Should open a span for every invocation", async () => {
+            const fn = use(
+                (_name: string): Promise<string> => {
+                    log.info(["inside"]);
+                    return Promise.resolve("ok");
+                },
+                withLogSpanFactory({ use: () => log })<[string], string>("db"),
+            );
+
+            await fn("first");
+            await fn("second");
+
+            expect(logSpy).toHaveBeenCalledTimes(2);
+            for (const [entry] of logSpy.mock.calls) {
+                expect(entry.spans).toStrictEqual({
+                    db: expect.any(TimeSpan) as TimeSpan,
+                });
+            }
+        });
+
+        test("Should propagate a rejection from the wrapped function", async () => {
+            const fn = use(
+                (): Promise<string> => Promise.reject(new Error("boom")),
+                withLogSpanFactory({ use: () => log })<[], string>("db"),
+            );
+
+            await expect(fn()).rejects.toThrow("boom");
+        });
+    },
+);

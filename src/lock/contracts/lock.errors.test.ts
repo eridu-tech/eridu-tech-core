@@ -13,7 +13,7 @@ import {
     UnableToReleaseLockError,
 } from "@/lock/contracts/lock.errors.js";
 
-describe("file: lock.errors.ts", () => {
+describe("file: lock.errors.ts", { tags: ["Contracts", "Lock"] }, () => {
     describe("function: isLockError", () => {
         test("Should return true when given FailedAcquireLockError instance", () => {
             const error = FailedAcquireLockError.create("a");

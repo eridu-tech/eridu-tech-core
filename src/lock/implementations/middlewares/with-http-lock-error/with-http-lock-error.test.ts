@@ -45,94 +45,98 @@ async function fetchWithError(error: unknown): Promise<Response> {
     return router.fetch(new Request("https://example.com/error"));
 }
 
-describe("file: with-http-lock-error.ts", () => {
-    describe("function: withHttpLockError", () => {
-        const testCases: Array<TestData> = [
-            {
-                name: "FailedAcquireLockError",
-                status: 409,
-                message: "Lock is not available",
-                error: FailedAcquireLockError.create("a"),
-            },
-            {
-                name: "FailedReleaseLockError",
-                status: 409,
-                message: "Lock is not available",
-                error: FailedReleaseLockError.create("a", "lock-1"),
-            },
-            {
-                name: "FailedRefreshLockError",
-                status: 409,
-                message: "Lock is not available",
-                error: FailedRefreshLockError.create("a", "lock-1"),
-            },
-            {
-                name: "UnableToAcquireLockError",
-                status: 503,
-                message: "Lock adapter failed",
-                error: UnableToAcquireLockError.create("a"),
-            },
-            {
-                name: "UnableToReleaseLockError",
-                status: 503,
-                message: "Lock adapter failed",
-                error: UnableToReleaseLockError.create("a", "lock-1"),
-            },
-            {
-                name: "UnableToForceReleaseLockError",
-                status: 503,
-                message: "Lock adapter failed",
-                error: UnableToForceReleaseLockError.create("a"),
-            },
-            {
-                name: "UnableToRefreshLockError",
-                status: 503,
-                message: "Lock adapter failed",
-                error: UnableToRefreshLockError.create("a", "lock-1"),
-            },
-            {
-                name: "UnableToGetStateLockError",
-                status: 503,
-                message: "Lock adapter failed",
-                error: UnableToGetStateLockError.create("a"),
-            },
-        ];
+describe(
+    "file: with-http-lock-error.ts",
+    { tags: ["Memory", "Middlewares", "Implementations", "Lock"] },
+    () => {
+        describe("function: withHttpLockError", () => {
+            const testCases: Array<TestData> = [
+                {
+                    name: "FailedAcquireLockError",
+                    status: 409,
+                    message: "Lock is not available",
+                    error: FailedAcquireLockError.create("a"),
+                },
+                {
+                    name: "FailedReleaseLockError",
+                    status: 409,
+                    message: "Lock is not available",
+                    error: FailedReleaseLockError.create("a", "lock-1"),
+                },
+                {
+                    name: "FailedRefreshLockError",
+                    status: 409,
+                    message: "Lock is not available",
+                    error: FailedRefreshLockError.create("a", "lock-1"),
+                },
+                {
+                    name: "UnableToAcquireLockError",
+                    status: 503,
+                    message: "Lock adapter failed",
+                    error: UnableToAcquireLockError.create("a"),
+                },
+                {
+                    name: "UnableToReleaseLockError",
+                    status: 503,
+                    message: "Lock adapter failed",
+                    error: UnableToReleaseLockError.create("a", "lock-1"),
+                },
+                {
+                    name: "UnableToForceReleaseLockError",
+                    status: 503,
+                    message: "Lock adapter failed",
+                    error: UnableToForceReleaseLockError.create("a"),
+                },
+                {
+                    name: "UnableToRefreshLockError",
+                    status: 503,
+                    message: "Lock adapter failed",
+                    error: UnableToRefreshLockError.create("a", "lock-1"),
+                },
+                {
+                    name: "UnableToGetStateLockError",
+                    status: 503,
+                    message: "Lock adapter failed",
+                    error: UnableToGetStateLockError.create("a"),
+                },
+            ];
 
-        test.each(testCases)(
-            "Should convert $name to an HttpError response with status $status",
-            async (testCase) => {
-                const response = await fetchWithError(testCase.error);
+            test.each(testCases)(
+                "Should convert $name to an HttpError response with status $status",
+                async (testCase) => {
+                    const response = await fetchWithError(testCase.error);
 
-                expect(response.status).toBe(testCase.status);
-                await expect(response.json()).resolves.toEqual({
-                    name: "HttpError",
-                    status: String(testCase.status),
-                    message: testCase.message,
-                });
-            },
-        );
-        test("Should return a generic 500 response when the error is not a lock error", async () => {
-            const response = await fetchWithError(new Error("generic"));
-
-            expect(response.status).toBe(500);
-            await expect(response.text()).resolves.toBe(
-                "Unexpected error occurred",
+                    expect(response.status).toBe(testCase.status);
+                    await expect(response.json()).resolves.toEqual({
+                        name: "HttpError",
+                        status: String(testCase.status),
+                        message: testCase.message,
+                    });
+                },
             );
-        });
-        test("Should return the endpoint response when nothing is thrown", async () => {
-            const router = createRouter();
-            router.endpoint({
-                url: "/ok",
-                method: ["GET"],
-                handler: (args) => args.json({ ok: true }),
+            test("Should return a generic 500 response when the error is not a lock error", async () => {
+                const response = await fetchWithError(new Error("generic"));
+
+                expect(response.status).toBe(500);
+                await expect(response.text()).resolves.toBe(
+                    "Unexpected error occurred",
+                );
             });
+            test("Should return the endpoint response when nothing is thrown", async () => {
+                const router = createRouter();
+                router.endpoint({
+                    url: "/ok",
+                    method: ["GET"],
+                    handler: (args) => args.json({ ok: true }),
+                });
 
-            const response = await router.fetch(
-                new Request("https://example.com/ok"),
-            );
+                const response = await router.fetch(
+                    new Request("https://example.com/ok"),
+                );
 
-            expect(response.status).toBe(200);
-            await expect(response.json()).resolves.toEqual({ ok: true });
+                expect(response.status).toBe(200);
+                await expect(response.json()).resolves.toEqual({ ok: true });
+            });
         });
-    });
-});
+    },
+);

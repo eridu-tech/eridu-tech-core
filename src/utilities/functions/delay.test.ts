@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { TimeSpan } from "@/time-span/implementations/time-span.js";
 import { delay } from "@/utilities/functions/delay.js";
 
-describe("function: delay", () => {
+describe("function: delay", { tags: ["Utilities"] }, () => {
     afterEach(() => {
         vi.useRealTimers();
     });

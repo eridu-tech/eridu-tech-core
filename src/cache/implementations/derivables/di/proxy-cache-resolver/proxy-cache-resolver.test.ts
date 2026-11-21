@@ -16,234 +16,238 @@ import type {
     ICacheAdapter,
 } from "@/cache/contracts/_module-exports.js";
 
-describe("class: ProxyCacheResolver", () => {
-    type Adapters = "adapter1" | "adapter2";
-    let cache: ICacheResolver<Adapters> & ICache;
-    let container: Container;
-    let get1: Mock<ICacheAdapter["get"]>;
-    let get2: Mock<ICacheAdapter["get"]>;
+describe(
+    "class: ProxyCacheResolver",
+    { tags: ["Derivables", "Implementations", "Cache"] },
+    () => {
+        type Adapters = "adapter1" | "adapter2";
+        let cache: ICacheResolver<Adapters> & ICache;
+        let container: Container;
+        let get1: Mock<ICacheAdapter["get"]>;
+        let get2: Mock<ICacheAdapter["get"]>;
 
-    describe("LIFETIME.SINGLETON:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
+        describe("LIFETIME.SINGLETON:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
+
+                const adapter1 = new NoOpCacheAdapter();
+                get1 = vi.spyOn(adapter1, "get");
+
+                const adapter2 = new NoOpCacheAdapter();
+                get2 = vi.spyOn(adapter2, "get");
+
+                container.registerFactory({
+                    token: CacheResolver,
+                    factory: () => {
+                        return new CacheResolver<Adapters>({
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
+                        });
+                    },
+                    onInit: (factory) => {
+                        factory.init();
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.SINGLETON,
+                });
+                cache = new ProxyCacheResolver<Adapters>({
+                    container,
+                    resolverToken: CacheResolver,
+                });
+
+                await container.init();
             });
 
-            const adapter1 = new NoOpCacheAdapter();
-            get1 = vi.spyOn(adapter1, "get");
+            test("Default adapter:", async () => {
+                const key = "a";
+                await cache.get(key);
 
-            const adapter2 = new NoOpCacheAdapter();
-            get2 = vi.spyOn(adapter2, "get");
+                const args: Parameters<ICacheAdapter["get"]> = [key];
 
-            container.registerFactory({
-                token: CacheResolver,
-                factory: () => {
-                    return new CacheResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                },
-                onInit: (factory) => {
-                    factory.init();
-                },
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
+                expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(get2).not.toHaveBeenCalled();
             });
-            cache = new ProxyCacheResolver<Adapters>({
-                container,
-                resolverToken: CacheResolver,
+            test("Adapter 1:", async () => {
+                const key = "a";
+                await cache.use("adapter1").get(key);
+
+                const args: Parameters<ICacheAdapter["get"]> = [key];
+
+                expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(get2).not.toHaveBeenCalled();
             });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                await cache.use("adapter2").get(key);
 
-            await container.init();
-        });
+                const args: Parameters<ICacheAdapter["get"]> = [key];
 
-        test("Default adapter:", async () => {
-            const key = "a";
-            await cache.get(key);
-
-            const args: Parameters<ICacheAdapter["get"]> = [key];
-
-            expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(get2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            await cache.use("adapter1").get(key);
-
-            const args: Parameters<ICacheAdapter["get"]> = [key];
-
-            expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(get2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            await cache.use("adapter2").get(key);
-
-            const args: Parameters<ICacheAdapter["get"]> = [key];
-
-            expect(get2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(get1).not.toHaveBeenCalled();
-        });
-    });
-    describe("LIFETIME.TRANSIENT:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
+                expect(get2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(get1).not.toHaveBeenCalled();
             });
+        });
+        describe("LIFETIME.TRANSIENT:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-            const adapter1 = new NoOpCacheAdapter();
-            get1 = vi.spyOn(adapter1, "get");
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
 
-            const adapter2 = new NoOpCacheAdapter();
-            get2 = vi.spyOn(adapter2, "get");
+                const adapter1 = new NoOpCacheAdapter();
+                get1 = vi.spyOn(adapter1, "get");
 
-            container.registerFactory({
-                token: CacheResolver,
-                factory: () => {
-                    const factory = new CacheResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    factory.init();
-                    return factory;
-                },
-                deps: {},
-                lifetime: LIFETIME.TRANSIENT,
-            });
-            cache = new ProxyCacheResolver<Adapters>({
-                container,
-                resolverToken: CacheResolver,
+                const adapter2 = new NoOpCacheAdapter();
+                get2 = vi.spyOn(adapter2, "get");
+
+                container.registerFactory({
+                    token: CacheResolver,
+                    factory: () => {
+                        const factory = new CacheResolver<Adapters>({
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
+                        });
+                        factory.init();
+                        return factory;
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.TRANSIENT,
+                });
+                cache = new ProxyCacheResolver<Adapters>({
+                    container,
+                    resolverToken: CacheResolver,
+                });
+
+                await container.init();
             });
 
-            await container.init();
+            test("Default adapter:", async () => {
+                const key = "a";
+                await cache.get(key);
+
+                const args: Parameters<ICacheAdapter["get"]> = [key];
+
+                expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(get2).not.toHaveBeenCalled();
+            });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                await cache.use("adapter1").get(key);
+
+                const args: Parameters<ICacheAdapter["get"]> = [key];
+
+                expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(get2).not.toHaveBeenCalled();
+            });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                await cache.use("adapter2").get(key);
+
+                const args: Parameters<ICacheAdapter["get"]> = [key];
+
+                expect(get2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(get1).not.toHaveBeenCalled();
+            });
         });
+        describe("LIFETIME.SCOPED:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-        test("Default adapter:", async () => {
-            const key = "a";
-            await cache.get(key);
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
 
-            const args: Parameters<ICacheAdapter["get"]> = [key];
+                const adapter1 = new NoOpCacheAdapter();
+                get1 = vi.spyOn(adapter1, "get");
 
-            expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(get2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            await cache.use("adapter1").get(key);
+                const adapter2 = new NoOpCacheAdapter();
+                get2 = vi.spyOn(adapter2, "get");
 
-            const args: Parameters<ICacheAdapter["get"]> = [key];
+                container.registerFactory({
+                    token: CacheResolver,
+                    factory: () => {
+                        const factory = new CacheResolver<Adapters>({
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
+                        });
+                        factory.init();
+                        return factory;
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.SCOPED,
+                });
+                cache = new ProxyCacheResolver<Adapters>({
+                    container,
+                    resolverToken: CacheResolver,
+                });
 
-            expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(get2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            await cache.use("adapter2").get(key);
-
-            const args: Parameters<ICacheAdapter["get"]> = [key];
-
-            expect(get2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(get1).not.toHaveBeenCalled();
-        });
-    });
-    describe("LIFETIME.SCOPED:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
+                await container.init();
             });
 
-            const adapter1 = new NoOpCacheAdapter();
-            get1 = vi.spyOn(adapter1, "get");
+            test("Default adapter:", async () => {
+                const key = "a";
+                await container.run({
+                    scope: async () => {
+                        await cache.get(key);
+                    },
+                });
 
-            const adapter2 = new NoOpCacheAdapter();
-            get2 = vi.spyOn(adapter2, "get");
+                const args: Parameters<ICacheAdapter["get"]> = [key];
 
-            container.registerFactory({
-                token: CacheResolver,
-                factory: () => {
-                    const factory = new CacheResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    factory.init();
-                    return factory;
-                },
-                deps: {},
-                lifetime: LIFETIME.SCOPED,
+                expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(get2).not.toHaveBeenCalled();
             });
-            cache = new ProxyCacheResolver<Adapters>({
-                container,
-                resolverToken: CacheResolver,
-            });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                await container.run({
+                    scope: async () => {
+                        await cache.use("adapter1").get(key);
+                    },
+                });
 
-            await container.init();
+                const args: Parameters<ICacheAdapter["get"]> = [key];
+
+                expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(get2).not.toHaveBeenCalled();
+            });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                await container.run({
+                    scope: async () => {
+                        await cache.use("adapter2").get(key);
+                    },
+                });
+
+                const args: Parameters<ICacheAdapter["get"]> = [key];
+
+                expect(get2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(get1).not.toHaveBeenCalled();
+            });
         });
-
-        test("Default adapter:", async () => {
-            const key = "a";
-            await container.run({
-                scope: async () => {
-                    await cache.get(key);
-                },
-            });
-
-            const args: Parameters<ICacheAdapter["get"]> = [key];
-
-            expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(get2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            await container.run({
-                scope: async () => {
-                    await cache.use("adapter1").get(key);
-                },
-            });
-
-            const args: Parameters<ICacheAdapter["get"]> = [key];
-
-            expect(get1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(get2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            await container.run({
-                scope: async () => {
-                    await cache.use("adapter2").get(key);
-                },
-            });
-
-            const args: Parameters<ICacheAdapter["get"]> = [key];
-
-            expect(get2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(get1).not.toHaveBeenCalled();
-        });
-    });
-});
+    },
+);

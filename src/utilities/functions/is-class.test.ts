@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { isClass } from "@/utilities/functions/is-class.js";
 
-describe("function: isClass", () => {
+describe("function: isClass", { tags: ["Utilities"] }, () => {
     test("Should return true when a class declaration", () => {
         class Example {
             readonly value = 1;

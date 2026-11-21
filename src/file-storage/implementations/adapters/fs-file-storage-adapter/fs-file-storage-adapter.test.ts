@@ -10,160 +10,164 @@ import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test
 
 import type { FileAdapterMetadata } from "@/file-storage/contracts/_module-exports.js";
 
-describe("class: FsFileStorageAdapter", () => {
-    let adapter_: FsFileStorageAdapter;
-    let folderPath_: string;
-    beforeEach(async () => {
-        folderPath_ = await mkdtemp(
-            join(tmpdir(), "fs-file-storage-adapter-tests-"),
-        );
-        adapter_ = new FsFileStorageAdapter({
-            location: folderPath_,
-        });
-        await adapter_.init();
-    });
-    afterEach(async () => {
-        await adapter_.deInit();
-    });
-    fileStorageAdapterTestSuite({
-        createAdapter: () => adapter_,
-        test,
-        beforeEach,
-        expect,
-        describe,
-        enableGetMetaData: false,
-    });
-    describe("method: getMetadata", () => {
-        test("Should return null when key does not exists", async () => {
-            const noneExistingKey = "a";
-
-            const result = await adapter_.getMetaData(noneExistingKey);
-
-            expect(result).toBeNull();
-        });
-        test("Should return content-type null when file name contains json extension", async () => {
-            const key = "a.json";
-
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/json";
-            await adapter_.put(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-            const result = await adapter_.getMetaData(key);
-
-            expect(result).toEqual({
-                etag: expect.any(String) as string,
-                contentType: null,
-                fileSizeInBytes: data.byteLength,
-                updatedAt: expect.any(Date) as Date,
-            } satisfies FileAdapterMetadata);
-        });
-        test("Should return content-type null when file name contains txt extension", async () => {
-            const key = "a.txt";
-
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/json";
-            await adapter_.put(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-            const result = await adapter_.getMetaData(key);
-
-            expect(result).toEqual({
-                etag: expect.any(String) as string,
-                contentType: null,
-                fileSizeInBytes: data.byteLength,
-                updatedAt: expect.any(Date) as Date,
-            } satisfies FileAdapterMetadata);
-        });
-        test("Should return content-type null when file name contains unknown extension", async () => {
-            const key = "a.unknown";
-
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "application/json";
-            await adapter_.put(key, {
-                data,
-                cacheControl: null,
-                contentDisposition: null,
-                contentEncoding: null,
-                contentLanguage: null,
-                contentType,
-                fileSizeInBytes: data.length,
-            });
-            const result = await adapter_.getMetaData(key);
-
-            expect(result).toEqual({
-                etag: expect.any(String) as string,
-                contentType: null,
-                fileSizeInBytes: data.byteLength,
-                updatedAt: expect.any(Date) as Date,
-            } satisfies FileAdapterMetadata);
-        });
-    });
-    describe("method: init", () => {
-        test("Should create the folder", async () => {
-            const folderPath = await mkdtemp(
+describe(
+    "class: FsFileStorageAdapter",
+    { tags: ["FS", "Adapters", "Implementations", "FileStorage"] },
+    () => {
+        let adapter_: FsFileStorageAdapter;
+        let folderPath_: string;
+        beforeEach(async () => {
+            folderPath_ = await mkdtemp(
                 join(tmpdir(), "fs-file-storage-adapter-tests-"),
             );
-            const adapter = new FsFileStorageAdapter({
-                location: folderPath,
+            adapter_ = new FsFileStorageAdapter({
+                location: folderPath_,
             });
-            await adapter.init();
-
-            expect(existsSync(folderPath)).toBe(true);
+            await adapter_.init();
         });
-        test("Should not throw error when called multiple times", async () => {
-            const folderPath = await mkdtemp(
-                join(tmpdir(), "fs-file-storage-adapter-tests-"),
-            );
-            const adapter = new FsFileStorageAdapter({
-                location: folderPath,
+        afterEach(async () => {
+            await adapter_.deInit();
+        });
+        fileStorageAdapterTestSuite({
+            createAdapter: () => adapter_,
+            test,
+            beforeEach,
+            expect,
+            describe,
+            enableGetMetaData: false,
+        });
+        describe("method: getMetadata", () => {
+            test("Should return null when key does not exists", async () => {
+                const noneExistingKey = "a";
+
+                const result = await adapter_.getMetaData(noneExistingKey);
+
+                expect(result).toBeNull();
             });
-            await adapter.init();
+            test("Should return content-type null when file name contains json extension", async () => {
+                const key = "a.json";
 
-            const promise = adapter.init();
+                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+                const contentType = "application/json";
+                await adapter_.put(key, {
+                    data,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: data.length,
+                });
+                const result = await adapter_.getMetaData(key);
 
-            await expect(promise).resolves.toBeUndefined();
-        });
-    });
-    describe("method: deInit", () => {
-        test("Should remove the folder", async () => {
-            const folderPath = await mkdtemp(
-                join(tmpdir(), "fs-file-storage-adapter-tests-"),
-            );
-            const adapter = new FsFileStorageAdapter({
-                location: folderPath,
+                expect(result).toEqual({
+                    etag: expect.any(String) as string,
+                    contentType: null,
+                    fileSizeInBytes: data.byteLength,
+                    updatedAt: expect.any(Date) as Date,
+                } satisfies FileAdapterMetadata);
             });
-            await adapter.init();
+            test("Should return content-type null when file name contains txt extension", async () => {
+                const key = "a.txt";
 
-            await adapter.deInit();
+                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+                const contentType = "application/json";
+                await adapter_.put(key, {
+                    data,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: data.length,
+                });
+                const result = await adapter_.getMetaData(key);
 
-            expect(existsSync(folderPath)).toBe(false);
-        });
-        test("Should not throw error when called multiple times", async () => {
-            const folderPath = await mkdtemp(
-                join(tmpdir(), "fs-file-storage-adapter-tests-"),
-            );
-            const adapter = new FsFileStorageAdapter({
-                location: folderPath,
+                expect(result).toEqual({
+                    etag: expect.any(String) as string,
+                    contentType: null,
+                    fileSizeInBytes: data.byteLength,
+                    updatedAt: expect.any(Date) as Date,
+                } satisfies FileAdapterMetadata);
             });
-            await adapter.init();
+            test("Should return content-type null when file name contains unknown extension", async () => {
+                const key = "a.unknown";
 
-            await adapter.deInit();
-            const promise = adapter.deInit();
+                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+                const contentType = "application/json";
+                await adapter_.put(key, {
+                    data,
+                    cacheControl: null,
+                    contentDisposition: null,
+                    contentEncoding: null,
+                    contentLanguage: null,
+                    contentType,
+                    fileSizeInBytes: data.length,
+                });
+                const result = await adapter_.getMetaData(key);
 
-            await expect(promise).resolves.toBeUndefined();
+                expect(result).toEqual({
+                    etag: expect.any(String) as string,
+                    contentType: null,
+                    fileSizeInBytes: data.byteLength,
+                    updatedAt: expect.any(Date) as Date,
+                } satisfies FileAdapterMetadata);
+            });
         });
-    });
-});
+        describe("method: init", () => {
+            test("Should create the folder", async () => {
+                const folderPath = await mkdtemp(
+                    join(tmpdir(), "fs-file-storage-adapter-tests-"),
+                );
+                const adapter = new FsFileStorageAdapter({
+                    location: folderPath,
+                });
+                await adapter.init();
+
+                expect(existsSync(folderPath)).toBe(true);
+            });
+            test("Should not throw error when called multiple times", async () => {
+                const folderPath = await mkdtemp(
+                    join(tmpdir(), "fs-file-storage-adapter-tests-"),
+                );
+                const adapter = new FsFileStorageAdapter({
+                    location: folderPath,
+                });
+                await adapter.init();
+
+                const promise = adapter.init();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+        });
+        describe("method: deInit", () => {
+            test("Should remove the folder", async () => {
+                const folderPath = await mkdtemp(
+                    join(tmpdir(), "fs-file-storage-adapter-tests-"),
+                );
+                const adapter = new FsFileStorageAdapter({
+                    location: folderPath,
+                });
+                await adapter.init();
+
+                await adapter.deInit();
+
+                expect(existsSync(folderPath)).toBe(false);
+            });
+            test("Should not throw error when called multiple times", async () => {
+                const folderPath = await mkdtemp(
+                    join(tmpdir(), "fs-file-storage-adapter-tests-"),
+                );
+                const adapter = new FsFileStorageAdapter({
+                    location: folderPath,
+                });
+                await adapter.init();
+
+                await adapter.deInit();
+                const promise = adapter.deInit();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+        });
+    },
+);

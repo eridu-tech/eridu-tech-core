@@ -1,225 +1,202 @@
-import { MongoDBContainer } from "@testcontainers/mongodb";
+import { randomUUID } from "node:crypto";
+
 import { MongoClient } from "mongodb";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+} from "vitest";
 
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { MongodbLockAdapter } from "@/lock/implementations/adapters/mongodb-lock-adapter/mongodb-lock-adapter.js";
 import { lockAdapterTestSuite } from "@/lock/implementations/test-utilities/_module-exports.js";
+import { MongodbServer } from "@/test-utilities/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { MongodbTransactionAdapter } from "@/transaction-context/implementations/adapters/mongodb-transaction-adapter/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
-import type { ClientSession } from "mongodb";
+import type { ClientSession, Db } from "mongodb";
 
 import type { MongodbLockEntryDocument } from "@/lock/implementations/adapters/mongodb-lock-adapter/mongodb-lock-adapter.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: MongodbLockAdapter", () => {
-    let client: MongoClient;
-    let startedContainer: StartedMongoDBContainer;
+describe(
+    "class: MongodbLockAdapter",
+    { tags: ["Mongodb", "Adapters", "Implementations", "Lock"] },
+    () => {
+        let client: MongoClient;
+        const mongodbServer = new MongodbServer();
+        let adapter: MongodbLockAdapter;
+        let database: Db;
+        let collectionName: string;
 
-    beforeEach(async () => {
-        startedContainer = await new MongoDBContainer("mongo:5.0.0").start();
-        client = new MongoClient(startedContainer.getConnectionString(), {
-            directConnection: true,
-        });
-        await client.connect();
-    }, timeout.toMilliseconds());
-    afterEach(async () => {
-        await client.close();
-        await startedContainer.stop();
-    }, timeout.toMilliseconds());
-    lockAdapterTestSuite({
-        createAdapter: async () => {
-            const adapter = new MongodbLockAdapter({
-                database: client.db("database"),
-                collectionName: "locks",
+        beforeAll(async () => {
+            await mongodbServer.init();
+            client = new MongoClient(mongodbServer.getSettings().url, {
+                directConnection: true,
             });
-            await adapter.init();
-            return adapter;
-        },
-        test,
-        beforeEach,
-        expect,
-        describe,
-    });
-    describe("method: init", () => {
-        test("Should not throw error when called multiple times", async () => {
-            const adapter = new MongodbLockAdapter({
-                database: client.db("database"),
-                collectionName: "locks",
-            });
-            await adapter.init();
-
-            const promise = adapter.init();
-
-            await expect(promise).resolves.toBeUndefined();
-        });
-    });
-    describe("method: deInit", () => {
-        test("Should remove collection", async () => {
-            const adapter = new MongodbLockAdapter({
-                database: client.db("database"),
-                collectionName: "locks",
-            });
-            await adapter.init();
-            await adapter.deInit();
-
-            const collections = await client
-                .db("database")
-                .listCollections()
-                .toArray();
-
-            const collection = collections.find(
-                (collection_) => collection_.name === "locks",
-            );
-
-            expect(collection).toBeUndefined();
-        });
-        test("Should not throw error when called multiple times", async () => {
-            const adapter = new MongodbLockAdapter({
-                database: client.db("database"),
-                collectionName: "locks",
-            });
-            await adapter.init();
-            await adapter.deInit();
-
-            const promise = adapter.deInit();
-
-            await expect(promise).resolves.toBeUndefined();
-        });
-        test("Should not throw error when called before init", async () => {
-            const adapter = new MongodbLockAdapter({
-                database: client.db("database"),
-                collectionName: "locks",
-            });
-
-            const promise = adapter.deInit();
-
-            await expect(promise).resolves.toBeUndefined();
-        });
-    });
-    describe("Expiration tests:", () => {
-        test("Should set expiration field to null when given no expiration", async () => {
-            const database = client.db("database");
-            const collectionName = "locks";
-            const collection =
-                database.collection<MongodbLockEntryDocument>(collectionName);
-            const adapter = new MongodbLockAdapter({
+            await client.connect();
+        }, timeout.toMilliseconds());
+        afterAll(async () => {
+            await client.close();
+            await mongodbServer.deInit();
+        }, timeout.toMilliseconds());
+        beforeEach(() => {
+            database = client.db("database");
+            collectionName = randomUUID();
+            adapter = new MongodbLockAdapter({
                 database,
                 collectionName,
             });
-            await adapter.init();
-
-            const key = "a";
-            const lockId = "1";
-            const ttl = null;
-
-            await adapter.acquire(key, lockId, ttl);
-
-            const doc = await collection.findOne({
-                key,
-            });
-
-            expect(doc).toEqual(
-                expect.objectContaining({
-                    expiration: null,
-                } satisfies Partial<MongodbLockEntryDocument>),
-            );
         });
-        test("Should set expiration field to Date when given expiration", async () => {
-            const database = client.db("database");
-            const collectionName = "locks";
-            const collection =
-                database.collection<MongodbLockEntryDocument>(collectionName);
-            const adapter = new MongodbLockAdapter({
-                database,
-                collectionName,
-            });
-            await adapter.init();
-
-            const key = "a";
-            const lockId = "1";
-            const ttl = TimeSpan.fromMinutes(5);
-            const expiration = ttl.toEndDate();
-
-            await adapter.acquire(key, lockId, expiration);
-
-            const doc = await collection.findOne({
-                key,
-            });
-            expect(doc?.expiration).toEqual(expiration);
+        lockAdapterTestSuite({
+            createAdapter: async () => {
+                await adapter.init();
+                return adapter;
+            },
+            test,
+            beforeEach,
+            expect,
+            describe,
         });
-    });
-    describe("Transaction tests:", () => {
-        test("Should not persist changes when the transaction fails", async () => {
-            const database = client.db("database");
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            const trxCtx = new TransactionContext({
-                token: contextToken<ITransactionData<ClientSession>>("mongodb"),
-                adapter: new MongodbTransactionAdapter({
-                    database,
-                    client,
-                }),
-                executionContext,
-            });
-            const collectionName = "circuit-breaker";
-            const adapter = new MongodbLockAdapter({
-                database: trxCtx,
-                collectionName,
-            });
-            await adapter.init();
+        describe("method: init", () => {
+            test("Should not throw error when called multiple times", async () => {
+                await adapter.init();
 
-            try {
-                await trxCtx.run(async () => {
-                    await adapter.acquire("a", "1", null);
-                    await adapter.acquire("b", "1", null);
-                    throw new Error("Transaction failure");
+                const promise = adapter.init();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+        });
+        describe("method: deInit", () => {
+            test("Should remove collection", async () => {
+                await adapter.init();
+                await adapter.deInit();
+
+                const collections = await database.listCollections().toArray();
+
+                const collection = collections.find(
+                    (collection_) => collection_.name === collectionName,
+                );
+
+                expect(collection).toBeUndefined();
+            });
+            test("Should not throw error when called multiple times", async () => {
+                await adapter.init();
+                await adapter.deInit();
+
+                const promise = adapter.deInit();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+            test("Should not throw error when called before init", async () => {
+                const promise = adapter.deInit();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+        });
+        describe("Expiration tests:", () => {
+            test("Should set expiration field to null when given no expiration", async () => {
+                const collection =
+                    database.collection<MongodbLockEntryDocument>(
+                        collectionName,
+                    );
+                await adapter.init();
+
+                const key = "a";
+                const lockId = "1";
+                const ttl = null;
+
+                await adapter.acquire(key, lockId, ttl);
+
+                const doc = await collection.findOne({
+                    key,
                 });
-            } catch {
-                /* EMPTY */
-            }
 
-            const collection = trxCtx.client.collection(collectionName);
+                expect(doc).toEqual(
+                    expect.objectContaining({
+                        expiration: null,
+                    } satisfies Partial<MongodbLockEntryDocument>),
+                );
+            });
+            test("Should set expiration field to Date when given expiration", async () => {
+                const collection =
+                    database.collection<MongodbLockEntryDocument>(
+                        collectionName,
+                    );
+                await adapter.init();
 
-            const docs = await collection.find().toArray();
-            expect(docs.length).toBe(0);
+                const key = "a";
+                const lockId = "1";
+                const ttl = TimeSpan.fromMinutes(5);
+                const expiration = ttl.toEndDate();
+
+                await adapter.acquire(key, lockId, expiration);
+
+                const doc = await collection.findOne({
+                    key,
+                });
+                expect(doc?.expiration).toEqual(expiration);
+            });
         });
-        test("Should persist changes when the transaction succeeds", async () => {
-            const database = client.db("database");
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            const trxCtx = new TransactionContext({
-                token: contextToken<ITransactionData<ClientSession>>("mongodb"),
-                adapter: new MongodbTransactionAdapter({
-                    database,
-                    client,
-                }),
-                executionContext,
+        describe("Transaction tests:", () => {
+            let trxAdapter: MongodbLockAdapter;
+            let trxCtx: TransactionContext<Db, ClientSession>;
+            beforeEach(async () => {
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                trxCtx = new TransactionContext({
+                    token: contextToken<ITransactionData<ClientSession>>(
+                        "mongodb",
+                    ),
+                    adapter: new MongodbTransactionAdapter({
+                        database,
+                        client,
+                    }),
+                    executionContext,
+                });
+                trxAdapter = new MongodbLockAdapter({
+                    database: trxCtx,
+                    collectionName,
+                });
+                await trxAdapter.init();
             });
-            const collectionName = "circuit-breaker";
-            const adapter = new MongodbLockAdapter({
-                database: trxCtx,
-                collectionName,
+            test("Should not persist changes when the transaction fails", async () => {
+                try {
+                    await trxCtx.run(async () => {
+                        await trxAdapter.acquire("a", "1", null);
+                        await trxAdapter.acquire("b", "1", null);
+                        throw new Error("Transaction failure");
+                    });
+                } catch {
+                    /* EMPTY */
+                }
+
+                const collection = trxCtx.client.collection(collectionName);
+
+                const docs = await collection.find().toArray();
+                expect(docs.length).toBe(0);
             });
-            await adapter.init();
+            test("Should persist changes when the transaction succeeds", async () => {
+                await trxAdapter.init();
 
-            await trxCtx.run(async () => {
-                await adapter.acquire("a", "1", null);
-                await adapter.acquire("b", "1", null);
+                await trxCtx.run(async () => {
+                    await trxAdapter.acquire("a", "1", null);
+                    await trxAdapter.acquire("b", "1", null);
+                });
+
+                const collection = trxCtx.client.collection(collectionName);
+
+                const docs = await collection.find().toArray();
+                expect(docs.length).toBe(2);
             });
-
-            const collection = trxCtx.client.collection(collectionName);
-
-            const docs = await collection.find().toArray();
-            expect(docs.length).toBe(2);
         });
-    });
-});
+    },
+);

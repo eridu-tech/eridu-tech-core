@@ -121,8 +121,17 @@ jobs:
               run: npm run check
 
     test:
-        name: Testing
+        name: Testing (${{ matrix.tag }})
         runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                tag:
+                    - "Memory"
+                    - "FileStorage and Adapters"
+                    - "Postgres"
+                    - "Mongodb"
+                    - "Redis"
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -144,4 +153,6 @@ jobs:
               run: npm ci
 
             - name: Testing
-              run: npx tsx --tsconfig ./tsconfig.json ./scripts/run-changed-tests.ts --branch ${{ github.base_ref }}
+              env:
+                  TAGS_FILTER: ${{ matrix.tag }}
+              run: npm run test -- --tags-filter="$TAGS_FILTER"

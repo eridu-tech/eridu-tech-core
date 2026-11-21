@@ -2,7 +2,7 @@
  * @module Semaphore
  */
 import { SEMAPHORE_STATE } from "@/semaphore/contracts/_module-exports.js";
-import { createIsTimeSpanEqualityTester } from "@/test-utilities/_module.js";
+import { createIsTimeSpanEqualityTester } from "@/test-utilities/functions/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { delay } from "@/utilities/_module-exports.js";
 

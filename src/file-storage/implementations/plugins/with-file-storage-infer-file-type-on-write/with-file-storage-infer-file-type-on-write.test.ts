@@ -31,126 +31,131 @@ function iterableOf(chunk: Uint8Array): AsyncIterable<Uint8Array> {
     };
 }
 
-describe("function: withFileStorageInferFileTypeOnWrite", () => {
-    const adapter = new NoOpFileStorageAdapter();
-    const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
-    const zipBytes = new Uint8Array([
-        0x50, 0x4b, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00,
-    ]);
-    const unknownBytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+describe(
+    "function: withFileStorageInferFileTypeOnWrite",
+    { tags: ["Memory", "Plugins", "Implementations", "FileStorage"] },
+    () => {
+        const adapter = new NoOpFileStorageAdapter();
+        const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
+        const zipBytes = new Uint8Array([
+            0x50, 0x4b, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00,
+        ]);
+        const unknownBytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
-    describe("method: put", () => {
-        test("Should infer the content type from the file content", async () => {
-            const spy = vi.spyOn(adapter, "put");
-
-            const content: WritableFileAdapterContent = {
-                data: zipBytes,
-                fileSizeInBytes: zipBytes.length,
-                contentType: "application/octet-stream",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageInferFileTypeOnWrite(),
-            );
-
-            await enhanced.put("myKey", content);
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["put"]>
-            >("myKey", { ...content, contentType: "application/zip" });
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
         });
-        test("Should keep the provided content type when the file type is unknown", async () => {
-            const spy = vi.spyOn(adapter, "put");
+        describe("method: put", () => {
+            test("Should infer the content type from the file content", async () => {
+                const spy = vi.spyOn(adapter, "put");
 
-            const content: WritableFileAdapterContent = {
-                data: unknownBytes,
-                fileSizeInBytes: unknownBytes.length,
-                contentType: "application/octet-stream",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageInferFileTypeOnWrite(),
-            );
+                const content: WritableFileAdapterContent = {
+                    data: zipBytes,
+                    fileSizeInBytes: zipBytes.length,
+                    contentType: "application/octet-stream",
+                    contentLanguage: null,
+                    contentEncoding: null,
+                    contentDisposition: null,
+                    cacheControl: null,
+                };
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageInferFileTypeOnWrite(),
+                );
 
-            await enhanced.put("myKey", content);
+                await enhanced.put("myKey", content);
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["put"]>
-            >("myKey", content);
-        });
-    });
-    describe("method: putStream", () => {
-        test("Should infer the content type from the file content", async () => {
-            const spy = vi.spyOn(adapter, "putStream");
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["put"]>
+                >("myKey", { ...content, contentType: "application/zip" });
+            });
+            test("Should keep the provided content type when the file type is unknown", async () => {
+                const spy = vi.spyOn(adapter, "put");
 
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageInferFileTypeOnWrite(),
-            );
+                const content: WritableFileAdapterContent = {
+                    data: unknownBytes,
+                    fileSizeInBytes: unknownBytes.length,
+                    contentType: "application/octet-stream",
+                    contentLanguage: null,
+                    contentEncoding: null,
+                    contentDisposition: null,
+                    cacheControl: null,
+                };
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageInferFileTypeOnWrite(),
+                );
 
-            const stream: AsyncIterable<Uint8Array> = iterableOf(zipBytes);
-            const content = {
-                data: stream,
-                fileSizeInBytes: null,
-                contentType: "application/octet-stream",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            await enhanced.putStream("myKey", content);
+                await enhanced.put("myKey", content);
 
-            expect(spy).toHaveBeenCalledOnce();
-            expect(spy.mock.calls[0]?.[1]).toMatchObject({
-                contentType: "application/zip",
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["put"]>
+                >("myKey", content);
             });
         });
-        test("Should keep the provided content type when the file type is unknown", async () => {
-            const spy = vi.spyOn(adapter, "putStream");
+        describe("method: putStream", () => {
+            test("Should infer the content type from the file content", async () => {
+                const spy = vi.spyOn(adapter, "putStream");
 
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageInferFileTypeOnWrite(),
-            );
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageInferFileTypeOnWrite(),
+                );
 
-            const stream: AsyncIterable<Uint8Array> = iterableOf(unknownBytes);
-            const content = {
-                data: stream,
-                fileSizeInBytes: null,
-                contentType: "application/octet-stream",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            await enhanced.putStream("myKey", content);
+                const stream: AsyncIterable<Uint8Array> = iterableOf(zipBytes);
+                const content = {
+                    data: stream,
+                    fileSizeInBytes: null,
+                    contentType: "application/octet-stream",
+                    contentLanguage: null,
+                    contentEncoding: null,
+                    contentDisposition: null,
+                    cacheControl: null,
+                };
+                await enhanced.putStream("myKey", content);
 
-            expect(spy).toHaveBeenCalledOnce();
-            expect(spy.mock.calls[0]?.[1]).toMatchObject({
-                contentType: "application/octet-stream",
+                expect(spy).toHaveBeenCalledOnce();
+                expect(spy.mock.calls[0]?.[1]).toMatchObject({
+                    contentType: "application/zip",
+                });
             });
-            const forwardedData = spy.mock.calls[0]?.[1]?.data;
-            const chunks: Array<Uint8Array> = [];
-            if (forwardedData !== undefined) {
-                for await (const chunk of forwardedData) {
-                    chunks.push(chunk);
+            test("Should keep the provided content type when the file type is unknown", async () => {
+                const spy = vi.spyOn(adapter, "putStream");
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageInferFileTypeOnWrite(),
+                );
+
+                const stream: AsyncIterable<Uint8Array> =
+                    iterableOf(unknownBytes);
+                const content = {
+                    data: stream,
+                    fileSizeInBytes: null,
+                    contentType: "application/octet-stream",
+                    contentLanguage: null,
+                    contentEncoding: null,
+                    contentDisposition: null,
+                    cacheControl: null,
+                };
+                await enhanced.putStream("myKey", content);
+
+                expect(spy).toHaveBeenCalledOnce();
+                expect(spy.mock.calls[0]?.[1]).toMatchObject({
+                    contentType: "application/octet-stream",
+                });
+                const forwardedData = spy.mock.calls[0]?.[1]?.data;
+                const chunks: Array<Uint8Array> = [];
+                if (forwardedData !== undefined) {
+                    for await (const chunk of forwardedData) {
+                        chunks.push(chunk);
+                    }
                 }
-            }
-            expect(
-                new Uint8Array(chunks.flatMap((chunk) => [...chunk])),
-            ).toEqual(unknownBytes);
+                expect(
+                    new Uint8Array(chunks.flatMap((chunk) => [...chunk])),
+                ).toEqual(unknownBytes);
+            });
         });
-    });
-});
+    },
+);

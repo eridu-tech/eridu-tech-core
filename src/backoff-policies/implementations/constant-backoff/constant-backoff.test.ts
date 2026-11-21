@@ -8,88 +8,92 @@ import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { callInvocable } from "@/utilities/_module-exports.js";
 
-describe("function: resolveConstantBackoffSettings", () => {
-    test("Should use default values when no settings are provided", () => {
-        const resolved = resolveConstantBackoffSettings({});
+describe(
+    "function: resolveConstantBackoffSettings",
+    { tags: ["Memory", "Implementations", "BackoffPolicies"] },
+    () => {
+        test("Should use default values when no settings are provided", () => {
+            const resolved = resolveConstantBackoffSettings({});
 
-        expect(resolved.delay[TO_MILLISECONDS]()).toBe(1000);
-        expect(resolved.jitter).toBe(0.5);
-    });
-
-    test("Should use provided delay", () => {
-        const resolved = resolveConstantBackoffSettings({
-            delay: TimeSpan.fromMilliseconds(200),
+            expect(resolved.delay[TO_MILLISECONDS]()).toBe(1000);
+            expect(resolved.jitter).toBe(0.5);
         });
 
-        expect(resolved.delay[TO_MILLISECONDS]()).toBe(200);
-    });
+        test("Should use provided delay", () => {
+            const resolved = resolveConstantBackoffSettings({
+                delay: TimeSpan.fromMilliseconds(200),
+            });
 
-    test("Should use provided jitter", () => {
-        const resolved = resolveConstantBackoffSettings({
-            jitter: 0.3,
+            expect(resolved.delay[TO_MILLISECONDS]()).toBe(200);
         });
 
-        expect(resolved.jitter).toBe(0.3);
-    });
+        test("Should use provided jitter", () => {
+            const resolved = resolveConstantBackoffSettings({
+                jitter: 0.3,
+            });
 
-    test("Should allow null jitter", () => {
-        const resolved = resolveConstantBackoffSettings({
-            jitter: null,
+            expect(resolved.jitter).toBe(0.3);
         });
 
-        expect(resolved.jitter).toBeNull();
-    });
+        test("Should allow null jitter", () => {
+            const resolved = resolveConstantBackoffSettings({
+                jitter: null,
+            });
 
-    test("Should throw TypeError when delay is zero", () => {
-        expect(() =>
-            resolveConstantBackoffSettings({
-                delay: TimeSpan.fromMilliseconds(0),
-            }),
-        ).toThrow("'delay' must be positive");
-    });
+            expect(resolved.jitter).toBeNull();
+        });
 
-    test("Should throw TypeError when delay is negative", () => {
-        expect(() =>
-            resolveConstantBackoffSettings({
-                delay: TimeSpan.fromMilliseconds(-100),
-            }),
-        ).toThrow("'delay' must be positive");
-    });
+        test("Should throw TypeError when delay is zero", () => {
+            expect(() =>
+                resolveConstantBackoffSettings({
+                    delay: TimeSpan.fromMilliseconds(0),
+                }),
+            ).toThrow("'delay' must be positive");
+        });
 
-    test("Should throw TypeError when delay is NaN", () => {
-        expect(() =>
-            resolveConstantBackoffSettings({
-                delay: TimeSpan.fromMilliseconds(NaN),
-            }),
-        ).toThrow("'delay' must be positive");
-    });
+        test("Should throw TypeError when delay is negative", () => {
+            expect(() =>
+                resolveConstantBackoffSettings({
+                    delay: TimeSpan.fromMilliseconds(-100),
+                }),
+            ).toThrow("'delay' must be positive");
+        });
 
-    test("Should throw TypeError when jitter is negative", () => {
-        expect(() =>
-            resolveConstantBackoffSettings({
-                jitter: -0.1,
-            }),
-        ).toThrow("'jitter' must be between 0 and 1 or null");
-    });
+        test("Should throw TypeError when delay is NaN", () => {
+            expect(() =>
+                resolveConstantBackoffSettings({
+                    delay: TimeSpan.fromMilliseconds(NaN),
+                }),
+            ).toThrow("'delay' must be positive");
+        });
 
-    test("Should throw TypeError when jitter is greater than 1", () => {
-        expect(() =>
-            resolveConstantBackoffSettings({
-                jitter: 1.1,
-            }),
-        ).toThrow("'jitter' must be between 0 and 1 or null");
-    });
+        test("Should throw TypeError when jitter is negative", () => {
+            expect(() =>
+                resolveConstantBackoffSettings({
+                    jitter: -0.1,
+                }),
+            ).toThrow("'jitter' must be between 0 and 1 or null");
+        });
 
-    test("Should throw TypeError when jitter is NaN", () => {
-        expect(() =>
-            resolveConstantBackoffSettings({
-                jitter: NaN,
-            }),
-        ).toThrow("'jitter' must be between 0 and 1 or null");
-    });
-});
+        test("Should throw TypeError when jitter is greater than 1", () => {
+            expect(() =>
+                resolveConstantBackoffSettings({
+                    jitter: 1.1,
+                }),
+            ).toThrow("'jitter' must be between 0 and 1 or null");
+        });
 
-describe("function: constantBackoff", () => {
+        test("Should throw TypeError when jitter is NaN", () => {
+            expect(() =>
+                resolveConstantBackoffSettings({
+                    jitter: NaN,
+                }),
+            ).toThrow("'jitter' must be between 0 and 1 or null");
+        });
+    },
+);
+
+describe("function: constantBackoff", { tags: ["Memory"] }, () => {
     test("Should return the fixed delay when jitter is null", () => {
         const backoff = constantBackoff({
             delay: TimeSpan.fromMilliseconds(500),

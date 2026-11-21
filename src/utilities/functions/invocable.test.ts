@@ -14,7 +14,7 @@ import type {
     InvocableFn,
 } from "@/utilities/functions/_module.js";
 
-describe("file: invocable.ts", () => {
+describe("file: invocable.ts", { tags: ["Utilities"] }, () => {
     describe("function: isInvocableObject", () => {
         test("Should return false when given InvocableFn", () => {
             const invocable: InvocableFn<[], string> = () => "";

@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { isPositiveNbr } from "@/utilities/functions/is-positive-nbr.js";
 
-describe("function: isPositiveNbr", () => {
+describe("function: isPositiveNbr", { tags: ["Utilities"] }, () => {
     test("Should not throw when the number is 1", () => {
         expect(() => {
             isPositiveNbr(1);

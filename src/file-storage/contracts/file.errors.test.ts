@@ -20,7 +20,7 @@ import {
     UnableToRemoveManyFileError,
 } from "@/file-storage/contracts/file.errors.js";
 
-describe("file: file.errors.ts", () => {
+describe("file: file.errors.ts", { tags: ["Contracts", "FileStorage"] }, () => {
     describe("function: isFileError", () => {
         test("Should return true when given KeyNotFoundFileError instance", () => {
             const error = KeyNotFoundFileError.create("a");

@@ -19,124 +19,216 @@ import type {
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { IFlexibleSerde } from "@/serde/contracts/_module-exports.js";
 
-describe("class: ProxyRateLimiterFactoryResolver", () => {
-    type Adapters = "adapter1" | "adapter2";
-    let rateLimiterFactory: IRateLimiterFactoryResolver<Adapters> &
-        IRateLimiterFactory;
-    let container: Container;
-    let getState1: Mock<IRateLimiterAdapter["getState"]>;
-    let getState2: Mock<IRateLimiterAdapter["getState"]>;
-    let serde: IFlexibleSerde<string>;
+describe(
+    "class: ProxyRateLimiterFactoryResolver",
+    { tags: ["Derivables", "Implementations", "RateLimiter"] },
+    () => {
+        type Adapters = "adapter1" | "adapter2";
+        let rateLimiterFactory: IRateLimiterFactoryResolver<Adapters> &
+            IRateLimiterFactory;
+        let container: Container;
+        let getState1: Mock<IRateLimiterAdapter["getState"]>;
+        let getState2: Mock<IRateLimiterAdapter["getState"]>;
+        let serde: IFlexibleSerde<string>;
 
-    describe("LIFETIME.SINGLETON:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
+        describe("LIFETIME.SINGLETON:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-            serde = new SuperJsonSerde();
+                serde = new SuperJsonSerde();
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
-
-            const adapter1 = new NoOpRateLimiterAdapter();
-            getState1 = vi.spyOn(adapter1, "getState");
-
-            const adapter2 = new NoOpRateLimiterAdapter();
-            getState2 = vi.spyOn(adapter2, "getState");
-
-            container.registerFactory({
-                token: RateLimiterFactoryResolver,
-                factory: () => {
-                    return new RateLimiterFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                },
-                onInit: (service) => {
-                    service.init();
-                },
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
-            });
-            rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>({
-                container,
-                resolverToken: RateLimiterFactoryResolver,
-            });
-
-            await container.init();
-        });
-
-        test("Default adapter:", async () => {
-            const key = "a";
-            await rateLimiterFactory.create(key, { limit: 2 }).getState();
-
-            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-            expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(getState2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            await rateLimiterFactory
-                .use("adapter1")
-                .create(key, { limit: 2 })
-                .getState();
-
-            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-            expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(getState2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            await rateLimiterFactory
-                .use("adapter2")
-                .create(key, { limit: 2 })
-                .getState();
-
-            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-            expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(getState1).not.toHaveBeenCalled();
-        });
-
-        describe("Serde tests:", () => {
-            test("Should serialize and deserialize a rate limiter created with the default adapter", async () => {
-                const key = "a";
-                const rateLimiter = rateLimiterFactory.create(key, {
-                    limit: 2,
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
                 });
 
-                const deserializedRateLimiter = serde.deserialize<IRateLimiter>(
-                    serde.serialize(rateLimiter),
-                );
+                const adapter1 = new NoOpRateLimiterAdapter();
+                getState1 = vi.spyOn(adapter1, "getState");
 
-                await deserializedRateLimiter.getState();
+                const adapter2 = new NoOpRateLimiterAdapter();
+                getState2 = vi.spyOn(adapter2, "getState");
+
+                container.registerFactory({
+                    token: RateLimiterFactoryResolver,
+                    factory: () => {
+                        return new RateLimiterFactoryResolver<Adapters>({
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
+                            serde,
+                        });
+                    },
+                    onInit: (service) => {
+                        service.init();
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.SINGLETON,
+                });
+                rateLimiterFactory =
+                    new ProxyRateLimiterFactoryResolver<Adapters>({
+                        container,
+                        resolverToken: RateLimiterFactoryResolver,
+                    });
+
+                await container.init();
+            });
+
+            test("Default adapter:", async () => {
+                const key = "a";
+                await rateLimiterFactory.create(key, { limit: 2 }).getState();
 
                 const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
 
                 expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
                 expect(getState2).not.toHaveBeenCalled();
             });
-            test("Should serialize and deserialize a rate limiter created with a specific adapter", async () => {
+            test("Adapter 1:", async () => {
                 const key = "a";
-                const rateLimiter = rateLimiterFactory
+                await rateLimiterFactory
+                    .use("adapter1")
+                    .create(key, { limit: 2 })
+                    .getState();
+
+                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
+
+                expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(getState2).not.toHaveBeenCalled();
+            });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                await rateLimiterFactory
                     .use("adapter2")
-                    .create(key, { limit: 2 });
+                    .create(key, { limit: 2 })
+                    .getState();
 
-                const deserializedRateLimiter = serde.deserialize<IRateLimiter>(
-                    serde.serialize(rateLimiter),
+                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
+
+                expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(getState1).not.toHaveBeenCalled();
+            });
+
+            describe("Serde tests:", () => {
+                test("Should serialize and deserialize a rate limiter created with the default adapter", async () => {
+                    const key = "a";
+                    const rateLimiter = rateLimiterFactory.create(key, {
+                        limit: 2,
+                    });
+
+                    const deserializedRateLimiter =
+                        serde.deserialize<IRateLimiter>(
+                            serde.serialize(rateLimiter),
+                        );
+
+                    await deserializedRateLimiter.getState();
+
+                    const args: Parameters<IRateLimiterAdapter["getState"]> = [
+                        key,
+                    ];
+
+                    expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
+                    expect(getState2).not.toHaveBeenCalled();
+                });
+                test("Should serialize and deserialize a rate limiter created with a specific adapter", async () => {
+                    const key = "a";
+                    const rateLimiter = rateLimiterFactory
+                        .use("adapter2")
+                        .create(key, { limit: 2 });
+
+                    const deserializedRateLimiter =
+                        serde.deserialize<IRateLimiter>(
+                            serde.serialize(rateLimiter),
+                        );
+
+                    await deserializedRateLimiter.getState();
+
+                    const args: Parameters<IRateLimiterAdapter["getState"]> = [
+                        key,
+                    ];
+
+                    expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
+                    expect(getState1).not.toHaveBeenCalled();
+                });
+            });
+        });
+        describe("LIFETIME.TRANSIENT:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
+
+                serde = new SuperJsonSerde();
+
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
                 );
+                container = new Container({
+                    executionContext,
+                });
 
-                await deserializedRateLimiter.getState();
+                const adapter1 = new NoOpRateLimiterAdapter();
+                getState1 = vi.spyOn(adapter1, "getState");
+
+                const adapter2 = new NoOpRateLimiterAdapter();
+                getState2 = vi.spyOn(adapter2, "getState");
+
+                container.registerFactory({
+                    token: RateLimiterFactoryResolver,
+                    factory: () => {
+                        const factory =
+                            new RateLimiterFactoryResolver<Adapters>({
+                                adapters: {
+                                    adapter1,
+                                    adapter2,
+                                },
+                                defaultAdapter: "adapter1",
+                                serde,
+                            });
+                        factory.init();
+                        return factory;
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.TRANSIENT,
+                });
+                rateLimiterFactory =
+                    new ProxyRateLimiterFactoryResolver<Adapters>({
+                        container,
+                        resolverToken: RateLimiterFactoryResolver,
+                    });
+
+                await container.init();
+            });
+
+            test("Default adapter:", async () => {
+                const key = "a";
+                await rateLimiterFactory.create(key, { limit: 2 }).getState();
+
+                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
+
+                expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(getState2).not.toHaveBeenCalled();
+            });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                await rateLimiterFactory
+                    .use("adapter1")
+                    .create(key, { limit: 2 })
+                    .getState();
+
+                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
+
+                expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(getState2).not.toHaveBeenCalled();
+            });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                await rateLimiterFactory
+                    .use("adapter2")
+                    .create(key, { limit: 2 })
+                    .getState();
 
                 const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
 
@@ -144,177 +236,100 @@ describe("class: ProxyRateLimiterFactoryResolver", () => {
                 expect(getState1).not.toHaveBeenCalled();
             });
         });
-    });
-    describe("LIFETIME.TRANSIENT:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
+        describe("LIFETIME.SCOPED:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-            serde = new SuperJsonSerde();
+                serde = new SuperJsonSerde();
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
 
-            const adapter1 = new NoOpRateLimiterAdapter();
-            getState1 = vi.spyOn(adapter1, "getState");
+                const adapter1 = new NoOpRateLimiterAdapter();
+                getState1 = vi.spyOn(adapter1, "getState");
 
-            const adapter2 = new NoOpRateLimiterAdapter();
-            getState2 = vi.spyOn(adapter2, "getState");
+                const adapter2 = new NoOpRateLimiterAdapter();
+                getState2 = vi.spyOn(adapter2, "getState");
 
-            container.registerFactory({
-                token: RateLimiterFactoryResolver,
-                factory: () => {
-                    const factory = new RateLimiterFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
+                container.registerFactory({
+                    token: RateLimiterFactoryResolver,
+                    factory: () => {
+                        const factory =
+                            new RateLimiterFactoryResolver<Adapters>({
+                                adapters: {
+                                    adapter1,
+                                    adapter2,
+                                },
+                                defaultAdapter: "adapter1",
+                                serde,
+                            });
+                        factory.init();
+                        return factory;
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.SCOPED,
+                });
+                rateLimiterFactory =
+                    new ProxyRateLimiterFactoryResolver<Adapters>({
+                        container,
+                        resolverToken: RateLimiterFactoryResolver,
                     });
-                    factory.init();
-                    return factory;
-                },
-                deps: {},
-                lifetime: LIFETIME.TRANSIENT,
-            });
-            rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>({
-                container,
-                resolverToken: RateLimiterFactoryResolver,
+
+                await container.init();
             });
 
-            await container.init();
-        });
+            test("Default adapter:", async () => {
+                const key = "a";
+                await container.run({
+                    scope: async () => {
+                        await rateLimiterFactory
+                            .create(key, { limit: 2 })
+                            .getState();
+                    },
+                });
 
-        test("Default adapter:", async () => {
-            const key = "a";
-            await rateLimiterFactory.create(key, { limit: 2 }).getState();
+                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
 
-            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-            expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(getState2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            await rateLimiterFactory
-                .use("adapter1")
-                .create(key, { limit: 2 })
-                .getState();
-
-            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-            expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(getState2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            await rateLimiterFactory
-                .use("adapter2")
-                .create(key, { limit: 2 })
-                .getState();
-
-            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-            expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(getState1).not.toHaveBeenCalled();
-        });
-    });
-    describe("LIFETIME.SCOPED:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
-
-            serde = new SuperJsonSerde();
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
+                expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(getState2).not.toHaveBeenCalled();
             });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                await container.run({
+                    scope: async () => {
+                        await rateLimiterFactory
+                            .use("adapter1")
+                            .create(key, { limit: 2 })
+                            .getState();
+                    },
+                });
 
-            const adapter1 = new NoOpRateLimiterAdapter();
-            getState1 = vi.spyOn(adapter1, "getState");
+                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
 
-            const adapter2 = new NoOpRateLimiterAdapter();
-            getState2 = vi.spyOn(adapter2, "getState");
-
-            container.registerFactory({
-                token: RateLimiterFactoryResolver,
-                factory: () => {
-                    const factory = new RateLimiterFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                        serde,
-                    });
-                    factory.init();
-                    return factory;
-                },
-                deps: {},
-                lifetime: LIFETIME.SCOPED,
+                expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(getState2).not.toHaveBeenCalled();
             });
-            rateLimiterFactory = new ProxyRateLimiterFactoryResolver<Adapters>({
-                container,
-                resolverToken: RateLimiterFactoryResolver,
-            });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                await container.run({
+                    scope: async () => {
+                        await rateLimiterFactory
+                            .use("adapter2")
+                            .create(key, { limit: 2 })
+                            .getState();
+                    },
+                });
 
-            await container.init();
+                const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
+
+                expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(getState1).not.toHaveBeenCalled();
+            });
         });
-
-        test("Default adapter:", async () => {
-            const key = "a";
-            await container.run({
-                scope: async () => {
-                    await rateLimiterFactory
-                        .create(key, { limit: 2 })
-                        .getState();
-                },
-            });
-
-            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-            expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(getState2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            await container.run({
-                scope: async () => {
-                    await rateLimiterFactory
-                        .use("adapter1")
-                        .create(key, { limit: 2 })
-                        .getState();
-                },
-            });
-
-            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-            expect(getState1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(getState2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            await container.run({
-                scope: async () => {
-                    await rateLimiterFactory
-                        .use("adapter2")
-                        .create(key, { limit: 2 })
-                        .getState();
-                },
-            });
-
-            const args: Parameters<IRateLimiterAdapter["getState"]> = [key];
-
-            expect(getState2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(getState1).not.toHaveBeenCalled();
-        });
-    });
-});
+    },
+);

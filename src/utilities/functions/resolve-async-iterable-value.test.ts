@@ -12,7 +12,7 @@ async function toArray<TItem>(
     return items;
 }
 
-describe("function: resolveAsyncIterableValue", () => {
+describe("function: resolveAsyncIterableValue", { tags: ["Utilities"] }, () => {
     test("Should return an async iterable as is", () => {
         const values: AsyncIterable<number> = {
             async *[Symbol.asyncIterator](): AsyncIterator<number> {

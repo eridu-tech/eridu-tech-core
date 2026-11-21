@@ -40,78 +40,82 @@ function fetchPath(router: HttpRouter, path: string): Promise<Response> {
     return router.fetch(new Request(`https://example.com${path}`));
 }
 
-describe("function: bindHttpMiddlewareFactory", () => {
-    test("Should resolve the middleware from the container and run it around the handler", async () => {
-        const token = genericToken<HttpMiddleware>("loggingMiddleware");
-        const container = createContainer();
-        const middleware: HttpMiddlewareFn = async (args) => {
-            const response = await args.next();
-            return response.setHeader("X-Logged", "yes");
-        };
-        container.registerValue({ token, value: middleware });
-        await container.init();
+describe(
+    "function: bindHttpMiddlewareFactory",
+    { tags: ["Memory", "Derivables", "Implementations", "HttpRouter"] },
+    () => {
+        test("Should resolve the middleware from the container and run it around the handler", async () => {
+            const token = genericToken<HttpMiddleware>("loggingMiddleware");
+            const container = createContainer();
+            const middleware: HttpMiddlewareFn = async (args) => {
+                const response = await args.next();
+                return response.setHeader("X-Logged", "yes");
+            };
+            container.registerValue({ token, value: middleware });
+            await container.init();
 
-        const router = createRouter(
-            bindHttpMiddlewareFactory(container)(token),
-        );
+            const router = createRouter(
+                bindHttpMiddlewareFactory(container)(token),
+            );
 
-        const response = await fetchPath(router, "/users");
+            const response = await fetchPath(router, "/users");
 
-        expect(response.headers.get("x-logged")).toBe("yes");
-        expect(await response.text()).toBe("ok");
-    });
-    test("Should invoke an invocable object middleware", async () => {
-        const token = genericToken<HttpMiddleware>("objectMiddleware");
-        const container = createContainer();
-        const invoke = vi.fn((args: HttpMiddlewareArgs) => args.next());
-        container.registerValue({ token, value: { invoke } });
-        await container.init();
-
-        const router = createRouter(
-            bindHttpMiddlewareFactory(container)(token),
-        );
-
-        const response = await fetchPath(router, "/users");
-
-        expect(invoke).toHaveBeenCalledTimes(1);
-        expect(await response.text()).toBe("ok");
-    });
-    test("Should resolve the middleware from the container for every request", async () => {
-        const token = genericToken<HttpMiddleware>("transientMiddleware");
-        const container = createContainer();
-        const resolveMiddleware = vi.fn<() => HttpMiddlewareFn>(() => {
-            return (args) => args.next();
+            expect(response.headers.get("x-logged")).toBe("yes");
+            expect(await response.text()).toBe("ok");
         });
-        container.registerFactory({
-            token,
-            lifetime: LIFETIME.TRANSIENT,
-            deps: {},
-            factory: resolveMiddleware,
+        test("Should invoke an invocable object middleware", async () => {
+            const token = genericToken<HttpMiddleware>("objectMiddleware");
+            const container = createContainer();
+            const invoke = vi.fn((args: HttpMiddlewareArgs) => args.next());
+            container.registerValue({ token, value: { invoke } });
+            await container.init();
+
+            const router = createRouter(
+                bindHttpMiddlewareFactory(container)(token),
+            );
+
+            const response = await fetchPath(router, "/users");
+
+            expect(invoke).toHaveBeenCalledTimes(1);
+            expect(await response.text()).toBe("ok");
         });
-        await container.init();
+        test("Should resolve the middleware from the container for every request", async () => {
+            const token = genericToken<HttpMiddleware>("transientMiddleware");
+            const container = createContainer();
+            const resolveMiddleware = vi.fn<() => HttpMiddlewareFn>(() => {
+                return (args) => args.next();
+            });
+            container.registerFactory({
+                token,
+                lifetime: LIFETIME.TRANSIENT,
+                deps: {},
+                factory: resolveMiddleware,
+            });
+            await container.init();
 
-        const router = createRouter(
-            bindHttpMiddlewareFactory(container)(token),
-        );
+            const router = createRouter(
+                bindHttpMiddlewareFactory(container)(token),
+            );
 
-        await fetchPath(router, "/users");
-        await fetchPath(router, "/users");
+            await fetchPath(router, "/users");
+            await fetchPath(router, "/users");
 
-        expect(resolveMiddleware).toHaveBeenCalledTimes(2);
-    });
-    test("Should throw an UnexpectedError when the resolved middleware is not invocable", async () => {
-        const token = genericToken<HttpMiddleware>("invalidMiddleware");
-        const container = createContainer();
-        container.registerValue({
-            token,
-            value: { notInvocable: true } as unknown as HttpMiddleware,
+            expect(resolveMiddleware).toHaveBeenCalledTimes(2);
         });
-        await container.init();
+        test("Should throw an UnexpectedError when the resolved middleware is not invocable", async () => {
+            const token = genericToken<HttpMiddleware>("invalidMiddleware");
+            const container = createContainer();
+            container.registerValue({
+                token,
+                value: { notInvocable: true } as unknown as HttpMiddleware,
+            });
+            await container.init();
 
-        const bound = bindHttpMiddlewareFactory(container)(token);
+            const bound = bindHttpMiddlewareFactory(container)(token);
 
-        await expect(
-            bound({ next: vi.fn() } as unknown as HttpMiddlewareArgs),
-        ).rejects.toThrow(UnexpectedError);
-    });
-});
+            await expect(
+                bound({ next: vi.fn() } as unknown as HttpMiddlewareArgs),
+            ).rejects.toThrow(UnexpectedError);
+        });
+    },
+);

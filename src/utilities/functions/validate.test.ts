@@ -33,7 +33,7 @@ function createAsyncSchema<TValue>(
     };
 }
 
-describe("class: ValidationError", () => {
+describe("class: ValidationError", { tags: ["Utilities"] }, () => {
     test("Should expose the issues", () => {
         const issues: ReadonlyArray<StandardSchemaV1.Issue> = [
             { message: "invalid" },

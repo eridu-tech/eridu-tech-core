@@ -6,23 +6,27 @@ import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementa
 import { SamplingBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 import { samplingBreakerTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
 
-describe("sampling-breaker class: DatabaseCircuitBreakerAdapter", () => {
-    samplingBreakerTestSuite({
-        createAdapter: () => {
-            const adapter = new DatabaseCircuitBreakerAdapter({
-                backoffPolicy: constantBackoff(
-                    samplingBreakerTestSuite.backoffPolicySettings,
-                ),
-                adapter: new MemoryCircuitBreakerStorageAdapter(),
-                circuitBreakerPolicy: new SamplingBreaker(
-                    samplingBreakerTestSuite.circuitBreakerPolicySettings,
-                ),
-            });
-            return adapter;
-        },
-        beforeEach,
-        describe,
-        expect,
-        test,
-    });
-});
+describe(
+    "sampling-breaker class: DatabaseCircuitBreakerAdapter",
+    { tags: ["Memory", "Adapters", "Implementations", "CircuitBreaker"] },
+    () => {
+        samplingBreakerTestSuite({
+            createAdapter: () => {
+                const adapter = new DatabaseCircuitBreakerAdapter({
+                    backoffPolicy: constantBackoff(
+                        samplingBreakerTestSuite.backoffPolicySettings,
+                    ),
+                    adapter: new MemoryCircuitBreakerStorageAdapter(),
+                    circuitBreakerPolicy: new SamplingBreaker(
+                        samplingBreakerTestSuite.circuitBreakerPolicySettings,
+                    ),
+                });
+                return adapter;
+            },
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
+    },
+);

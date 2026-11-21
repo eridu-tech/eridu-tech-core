@@ -14,53 +14,59 @@ import { TransactionContext } from "@/transaction-context/implementations/deriva
 
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-describe("class: MemoryEventBusAdapter", () => {
-    eventBusAdapterTestSuite({
-        createAdapter: () =>
-            new MemoryEventBusAdapter({
-                eventEmitter: new EventEmitter(),
-            }),
-        test,
-        beforeEach,
-        expect,
-        describe,
-    });
-    test("After commit test:", async () => {
-        const database = new Sqlite(":memory:");
-        try {
-            const transactionContext = new TransactionContext({
-                token: contextToken<ITransactionData<Kysely<any>>>("kysely"),
-                adapter: new KyselyTransactionAdapter({
-                    database: new Kysely({
-                        dialect: new SqliteDialect({
-                            database,
+describe(
+    "class: MemoryEventBusAdapter",
+    { tags: ["Memory", "Adapters", "Implementations", "EventBus"] },
+    () => {
+        eventBusAdapterTestSuite({
+            createAdapter: () =>
+                new MemoryEventBusAdapter({
+                    eventEmitter: new EventEmitter(),
+                }),
+            test,
+            beforeEach,
+            expect,
+            describe,
+        });
+        test("After commit test:", async () => {
+            const database = new Sqlite(":memory:");
+            try {
+                const transactionContext = new TransactionContext({
+                    token: contextToken<ITransactionData<Kysely<any>>>(
+                        "kysely",
+                    ),
+                    adapter: new KyselyTransactionAdapter({
+                        database: new Kysely({
+                            dialect: new SqliteDialect({
+                                database,
+                            }),
                         }),
                     }),
-                }),
-                executionContext: new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                ),
-            });
-            const eventBusAdapter = new MemoryEventBusAdapter({
-                eventEmitter: new EventEmitter(),
-                transactionHooks: transactionContext,
-            });
-
-            const listenerFn = vi.fn();
-            await eventBusAdapter.addListener("eventA", listenerFn);
-
-            try {
-                await transactionContext.run(async () => {
-                    await eventBusAdapter.dispatch("eventA", { data: "A" });
-                    throw new Error("Transaction failed");
+                    executionContext: new ExecutionContext(
+                        new AlsExecutionContextAdapter(),
+                    ),
                 });
-            } catch {
-                /* EMPTY */
-            }
+                const eventBusAdapter = new MemoryEventBusAdapter({
+                    eventEmitter: new EventEmitter(),
+                    transactionHooks: transactionContext,
+                });
 
-            expect(listenerFn).not.toHaveBeenCalled();
-        } finally {
-            database.close();
-        }
-    });
-});
+                const listenerFn = vi.fn();
+                await eventBusAdapter.addListener("eventA", listenerFn);
+
+                try {
+                    await transactionContext.run(async () => {
+                        await eventBusAdapter.dispatch("eventA", { data: "A" });
+                        throw new Error("Transaction failed");
+                    });
+                } catch {
+                    /* EMPTY */
+                }
+
+                expect(listenerFn).not.toHaveBeenCalled();
+            } finally {
+                database.close();
+            }
+        });
+    },
+);

@@ -25,145 +25,162 @@ function makeLogData(overrides: Partial<LogData> = {}): LogData {
     };
 }
 
-describe("class: OtelLogTransport", () => {
-    let exporter: InMemoryLogRecordExporter;
-    let log: Logger;
-    let transport: OtelLogTransport;
+describe(
+    "class: OtelLogTransport",
+    { tags: ["Implementations", "Log"] },
+    () => {
+        let exporter: InMemoryLogRecordExporter;
+        let log: Logger;
+        let transport: OtelLogTransport;
 
-    beforeEach(() => {
-        vi.useFakeTimers({ now: LOGGED_AT, toFake: ["Date", "performance"] });
+        beforeEach(() => {
+            vi.useFakeTimers({
+                now: LOGGED_AT,
+                toFake: ["Date", "performance"],
+            });
 
-        exporter = new InMemoryLogRecordExporter();
-        const provider = new LoggerProvider({
-            processors: [
-                new SimpleLogRecordProcessor({
-                    exporter,
-                }),
-            ],
+            exporter = new InMemoryLogRecordExporter();
+            const provider = new LoggerProvider({
+                processors: [
+                    new SimpleLogRecordProcessor({
+                        exporter,
+                    }),
+                ],
+            });
+            log = provider.getLogger("test");
+            transport = new OtelLogTransport({ log });
         });
-        log = provider.getLogger("test");
-        transport = new OtelLogTransport({ log });
-    });
 
-    afterEach(() => {
-        vi.useRealTimers();
-    });
+        afterEach(() => {
+            vi.useRealTimers();
+        });
 
-    function getRecords() {
-        return exporter.getFinishedLogRecords();
-    }
+        function getRecords() {
+            return exporter.getFinishedLogRecords();
+        }
 
-    test.each([
-        {
-            level: LOG_LEVEL.DEBUG,
-            severityNumber: SeverityNumber.DEBUG,
-            severityText: "debug",
-        },
-        {
-            level: LOG_LEVEL.VERBOSE,
-            severityNumber: SeverityNumber.TRACE,
-            severityText: "verbose",
-        },
-        {
-            level: LOG_LEVEL.INFO,
-            severityNumber: SeverityNumber.INFO,
-            severityText: "info",
-        },
-        {
-            level: LOG_LEVEL.WARN,
-            severityNumber: SeverityNumber.WARN,
-            severityText: "warn",
-        },
-        {
-            level: LOG_LEVEL.ERROR,
-            severityNumber: SeverityNumber.ERROR,
-            severityText: "error",
-        },
-        {
-            level: LOG_LEVEL.FATAL,
-            severityNumber: SeverityNumber.FATAL,
-            severityText: "fatal",
-        },
-    ] as const)(
-        "Should write $level entries with severity $severityText",
-        ({ level, severityNumber, severityText }) => {
-            transport.log(makeLogData({ level }));
+        test.each([
+            {
+                level: LOG_LEVEL.DEBUG,
+                severityNumber: SeverityNumber.DEBUG,
+                severityText: "debug",
+            },
+            {
+                level: LOG_LEVEL.VERBOSE,
+                severityNumber: SeverityNumber.TRACE,
+                severityText: "verbose",
+            },
+            {
+                level: LOG_LEVEL.INFO,
+                severityNumber: SeverityNumber.INFO,
+                severityText: "info",
+            },
+            {
+                level: LOG_LEVEL.WARN,
+                severityNumber: SeverityNumber.WARN,
+                severityText: "warn",
+            },
+            {
+                level: LOG_LEVEL.ERROR,
+                severityNumber: SeverityNumber.ERROR,
+                severityText: "error",
+            },
+            {
+                level: LOG_LEVEL.FATAL,
+                severityNumber: SeverityNumber.FATAL,
+                severityText: "fatal",
+            },
+        ] as const)(
+            "Should write $level entries with severity $severityText",
+            ({ level, severityNumber, severityText }) => {
+                transport.log(makeLogData({ level }));
 
-            const records = getRecords();
-            expect(records).toHaveLength(1);
-            expect(records[0]?.severityNumber).toBe(severityNumber);
-            expect(records[0]?.severityText).toBe(severityText);
-        },
-    );
-
-    test("Should pass messages through unchanged as the body", () => {
-        const messages = ["hello", 42, true, null, undefined, { first: "x" }];
-        transport.log(makeLogData({ messages }));
-
-        expect(getRecords()[0]?.body).toEqual(messages);
-    });
-
-    test("Should forward the entry only once", () => {
-        transport.log(makeLogData());
-
-        expect(getRecords()).toHaveLength(1);
-    });
-
-    test("Should attach metadata and spans as attributes", () => {
-        transport.log(
-            makeLogData({
-                metadata: { requestId: "abc" },
-                spans: {
-                    db: TimeSpan.fromMilliseconds(12),
-                    http: TimeSpan.fromMilliseconds(250),
-                },
-            }),
+                const records = getRecords();
+                expect(records).toHaveLength(1);
+                expect(records[0]?.severityNumber).toBe(severityNumber);
+                expect(records[0]?.severityText).toBe(severityText);
+            },
         );
 
-        expect(getRecords()[0]?.attributes).toEqual({
-            metadata: { requestId: "abc" },
-            spans: { db: 12, http: 250 },
+        test("Should pass messages through unchanged as the body", () => {
+            const messages = [
+                "hello",
+                42,
+                true,
+                null,
+                undefined,
+                { first: "x" },
+            ];
+            transport.log(makeLogData({ messages }));
+
+            expect(getRecords()[0]?.body).toEqual(messages);
         });
-    });
 
-    test("Should attach the group as an attribute", () => {
-        transport.log(makeLogData({ group: "auth" }));
+        test("Should forward the entry only once", () => {
+            transport.log(makeLogData());
 
-        expect(getRecords()[0]?.attributes).toEqual({ group: "auth" });
-    });
+            expect(getRecords()).toHaveLength(1);
+        });
 
-    test("Should stamp the record with the mocked time", () => {
-        transport.log(makeLogData());
+        test("Should attach metadata and spans as attributes", () => {
+            transport.log(
+                makeLogData({
+                    metadata: { requestId: "abc" },
+                    spans: {
+                        db: TimeSpan.fromMilliseconds(12),
+                        http: TimeSpan.fromMilliseconds(250),
+                    },
+                }),
+            );
 
-        expect(getRecords()[0]?.hrTime).toStrictEqual([LOGGED_AT / 1_000, 0]);
-    });
+            expect(getRecords()[0]?.attributes).toEqual({
+                metadata: { requestId: "abc" },
+                spans: { db: 12, http: 250 },
+            });
+        });
 
-    test("Should attach the error as an attribute", () => {
-        const error = { reason: "card_declined" };
-        transport.log(makeLogData({ error, level: LOG_LEVEL.ERROR }));
+        test("Should attach the group as an attribute", () => {
+            transport.log(makeLogData({ group: "auth" }));
 
-        expect(getRecords()[0]?.attributes).toEqual({ error });
-    });
+            expect(getRecords()[0]?.attributes).toEqual({ group: "auth" });
+        });
 
-    test("Should output an empty spans object when there are no spans", () => {
-        transport.log(makeLogData({ spans: {} }));
+        test("Should stamp the record with the mocked time", () => {
+            transport.log(makeLogData());
 
-        expect(getRecords()[0]?.attributes).toEqual({ spans: {} });
-    });
+            expect(getRecords()[0]?.hrTime).toStrictEqual([
+                LOGGED_AT / 1_000,
+                0,
+            ]);
+        });
 
-    test("Should omit the spans attribute when the entry has none", () => {
-        transport.log(makeLogData());
+        test("Should attach the error as an attribute", () => {
+            const error = { reason: "card_declined" };
+            transport.log(makeLogData({ error, level: LOG_LEVEL.ERROR }));
 
-        expect(getRecords()[0]?.attributes).toEqual({});
-    });
+            expect(getRecords()[0]?.attributes).toEqual({ error });
+        });
 
-    test("Should drop spans without a value", () => {
-        const spans: LogSpans = {
-            db: undefined,
-            http: TimeSpan.fromMilliseconds(5),
-        };
-        transport.log(makeLogData({ spans }));
+        test("Should output an empty spans object when there are no spans", () => {
+            transport.log(makeLogData({ spans: {} }));
 
-        expect(getRecords()[0]?.attributes).toEqual({ spans: { http: 5 } });
-    });
-});
+            expect(getRecords()[0]?.attributes).toEqual({ spans: {} });
+        });
+
+        test("Should omit the spans attribute when the entry has none", () => {
+            transport.log(makeLogData());
+
+            expect(getRecords()[0]?.attributes).toEqual({});
+        });
+
+        test("Should drop spans without a value", () => {
+            const spans: LogSpans = {
+                db: undefined,
+                http: TimeSpan.fromMilliseconds(5),
+            };
+            transport.log(makeLogData({ spans }));
+
+            expect(getRecords()[0]?.attributes).toEqual({ spans: { http: 5 } });
+        });
+    },
+);

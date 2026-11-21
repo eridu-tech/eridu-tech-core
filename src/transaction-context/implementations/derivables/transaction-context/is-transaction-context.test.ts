@@ -17,44 +17,48 @@ import type {
 } from "@/transaction-context/contracts/_module-exports.js";
 import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
-describe("function: isTransactionContext", () => {
-    test("Should return false for a Kysely instance", () => {
-        const kysely = new Kysely({
-            dialect: {
-                createAdapter: () => new SqliteAdapter(),
-                createDriver: () => new DummyDriver(),
-                createIntrospector: (database) =>
-                    new SqliteIntrospector(database),
-                createQueryCompiler: () => new SqliteQueryCompiler(),
-            },
+describe(
+    "function: isTransactionContext",
+    { tags: ["Derivables", "Implementations", "TransactionContext"] },
+    () => {
+        test("Should return false for a Kysely instance", () => {
+            const kysely = new Kysely({
+                dialect: {
+                    createAdapter: () => new SqliteAdapter(),
+                    createDriver: () => new DummyDriver(),
+                    createIntrospector: (database) =>
+                        new SqliteIntrospector(database),
+                    createQueryCompiler: () => new SqliteQueryCompiler(),
+                },
+            });
+
+            expect(isTransactionContext(kysely)).toBe(false);
         });
+        test("Should return false for a MongoDB database instance", () => {
+            const client = new MongoClient("mongodb://localhost:27017");
+            const database = client.db("database");
 
-        expect(isTransactionContext(kysely)).toBe(false);
-    });
-    test("Should return false for a MongoDB database instance", () => {
-        const client = new MongoClient("mongodb://localhost:27017");
-        const database = client.db("database");
+            expect(isTransactionContext(database)).toBe(false);
+        });
+        test("Should return true for an ITransactionContext instance", () => {
+            // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+            const transactionContext: ITransactionContext<{}, {}> = {
+                client: {},
+                isInTransaction: false,
+                transaction: null,
+                current: {},
+                getTransactionOrFail: () => ({}),
+                run: (async <TValue = void>(
+                    _propagation: TransactionPropagation,
+                    asyncInvocable: AsyncLazy<TValue>,
+                ): Promise<TValue> => {
+                    return callInvocable(asyncInvocable);
+                    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+                }) as ITransactionContext<{}, {}>["run"],
+                afterCommit: async (_asyncInvocable, _settings) => {},
+            };
 
-        expect(isTransactionContext(database)).toBe(false);
-    });
-    test("Should return true for an ITransactionContext instance", () => {
-        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-        const transactionContext: ITransactionContext<{}, {}> = {
-            client: {},
-            isInTransaction: false,
-            transaction: null,
-            current: {},
-            getTransactionOrFail: () => ({}),
-            run: (async <TValue = void>(
-                _propagation: TransactionPropagation,
-                asyncInvocable: AsyncLazy<TValue>,
-            ): Promise<TValue> => {
-                return callInvocable(asyncInvocable);
-                // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-            }) as ITransactionContext<{}, {}>["run"],
-            afterCommit: async (_asyncInvocable, _settings) => {},
-        };
-
-        expect(isTransactionContext(transactionContext)).toBe(true);
-    });
-});
+            expect(isTransactionContext(transactionContext)).toBe(true);
+        });
+    },
+);

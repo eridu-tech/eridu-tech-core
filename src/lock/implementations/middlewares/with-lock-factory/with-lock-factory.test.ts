@@ -12,115 +12,125 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { LockFactoryCreateSettings } from "@/lock/contracts/_module-exports.js";
 
-describe("function: withLockFactory", () => {
-    const lockFactoryResolver = new LockFactoryResolver<"memory">({
-        adapters: { memory: new NoOpLockAdapter() },
-        defaultAdapter: "memory",
-    });
-    lockFactoryResolver.init();
+describe(
+    "function: withLockFactory",
+    { tags: ["Memory", "Middlewares", "Implementations", "Lock"] },
+    () => {
+        const lockFactoryResolver = new LockFactoryResolver<"memory">({
+            adapters: { memory: new NoOpLockAdapter() },
+            defaultAdapter: "memory",
+        });
+        lockFactoryResolver.init();
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
+        });
 
-    test("Should call LockFactory.create method", async () => {
-        const spy = vi.spyOn(LockFactory.prototype, "create");
+        test("Should call LockFactory.create method", async () => {
+            const spy = vi.spyOn(LockFactory.prototype, "create");
 
-        const withLock = withLockFactory(lockFactoryResolver);
+            const withLock = withLockFactory(lockFactoryResolver);
 
-        async function fn(_value: string): Promise<void> {}
-        const argValue = "value";
-        const settings: LockFactoryCreateSettings = {
-            lockId: argValue,
-            ttl: TimeSpan.fromSeconds(20),
-        };
-        await use(
-            fn,
-            withLock({
-                ...settings,
-                key: ([value]) => value,
-                lockId: ([value]) => value,
-            }),
-        )(argValue);
+            async function fn(_value: string): Promise<void> {}
+            const argValue = "value";
+            const settings: LockFactoryCreateSettings = {
+                lockId: argValue,
+                ttl: TimeSpan.fromSeconds(20),
+            };
+            await use(
+                fn,
+                withLock({
+                    ...settings,
+                    key: ([value]) => value,
+                    lockId: ([value]) => value,
+                }),
+            )(argValue);
 
-        expect(spy).toHaveBeenCalledExactlyOnceWith(argValue, settings);
-    });
-    test("Should call Lock.run method", async () => {
-        const spy = vi.spyOn(Lock.prototype, "runOrFail");
+            expect(spy).toHaveBeenCalledExactlyOnceWith(argValue, settings);
+        });
+        test("Should call Lock.run method", async () => {
+            const spy = vi.spyOn(Lock.prototype, "runOrFail");
 
-        const withLock = withLockFactory(lockFactoryResolver);
+            const withLock = withLockFactory(lockFactoryResolver);
 
-        async function fn(_value: string): Promise<void> {}
-        const argValue = "value";
-        await use(
-            fn,
-            withLock({
-                key: ([value]) => value,
-            }),
-        )(argValue);
+            async function fn(_value: string): Promise<void> {}
+            const argValue = "value";
+            await use(
+                fn,
+                withLock({
+                    key: ([value]) => value,
+                }),
+            )(argValue);
 
-        expect(spy).toHaveBeenCalledOnce();
-    });
-    test("Should derive the key from multiple wrapped function arguments", async () => {
-        const spy = vi.spyOn(LockFactory.prototype, "create");
+            expect(spy).toHaveBeenCalledOnce();
+        });
+        test("Should derive the key from multiple wrapped function arguments", async () => {
+            const spy = vi.spyOn(LockFactory.prototype, "create");
 
-        const withLock = withLockFactory(lockFactoryResolver);
+            const withLock = withLockFactory(lockFactoryResolver);
 
-        async function fn(_userId: string, _postId: string): Promise<void> {}
-        await use(
-            fn,
-            withLock({
-                key: ([userId, postId]) => `user:${userId}:post:${postId}`,
-            }),
-        )("u1", "p2");
+            async function fn(
+                _userId: string,
+                _postId: string,
+            ): Promise<void> {}
+            await use(
+                fn,
+                withLock({
+                    key: ([userId, postId]) => `user:${userId}:post:${postId}`,
+                }),
+            )("u1", "p2");
 
-        expect(spy).toHaveBeenCalledWith("user:u1:post:p2", expect.anything());
-    });
-    test("Should pass through the wrapped function's arguments and return value", async () => {
-        const withLock = withLockFactory(lockFactoryResolver);
+            expect(spy).toHaveBeenCalledWith(
+                "user:u1:post:p2",
+                expect.anything(),
+            );
+        });
+        test("Should pass through the wrapped function's arguments and return value", async () => {
+            const withLock = withLockFactory(lockFactoryResolver);
 
-        function fn(a: string, b: string): Promise<string> {
-            return Promise.resolve(`${a}-${b}`);
-        }
+            function fn(a: string, b: string): Promise<string> {
+                return Promise.resolve(`${a}-${b}`);
+            }
 
-        const wrapped = use(
-            fn,
-            withLock({
-                key: ([a, b]) => `${a}:${b}`,
-            }),
-        );
+            const wrapped = use(
+                fn,
+                withLock({
+                    key: ([a, b]) => `${a}:${b}`,
+                }),
+            );
 
-        expect(await wrapped("2", "3")).toBe("2-3");
-    });
-    test("Should use the default adapter when use is not called", async () => {
-        const spy = vi.spyOn(lockFactoryResolver, "use");
+            expect(await wrapped("2", "3")).toBe("2-3");
+        });
+        test("Should use the default adapter when use is not called", async () => {
+            const spy = vi.spyOn(lockFactoryResolver, "use");
 
-        const withLock = withLockFactory(lockFactoryResolver);
+            const withLock = withLockFactory(lockFactoryResolver);
 
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withLock({
-                key: ([value]) => value,
-            }),
-        )("value");
+            async function fn(_value: string): Promise<void> {}
+            await use(
+                fn,
+                withLock({
+                    key: ([value]) => value,
+                }),
+            )("value");
 
-        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
-    });
-    test("Should select the adapter passed to use", async () => {
-        const spy = vi.spyOn(lockFactoryResolver, "use");
+            expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
+        });
+        test("Should select the adapter passed to use", async () => {
+            const spy = vi.spyOn(lockFactoryResolver, "use");
 
-        const withLock = withLockFactory(lockFactoryResolver);
+            const withLock = withLockFactory(lockFactoryResolver);
 
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withLock.use("memory")({
-                key: ([value]) => value,
-            }),
-        )("value");
+            async function fn(_value: string): Promise<void> {}
+            await use(
+                fn,
+                withLock.use("memory")({
+                    key: ([value]) => value,
+                }),
+            )("value");
 
-        expect(spy).toHaveBeenCalledWith("memory");
-    });
-});
+            expect(spy).toHaveBeenCalledWith("memory");
+        });
+    },
+);

@@ -9,56 +9,60 @@ import { withCacheFactory } from "@/cache/implementations/middlewares/with-cache
 import { use } from "@/middleware/implementations/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-describe("function: withCacheFactory", () => {
-    const cacheResolver = new CacheResolver<"memory">({
-        adapters: { memory: new NoOpCacheAdapter() },
-        defaultAdapter: "memory",
-    });
-    cacheResolver.init();
+describe(
+    "function: withCacheFactory",
+    { tags: ["Memory", "Middlewares", "Implementations", "Cache"] },
+    () => {
+        const cacheResolver = new CacheResolver<"memory">({
+            adapters: { memory: new NoOpCacheAdapter() },
+            defaultAdapter: "memory",
+        });
+        cacheResolver.init();
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
+        });
 
-    test("Should call getOrAdd with the key, loader and ttl", async () => {
-        const spy = vi.spyOn(Cache.prototype, "getOrAdd");
+        test("Should call getOrAdd with the key, loader and ttl", async () => {
+            const spy = vi.spyOn(Cache.prototype, "getOrAdd");
 
-        const withCache = withCacheFactory(cacheResolver);
+            const withCache = withCacheFactory(cacheResolver);
 
-        async function fn(_value: string): Promise<void> {}
-        const key = "key";
-        const ttl = TimeSpan.fromSeconds(20);
-        await use(
-            fn,
-            withCache({
+            async function fn(_value: string): Promise<void> {}
+            const key = "key";
+            const ttl = TimeSpan.fromSeconds(20);
+            await use(
+                fn,
+                withCache({
+                    ttl,
+                    key: ([value]) => value,
+                }),
+            )(key);
+
+            expect(spy).toHaveBeenCalledExactlyOnceWith(
+                key,
+                expect.any(Function),
                 ttl,
-                key: ([value]) => value,
-            }),
-        )(key);
+            );
+        });
 
-        expect(spy).toHaveBeenCalledExactlyOnceWith(
-            key,
-            expect.any(Function),
-            ttl,
-        );
-    });
+        test("Should cache using the selected adapter", async () => {
+            const useSpy = vi.spyOn(cacheResolver, "use");
+            const getOrAddSpy = vi.spyOn(Cache.prototype, "getOrAdd");
 
-    test("Should cache using the selected adapter", async () => {
-        const useSpy = vi.spyOn(cacheResolver, "use");
-        const getOrAddSpy = vi.spyOn(Cache.prototype, "getOrAdd");
+            const withCache = withCacheFactory(cacheResolver);
 
-        const withCache = withCacheFactory(cacheResolver);
+            async function fn(_value: string): Promise<void> {}
+            await use(
+                fn,
+                withCache.use("memory")({
+                    key: ([value]) => value,
+                }),
+            )("key");
 
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withCache.use("memory")({
-                key: ([value]) => value,
-            }),
-        )("key");
-
-        expect(useSpy).toHaveBeenCalledExactlyOnceWith("memory");
-        expect(getOrAddSpy).toHaveBeenCalledOnce();
-    });
-});
+            expect(useSpy).toHaveBeenCalledExactlyOnceWith("memory");
+            expect(getOrAddSpy).toHaveBeenCalledOnce();
+        });
+    },
+);

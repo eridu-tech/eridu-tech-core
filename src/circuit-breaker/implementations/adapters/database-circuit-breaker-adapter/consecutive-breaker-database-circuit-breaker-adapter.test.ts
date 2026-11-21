@@ -6,23 +6,27 @@ import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementa
 import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 import { consecutiveBreakerTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
 
-describe("consecutive-breaker class: DatabaseCircuitBreakerAdapter", () => {
-    consecutiveBreakerTestSuite({
-        createAdapter: () => {
-            const adapter = new DatabaseCircuitBreakerAdapter({
-                backoffPolicy: constantBackoff(
-                    consecutiveBreakerTestSuite.backoffPolicySettings,
-                ),
-                adapter: new MemoryCircuitBreakerStorageAdapter(),
-                circuitBreakerPolicy: new ConsecutiveBreaker(
-                    consecutiveBreakerTestSuite.circuitBreakerPolicySettings,
-                ),
-            });
-            return adapter;
-        },
-        beforeEach,
-        describe,
-        expect,
-        test,
-    });
-});
+describe(
+    "consecutive-breaker class: DatabaseCircuitBreakerAdapter",
+    { tags: ["Memory", "Adapters", "Implementations", "CircuitBreaker"] },
+    () => {
+        consecutiveBreakerTestSuite({
+            createAdapter: () => {
+                const adapter = new DatabaseCircuitBreakerAdapter({
+                    backoffPolicy: constantBackoff(
+                        consecutiveBreakerTestSuite.backoffPolicySettings,
+                    ),
+                    adapter: new MemoryCircuitBreakerStorageAdapter(),
+                    circuitBreakerPolicy: new ConsecutiveBreaker(
+                        consecutiveBreakerTestSuite.circuitBreakerPolicySettings,
+                    ),
+                });
+                return adapter;
+            },
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
+    },
+);

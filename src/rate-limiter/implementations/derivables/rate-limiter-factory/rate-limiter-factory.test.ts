@@ -23,574 +23,582 @@ import type {
     IRateLimiter,
 } from "@/rate-limiter/contracts/_module-exports.js";
 
-describe("class: RateLimiterFactory", () => {
-    const adapter: IRateLimiterAdapter = {
-        getState(_key: string): Promise<IRateLimiterAdapterState | null> {
-            throw new Error("Function not implemented.");
-        },
-        updateState(
-            _key: string,
-            _limit: number,
-        ): Promise<IRateLimiterAdapterState> {
-            throw new Error("Function not implemented.");
-        },
-        reset(_key: string): Promise<void> {
-            throw new Error("Function not implemented.");
-        },
-    };
-    const KEY = "a";
+describe(
+    "class: RateLimiterFactory",
+    { tags: ["Memory", "Derivables", "Implementations", "RateLimiter"] },
+    () => {
+        const adapter: IRateLimiterAdapter = {
+            getState(_key: string): Promise<IRateLimiterAdapterState | null> {
+                throw new Error("Function not implemented.");
+            },
+            updateState(
+                _key: string,
+                _limit: number,
+            ): Promise<IRateLimiterAdapterState> {
+                throw new Error("Function not implemented.");
+            },
+            reset(_key: string): Promise<void> {
+                throw new Error("Function not implemented.");
+            },
+        };
+        const KEY = "a";
 
-    class UnexpectedErrorA extends Error {}
+        class UnexpectedErrorA extends Error {}
 
-    let rateLimiterFactory: RateLimiterFactory;
-    beforeEach(() => {
-        vi.resetAllMocks();
-        vi.clearAllMocks();
-        rateLimiterFactory = new RateLimiterFactory({
-            adapter,
+        let rateLimiterFactory: RateLimiterFactory;
+        beforeEach(() => {
+            vi.resetAllMocks();
+            vi.clearAllMocks();
+            rateLimiterFactory = new RateLimiterFactory({
+                adapter,
+            });
+            rateLimiterFactory.init();
         });
-        rateLimiterFactory.init();
-    });
 
-    describe("API tests:", () => {
-        describe("method: runOrFail", () => {
-            describe("onlyError = true", () => {
-                test("Should call IRateLimiterAdapter.updateState when the function throws an error", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: true,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
-                    };
-                    const updateStateSpy = vi
-                        .spyOn(adapter, "updateState")
-                        .mockImplementation(() => Promise.resolve(state));
-                    vi.spyOn(adapter, "getState").mockImplementation(() =>
-                        Promise.resolve(state),
-                    );
+        describe("API tests:", () => {
+            describe("method: runOrFail", () => {
+                describe("onlyError = true", () => {
+                    test("Should call IRateLimiterAdapter.updateState when the function throws an error", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: true,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
+                        };
+                        const updateStateSpy = vi
+                            .spyOn(adapter, "updateState")
+                            .mockImplementation(() => Promise.resolve(state));
+                        vi.spyOn(adapter, "getState").mockImplementation(() =>
+                            Promise.resolve(state),
+                        );
 
-                    await expect(
-                        rateLimiterFactory
+                        await expect(
+                            rateLimiterFactory
+                                .create(KEY, {
+                                    limit: 5,
+                                    onlyError: true,
+                                })
+                                .runOrFail(() => {
+                                    throw new Error("Unexpected error");
+                                }),
+                        ).rejects.toThrow("Unexpected error");
+
+                        expect(updateStateSpy).toHaveBeenCalledOnce();
+                    });
+                    test("Should not call IRateLimiterAdapter.updateState when the function does not throw an error", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: true,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
+                        };
+                        const updateStateSpy = vi
+                            .spyOn(adapter, "updateState")
+                            .mockImplementation(() => Promise.resolve(state));
+                        vi.spyOn(adapter, "getState").mockImplementation(() =>
+                            Promise.resolve(state),
+                        );
+
+                        await rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: true,
                             })
-                            .runOrFail(() => {
-                                throw new Error("Unexpected error");
-                            }),
-                    ).rejects.toThrow("Unexpected error");
+                            .runOrFail(() => {});
 
-                    expect(updateStateSpy).toHaveBeenCalledOnce();
-                });
-                test("Should not call IRateLimiterAdapter.updateState when the function does not throw an error", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: true,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
-                    };
-                    const updateStateSpy = vi
-                        .spyOn(adapter, "updateState")
-                        .mockImplementation(() => Promise.resolve(state));
-                    vi.spyOn(adapter, "getState").mockImplementation(() =>
-                        Promise.resolve(state),
-                    );
+                        expect(updateStateSpy).not.toHaveBeenCalled();
+                    });
+                    test("Should call IRateLimiterAdapter.getState when the function throws an error", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: true,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
+                        };
+                        vi.spyOn(adapter, "updateState").mockImplementation(
+                            () => Promise.resolve(state),
+                        );
+                        const getStateSpy = vi
+                            .spyOn(adapter, "getState")
+                            .mockImplementation(() => Promise.resolve(state));
 
-                    await rateLimiterFactory
-                        .create(KEY, {
-                            limit: 5,
-                            onlyError: true,
-                        })
-                        .runOrFail(() => {});
+                        await expect(
+                            rateLimiterFactory
+                                .create(KEY, {
+                                    limit: 5,
+                                    onlyError: true,
+                                })
+                                .runOrFail(() => {
+                                    throw new Error("Unexpected error");
+                                }),
+                        ).rejects.toThrow("Unexpected error");
 
-                    expect(updateStateSpy).not.toHaveBeenCalled();
-                });
-                test("Should call IRateLimiterAdapter.getState when the function throws an error", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: true,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
-                    };
-                    vi.spyOn(adapter, "updateState").mockImplementation(() =>
-                        Promise.resolve(state),
-                    );
-                    const getStateSpy = vi
-                        .spyOn(adapter, "getState")
-                        .mockImplementation(() => Promise.resolve(state));
+                        expect(getStateSpy).toHaveBeenCalledOnce();
+                    });
+                    test("Should call IRateLimiterAdapter.getState when the function does not throw an error", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: true,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
+                        };
+                        vi.spyOn(adapter, "updateState").mockImplementation(
+                            () => Promise.resolve(state),
+                        );
+                        const getStateSpy = vi
+                            .spyOn(adapter, "getState")
+                            .mockImplementation(() => Promise.resolve(state));
 
-                    await expect(
-                        rateLimiterFactory
+                        await rateLimiterFactory
                             .create(KEY, {
                                 limit: 5,
                                 onlyError: true,
                             })
-                            .runOrFail(() => {
-                                throw new Error("Unexpected error");
-                            }),
-                    ).rejects.toThrow("Unexpected error");
+                            .runOrFail(() => {});
 
-                    expect(getStateSpy).toHaveBeenCalledOnce();
-                });
-                test("Should call IRateLimiterAdapter.getState when the function does not throw an error", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: true,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
-                    };
-                    vi.spyOn(adapter, "updateState").mockImplementation(() =>
-                        Promise.resolve(state),
-                    );
-                    const getStateSpy = vi
-                        .spyOn(adapter, "getState")
-                        .mockImplementation(() => Promise.resolve(state));
+                        expect(getStateSpy).toHaveBeenCalledOnce();
+                    });
+                    test("Should throw BlockedRateLimiterError when in limit is reached", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: false,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMinutes(5).toEndDate(),
+                        };
+                        vi.spyOn(adapter, "updateState").mockImplementation(
+                            () => Promise.resolve(state),
+                        );
+                        vi.spyOn(adapter, "getState").mockImplementation(() =>
+                            Promise.resolve(state),
+                        );
 
-                    await rateLimiterFactory
-                        .create(KEY, {
+                        const rateLimiter = rateLimiterFactory.create(KEY, {
                             limit: 5,
                             onlyError: true,
-                        })
-                        .runOrFail(() => {});
+                        });
+                        const promise = rateLimiter.runOrFail(() => {
+                            return Promise.reject(
+                                new UnexpectedErrorA("UNEXPECTED ERROR"),
+                            );
+                        });
+                        await expect(promise).rejects.toThrow(
+                            BlockedRateLimiterError,
+                        );
+                    });
+                });
+                describe("onlyError = false", () => {
+                    test("Should call IRateLimiterAdapter.updateState when the function throws an error", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: true,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
+                        };
+                        const updateStateSpy = vi
+                            .spyOn(adapter, "updateState")
+                            .mockImplementation(() => Promise.resolve(state));
+                        vi.spyOn(adapter, "getState").mockImplementation(() =>
+                            Promise.resolve(state),
+                        );
+
+                        await expect(
+                            rateLimiterFactory
+                                .create(KEY, {
+                                    limit: 5,
+                                    onlyError: false,
+                                })
+                                .runOrFail(() => {
+                                    throw new Error("Unexpected error");
+                                }),
+                        ).rejects.toThrow("Unexpected error");
+
+                        expect(updateStateSpy).toHaveBeenCalledOnce();
+                    });
+                    test("Should call IRateLimiterAdapter.updateState when the function does not throw an error", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: true,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
+                        };
+                        const updateStateSpy = vi
+                            .spyOn(adapter, "updateState")
+                            .mockImplementation(() => Promise.resolve(state));
+                        vi.spyOn(adapter, "getState").mockImplementation(() =>
+                            Promise.resolve(state),
+                        );
+
+                        await rateLimiterFactory
+                            .create(KEY, {
+                                limit: 5,
+                                onlyError: false,
+                            })
+                            .runOrFail(() => {});
+
+                        expect(updateStateSpy).toHaveBeenCalledOnce();
+                    });
+                    test("Should not call IRateLimiterAdapter.getState when the function throws an error", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: true,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
+                        };
+                        vi.spyOn(adapter, "updateState").mockImplementation(
+                            () => Promise.resolve(state),
+                        );
+                        const getStateSpy = vi
+                            .spyOn(adapter, "getState")
+                            .mockImplementation(() => Promise.resolve(state));
+
+                        await expect(
+                            rateLimiterFactory
+                                .create(KEY, {
+                                    limit: 5,
+                                    onlyError: false,
+                                })
+                                .runOrFail(() => {
+                                    throw new Error("Unexpected error");
+                                }),
+                        ).rejects.toThrow("Unexpected error");
+
+                        expect(getStateSpy).not.toHaveBeenCalled();
+                    });
+                    test("Should not call IRateLimiterAdapter.getState when the function does not throw an error", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: true,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
+                        };
+                        vi.spyOn(adapter, "updateState").mockImplementation(
+                            () => Promise.resolve(state),
+                        );
+                        const getStateSpy = vi
+                            .spyOn(adapter, "getState")
+                            .mockImplementation(() => Promise.resolve(state));
+
+                        await rateLimiterFactory
+                            .create(KEY, {
+                                limit: 5,
+                                onlyError: false,
+                            })
+                            .runOrFail(() => {});
+
+                        expect(getStateSpy).not.toHaveBeenCalled();
+                    });
+                    test("Should throw BlockedRateLimiterError when in limit is reached", async () => {
+                        const state: IRateLimiterAdapterState = {
+                            success: false,
+                            attempt: 1,
+                            resetTime: TimeSpan.fromMinutes(5).toEndDate(),
+                        };
+                        vi.spyOn(adapter, "updateState").mockImplementation(
+                            () => Promise.resolve(state),
+                        );
+
+                        const rateLimiter = rateLimiterFactory.create(KEY, {
+                            limit: 5,
+                            onlyError: false,
+                        });
+                        const promise = rateLimiter.runOrFail(() => {
+                            return Promise.reject(
+                                new UnexpectedErrorA("UNEXPECTED ERROR"),
+                            );
+                        });
+                        await expect(promise).rejects.toThrow(
+                            BlockedRateLimiterError,
+                        );
+                    });
+                });
+            });
+            describe("method: reset", () => {
+                test("Should call IRateLimiterAdapter.reset", async () => {
+                    const resetSpy = vi
+                        .spyOn(adapter, "reset")
+                        .mockImplementation(() => Promise.resolve());
+
+                    const rateLimiter = rateLimiterFactory.create(KEY, {
+                        limit: 10,
+                    });
+
+                    await rateLimiter.reset();
+
+                    expect(resetSpy).toHaveBeenCalledOnce();
+                });
+            });
+            describe("method: getState", () => {
+                test("Should call IRateLimiterAdapter.getState", async () => {
+                    const getStateSpy = vi
+                        .spyOn(adapter, "getState")
+                        .mockImplementation(() => Promise.resolve(null));
+
+                    const rateLimiter = rateLimiterFactory.create(KEY, {
+                        limit: 10,
+                    });
+
+                    await rateLimiter.getState();
 
                     expect(getStateSpy).toHaveBeenCalledOnce();
                 });
-                test("Should throw BlockedRateLimiterError when in limit is reached", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: false,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMinutes(5).toEndDate(),
-                    };
-                    vi.spyOn(adapter, "updateState").mockImplementation(() =>
-                        Promise.resolve(state),
-                    );
+                test("Should return RateLimiterExpiredState when IRateLimiterAdapter.getState returns null", async () => {
                     vi.spyOn(adapter, "getState").mockImplementation(() =>
-                        Promise.resolve(state),
+                        Promise.resolve(null),
                     );
 
                     const rateLimiter = rateLimiterFactory.create(KEY, {
-                        limit: 5,
-                        onlyError: true,
+                        limit: 10,
                     });
-                    const promise = rateLimiter.runOrFail(() => {
-                        return Promise.reject(
-                            new UnexpectedErrorA("UNEXPECTED ERROR"),
-                        );
-                    });
-                    await expect(promise).rejects.toThrow(
-                        BlockedRateLimiterError,
-                    );
+
+                    const state = await rateLimiter.getState();
+
+                    expect(state).toEqual({
+                        type: RATE_LIMITER_STATE.EXPIRED,
+                    } satisfies RateLimiterExpiredState);
                 });
-            });
-            describe("onlyError = false", () => {
-                test("Should call IRateLimiterAdapter.updateState when the function throws an error", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: true,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
-                    };
-                    const updateStateSpy = vi
-                        .spyOn(adapter, "updateState")
-                        .mockImplementation(() => Promise.resolve(state));
+                test("Should return RateLimiterAllowedState when IRateLimiterAdapter.getState returns success state", async () => {
+                    const limit = 5;
+                    const resetTime = TimeSpan.fromMilliseconds(1);
+                    const attempt = 1;
                     vi.spyOn(adapter, "getState").mockImplementation(() =>
-                        Promise.resolve(state),
-                    );
-
-                    await expect(
-                        rateLimiterFactory
-                            .create(KEY, {
-                                limit: 5,
-                                onlyError: false,
-                            })
-                            .runOrFail(() => {
-                                throw new Error("Unexpected error");
-                            }),
-                    ).rejects.toThrow("Unexpected error");
-
-                    expect(updateStateSpy).toHaveBeenCalledOnce();
-                });
-                test("Should call IRateLimiterAdapter.updateState when the function does not throw an error", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: true,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
-                    };
-                    const updateStateSpy = vi
-                        .spyOn(adapter, "updateState")
-                        .mockImplementation(() => Promise.resolve(state));
-                    vi.spyOn(adapter, "getState").mockImplementation(() =>
-                        Promise.resolve(state),
-                    );
-
-                    await rateLimiterFactory
-                        .create(KEY, {
-                            limit: 5,
-                            onlyError: false,
-                        })
-                        .runOrFail(() => {});
-
-                    expect(updateStateSpy).toHaveBeenCalledOnce();
-                });
-                test("Should not call IRateLimiterAdapter.getState when the function throws an error", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: true,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
-                    };
-                    vi.spyOn(adapter, "updateState").mockImplementation(() =>
-                        Promise.resolve(state),
-                    );
-                    const getStateSpy = vi
-                        .spyOn(adapter, "getState")
-                        .mockImplementation(() => Promise.resolve(state));
-
-                    await expect(
-                        rateLimiterFactory
-                            .create(KEY, {
-                                limit: 5,
-                                onlyError: false,
-                            })
-                            .runOrFail(() => {
-                                throw new Error("Unexpected error");
-                            }),
-                    ).rejects.toThrow("Unexpected error");
-
-                    expect(getStateSpy).not.toHaveBeenCalled();
-                });
-                test("Should not call IRateLimiterAdapter.getState when the function does not throw an error", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: true,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMilliseconds(1).toEndDate(),
-                    };
-                    vi.spyOn(adapter, "updateState").mockImplementation(() =>
-                        Promise.resolve(state),
-                    );
-                    const getStateSpy = vi
-                        .spyOn(adapter, "getState")
-                        .mockImplementation(() => Promise.resolve(state));
-
-                    await rateLimiterFactory
-                        .create(KEY, {
-                            limit: 5,
-                            onlyError: false,
-                        })
-                        .runOrFail(() => {});
-
-                    expect(getStateSpy).not.toHaveBeenCalled();
-                });
-                test("Should throw BlockedRateLimiterError when in limit is reached", async () => {
-                    const state: IRateLimiterAdapterState = {
-                        success: false,
-                        attempt: 1,
-                        resetTime: TimeSpan.fromMinutes(5).toEndDate(),
-                    };
-                    vi.spyOn(adapter, "updateState").mockImplementation(() =>
-                        Promise.resolve(state),
+                        Promise.resolve({
+                            success: true,
+                            attempt,
+                            resetTime: resetTime.toEndDate(),
+                        } satisfies IRateLimiterAdapterState),
                     );
 
                     const rateLimiter = rateLimiterFactory.create(KEY, {
-                        limit: 5,
-                        onlyError: false,
+                        limit,
                     });
-                    const promise = rateLimiter.runOrFail(() => {
+
+                    const state = await rateLimiter.getState();
+
+                    expect(state).toEqual({
+                        type: RATE_LIMITER_STATE.ALLOWED,
+                        usedAttempts: attempt,
+                        remainingAttempts: limit - attempt,
+                        limit,
+                        resetAfter: resetTime,
+                    } satisfies RateLimiterAllowedState);
+                });
+                test("Should return RateLimiterBlockedState when IRateLimiterAdapter.getState returns failure state", async () => {
+                    const limit = 5;
+                    const resetTime = TimeSpan.fromMilliseconds(1);
+                    const attempt = 6;
+                    vi.spyOn(adapter, "getState").mockImplementation(() =>
+                        Promise.resolve({
+                            success: false,
+                            attempt,
+                            resetTime: resetTime.toEndDate(),
+                        } satisfies IRateLimiterAdapterState),
+                    );
+
+                    const rateLimiter = rateLimiterFactory.create(KEY, {
+                        limit,
+                    });
+
+                    const state = await rateLimiter.getState();
+
+                    expect(state).toEqual({
+                        type: RATE_LIMITER_STATE.BLOCKED,
+                        limit,
+                        retryAfter: resetTime,
+                        totalAttempts: attempt,
+                        exceedAttempts: attempt - limit,
+                    } satisfies RateLimiterBlockedState);
+                });
+            });
+        });
+        describe("Serde tests:", () => {
+            test("Should differentiate between different adapters", async () => {
+                class WrapperRateLimiterAdapter implements IRateLimiterAdapter {
+                    constructor(
+                        private readonly adapter_: IRateLimiterAdapter,
+                    ) {}
+
+                    getState(
+                        key: string,
+                    ): Promise<IRateLimiterAdapterState | null> {
+                        return this.adapter_.getState(key);
+                    }
+
+                    updateState(
+                        key: string,
+                        limit: number,
+                    ): Promise<IRateLimiterAdapterState> {
+                        return this.adapter_.updateState(key, limit);
+                    }
+
+                    reset(key: string): Promise<void> {
+                        return this.adapter_.reset(key);
+                    }
+                }
+
+                const serde = new SuperJsonSerde();
+                const key = "a";
+                const rateLimiterPolicy = new FixedWindowLimiter({
+                    window: TimeSpan.fromMinutes(1),
+                });
+
+                const rateLimiterFactory1 = new RateLimiterFactory({
+                    adapter: new WrapperRateLimiterAdapter(
+                        new DatabaseRateLimiterAdapter({
+                            adapter: new MemoryRateLimiterStorageAdapter(),
+                            rateLimiterPolicy,
+                        }),
+                    ),
+                    serde,
+                });
+                rateLimiterFactory1.init();
+                const rateLimiter1 = rateLimiterFactory1.create(key, {
+                    limit: 1,
+                });
+
+                try {
+                    await rateLimiter1.runOrFail(() => {
                         return Promise.reject(
-                            new UnexpectedErrorA("UNEXPECTED ERROR"),
+                            new UnexpectedErrorA("Unexpected error"),
                         );
                     });
-                    await expect(promise).rejects.toThrow(
-                        BlockedRateLimiterError,
-                    );
-                });
-            });
-        });
-        describe("method: reset", () => {
-            test("Should call IRateLimiterAdapter.reset", async () => {
-                const resetSpy = vi
-                    .spyOn(adapter, "reset")
-                    .mockImplementation(() => Promise.resolve());
-
-                const rateLimiter = rateLimiterFactory.create(KEY, {
-                    limit: 10,
-                });
-
-                await rateLimiter.reset();
-
-                expect(resetSpy).toHaveBeenCalledOnce();
-            });
-        });
-        describe("method: getState", () => {
-            test("Should call IRateLimiterAdapter.getState", async () => {
-                const getStateSpy = vi
-                    .spyOn(adapter, "getState")
-                    .mockImplementation(() => Promise.resolve(null));
-
-                const rateLimiter = rateLimiterFactory.create(KEY, {
-                    limit: 10,
-                });
-
-                await rateLimiter.getState();
-
-                expect(getStateSpy).toHaveBeenCalledOnce();
-            });
-            test("Should return RateLimiterExpiredState when IRateLimiterAdapter.getState returns null", async () => {
-                vi.spyOn(adapter, "getState").mockImplementation(() =>
-                    Promise.resolve(null),
-                );
-
-                const rateLimiter = rateLimiterFactory.create(KEY, {
-                    limit: 10,
-                });
-
-                const state = await rateLimiter.getState();
-
-                expect(state).toEqual({
-                    type: RATE_LIMITER_STATE.EXPIRED,
-                } satisfies RateLimiterExpiredState);
-            });
-            test("Should return RateLimiterAllowedState when IRateLimiterAdapter.getState returns success state", async () => {
-                const limit = 5;
-                const resetTime = TimeSpan.fromMilliseconds(1);
-                const attempt = 1;
-                vi.spyOn(adapter, "getState").mockImplementation(() =>
-                    Promise.resolve({
-                        success: true,
-                        attempt,
-                        resetTime: resetTime.toEndDate(),
-                    } satisfies IRateLimiterAdapterState),
-                );
-
-                const rateLimiter = rateLimiterFactory.create(KEY, {
-                    limit,
-                });
-
-                const state = await rateLimiter.getState();
-
-                expect(state).toEqual({
-                    type: RATE_LIMITER_STATE.ALLOWED,
-                    usedAttempts: attempt,
-                    remainingAttempts: limit - attempt,
-                    limit,
-                    resetAfter: resetTime,
-                } satisfies RateLimiterAllowedState);
-            });
-            test("Should return RateLimiterBlockedState when IRateLimiterAdapter.getState returns failure state", async () => {
-                const limit = 5;
-                const resetTime = TimeSpan.fromMilliseconds(1);
-                const attempt = 6;
-                vi.spyOn(adapter, "getState").mockImplementation(() =>
-                    Promise.resolve({
-                        success: false,
-                        attempt,
-                        resetTime: resetTime.toEndDate(),
-                    } satisfies IRateLimiterAdapterState),
-                );
-
-                const rateLimiter = rateLimiterFactory.create(KEY, {
-                    limit,
-                });
-
-                const state = await rateLimiter.getState();
-
-                expect(state).toEqual({
-                    type: RATE_LIMITER_STATE.BLOCKED,
-                    limit,
-                    retryAfter: resetTime,
-                    totalAttempts: attempt,
-                    exceedAttempts: attempt - limit,
-                } satisfies RateLimiterBlockedState);
-            });
-        });
-    });
-    describe("Serde tests:", () => {
-        test("Should differentiate between different adapters", async () => {
-            class WrapperRateLimiterAdapter implements IRateLimiterAdapter {
-                constructor(private readonly adapter_: IRateLimiterAdapter) {}
-
-                getState(
-                    key: string,
-                ): Promise<IRateLimiterAdapterState | null> {
-                    return this.adapter_.getState(key);
+                } catch (error: unknown) {
+                    if (!(error instanceof UnexpectedErrorA)) {
+                        throw error;
+                    }
                 }
 
-                updateState(
-                    key: string,
-                    limit: number,
-                ): Promise<IRateLimiterAdapterState> {
-                    return this.adapter_.updateState(key, limit);
-                }
-
-                reset(key: string): Promise<void> {
-                    return this.adapter_.reset(key);
-                }
-            }
-
-            const serde = new SuperJsonSerde();
-            const key = "a";
-            const rateLimiterPolicy = new FixedWindowLimiter({
-                window: TimeSpan.fromMinutes(1),
-            });
-
-            const rateLimiterFactory1 = new RateLimiterFactory({
-                adapter: new WrapperRateLimiterAdapter(
-                    new DatabaseRateLimiterAdapter({
+                const rateLimiterFactory2 = new RateLimiterFactory({
+                    adapter: new DatabaseRateLimiterAdapter({
                         adapter: new MemoryRateLimiterStorageAdapter(),
                         rateLimiterPolicy,
                     }),
-                ),
-                serde,
-            });
-            rateLimiterFactory1.init();
-            const rateLimiter1 = rateLimiterFactory1.create(key, {
-                limit: 1,
-            });
-
-            try {
-                await rateLimiter1.runOrFail(() => {
-                    return Promise.reject(
-                        new UnexpectedErrorA("Unexpected error"),
-                    );
+                    serde,
                 });
-            } catch (error: unknown) {
-                if (!(error instanceof UnexpectedErrorA)) {
-                    throw error;
-                }
-            }
-
-            const rateLimiterFactory2 = new RateLimiterFactory({
-                adapter: new DatabaseRateLimiterAdapter({
-                    adapter: new MemoryRateLimiterStorageAdapter(),
-                    rateLimiterPolicy,
-                }),
-                serde,
-            });
-            rateLimiterFactory2.init();
-            const rateLimiter2 = rateLimiterFactory2.create(key, {
-                limit: 1,
-            });
-
-            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
-                serde.serialize(rateLimiter2),
-            );
-            const handler = vi.fn();
-            await deserializedRateLimiter2.runOrFail(handler);
-            expect(handler).toHaveBeenCalledOnce();
-        });
-        test("Should differentiate between different serializationIds", async () => {
-            const serde = new SuperJsonSerde();
-            const key = "a";
-            const rateLimiterPolicy = new FixedWindowLimiter({
-                window: TimeSpan.fromMinutes(1),
-            });
-
-            const rateLimiterFactory1 = new RateLimiterFactory({
-                adapter: new DatabaseRateLimiterAdapter({
-                    adapter: new MemoryRateLimiterStorageAdapter(),
-                    rateLimiterPolicy,
-                }),
-                serializationId: "adapter1",
-                serde,
-            });
-            rateLimiterFactory1.init();
-            const rateLimiter1 = rateLimiterFactory1.create(key, {
-                limit: 1,
-            });
-
-            try {
-                await rateLimiter1.runOrFail(() => {
-                    return Promise.reject(
-                        new UnexpectedErrorA("Unexpected error"),
-                    );
+                rateLimiterFactory2.init();
+                const rateLimiter2 = rateLimiterFactory2.create(key, {
+                    limit: 1,
                 });
-            } catch (error: unknown) {
-                if (!(error instanceof UnexpectedErrorA)) {
-                    throw error;
+
+                const deserializedRateLimiter2 =
+                    serde.deserialize<IRateLimiter>(
+                        serde.serialize(rateLimiter2),
+                    );
+                const handler = vi.fn();
+                await deserializedRateLimiter2.runOrFail(handler);
+                expect(handler).toHaveBeenCalledOnce();
+            });
+            test("Should differentiate between different serializationIds", async () => {
+                const serde = new SuperJsonSerde();
+                const key = "a";
+                const rateLimiterPolicy = new FixedWindowLimiter({
+                    window: TimeSpan.fromMinutes(1),
+                });
+
+                const rateLimiterFactory1 = new RateLimiterFactory({
+                    adapter: new DatabaseRateLimiterAdapter({
+                        adapter: new MemoryRateLimiterStorageAdapter(),
+                        rateLimiterPolicy,
+                    }),
+                    serializationId: "adapter1",
+                    serde,
+                });
+                rateLimiterFactory1.init();
+                const rateLimiter1 = rateLimiterFactory1.create(key, {
+                    limit: 1,
+                });
+
+                try {
+                    await rateLimiter1.runOrFail(() => {
+                        return Promise.reject(
+                            new UnexpectedErrorA("Unexpected error"),
+                        );
+                    });
+                } catch (error: unknown) {
+                    if (!(error instanceof UnexpectedErrorA)) {
+                        throw error;
+                    }
                 }
+
+                const rateLimiterFactory2 = new RateLimiterFactory({
+                    adapter: new DatabaseRateLimiterAdapter({
+                        adapter: new MemoryRateLimiterStorageAdapter(),
+                        rateLimiterPolicy,
+                    }),
+                    serializationId: "adapter2",
+                    serde,
+                });
+                rateLimiterFactory2.init();
+                const rateLimiter2 = rateLimiterFactory2.create(key, {
+                    limit: 1,
+                });
+
+                const deserializedRateLimiter2 =
+                    serde.deserialize<IRateLimiter>(
+                        serde.serialize(rateLimiter2),
+                    );
+                const handler = vi.fn();
+                await deserializedRateLimiter2.runOrFail(handler);
+                expect(handler).toHaveBeenCalledOnce();
+            });
+        });
+        describe("Unexpected adapter error handling:", () => {
+            function createFailingAdapter(
+                unexpectedError: Error,
+            ): IRateLimiterAdapter {
+                return {
+                    getState: vi.fn().mockRejectedValue(unexpectedError),
+                    updateState: vi.fn().mockRejectedValue(unexpectedError),
+                    reset: vi.fn().mockRejectedValue(unexpectedError),
+                };
             }
+            test("Should reject with UnableToGetStateRateLimiterError when adapter getState fails", async () => {
+                const unexpectedError = new Error("Unexpected adapter error");
+                const failingRateLimiterFactory = new RateLimiterFactory({
+                    adapter: createFailingAdapter(unexpectedError),
+                });
+                failingRateLimiterFactory.init();
 
-            const rateLimiterFactory2 = new RateLimiterFactory({
-                adapter: new DatabaseRateLimiterAdapter({
-                    adapter: new MemoryRateLimiterStorageAdapter(),
-                    rateLimiterPolicy,
-                }),
-                serializationId: "adapter2",
-                serde,
-            });
-            rateLimiterFactory2.init();
-            const rateLimiter2 = rateLimiterFactory2.create(key, {
-                limit: 1,
-            });
+                const promise = failingRateLimiterFactory
+                    .create("a", { limit: 1 })
+                    .getState();
 
-            const deserializedRateLimiter2 = serde.deserialize<IRateLimiter>(
-                serde.serialize(rateLimiter2),
-            );
-            const handler = vi.fn();
-            await deserializedRateLimiter2.runOrFail(handler);
-            expect(handler).toHaveBeenCalledOnce();
+                await expect(promise).rejects.toThrow(
+                    UnableToGetStateRateLimiterError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
+            test("Should reject with UnableToUpdateStateRateLimiterError when adapter updateState fails", async () => {
+                const unexpectedError = new Error("Unexpected adapter error");
+                const failingRateLimiterFactory = new RateLimiterFactory({
+                    adapter: createFailingAdapter(unexpectedError),
+                });
+                failingRateLimiterFactory.init();
+
+                const promise = failingRateLimiterFactory
+                    .create("a", { limit: 1 })
+                    .runOrFail(() => Promise.resolve());
+
+                await expect(promise).rejects.toThrow(
+                    UnableToUpdateStateRateLimiterError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
+            test("Should reject with UnableToResetRateLimiterError when adapter reset fails", async () => {
+                const unexpectedError = new Error("Unexpected adapter error");
+                const failingRateLimiterFactory = new RateLimiterFactory({
+                    adapter: createFailingAdapter(unexpectedError),
+                });
+                failingRateLimiterFactory.init();
+
+                const promise = failingRateLimiterFactory
+                    .create("a", { limit: 1 })
+                    .reset();
+
+                await expect(promise).rejects.toThrow(
+                    UnableToResetRateLimiterError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-    });
-    describe("Unexpected adapter error handling:", () => {
-        function createFailingAdapter(
-            unexpectedError: Error,
-        ): IRateLimiterAdapter {
-            return {
-                getState: vi.fn().mockRejectedValue(unexpectedError),
-                updateState: vi.fn().mockRejectedValue(unexpectedError),
-                reset: vi.fn().mockRejectedValue(unexpectedError),
-            };
-        }
-        test("Should reject with UnableToGetStateRateLimiterError when adapter getState fails", async () => {
-            const unexpectedError = new Error("Unexpected adapter error");
-            const failingRateLimiterFactory = new RateLimiterFactory({
-                adapter: createFailingAdapter(unexpectedError),
-            });
-            failingRateLimiterFactory.init();
-
-            const promise = failingRateLimiterFactory
-                .create("a", { limit: 1 })
-                .getState();
-
-            await expect(promise).rejects.toThrow(
-                UnableToGetStateRateLimiterError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-        test("Should reject with UnableToUpdateStateRateLimiterError when adapter updateState fails", async () => {
-            const unexpectedError = new Error("Unexpected adapter error");
-            const failingRateLimiterFactory = new RateLimiterFactory({
-                adapter: createFailingAdapter(unexpectedError),
-            });
-            failingRateLimiterFactory.init();
-
-            const promise = failingRateLimiterFactory
-                .create("a", { limit: 1 })
-                .runOrFail(() => Promise.resolve());
-
-            await expect(promise).rejects.toThrow(
-                UnableToUpdateStateRateLimiterError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-        test("Should reject with UnableToResetRateLimiterError when adapter reset fails", async () => {
-            const unexpectedError = new Error("Unexpected adapter error");
-            const failingRateLimiterFactory = new RateLimiterFactory({
-                adapter: createFailingAdapter(unexpectedError),
-            });
-            failingRateLimiterFactory.init();
-
-            const promise = failingRateLimiterFactory
-                .create("a", { limit: 1 })
-                .reset();
-
-            await expect(promise).rejects.toThrow(
-                UnableToResetRateLimiterError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-    });
-});
+    },
+);

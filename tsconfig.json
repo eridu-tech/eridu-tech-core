@@ -3,6 +3,11 @@
     "compilerOptions": {
         "noEmit": true
     },
-    "include": ["src/**/*.ts", "vite.config.ts", "scripts/**/*.ts"],
+    "include": [
+        "src/**/*.ts",
+        "vite.config.ts",
+        "vitest.shims.ts",
+        "scripts/**/*.ts"
+    ],
     "exclude": ["node_modules/*"]
 }

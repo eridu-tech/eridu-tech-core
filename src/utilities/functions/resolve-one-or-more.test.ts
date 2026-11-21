@@ -5,7 +5,7 @@ import {
     resolveOneOrMoreStr,
 } from "@/utilities/functions/resolve-one-or-more.js";
 
-describe("file: resolve-one-or-more.ts", () => {
+describe("file: resolve-one-or-more.ts", { tags: ["Utilities"] }, () => {
     describe("function: resolveOneOrMore", () => {
         test("Should wrap a single value in an array", () => {
             expect(resolveOneOrMore(1)).toStrictEqual([1]);

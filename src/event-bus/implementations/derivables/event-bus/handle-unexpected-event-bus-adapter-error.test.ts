@@ -11,126 +11,134 @@ import { enhanceFactory } from "@/middleware/implementations/enhance-factory/_mo
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
 import { withPluginFactory } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
-describe("function: handleUnexpectedEventBusAdapterError", () => {
-    const adapter = new NoOpEventBusAdapter();
-    const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
-    const unexpectedError = new Error("Unexpected adapter error");
-    const eventName = "my-event";
-    const listener = () => {};
+describe(
+    "function: handleUnexpectedEventBusAdapterError",
+    { tags: ["Derivables", "Implementations", "EventBus"] },
+    () => {
+        const adapter = new NoOpEventBusAdapter();
+        const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
+        const unexpectedError = new Error("Unexpected adapter error");
+        const eventName = "my-event";
+        const listener = () => {};
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
-
-    describe("method: dispatch", () => {
-        test("Should return adapter result when adapter succeeds", async () => {
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedEventBusAdapterError(),
-            );
-
-            await expect(
-                enhanced.dispatch(eventName, { value: 1 }),
-            ).resolves.toBeUndefined();
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
         });
-        test("Should throw UnableToDispatchEventBusError when adapter rejects", async () => {
-            vi.spyOn(adapter, "dispatch").mockRejectedValue(unexpectedError);
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedEventBusAdapterError(),
-            );
 
-            const promise = enhanced.dispatch(eventName, { value: 1 });
+        describe("method: dispatch", () => {
+            test("Should return adapter result when adapter succeeds", async () => {
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedEventBusAdapterError(),
+                );
 
-            await expect(promise).rejects.toThrow(
-                UnableToDispatchEventBusError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-        test("Should throw UnableToDispatchEventBusError when adapter throws synchronously", async () => {
-            vi.spyOn(adapter, "dispatch").mockImplementation(() => {
-                throw unexpectedError;
+                await expect(
+                    enhanced.dispatch(eventName, { value: 1 }),
+                ).resolves.toBeUndefined();
             });
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedEventBusAdapterError(),
-            );
+            test("Should throw UnableToDispatchEventBusError when adapter rejects", async () => {
+                vi.spyOn(adapter, "dispatch").mockRejectedValue(
+                    unexpectedError,
+                );
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedEventBusAdapterError(),
+                );
 
-            const promise = enhanced.dispatch(eventName, { value: 1 });
+                const promise = enhanced.dispatch(eventName, { value: 1 });
 
-            await expect(promise).rejects.toThrow(
-                UnableToDispatchEventBusError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
+                await expect(promise).rejects.toThrow(
+                    UnableToDispatchEventBusError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
+            test("Should throw UnableToDispatchEventBusError when adapter throws synchronously", async () => {
+                vi.spyOn(adapter, "dispatch").mockImplementation(() => {
+                    throw unexpectedError;
+                });
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedEventBusAdapterError(),
+                );
+
+                const promise = enhanced.dispatch(eventName, { value: 1 });
+
+                await expect(promise).rejects.toThrow(
+                    UnableToDispatchEventBusError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-    });
 
-    describe("method: addListener", () => {
-        test("Should return adapter result when adapter succeeds", async () => {
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedEventBusAdapterError(),
-            );
+        describe("method: addListener", () => {
+            test("Should return adapter result when adapter succeeds", async () => {
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedEventBusAdapterError(),
+                );
 
-            await expect(
-                enhanced.addListener(eventName, listener),
-            ).resolves.toBeUndefined();
+                await expect(
+                    enhanced.addListener(eventName, listener),
+                ).resolves.toBeUndefined();
+            });
+            test("Should throw UnableToAddListenerEventBusError when adapter rejects", async () => {
+                vi.spyOn(adapter, "addListener").mockRejectedValue(
+                    unexpectedError,
+                );
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedEventBusAdapterError(),
+                );
+
+                const promise = enhanced.addListener(eventName, listener);
+
+                await expect(promise).rejects.toThrow(
+                    UnableToAddListenerEventBusError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-        test("Should throw UnableToAddListenerEventBusError when adapter rejects", async () => {
-            vi.spyOn(adapter, "addListener").mockRejectedValue(unexpectedError);
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedEventBusAdapterError(),
-            );
 
-            const promise = enhanced.addListener(eventName, listener);
+        describe("method: removeListener", () => {
+            test("Should return adapter result when adapter succeeds", async () => {
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedEventBusAdapterError(),
+                );
 
-            await expect(promise).rejects.toThrow(
-                UnableToAddListenerEventBusError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
+                await expect(
+                    enhanced.removeListener(eventName, listener),
+                ).resolves.toBeUndefined();
+            });
+            test("Should throw UnableToRemoveListenerEventBusError when adapter rejects", async () => {
+                vi.spyOn(adapter, "removeListener").mockRejectedValue(
+                    unexpectedError,
+                );
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedEventBusAdapterError(),
+                );
+
+                const promise = enhanced.removeListener(eventName, listener);
+
+                await expect(promise).rejects.toThrow(
+                    UnableToRemoveListenerEventBusError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-    });
-
-    describe("method: removeListener", () => {
-        test("Should return adapter result when adapter succeeds", async () => {
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedEventBusAdapterError(),
-            );
-
-            await expect(
-                enhanced.removeListener(eventName, listener),
-            ).resolves.toBeUndefined();
-        });
-        test("Should throw UnableToRemoveListenerEventBusError when adapter rejects", async () => {
-            vi.spyOn(adapter, "removeListener").mockRejectedValue(
-                unexpectedError,
-            );
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedEventBusAdapterError(),
-            );
-
-            const promise = enhanced.removeListener(eventName, listener);
-
-            await expect(promise).rejects.toThrow(
-                UnableToRemoveListenerEventBusError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-    });
-});
+    },
+);
