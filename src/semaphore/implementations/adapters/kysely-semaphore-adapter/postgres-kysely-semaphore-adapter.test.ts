@@ -26,8 +26,20 @@ import { TransactionContext } from "@/transaction-context/implementations/deriva
 import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 
-import type { KyselySemaphoreTables } from "@/semaphore/implementations/adapters/kysely-semaphore-adapter/_module-exports.js";
+import type {
+    KyselySemaphoreSlotEntry,
+    KyselySemaphoreTables,
+} from "@/semaphore/implementations/adapters/kysely-semaphore-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
+
+function toSlots(
+    slots: Array<KyselySemaphoreSlotEntry> | string,
+): Array<KyselySemaphoreSlotEntry> {
+    if (typeof slots === "string") {
+        return JSON.parse(slots) as Array<KyselySemaphoreSlotEntry>;
+    }
+    return slots;
+}
 
 const timeout = TimeSpan.fromMinutes(2);
 describe(
@@ -35,14 +47,14 @@ describe(
     { tags: ["Postgres", "Adapters", "Implementations", "Semaphore"] },
     () => {
         let container: StartedPostgreSqlContainer;
-        let database: Pool;
-        let trxCtx: ITransactionContext<Kysely<KyselySemaphoreTables>>;
+        let client: Pool;
+        let database: Kysely<KyselySemaphoreTables>;
         let adapter: KyselySemaphoreAdapter;
         let tableNames: Record<keyof KyselySemaphoreTables, string>;
 
         beforeAll(async () => {
             container = await new PostgreSqlContainer("postgres:17.5").start();
-            database = new Pool({
+            client = new Pool({
                 database: container.getDatabase(),
                 host: container.getHost(),
                 user: container.getUsername(),
@@ -52,7 +64,7 @@ describe(
             });
         }, timeout.toMilliseconds());
         afterAll(async () => {
-            await database.end();
+            await client.end();
             await container.stop();
         }, timeout.toMilliseconds());
         beforeEach(() => {
@@ -60,35 +72,17 @@ describe(
             vi.resetAllMocks();
             tableNames = {
                 semaphore: randomUUID(),
-                semaphoreSlot: randomUUID(),
             };
-            const kysely = new Kysely<KyselySemaphoreTables>({
+            database = new Kysely<KyselySemaphoreTables>({
                 dialect: new PostgresDialect({
-                    pool: database,
+                    pool: client,
                 }),
                 plugins: [new WithKyselyTableName(tableNames)],
             });
-            trxCtx = new TransactionContext({
-                executionContext: new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                ),
-                adapter: new KyselyTransactionAdapter({
-                    database: kysely,
-                }),
-            });
-            adapter = new KyselySemaphoreAdapter({
-                transactionContext: trxCtx,
-            });
+            adapter = new KyselySemaphoreAdapter({ database });
         });
         afterEach(async () => {
-            await trxCtx.client.schema
-                .dropTable("semaphoreSlot")
-                .ifExists()
-                .execute();
-            await trxCtx.client.schema
-                .dropTable("semaphore")
-                .ifExists()
-                .execute();
+            await database.schema.dropTable("semaphore").ifExists().execute();
         });
 
         semaphoreAdapterTestSuite({
@@ -105,84 +99,67 @@ describe(
             test("Should remove all expired keys", async () => {
                 await adapter.init();
 
-                const limit = 3;
-                const key1 = "1";
-                const key2 = "2";
-
-                await trxCtx.client
+                await database
                     .insertInto("semaphore")
-                    .values({ key: key1, limit })
+                    .values({
+                        key: "a",
+                        limit: 3,
+                        slots: JSON.stringify([
+                            { id: "1", expiration: Date.now() - 1000 },
+                        ] satisfies Array<KyselySemaphoreSlotEntry>),
+                    })
                     .execute();
-                await trxCtx.client
+                await database
                     .insertInto("semaphore")
-                    .values({ key: key2, limit })
-                    .execute();
-
-                await trxCtx.client
-                    .insertInto("semaphoreSlot")
                     .values({
-                        key: key1,
-                        id: "1",
-                        expiration: Date.now() - 1000,
+                        key: "b",
+                        limit: 3,
+                        slots: JSON.stringify([
+                            { id: "2", expiration: Date.now() - 1000 },
+                        ] satisfies Array<KyselySemaphoreSlotEntry>),
                     })
                     .execute();
-                await trxCtx.client
-                    .insertInto("semaphoreSlot")
+                await database
+                    .insertInto("semaphore")
                     .values({
-                        key: key1,
-                        id: "2",
-                        expiration: Date.now() - 1000,
-                    })
-                    .execute();
-                await trxCtx.client
-                    .insertInto("semaphoreSlot")
-                    .values({
-                        key: key1,
-                        id: "3",
-                        expiration: Date.now() - 1000,
-                    })
-                    .execute();
-
-                await trxCtx.client
-                    .insertInto("semaphoreSlot")
-                    .values({
-                        key: key2,
-                        id: "4",
-                        expiration: Date.now() - 1000,
-                    })
-                    .execute();
-                await trxCtx.client
-                    .insertInto("semaphoreSlot")
-                    .values({
-                        key: key2,
-                        id: "5",
-                        expiration: Date.now() - 1000,
-                    })
-                    .execute();
-                await trxCtx.client
-                    .insertInto("semaphoreSlot")
-                    .values({
-                        key: key2,
-                        id: "6",
-                        expiration: Date.now() - 1000,
+                        key: "c",
+                        limit: 3,
+                        slots: JSON.stringify([
+                            { id: "3", expiration: Date.now() + 50000 },
+                        ] satisfies Array<KyselySemaphoreSlotEntry>),
                     })
                     .execute();
 
                 await adapter.removeAllExpired();
 
                 expect(
-                    await trxCtx.client
+                    await database
                         .selectFrom("semaphore")
-                        .select("semaphore.key")
-                        .execute(),
-                ).toEqual([]);
+                        .where("semaphore.key", "=", "a")
+                        .selectAll()
+                        .executeTakeFirst(),
+                ).toBeUndefined();
+                expect(
+                    await database
+                        .selectFrom("semaphore")
+                        .where("semaphore.key", "=", "b")
+                        .selectAll()
+                        .executeTakeFirst(),
+                ).toBeUndefined();
+                expect(
+                    await database
+                        .selectFrom("semaphore")
+                        .where("semaphore.key", "=", "c")
+                        .selectAll()
+                        .executeTakeFirst(),
+                ).toBeDefined();
             });
         });
         describe("method: init", () => {
             test("Should create semaphore table", async () => {
                 await adapter.init();
 
-                const tables = await trxCtx.client.introspection.getTables();
+                const tables = await database.introspection.getTables();
 
                 expect(tables).toContainEqual(
                     expect.objectContaining<Partial<TableMetadata>>({
@@ -203,38 +180,10 @@ describe(
                                 isNullable: false,
                                 hasDefaultValue: false,
                             }),
-                        ] as Array<Partial<ColumnMetadata>>),
-                    }),
-                );
-            });
-            test("Should create semaphoreSlot table", async () => {
-                await adapter.init();
-
-                const tables = await trxCtx.client.introspection.getTables();
-
-                expect(tables).toContainEqual(
-                    expect.objectContaining<Partial<TableMetadata>>({
-                        name: tableNames.semaphoreSlot,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
-                        columns: expect.arrayContaining<
-                            Partial<ColumnMetadata>
-                        >([
                             expect.objectContaining<Partial<ColumnMetadata>>({
-                                name: "key",
-                                dataType: "varchar",
+                                name: "slots",
+                                dataType: "jsonb",
                                 isNullable: false,
-                                hasDefaultValue: false,
-                            }),
-                            expect.objectContaining<Partial<ColumnMetadata>>({
-                                name: "id",
-                                dataType: "varchar",
-                                isNullable: false,
-                                hasDefaultValue: false,
-                            }),
-                            expect.objectContaining<Partial<ColumnMetadata>>({
-                                name: "expiration",
-                                dataType: "int8",
-                                isNullable: true,
                                 hasDefaultValue: false,
                             }),
                         ] as Array<Partial<ColumnMetadata>>),
@@ -254,7 +203,7 @@ describe(
                 await adapter.init();
                 await adapter.deInit();
 
-                const tables = await trxCtx.client.introspection.getTables();
+                const tables = await database.introspection.getTables();
 
                 expect(tables).not.toContainEqual(
                     expect.objectContaining<Partial<TableMetadata>>({
@@ -262,47 +211,51 @@ describe(
                     }),
                 );
             });
-            test("Should remove semaphoreSlot table", async () => {
-                await adapter.init();
-                await adapter.deInit();
-
-                const tables = await trxCtx.client.introspection.getTables();
-
-                expect(tables).not.toContainEqual(
-                    expect.objectContaining<Partial<TableMetadata>>({
-                        name: tableNames.semaphoreSlot,
-                    }),
-                );
-            });
             test("Should not throw error when called multiple times", async () => {
                 await adapter.init();
                 await adapter.deInit();
+
                 const promise = adapter.deInit();
 
                 await expect(promise).resolves.toBeUndefined();
             });
             test("Should not throw error when called before init", async () => {
                 const promise = adapter.deInit();
-                await adapter.init();
 
                 await expect(promise).resolves.toBeUndefined();
             });
         });
         describe("Transaction tests:", () => {
+            let trxAdapter: KyselySemaphoreAdapter;
+            let trxCtx: ITransactionContext<Kysely<KyselySemaphoreTables>>;
+            beforeEach(async () => {
+                trxCtx = new TransactionContext({
+                    executionContext: new ExecutionContext(
+                        new AlsExecutionContextAdapter(),
+                    ),
+                    adapter: new KyselyTransactionAdapter({
+                        database,
+                    }),
+                });
+                trxAdapter = new KyselySemaphoreAdapter({
+                    database: trxCtx,
+                });
+                await trxAdapter.init();
+            });
             test("Should not persist changes when the transaction fails", async () => {
-                await adapter.init();
+                await trxAdapter.init();
 
                 try {
                     await trxCtx.run(async () => {
-                        await adapter.acquire({
+                        await trxAdapter.acquire({
                             key: "a",
                             slotId: "1",
                             limit: 4,
                             ttl: null,
                         });
-                        await adapter.acquire({
+                        await trxAdapter.acquire({
                             key: "b",
-                            slotId: "1",
+                            slotId: "2",
                             limit: 4,
                             ttl: null,
                         });
@@ -312,29 +265,24 @@ describe(
                     /* EMPTY */
                 }
 
-                const semaphoreRows = await trxCtx.client
+                const semaphoreRows = await database
                     .selectFrom("semaphore")
                     .select("semaphore.key")
                     .execute();
-                const slotRows = await trxCtx.client
-                    .selectFrom("semaphoreSlot")
-                    .select("semaphoreSlot.key")
-                    .execute();
 
                 expect(semaphoreRows.length).toBe(0);
-                expect(slotRows.length).toBe(0);
             });
             test("Should persist changes when the transaction succeeds", async () => {
-                await adapter.init();
+                await trxAdapter.init();
 
                 await trxCtx.run(async () => {
-                    await adapter.acquire({
+                    await trxAdapter.acquire({
                         key: "a",
                         slotId: "1",
                         limit: 4,
                         ttl: null,
                     });
-                    await adapter.acquire({
+                    await trxAdapter.acquire({
                         key: "b",
                         slotId: "2",
                         limit: 4,
@@ -342,17 +290,17 @@ describe(
                     });
                 });
 
-                const semaphoreRows = await trxCtx.client
+                const semaphoreRows = await database
                     .selectFrom("semaphore")
-                    .select("semaphore.key")
-                    .execute();
-                const slotRows = await trxCtx.client
-                    .selectFrom("semaphoreSlot")
-                    .select("semaphoreSlot.key")
+                    .select(["semaphore.key", "semaphore.slots"])
                     .execute();
 
                 expect(semaphoreRows.length).toBe(2);
-                expect(slotRows.length).toBe(2);
+                expect(
+                    semaphoreRows.flatMap((row) =>
+                        toSlots(row.slots).map((slot) => slot.id),
+                    ),
+                ).toEqual(["1", "2"]);
             });
         });
     },
