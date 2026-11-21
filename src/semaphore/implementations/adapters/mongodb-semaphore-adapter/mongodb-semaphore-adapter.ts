@@ -20,7 +20,7 @@ import type {
     SemaphoreAcquireSettings,
 } from "@/semaphore/contracts/_module-exports.js";
 import type {
-    ITransactionContext,
+    ITransactionConnection,
     TransactionAware,
 } from "@/transaction-context/contracts/_module-exports.js";
 import type {
@@ -89,7 +89,10 @@ export class MongodbSemaphoreAdapter
         slot: MongodbSemaphoreSlotEntryDocument,
     ) => slot.expiration === null || slot.expiration > new Date();
 
-    private readonly trxCtx: ITransactionContext<Db, ClientSession>;
+    private readonly trxCtx: Pick<
+        ITransactionConnection<Db, ClientSession>,
+        "client" | "transaction"
+    >;
     private readonly collection: Collection<MongodbSemaphoreEntryDocument>;
 
     constructor(settings: MongodbSemaphoreAdapterSettings) {

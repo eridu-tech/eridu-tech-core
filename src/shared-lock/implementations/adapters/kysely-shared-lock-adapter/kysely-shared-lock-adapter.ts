@@ -84,7 +84,7 @@ export type KyselySharedLockAdapterSettings = {
  * To utilize the `KyselySharedLockAdapter`, you must install the [`"kysely"`](https://www.npmjs.com/package/kysely) package and configure a `Kysely` class instance.
  *
  * Note in order to use `KyselySharedLockAdapter` correctly, ensure you use a single, consistent database across all server instances and use a database that has support for transactions.
- * The adapter have been tested with `sqlite`, `postgres` and `mysql` databases.
+ * The adapter have been tested with `sqlite` and `postgres` databases.
  *
  * IMPORT_PATH: `"eridu-tech/shared-lock/kysely-shared-lock-adapter"`
  * @group Adapters

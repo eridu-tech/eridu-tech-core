@@ -26,7 +26,7 @@ import type {
     SharedLockAcquireSettings,
 } from "@/shared-lock/contracts/_module-exports.js";
 import type {
-    ITransactionContext,
+    ITransactionConnection,
     TransactionAware,
 } from "@/transaction-context/contracts/_module-exports.js";
 import type {
@@ -114,7 +114,10 @@ export class MongodbSharedLockAdapter
         slot: MongodbReaderSemaphoreSlotEntryDocument,
     ) => slot.expiration === null || slot.expiration > new Date();
 
-    private readonly trxCtx: ITransactionContext<Db, ClientSession>;
+    private readonly trxCtx: Pick<
+        ITransactionConnection<Db, ClientSession>,
+        "client" | "transaction"
+    >;
     private readonly collection: Collection<MongodbSharedLockEntryDocument>;
 
     constructor(settings: MongodbSharedLockAdapterSettings) {
