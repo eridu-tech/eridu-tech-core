@@ -8,7 +8,7 @@ import { consecutiveBreakerTestSuite } from "@/circuit-breaker/implementations/t
 
 describe(
     "consecutive-breaker class: DatabaseCircuitBreakerAdapter",
-    { tags: ["Memory"] },
+    { tags: ["Memory", "Adapters", "Implementations", "CircuitBreaker"] },
     () => {
         consecutiveBreakerTestSuite({
             createAdapter: () => {

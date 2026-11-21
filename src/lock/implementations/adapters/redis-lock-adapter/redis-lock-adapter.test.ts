@@ -22,29 +22,33 @@ import type { StartedRedisContainer } from "@testcontainers/redis";
 import type { ILockAdapter } from "@/lock/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: RedisLockAdapter", { tags: ["Redis"] }, () => {
-    let client: Redis;
-    let startedContainer: StartedRedisContainer;
-    let adapter: ILockAdapter;
-    beforeAll(async () => {
-        startedContainer = await new RedisContainer("redis:7.4.2").start();
-        client = new Redis(startedContainer.getConnectionUrl());
-    }, timeout.toMilliseconds());
-    beforeEach(() => {
-        adapter = withPlugin(
-            new RedisLockAdapter(client),
-            withLockPrefix(randomUUID()),
-        );
-    });
-    afterAll(async () => {
-        await client.quit();
-        await startedContainer.stop();
-    }, timeout.toMilliseconds());
-    lockAdapterTestSuite({
-        createAdapter: () => adapter,
-        test,
-        beforeEach,
-        expect,
-        describe,
-    });
-});
+describe(
+    "class: RedisLockAdapter",
+    { tags: ["Redis", "Adapters", "Implementations", "Lock"] },
+    () => {
+        let client: Redis;
+        let startedContainer: StartedRedisContainer;
+        let adapter: ILockAdapter;
+        beforeAll(async () => {
+            startedContainer = await new RedisContainer("redis:7.4.2").start();
+            client = new Redis(startedContainer.getConnectionUrl());
+        }, timeout.toMilliseconds());
+        beforeEach(() => {
+            adapter = withPlugin(
+                new RedisLockAdapter(client),
+                withLockPrefix(randomUUID()),
+            );
+        });
+        afterAll(async () => {
+            await client.quit();
+            await startedContainer.stop();
+        }, timeout.toMilliseconds());
+        lockAdapterTestSuite({
+            createAdapter: () => adapter,
+            test,
+            beforeEach,
+            expect,
+            describe,
+        });
+    },
+);

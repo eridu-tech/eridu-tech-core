@@ -8,110 +8,114 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 
 import type { ICircuitBreakerAdapter } from "@/circuit-breaker/contracts/_module-exports.js";
 
-describe("function: withCircuitBreakerPrefix", { tags: ["Memory"] }, () => {
-    const adapter = new NoOpCircuitBreakerAdapter();
-    const prefix = "test-prefix:";
-    const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
+describe(
+    "function: withCircuitBreakerPrefix",
+    { tags: ["Memory", "Plugins", "Implementations", "CircuitBreaker"] },
+    () => {
+        const adapter = new NoOpCircuitBreakerAdapter();
+        const prefix = "test-prefix:";
+        const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
-
-    describe("method: getState", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "getState");
-
-            const enhanced = withPlugin(
-                adapter,
-                withCircuitBreakerPrefix(prefix),
-            );
-
-            await enhanced.getState("myKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICircuitBreakerAdapter["getState"]>
-            >(`${prefix}myKey`);
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
         });
-    });
-    describe("method: isolate", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "isolate");
 
-            const enhanced = withPlugin(
-                adapter,
-                withCircuitBreakerPrefix(prefix),
-            );
+        describe("method: getState", () => {
+            test("Should prefix the key", async () => {
+                const spy = vi.spyOn(adapter, "getState");
 
-            await enhanced.isolate("myKey");
+                const enhanced = withPlugin(
+                    adapter,
+                    withCircuitBreakerPrefix(prefix),
+                );
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICircuitBreakerAdapter["isolate"]>
-            >(`${prefix}myKey`);
+                await enhanced.getState("myKey");
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICircuitBreakerAdapter["getState"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-    describe("method: reset", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "reset");
+        describe("method: isolate", () => {
+            test("Should prefix the key", async () => {
+                const spy = vi.spyOn(adapter, "isolate");
 
-            const enhanced = withPlugin(
-                adapter,
-                withCircuitBreakerPrefix(prefix),
-            );
+                const enhanced = withPlugin(
+                    adapter,
+                    withCircuitBreakerPrefix(prefix),
+                );
 
-            await enhanced.reset("myKey");
+                await enhanced.isolate("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICircuitBreakerAdapter["reset"]>
-            >(`${prefix}myKey`);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICircuitBreakerAdapter["isolate"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-    describe("method: trackFailure", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "trackFailure");
+        describe("method: reset", () => {
+            test("Should prefix the key", async () => {
+                const spy = vi.spyOn(adapter, "reset");
 
-            const enhanced = withPlugin(
-                adapter,
-                withCircuitBreakerPrefix(prefix),
-            );
+                const enhanced = withPlugin(
+                    adapter,
+                    withCircuitBreakerPrefix(prefix),
+                );
 
-            await enhanced.trackFailure("myKey");
+                await enhanced.reset("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICircuitBreakerAdapter["trackFailure"]>
-            >(`${prefix}myKey`);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICircuitBreakerAdapter["reset"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-    describe("method: trackSuccess", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "trackSuccess");
+        describe("method: trackFailure", () => {
+            test("Should prefix the key", async () => {
+                const spy = vi.spyOn(adapter, "trackFailure");
 
-            const enhanced = withPlugin(
-                adapter,
-                withCircuitBreakerPrefix(prefix),
-            );
+                const enhanced = withPlugin(
+                    adapter,
+                    withCircuitBreakerPrefix(prefix),
+                );
 
-            await enhanced.trackSuccess("myKey");
+                await enhanced.trackFailure("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICircuitBreakerAdapter["trackSuccess"]>
-            >(`${prefix}myKey`);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICircuitBreakerAdapter["trackFailure"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-    describe("method: updateState", () => {
-        test("Should prefix the key", async () => {
-            const spy = vi.spyOn(adapter, "updateState");
+        describe("method: trackSuccess", () => {
+            test("Should prefix the key", async () => {
+                const spy = vi.spyOn(adapter, "trackSuccess");
 
-            const enhanced = withPlugin(
-                adapter,
-                withCircuitBreakerPrefix(prefix),
-            );
+                const enhanced = withPlugin(
+                    adapter,
+                    withCircuitBreakerPrefix(prefix),
+                );
 
-            await enhanced.updateState("myKey");
+                await enhanced.trackSuccess("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICircuitBreakerAdapter["updateState"]>
-            >(`${prefix}myKey`);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICircuitBreakerAdapter["trackSuccess"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-});
+        describe("method: updateState", () => {
+            test("Should prefix the key", async () => {
+                const spy = vi.spyOn(adapter, "updateState");
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withCircuitBreakerPrefix(prefix),
+                );
+
+                await enhanced.updateState("myKey");
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICircuitBreakerAdapter["updateState"]>
+                >(`${prefix}myKey`);
+            });
+        });
+    },
+);

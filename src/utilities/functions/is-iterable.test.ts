@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { isIterable } from "@/utilities/functions/is-iterable.js";
 
-describe("function: isIterable", () => {
+describe("function: isIterable", { tags: ["Utilities"] }, () => {
     test("Should return true when Iterable", () => {
         const iterable: Iterable<unknown> = {
             *[Symbol.iterator](): Iterator<unknown> {

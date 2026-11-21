@@ -5,7 +5,7 @@ import { Registry } from "@/di/implementations/eager/registry.js";
 
 const TOKEN = genericToken<number>("A");
 
-describe("Registry", { tags: ["Memory"] }, () => {
+describe("Registry", { tags: ["Memory", "Implementations", "Di"] }, () => {
     describe("has", () => {
         test("should return true for a locally stored null value", () => {
             const registry = new Registry<number | null>();

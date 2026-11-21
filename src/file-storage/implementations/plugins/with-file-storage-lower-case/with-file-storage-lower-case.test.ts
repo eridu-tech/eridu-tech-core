@@ -11,229 +11,274 @@ import type {
     WritableFileAdapterContent,
 } from "@/file-storage/contracts/_module-exports.js";
 
-describe("function: withFileStorageLowerCase", { tags: ["Memory"] }, () => {
-    const adapter = new NoOpFileStorageAdapter();
-    const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
+describe(
+    "function: withFileStorageLowerCase",
+    { tags: ["Memory", "Plugins", "Implementations", "FileStorage"] },
+    () => {
+        const adapter = new NoOpFileStorageAdapter();
+        const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
-    describe("method: getPublicUrl", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "getPublicUrl");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.getPublicUrl("myKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getPublicUrl"]>
-            >("mykey");
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
         });
-    });
-    describe("method: getSignedDownloadUrl", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "getSignedDownloadUrl");
+        describe("method: getPublicUrl", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "getPublicUrl");
 
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
 
-            await enhanced.getSignedDownloadUrl("myKey", {
-                expirationInSeconds: 3600,
-                contentType: null,
-                contentDisposition: null,
-            });
+                await enhanced.getPublicUrl("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getSignedDownloadUrl"]>
-            >("mykey", {
-                expirationInSeconds: 3600,
-                contentType: null,
-                contentDisposition: null,
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["getPublicUrl"]>
+                >("mykey");
             });
         });
-    });
-    describe("method: getSignedUploadUrl", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "getSignedUploadUrl");
+        describe("method: getSignedDownloadUrl", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "getSignedDownloadUrl");
 
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
 
-            await enhanced.getSignedUploadUrl("myKey", {
-                expirationInSeconds: 3600,
-                contentType: null,
-            });
+                await enhanced.getSignedDownloadUrl("myKey", {
+                    expirationInSeconds: 3600,
+                    contentType: null,
+                    contentDisposition: null,
+                });
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getSignedUploadUrl"]>
-            >("mykey", {
-                expirationInSeconds: 3600,
-                contentType: null,
-            });
-        });
-    });
-    describe("method: exists", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "exists");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.exists("myKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["exists"]>
-            >("mykey");
-        });
-    });
-    describe("method: getStream", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "getStream");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.getStream("myKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getStream"]>
-            >("mykey");
-        });
-    });
-    describe("method: getBytes", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "getBytes");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.getBytes("myKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getBytes"]>
-            >("mykey");
-        });
-    });
-    describe("method: getMetaData", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "getMetaData");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.getMetaData("myKey");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getMetaData"]>
-            >("mykey");
-        });
-    });
-    describe("method: put", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "put");
-
-            const content: WritableFileAdapterContent = {
-                data: new Uint8Array(),
-                fileSizeInBytes: 0,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            await enhanced.put("myKey", content);
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["put"]>
-            >("mykey", content);
-        });
-    });
-    describe("method: putStream", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "putStream");
-
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
-
-            const stream3: AsyncIterable<Uint8Array> = {
-                [Symbol.asyncIterator]: () => ({
-                    next: () =>
-                        Promise.resolve({
-                            done: true,
-                            value: undefined as unknown as Uint8Array,
-                        }),
-                }),
-            };
-            await enhanced.putStream("myKey", {
-                data: stream3,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            });
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["putStream"]>
-            >("mykey", {
-                data: stream3,
-                fileSizeInBytes: null,
-                contentType: "text/plain",
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<
+                        ISignedFileStorageAdapter["getSignedDownloadUrl"]
+                    >
+                >("mykey", {
+                    expirationInSeconds: 3600,
+                    contentType: null,
+                    contentDisposition: null,
+                });
             });
         });
-    });
-    describe("method: copy", () => {
-        test("Should lowercase the keys", async () => {
-            const spy = vi.spyOn(adapter, "copy");
+        describe("method: getSignedUploadUrl", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "getSignedUploadUrl");
 
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
 
-            await enhanced.copy("sourceKey", "destKey");
+                await enhanced.getSignedUploadUrl("myKey", {
+                    expirationInSeconds: 3600,
+                    contentType: null,
+                });
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["copy"]>
-            >("sourcekey", "destkey");
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["getSignedUploadUrl"]>
+                >("mykey", {
+                    expirationInSeconds: 3600,
+                    contentType: null,
+                });
+            });
         });
-    });
-    describe("method: move", () => {
-        test("Should lowercase the keys", async () => {
-            const spy = vi.spyOn(adapter, "move");
+        describe("method: exists", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "exists");
 
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
 
-            await enhanced.move("sourceKey", "destKey");
+                await enhanced.exists("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["move"]>
-            >("sourcekey", "destkey");
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["exists"]>
+                >("mykey");
+            });
         });
-    });
-    describe("method: removeMany", () => {
-        test("Should lowercase the keys", async () => {
-            const spy = vi.spyOn(adapter, "removeMany");
+        describe("method: getStream", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "getStream");
 
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
 
-            await enhanced.removeMany(["Key1", "Key2"]);
+                await enhanced.getStream("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["removeMany"]>
-            >(["key1", "key2"]);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["getStream"]>
+                >("mykey");
+            });
         });
-    });
-    describe("method: removeByPrefix", () => {
-        test("Should lowercase the key", async () => {
-            const spy = vi.spyOn(adapter, "removeByPrefix");
+        describe("method: getBytes", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "getBytes");
 
-            const enhanced = withPlugin(adapter, withFileStorageLowerCase());
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
 
-            await enhanced.removeByPrefix("myKey");
+                await enhanced.getBytes("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["removeByPrefix"]>
-            >("mykey");
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["getBytes"]>
+                >("mykey");
+            });
         });
-    });
-});
+        describe("method: getMetaData", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "getMetaData");
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
+
+                await enhanced.getMetaData("myKey");
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["getMetaData"]>
+                >("mykey");
+            });
+        });
+        describe("method: put", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "put");
+
+                const content: WritableFileAdapterContent = {
+                    data: new Uint8Array(),
+                    fileSizeInBytes: 0,
+                    contentType: "text/plain",
+                    contentLanguage: null,
+                    contentEncoding: null,
+                    contentDisposition: null,
+                    cacheControl: null,
+                };
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
+
+                await enhanced.put("myKey", content);
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["put"]>
+                >("mykey", content);
+            });
+        });
+        describe("method: putStream", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "putStream");
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
+
+                const stream3: AsyncIterable<Uint8Array> = {
+                    [Symbol.asyncIterator]: () => ({
+                        next: () =>
+                            Promise.resolve({
+                                done: true,
+                                value: undefined as unknown as Uint8Array,
+                            }),
+                    }),
+                };
+                await enhanced.putStream("myKey", {
+                    data: stream3,
+                    fileSizeInBytes: null,
+                    contentType: "text/plain",
+                    contentLanguage: null,
+                    contentEncoding: null,
+                    contentDisposition: null,
+                    cacheControl: null,
+                });
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["putStream"]>
+                >("mykey", {
+                    data: stream3,
+                    fileSizeInBytes: null,
+                    contentType: "text/plain",
+                    contentLanguage: null,
+                    contentEncoding: null,
+                    contentDisposition: null,
+                    cacheControl: null,
+                });
+            });
+        });
+        describe("method: copy", () => {
+            test("Should lowercase the keys", async () => {
+                const spy = vi.spyOn(adapter, "copy");
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
+
+                await enhanced.copy("sourceKey", "destKey");
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["copy"]>
+                >("sourcekey", "destkey");
+            });
+        });
+        describe("method: move", () => {
+            test("Should lowercase the keys", async () => {
+                const spy = vi.spyOn(adapter, "move");
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
+
+                await enhanced.move("sourceKey", "destKey");
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["move"]>
+                >("sourcekey", "destkey");
+            });
+        });
+        describe("method: removeMany", () => {
+            test("Should lowercase the keys", async () => {
+                const spy = vi.spyOn(adapter, "removeMany");
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
+
+                await enhanced.removeMany(["Key1", "Key2"]);
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["removeMany"]>
+                >(["key1", "key2"]);
+            });
+        });
+        describe("method: removeByPrefix", () => {
+            test("Should lowercase the key", async () => {
+                const spy = vi.spyOn(adapter, "removeByPrefix");
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageLowerCase(),
+                );
+
+                await enhanced.removeByPrefix("myKey");
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["removeByPrefix"]>
+                >("mykey");
+            });
+        });
+    },
+);

@@ -23,32 +23,36 @@ import type { StartedRedisContainer } from "@testcontainers/redis";
 import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: RedisCacheAdapter", { tags: ["Redis"] }, () => {
-    let client: Redis;
-    let startedContainer: StartedRedisContainer;
-    let adapter: ICacheAdapter;
-    beforeAll(async () => {
-        startedContainer = await new RedisContainer("redis:7.4.2").start();
-        client = new Redis(startedContainer.getConnectionUrl());
-    }, timeout.toMilliseconds());
-    beforeEach(() => {
-        adapter = withPlugin(
-            new RedisCacheAdapter({
-                database: client,
-                serde: new SuperJsonSerde(),
-            }),
-            withCachePrefix(randomUUID()),
-        );
-    });
-    afterAll(async () => {
-        await client.quit();
-        await startedContainer.stop();
-    }, timeout.toMilliseconds());
-    cacheAdapterTestSuite({
-        createAdapter: () => adapter,
-        test,
-        beforeEach,
-        expect,
-        describe,
-    });
-});
+describe(
+    "class: RedisCacheAdapter",
+    { tags: ["Redis", "Adapters", "Implementations", "Cache"] },
+    () => {
+        let client: Redis;
+        let startedContainer: StartedRedisContainer;
+        let adapter: ICacheAdapter;
+        beforeAll(async () => {
+            startedContainer = await new RedisContainer("redis:7.4.2").start();
+            client = new Redis(startedContainer.getConnectionUrl());
+        }, timeout.toMilliseconds());
+        beforeEach(() => {
+            adapter = withPlugin(
+                new RedisCacheAdapter({
+                    database: client,
+                    serde: new SuperJsonSerde(),
+                }),
+                withCachePrefix(randomUUID()),
+            );
+        });
+        afterAll(async () => {
+            await client.quit();
+            await startedContainer.stop();
+        }, timeout.toMilliseconds());
+        cacheAdapterTestSuite({
+            createAdapter: () => adapter,
+            test,
+            beforeEach,
+            expect,
+            describe,
+        });
+    },
+);

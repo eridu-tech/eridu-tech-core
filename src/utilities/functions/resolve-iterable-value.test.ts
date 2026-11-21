@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { resolveIterableValue } from "@/utilities/functions/resolve-iterable-value.js";
 
-describe("function: resolveIterableValue", () => {
+describe("function: resolveIterableValue", { tags: ["Utilities"] }, () => {
     test("Should return an array as is", () => {
         const values = [1, 2, 3];
 

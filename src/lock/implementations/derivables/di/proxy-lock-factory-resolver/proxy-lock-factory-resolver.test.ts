@@ -19,312 +19,316 @@ import type {
 } from "@/lock/contracts/_module-exports.js";
 import type { IFlexibleSerde } from "@/serde/contracts/_module-exports.js";
 
-describe("class: ProxyLockFactoryResolver", { tags: ["Memory"] }, () => {
-    type Adapters = "adapter1" | "adapter2";
-    let lockFactory: ILockFactoryResolver<Adapters> & ILockFactory;
-    let container: Container;
-    let acquire1: Mock<ILockAdapter["acquire"]>;
-    let acquire2: Mock<ILockAdapter["acquire"]>;
-    let serde: IFlexibleSerde;
+describe(
+    "class: ProxyLockFactoryResolver",
+    { tags: ["Memory", "Derivables", "Implementations", "Lock"] },
+    () => {
+        type Adapters = "adapter1" | "adapter2";
+        let lockFactory: ILockFactoryResolver<Adapters> & ILockFactory;
+        let container: Container;
+        let acquire1: Mock<ILockAdapter["acquire"]>;
+        let acquire2: Mock<ILockAdapter["acquire"]>;
+        let serde: IFlexibleSerde;
 
-    describe("LIFETIME.SINGLETON:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
+        describe("LIFETIME.SINGLETON:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-            const adapter1 = new MemoryLockAdapter();
-            acquire1 = vi.spyOn(adapter1, "acquire");
+                const adapter1 = new MemoryLockAdapter();
+                acquire1 = vi.spyOn(adapter1, "acquire");
 
-            const adapter2 = new MemoryLockAdapter();
-            acquire2 = vi.spyOn(adapter2, "acquire");
+                const adapter2 = new MemoryLockAdapter();
+                acquire2 = vi.spyOn(adapter2, "acquire");
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
+                serde = new SuperJsonSerde();
+                container.registerFactory({
+                    token: LockFactoryResolver,
+                    factory: () => {
+                        return new LockFactoryResolver<Adapters>({
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
+                            serde,
+                        });
+                    },
+                    onInit: (factory) => {
+                        factory.init();
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.SINGLETON,
+                });
+                lockFactory = new ProxyLockFactoryResolver<Adapters>({
+                    container,
+                    resolverToken: LockFactoryResolver,
+                });
+
+                await container.init();
             });
-            serde = new SuperJsonSerde();
-            container.registerFactory({
-                token: LockFactoryResolver,
-                factory: () => {
-                    return new LockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
+
+            test("Default adapter:", async () => {
+                const key = "a";
+                const lockId = "1";
+                await lockFactory.create(key, { lockId, ttl: null }).acquire();
+
+                const args: Parameters<ILockAdapter["acquire"]> = [
+                    key,
+                    lockId,
+                    null,
+                ];
+
+                expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(acquire2).not.toHaveBeenCalled();
+            });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                const lockId = "1";
+                await lockFactory
+                    .use("adapter1")
+                    .create(key, { lockId, ttl: null })
+                    .acquire();
+
+                const args: Parameters<ILockAdapter["acquire"]> = [
+                    key,
+                    lockId,
+                    null,
+                ];
+
+                expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(acquire2).not.toHaveBeenCalled();
+            });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                const lockId = "1";
+                await lockFactory
+                    .use("adapter2")
+                    .create(key, { lockId, ttl: null })
+                    .acquire();
+
+                const args: Parameters<ILockAdapter["acquire"]> = [
+                    key,
+                    lockId,
+                    null,
+                ];
+
+                expect(acquire2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(acquire1).not.toHaveBeenCalled();
+            });
+
+            lockFactorySerdeTestSuite({
+                createLockFactory: () => {
+                    return {
+                        lockFactory,
                         serde,
-                    });
+                    };
                 },
-                onInit: (factory) => {
-                    factory.init();
-                },
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
+                beforeEach,
+                describe,
+                expect,
+                test,
             });
-            lockFactory = new ProxyLockFactoryResolver<Adapters>({
-                container,
-                resolverToken: LockFactoryResolver,
-            });
-
-            await container.init();
         });
+        describe("LIFETIME.TRANSIENT:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-        test("Default adapter:", async () => {
-            const key = "a";
-            const lockId = "1";
-            await lockFactory.create(key, { lockId, ttl: null }).acquire();
+                const adapter1 = new MemoryLockAdapter();
+                acquire1 = vi.spyOn(adapter1, "acquire");
 
-            const args: Parameters<ILockAdapter["acquire"]> = [
-                key,
-                lockId,
-                null,
-            ];
+                const adapter2 = new MemoryLockAdapter();
+                acquire2 = vi.spyOn(adapter2, "acquire");
 
-            expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(acquire2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            const lockId = "1";
-            await lockFactory
-                .use("adapter1")
-                .create(key, { lockId, ttl: null })
-                .acquire();
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
+                container.registerFactory({
+                    token: LockFactoryResolver,
+                    factory: () => {
+                        const factory = new LockFactoryResolver<Adapters>({
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
+                        });
+                        factory.init();
+                        return factory;
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.TRANSIENT,
+                });
+                lockFactory = new ProxyLockFactoryResolver<Adapters>({
+                    container,
+                    resolverToken: LockFactoryResolver,
+                });
 
-            const args: Parameters<ILockAdapter["acquire"]> = [
-                key,
-                lockId,
-                null,
-            ];
-
-            expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(acquire2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            const lockId = "1";
-            await lockFactory
-                .use("adapter2")
-                .create(key, { lockId, ttl: null })
-                .acquire();
-
-            const args: Parameters<ILockAdapter["acquire"]> = [
-                key,
-                lockId,
-                null,
-            ];
-
-            expect(acquire2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(acquire1).not.toHaveBeenCalled();
-        });
-
-        lockFactorySerdeTestSuite({
-            createLockFactory: () => {
-                return {
-                    lockFactory,
-                    serde,
-                };
-            },
-            beforeEach,
-            describe,
-            expect,
-            test,
-        });
-    });
-    describe("LIFETIME.TRANSIENT:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
-
-            const adapter1 = new MemoryLockAdapter();
-            acquire1 = vi.spyOn(adapter1, "acquire");
-
-            const adapter2 = new MemoryLockAdapter();
-            acquire2 = vi.spyOn(adapter2, "acquire");
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
-            container.registerFactory({
-                token: LockFactoryResolver,
-                factory: () => {
-                    const factory = new LockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    factory.init();
-                    return factory;
-                },
-                deps: {},
-                lifetime: LIFETIME.TRANSIENT,
-            });
-            lockFactory = new ProxyLockFactoryResolver<Adapters>({
-                container,
-                resolverToken: LockFactoryResolver,
+                await container.init();
             });
 
-            await container.init();
-        });
+            test("Default adapter:", async () => {
+                const key = "a";
+                const lockId = "1";
+                await lockFactory.create(key, { lockId, ttl: null }).acquire();
 
-        test("Default adapter:", async () => {
-            const key = "a";
-            const lockId = "1";
-            await lockFactory.create(key, { lockId, ttl: null }).acquire();
+                const args: Parameters<ILockAdapter["acquire"]> = [
+                    key,
+                    lockId,
+                    null,
+                ];
 
-            const args: Parameters<ILockAdapter["acquire"]> = [
-                key,
-                lockId,
-                null,
-            ];
-
-            expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(acquire2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            const lockId = "1";
-            await lockFactory
-                .use("adapter1")
-                .create(key, { lockId, ttl: null })
-                .acquire();
-
-            const args: Parameters<ILockAdapter["acquire"]> = [
-                key,
-                lockId,
-                null,
-            ];
-
-            expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(acquire2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            const lockId = "1";
-            await lockFactory
-                .use("adapter2")
-                .create(key, { lockId, ttl: null })
-                .acquire();
-
-            const args: Parameters<ILockAdapter["acquire"]> = [
-                key,
-                lockId,
-                null,
-            ];
-
-            expect(acquire2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(acquire1).not.toHaveBeenCalled();
-        });
-    });
-    describe("LIFETIME.SCOPED:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
-
-            const adapter1 = new MemoryLockAdapter();
-            acquire1 = vi.spyOn(adapter1, "acquire");
-
-            const adapter2 = new MemoryLockAdapter();
-            acquire2 = vi.spyOn(adapter2, "acquire");
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
+                expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(acquire2).not.toHaveBeenCalled();
             });
-            container.registerFactory({
-                token: LockFactoryResolver,
-                factory: () => {
-                    const factory = new LockFactoryResolver<Adapters>({
-                        adapters: {
-                            adapter1,
-                            adapter2,
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    factory.init();
-                    return factory;
-                },
-                deps: {},
-                lifetime: LIFETIME.SCOPED,
-            });
-            lockFactory = new ProxyLockFactoryResolver<Adapters>({
-                container,
-                resolverToken: LockFactoryResolver,
-            });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                const lockId = "1";
+                await lockFactory
+                    .use("adapter1")
+                    .create(key, { lockId, ttl: null })
+                    .acquire();
 
-            await container.init();
+                const args: Parameters<ILockAdapter["acquire"]> = [
+                    key,
+                    lockId,
+                    null,
+                ];
+
+                expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(acquire2).not.toHaveBeenCalled();
+            });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                const lockId = "1";
+                await lockFactory
+                    .use("adapter2")
+                    .create(key, { lockId, ttl: null })
+                    .acquire();
+
+                const args: Parameters<ILockAdapter["acquire"]> = [
+                    key,
+                    lockId,
+                    null,
+                ];
+
+                expect(acquire2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(acquire1).not.toHaveBeenCalled();
+            });
         });
+        describe("LIFETIME.SCOPED:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-        test("Default adapter:", async () => {
-            const key = "a";
-            const lockId = "1";
-            await container.run({
-                scope: async () => {
-                    await lockFactory
-                        .create(key, { lockId, ttl: null })
-                        .acquire();
-                },
+                const adapter1 = new MemoryLockAdapter();
+                acquire1 = vi.spyOn(adapter1, "acquire");
+
+                const adapter2 = new MemoryLockAdapter();
+                acquire2 = vi.spyOn(adapter2, "acquire");
+
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
+                container.registerFactory({
+                    token: LockFactoryResolver,
+                    factory: () => {
+                        const factory = new LockFactoryResolver<Adapters>({
+                            adapters: {
+                                adapter1,
+                                adapter2,
+                            },
+                            defaultAdapter: "adapter1",
+                        });
+                        factory.init();
+                        return factory;
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.SCOPED,
+                });
+                lockFactory = new ProxyLockFactoryResolver<Adapters>({
+                    container,
+                    resolverToken: LockFactoryResolver,
+                });
+
+                await container.init();
             });
 
-            const args: Parameters<ILockAdapter["acquire"]> = [
-                key,
-                lockId,
-                null,
-            ];
+            test("Default adapter:", async () => {
+                const key = "a";
+                const lockId = "1";
+                await container.run({
+                    scope: async () => {
+                        await lockFactory
+                            .create(key, { lockId, ttl: null })
+                            .acquire();
+                    },
+                });
 
-            expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(acquire2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            const lockId = "1";
-            await container.run({
-                scope: async () => {
-                    await lockFactory
-                        .use("adapter1")
-                        .create(key, { lockId, ttl: null })
-                        .acquire();
-                },
+                const args: Parameters<ILockAdapter["acquire"]> = [
+                    key,
+                    lockId,
+                    null,
+                ];
+
+                expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(acquire2).not.toHaveBeenCalled();
             });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                const lockId = "1";
+                await container.run({
+                    scope: async () => {
+                        await lockFactory
+                            .use("adapter1")
+                            .create(key, { lockId, ttl: null })
+                            .acquire();
+                    },
+                });
 
-            const args: Parameters<ILockAdapter["acquire"]> = [
-                key,
-                lockId,
-                null,
-            ];
+                const args: Parameters<ILockAdapter["acquire"]> = [
+                    key,
+                    lockId,
+                    null,
+                ];
 
-            expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(acquire2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            const lockId = "1";
-            await container.run({
-                scope: async () => {
-                    await lockFactory
-                        .use("adapter2")
-                        .create(key, { lockId, ttl: null })
-                        .acquire();
-                },
+                expect(acquire1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(acquire2).not.toHaveBeenCalled();
             });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                const lockId = "1";
+                await container.run({
+                    scope: async () => {
+                        await lockFactory
+                            .use("adapter2")
+                            .create(key, { lockId, ttl: null })
+                            .acquire();
+                    },
+                });
 
-            const args: Parameters<ILockAdapter["acquire"]> = [
-                key,
-                lockId,
-                null,
-            ];
+                const args: Parameters<ILockAdapter["acquire"]> = [
+                    key,
+                    lockId,
+                    null,
+                ];
 
-            expect(acquire2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(acquire1).not.toHaveBeenCalled();
+                expect(acquire2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(acquire1).not.toHaveBeenCalled();
+            });
         });
-    });
-});
+    },
+);

@@ -20,152 +20,166 @@ function makeLogData(overrides: Partial<LogData> = {}): LogData {
     };
 }
 
-describe("class: LogLayerLogTransport", () => {
-    let captured: Array<LogLayerTransportParams>;
-    let log: LogLayer;
-    let transport: LogLayerLogTransport;
+describe(
+    "class: LogLayerLogTransport",
+    { tags: ["Implementations", "Log"] },
+    () => {
+        let captured: Array<LogLayerTransportParams>;
+        let log: LogLayer;
+        let transport: LogLayerLogTransport;
 
-    beforeEach(() => {
-        vi.useFakeTimers({ now: LOGGED_AT, toFake: ["Date", "performance"] });
+        beforeEach(() => {
+            vi.useFakeTimers({
+                now: LOGGED_AT,
+                toFake: ["Date", "performance"],
+            });
 
-        captured = [];
-        log = new LogLayer({
-            transport: new BlankTransport({
-                shipToLogger: (params) => {
-                    captured.push(params);
-                    return [];
-                },
-            }),
+            captured = [];
+            log = new LogLayer({
+                transport: new BlankTransport({
+                    shipToLogger: (params) => {
+                        captured.push(params);
+                        return [];
+                    },
+                }),
+            });
+            transport = new LogLayerLogTransport({ log });
         });
-        transport = new LogLayerLogTransport({ log });
-    });
 
-    afterEach(() => {
-        vi.useRealTimers();
-    });
+        afterEach(() => {
+            vi.useRealTimers();
+        });
 
-    test.each([
-        { level: LOG_LEVEL.DEBUG, logLayerLevel: "debug" },
-        { level: LOG_LEVEL.VERBOSE, logLayerLevel: "trace" },
-        { level: LOG_LEVEL.INFO, logLayerLevel: "info" },
-        { level: LOG_LEVEL.WARN, logLayerLevel: "warn" },
-        { level: LOG_LEVEL.ERROR, logLayerLevel: "error" },
-        { level: LOG_LEVEL.FATAL, logLayerLevel: "fatal" },
-    ] as const)(
-        "Should write $level entries at the $logLayerLevel LogLayer level",
-        ({ level, logLayerLevel }) => {
-            transport.log(makeLogData({ level }));
+        test.each([
+            { level: LOG_LEVEL.DEBUG, logLayerLevel: "debug" },
+            { level: LOG_LEVEL.VERBOSE, logLayerLevel: "trace" },
+            { level: LOG_LEVEL.INFO, logLayerLevel: "info" },
+            { level: LOG_LEVEL.WARN, logLayerLevel: "warn" },
+            { level: LOG_LEVEL.ERROR, logLayerLevel: "error" },
+            { level: LOG_LEVEL.FATAL, logLayerLevel: "fatal" },
+        ] as const)(
+            "Should write $level entries at the $logLayerLevel LogLayer level",
+            ({ level, logLayerLevel }) => {
+                transport.log(makeLogData({ level }));
 
-            expect(captured).toHaveLength(1);
-            expect(captured[0]?.logLevel).toBe(logLayerLevel);
-        },
-    );
-
-    test("Should pass messages through unchanged", () => {
-        const messages = ["hello", 42, true, null, undefined, { first: "x" }];
-        transport.log(makeLogData({ messages }));
-
-        expect(captured[0]?.messages).toEqual(messages);
-    });
-
-    test("Should forward the entry only once", () => {
-        transport.log(makeLogData());
-
-        expect(captured).toHaveLength(1);
-    });
-
-    test("Should nest metadata under attributes and attach loggedAt and spans", () => {
-        transport.log(
-            makeLogData({
-                metadata: { requestId: "abc" },
-                spans: {
-                    db: TimeSpan.fromMilliseconds(12),
-                    http: TimeSpan.fromMilliseconds(250),
-                },
-            }),
+                expect(captured).toHaveLength(1);
+                expect(captured[0]?.logLevel).toBe(logLayerLevel);
+            },
         );
 
-        expect(captured[0]?.metadata).toEqual({
-            attributes: { requestId: "abc" },
-            loggedAt: new Date(LOGGED_AT),
-            spans: { db: 12, http: 250 },
-        });
-    });
+        test("Should pass messages through unchanged", () => {
+            const messages = [
+                "hello",
+                42,
+                true,
+                null,
+                undefined,
+                { first: "x" },
+            ];
+            transport.log(makeLogData({ messages }));
 
-    test("Should output an empty spans object when there are no spans", () => {
-        transport.log(makeLogData({ spans: {} }));
-
-        expect(captured[0]?.metadata).toEqual({
-            attributes: undefined,
-            loggedAt: new Date(LOGGED_AT),
-            spans: {},
-        });
-    });
-
-    test("Should leave the spans undefined when the entry has none", () => {
-        transport.log(makeLogData());
-
-        expect(captured[0]?.metadata?.["spans"]).toBeUndefined();
-    });
-
-    test("Should leave attributes undefined when the entry has no metadata", () => {
-        transport.log(makeLogData());
-
-        expect(captured[0]?.metadata?.["attributes"]).toBeUndefined();
-    });
-
-    test("Should drop spans without a value", () => {
-        const spans: LogSpans = {
-            db: undefined,
-            http: TimeSpan.fromMilliseconds(5),
-        };
-        transport.log(makeLogData({ spans }));
-
-        expect(captured[0]?.metadata).toEqual({
-            attributes: undefined,
-            loggedAt: new Date(LOGGED_AT),
-            spans: { http: 5 },
-        });
-    });
-
-    test("Should omit loggedAt when includeLoggedAt is false", () => {
-        transport = new LogLayerLogTransport({
-            log,
-            includeLoggedAt: false,
+            expect(captured[0]?.messages).toEqual(messages);
         });
 
-        transport.log(makeLogData({ spans: {} }));
+        test("Should forward the entry only once", () => {
+            transport.log(makeLogData());
 
-        expect(captured[0]?.metadata).toEqual({
-            attributes: undefined,
-            spans: {},
+            expect(captured).toHaveLength(1);
         });
-    });
 
-    test("Should prefix the messages with the group", () => {
-        transport.log(makeLogData({ group: "auth" }));
+        test("Should nest metadata under attributes and attach loggedAt and spans", () => {
+            transport.log(
+                makeLogData({
+                    metadata: { requestId: "abc" },
+                    spans: {
+                        db: TimeSpan.fromMilliseconds(12),
+                        http: TimeSpan.fromMilliseconds(250),
+                    },
+                }),
+            );
 
-        expect(captured).toHaveLength(1);
-        expect(captured[0]?.messages).toEqual(["[auth] hello"]);
-    });
+            expect(captured[0]?.metadata).toEqual({
+                attributes: { requestId: "abc" },
+                loggedAt: new Date(LOGGED_AT),
+                spans: { db: 12, http: 250 },
+            });
+        });
 
-    test("Should not prefix the messages without a group", () => {
-        transport.log(makeLogData());
+        test("Should output an empty spans object when there are no spans", () => {
+            transport.log(makeLogData({ spans: {} }));
 
-        expect(captured[0]?.messages).toEqual(["hello"]);
-    });
+            expect(captured[0]?.metadata).toEqual({
+                attributes: undefined,
+                loggedAt: new Date(LOGGED_AT),
+                spans: {},
+            });
+        });
 
-    test("Should forward the error of the entry", () => {
-        const error = new Error("boom");
+        test("Should leave the spans undefined when the entry has none", () => {
+            transport.log(makeLogData());
 
-        transport.log(makeLogData({ error, level: LOG_LEVEL.ERROR }));
+            expect(captured[0]?.metadata?.["spans"]).toBeUndefined();
+        });
 
-        expect(captured[0]?.error).toBe(error);
-    });
+        test("Should leave attributes undefined when the entry has no metadata", () => {
+            transport.log(makeLogData());
 
-    test("Should leave the error undefined when the entry has none", () => {
-        transport.log(makeLogData());
+            expect(captured[0]?.metadata?.["attributes"]).toBeUndefined();
+        });
 
-        expect(captured[0]?.error).toBeUndefined();
-    });
-});
+        test("Should drop spans without a value", () => {
+            const spans: LogSpans = {
+                db: undefined,
+                http: TimeSpan.fromMilliseconds(5),
+            };
+            transport.log(makeLogData({ spans }));
+
+            expect(captured[0]?.metadata).toEqual({
+                attributes: undefined,
+                loggedAt: new Date(LOGGED_AT),
+                spans: { http: 5 },
+            });
+        });
+
+        test("Should omit loggedAt when includeLoggedAt is false", () => {
+            transport = new LogLayerLogTransport({
+                log,
+                includeLoggedAt: false,
+            });
+
+            transport.log(makeLogData({ spans: {} }));
+
+            expect(captured[0]?.metadata).toEqual({
+                attributes: undefined,
+                spans: {},
+            });
+        });
+
+        test("Should prefix the messages with the group", () => {
+            transport.log(makeLogData({ group: "auth" }));
+
+            expect(captured).toHaveLength(1);
+            expect(captured[0]?.messages).toEqual(["[auth] hello"]);
+        });
+
+        test("Should not prefix the messages without a group", () => {
+            transport.log(makeLogData());
+
+            expect(captured[0]?.messages).toEqual(["hello"]);
+        });
+
+        test("Should forward the error of the entry", () => {
+            const error = new Error("boom");
+
+            transport.log(makeLogData({ error, level: LOG_LEVEL.ERROR }));
+
+            expect(captured[0]?.error).toBe(error);
+        });
+
+        test("Should leave the error undefined when the entry has none", () => {
+            transport.log(makeLogData());
+
+            expect(captured[0]?.error).toBeUndefined();
+        });
+    },
+);

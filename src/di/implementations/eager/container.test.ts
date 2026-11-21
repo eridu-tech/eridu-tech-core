@@ -177,662 +177,682 @@ function createContainerAndExecutionContext(): {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("class: Container", { tags: ["Memory"] }, () => {
-    // -----------------------------------------------------------------------
-    // constructor
-    // -----------------------------------------------------------------------
-    describe("constructor", () => {
-        test("Should create a container instance with a valid execution context", () => {
-            const ec = createExecutionContext();
-            const container = new Container({ executionContext: ec });
-            expect(container).toBeInstanceOf(Container);
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // registerFactory
-    // -----------------------------------------------------------------------
-    describe("method: registerFactory", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
+describe(
+    "class: Container",
+    { tags: ["Memory", "Implementations", "Di"] },
+    () => {
+        // -----------------------------------------------------------------------
+        // constructor
+        // -----------------------------------------------------------------------
+        describe("constructor", () => {
+            test("Should create a container instance with a valid execution context", () => {
+                const ec = createExecutionContext();
+                const container = new Container({ executionContext: ec });
+                expect(container).toBeInstanceOf(Container);
+            });
         });
 
-        test("Should register a factory with a singleton lifetime type", async () => {
-            container.registerFactory({
-                token: ILOGGER,
-                factory: () => ({ log: () => {} }),
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
+        // -----------------------------------------------------------------------
+        // registerFactory
+        // -----------------------------------------------------------------------
+        describe("method: registerFactory", () => {
+            let container: IContainer;
+
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
             });
 
-            await container.init();
-            const result = container.resolveOrFail(ILOGGER);
-            expect(result).toBeDefined();
-        });
-
-        test("Should register a factory with dependencies", () => {
-            expect(() => {
-                container.registerValue({
-                    token: IDATABASE,
-                    value: { query: () => Promise.resolve([]) },
+            test("Should register a factory with a singleton lifetime type", async () => {
+                container.registerFactory({
+                    token: ILOGGER,
+                    factory: () => ({ log: () => {} }),
+                    deps: {},
+                    lifetime: LIFETIME.SINGLETON,
                 });
 
-                container.registerFactory({
-                    token: IUSER_SERVICE,
-                    factory: ({ db }) => ({
-                        getUser: async () => {
-                            await db.query("");
-                            return { name: "Test" };
+                await container.init();
+                const result = container.resolveOrFail(ILOGGER);
+                expect(result).toBeDefined();
+            });
+
+            test("Should register a factory with dependencies", () => {
+                expect(() => {
+                    container.registerValue({
+                        token: IDATABASE,
+                        value: { query: () => Promise.resolve([]) },
+                    });
+
+                    container.registerFactory({
+                        token: IUSER_SERVICE,
+                        factory: ({ db }) => ({
+                            getUser: async () => {
+                                await db.query("");
+                                return { name: "Test" };
+                            },
+                        }),
+                        deps: { db: IDATABASE },
+                        lifetime: LIFETIME.SINGLETON,
+                    });
+                }).not.toThrow();
+            });
+
+            test("Should support singleton lifetime", () => {
+                expect(() => {
+                    container.registerFactory({
+                        token: ILOGGER,
+                        factory: () => new ConsoleLogger(),
+                        deps: {},
+                        lifetime: LIFETIME.SINGLETON,
+                    });
+                }).not.toThrow();
+            });
+
+            test("Should support scoped lifetime", () => {
+                expect(() => {
+                    container.registerFactory({
+                        token: ILOGGER,
+                        factory: () => new ConsoleLogger(),
+                        deps: {},
+                        lifetime: LIFETIME.SCOPED,
+                    });
+                }).not.toThrow();
+            });
+
+            test("Should support transient lifetime", () => {
+                expect(() => {
+                    container.registerFactory({
+                        token: ILOGGER,
+                        factory: () => new ConsoleLogger(),
+                        deps: {},
+                        lifetime: LIFETIME.TRANSIENT,
+                    });
+                }).not.toThrow();
+            });
+        });
+
+        // -----------------------------------------------------------------------
+        // registerValue
+        // -----------------------------------------------------------------------
+        describe("method: registerValue", () => {
+            let container: IContainer;
+
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
+            });
+
+            test("Should register a pre-constructed value", () => {
+                expect(() => {
+                    container.registerValue({
+                        token: ICONFIG,
+                        value: {
+                            apiUrl: "https://api.example.com",
+                            timeout: 5000,
                         },
-                    }),
-                    deps: { db: IDATABASE },
-                    lifetime: LIFETIME.SINGLETON,
-                });
-            }).not.toThrow();
+                    });
+                }).not.toThrow();
+            });
+
+            test("Should register a value with a generic token", () => {
+                expect(() => {
+                    const TOKEN = genericToken<string>("MyToken");
+                    container.registerValue({
+                        token: TOKEN,
+                        value: "hello",
+                    });
+                }).not.toThrow();
+            });
+
+            test("Should register a value with a class token", () => {
+                expect(() => {
+                    const logger = new ConsoleLogger();
+                    container.registerValue({
+                        token: ConsoleLogger,
+                        value: logger,
+                    });
+                }).not.toThrow();
+            });
         });
 
-        test("Should support singleton lifetime", () => {
-            expect(() => {
-                container.registerFactory({
-                    token: ILOGGER,
-                    factory: () => new ConsoleLogger(),
-                    deps: {},
-                    lifetime: LIFETIME.SINGLETON,
-                });
-            }).not.toThrow();
+        // -----------------------------------------------------------------------
+        // registerDynamic
+        // -----------------------------------------------------------------------
+        describe("method: registerDynamic", () => {
+            let container: IContainer;
+
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
+            });
+
+            test("Should register a dynamic token", () => {
+                expect(() => {
+                    container.registerDynamic(REQUEST_ID);
+                }).not.toThrow();
+            });
         });
 
-        test("Should support scoped lifetime", () => {
-            expect(() => {
-                container.registerFactory({
-                    token: ILOGGER,
-                    factory: () => new ConsoleLogger(),
-                    deps: {},
-                    lifetime: LIFETIME.SCOPED,
-                });
-            }).not.toThrow();
-        });
+        // -----------------------------------------------------------------------
+        // resolveOr
+        // -----------------------------------------------------------------------
+        describe("method: resolveOr", () => {
+            let container: IContainer;
 
-        test("Should support transient lifetime", () => {
-            expect(() => {
-                container.registerFactory({
-                    token: ILOGGER,
-                    factory: () => new ConsoleLogger(),
-                    deps: {},
-                    lifetime: LIFETIME.TRANSIENT,
-                });
-            }).not.toThrow();
-        });
-    });
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
+            });
 
-    // -----------------------------------------------------------------------
-    // registerValue
-    // -----------------------------------------------------------------------
-    describe("method: registerValue", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should register a pre-constructed value", () => {
-            expect(() => {
+            test("Should return registered value when token is registered", async () => {
                 container.registerValue({
                     token: ICONFIG,
                     value: { apiUrl: "https://api.example.com", timeout: 5000 },
                 });
-            }).not.toThrow();
+
+                await container.init();
+                const result = container.resolveOr(ICONFIG, {
+                    apiUrl: "default",
+                    timeout: 1000,
+                });
+                expect(result).toEqual({
+                    apiUrl: "https://api.example.com",
+                    timeout: 5000,
+                });
+            });
         });
 
-        test("Should register a value with a generic token", () => {
-            expect(() => {
-                const TOKEN = genericToken<string>("MyToken");
+        // -----------------------------------------------------------------------
+        // resolveOrFail
+        // -----------------------------------------------------------------------
+        describe("method: resolveOrFail", () => {
+            let container: IContainer;
+
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
+            });
+
+            test("Should return the service when token is registered", async () => {
                 container.registerValue({
-                    token: TOKEN,
-                    value: "hello",
+                    token: ICONFIG,
+                    value: { apiUrl: "https://api.example.com", timeout: 5000 },
                 });
-            }).not.toThrow();
-        });
 
-        test("Should register a value with a class token", () => {
-            expect(() => {
-                const logger = new ConsoleLogger();
-                container.registerValue({
-                    token: ConsoleLogger,
-                    value: logger,
+                await container.init();
+                const result = container.resolveOrFail(ICONFIG);
+                expect(result).toEqual({
+                    apiUrl: "https://api.example.com",
+                    timeout: 5000,
                 });
-            }).not.toThrow();
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // registerDynamic
-    // -----------------------------------------------------------------------
-    describe("method: registerDynamic", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should register a dynamic token", () => {
-            expect(() => {
-                container.registerDynamic(REQUEST_ID);
-            }).not.toThrow();
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // resolveOr
-    // -----------------------------------------------------------------------
-    describe("method: resolveOr", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should return registered value when token is registered", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            await container.init();
-            const result = container.resolveOr(ICONFIG, {
-                apiUrl: "default",
-                timeout: 1000,
-            });
-            expect(result).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
             });
         });
-    });
 
-    // -----------------------------------------------------------------------
-    // resolveOrFail
-    // -----------------------------------------------------------------------
-    describe("method: resolveOrFail", () => {
-        let container: IContainer;
+        // -----------------------------------------------------------------------
+        // has
+        // -----------------------------------------------------------------------
+        describe("method: has", () => {
+            let container: IContainer;
 
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should return the service when token is registered", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
             });
 
-            await container.init();
-            const result = container.resolveOrFail(ICONFIG);
-            expect(result).toEqual({
-                apiUrl: "https://api.example.com",
-                timeout: 5000,
+            test("Should return false when token is not registered", async () => {
+                await container.init();
+                const result = container.has(ILOGGER);
+                expect(result).toBe(false);
             });
         });
-    });
 
-    // -----------------------------------------------------------------------
-    // has
-    // -----------------------------------------------------------------------
-    describe("method: has", () => {
-        let container: IContainer;
+        // -----------------------------------------------------------------------
+        // method: run (scoped execution)
+        // -----------------------------------------------------------------------
+        describe("method: run", () => {
+            let container: IContainer;
 
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should return false when token is not registered", async () => {
-            await container.init();
-            const result = container.has(ILOGGER);
-            expect(result).toBe(false);
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // method: run (scoped execution)
-    // -----------------------------------------------------------------------
-    describe("method: run", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should execute a scope callback within an isolated scope", async () => {
-            const scopeFn = vi.fn();
-
-            await container.init();
-            await container.run({
-                scope: scopeFn,
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
             });
 
-            expect(scopeFn).toHaveBeenCalledOnce();
-        });
-    });
+            test("Should execute a scope callback within an isolated scope", async () => {
+                const scopeFn = vi.fn();
 
-    // -----------------------------------------------------------------------
-    // overrideFactory
-    // -----------------------------------------------------------------------
-    describe("method: overrideFactory", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-        test("Should override an existing factory registration", () => {
-            container.registerFactory({
-                token: ILOGGER,
-                factory: () => new ConsoleLogger(),
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
-            });
-
-            expect(() => {
-                container.overrideFactory({
-                    token: ILOGGER,
-                    factory: () => new FileLogger(),
-                    deps: {},
+                await container.init();
+                await container.run({
+                    scope: scopeFn,
                 });
-            }).not.toThrow();
+
+                expect(scopeFn).toHaveBeenCalledOnce();
+            });
         });
 
-        test("Should override a factory registration with different dependencies", () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "old", timeout: 1000 },
-            });
+        // -----------------------------------------------------------------------
+        // overrideFactory
+        // -----------------------------------------------------------------------
+        describe("method: overrideFactory", () => {
+            let container: IContainer;
 
-            container.registerFactory({
-                token: ILOGGER,
-                factory: () => new ConsoleLogger(),
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
             });
-
-            expect(() => {
-                container.overrideFactory({
+            test("Should override an existing factory registration", () => {
+                container.registerFactory({
                     token: ILOGGER,
                     factory: () => new ConsoleLogger(),
-                    deps: { config: ICONFIG },
-                });
-            }).not.toThrow();
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // overrideValue
-    // -----------------------------------------------------------------------
-    describe("method: overrideValue", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should override an existing value registration", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://old.example.com", timeout: 1000 },
-            });
-
-            container.overrideValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://new.example.com", timeout: 5000 },
-            });
-
-            await container.init();
-            const result = container.resolveOrFail(ICONFIG);
-            expect(result).toEqual({
-                apiUrl: "https://new.example.com",
-                timeout: 5000,
-            });
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // per-registration lifecycle hooks: onInit / onDeInit
-    // -----------------------------------------------------------------------
-    describe("lifecycle hooks", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should call the onInit hook with the resolved service when init() is called", async () => {
-            const hook = vi.fn();
-            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
-
-            container.registerValue({ token: ICONFIG, value, onInit: hook });
-
-            await container.init();
-
-            expect(hook).toHaveBeenCalledExactlyOnceWith(value);
-        });
-
-        test("Should call the onDeInit hook with the resolved service when deInit() is called", async () => {
-            const hook = vi.fn();
-            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
-
-            container.registerValue({ token: ICONFIG, value, onDeInit: hook });
-
-            await container.init();
-            await container.deInit();
-
-            expect(hook).toHaveBeenCalledExactlyOnceWith(value);
-        });
-
-        test("Should not call any hook when the registration provides none", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            await expect(container.init()).resolves.toBeUndefined();
-            await expect(container.deInit()).resolves.toBeUndefined();
-        });
-
-        test("Should not call the onDeInit hook during init()", async () => {
-            const hook = vi.fn();
-
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-                onDeInit: hook,
-            });
-
-            await container.init();
-
-            expect(hook).not.toHaveBeenCalled();
-        });
-
-        test("Should support hooks on factory registrations", async () => {
-            const onInit = vi.fn();
-            const onDeInit = vi.fn();
-
-            container.registerFactory({
-                token: ILOGGER,
-                factory: () => new ConsoleLogger(),
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
-                onInit,
-                onDeInit,
-            });
-
-            await container.init();
-
-            expect(onInit).toHaveBeenCalledOnce();
-            expect(onDeInit).not.toHaveBeenCalled();
-
-            await container.deInit();
-
-            expect(onDeInit).toHaveBeenCalledOnce();
-        });
-
-        test("Should call onInit hooks in registration order", async () => {
-            const hook1 = vi.fn();
-            const hook2 = vi.fn();
-            const TOKEN_A = genericToken<string>("A");
-            const TOKEN_B = genericToken<string>("B");
-
-            container.registerValue({
-                token: TOKEN_A,
-                value: "a",
-                onInit: hook1,
-            });
-            container.registerValue({
-                token: TOKEN_B,
-                value: "b",
-                onInit: hook2,
-            });
-
-            await container.init();
-
-            expect(hook1).toHaveBeenCalledOnce();
-            expect(hook2).toHaveBeenCalledOnce();
-            expect(hook1.mock.invocationCallOrder[0]).toBeLessThan(
-                hook2.mock.invocationCallOrder[0] as number,
-            );
-        });
-
-        test("Should call onDeInit hooks in registration order", async () => {
-            const hook1 = vi.fn();
-            const hook2 = vi.fn();
-            const TOKEN_A = genericToken<string>("A");
-            const TOKEN_B = genericToken<string>("B");
-
-            container.registerValue({
-                token: TOKEN_A,
-                value: "a",
-                onDeInit: hook1,
-            });
-            container.registerValue({
-                token: TOKEN_B,
-                value: "b",
-                onDeInit: hook2,
-            });
-
-            await container.init();
-            await container.deInit();
-
-            expect(hook1).toHaveBeenCalledOnce();
-            expect(hook2).toHaveBeenCalledOnce();
-            expect(hook1.mock.invocationCallOrder[0]).toBeLessThan(
-                hook2.mock.invocationCallOrder[0] as number,
-            );
-        });
-
-        test("Should pass the resolved instance to the onInit hook", async () => {
-            const logger = new ConsoleLogger();
-            const hook = vi.fn();
-
-            container.registerFactory({
-                token: ILOGGER,
-                factory: () => logger,
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
-                onInit: hook,
-            });
-
-            await container.init();
-
-            expect(hook).toHaveBeenCalledWith(logger);
-            expect(container.resolveOrFail(ILOGGER)).toBe(logger);
-        });
-
-        test("Should run the onInit hook while the container is active", async () => {
-            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
-            let isActiveDuringHook = false;
-
-            container.registerValue({
-                token: ICONFIG,
-                value,
-                onInit: () => {
-                    isActiveDuringHook =
-                        container.resolveOrFail(ICONFIG) === value;
-                },
-            });
-
-            await container.init();
-
-            expect(isActiveDuringHook).toBe(true);
-        });
-
-        test("Should run the onDeInit hook while the container is active", async () => {
-            const value = { apiUrl: "https://api.example.com", timeout: 5000 };
-            let isActiveDuringHook = false;
-
-            container.registerValue({
-                token: ICONFIG,
-                value,
-                onDeInit: () => {
-                    isActiveDuringHook =
-                        container.resolveOrFail(ICONFIG) === value;
-                },
-            });
-
-            await container.init();
-            await container.deInit();
-
-            expect(isActiveDuringHook).toBe(true);
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // init / deInit
-    // -----------------------------------------------------------------------
-    describe("method: init / deInit", () => {
-        let container: IContainer;
-
-        beforeEach(() => {
-            container = createContainerAndExecutionContext().container;
-        });
-
-        test("Should initialize without error when no hooks are registered", async () => {
-            await expect(container.init()).resolves.toBeUndefined();
-        });
-
-        test("Should deInit without error when no hooks are registered", async () => {
-            await container.init();
-            await expect(container.deInit()).resolves.toBeUndefined();
-        });
-
-        test("Should support full lifecycle: init → use → deInit", async () => {
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            await container.init();
-
-            const config = container.resolveOrFail(ICONFIG);
-            expect(config.apiUrl).toBe("https://api.example.com");
-
-            await container.deInit();
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // method: fork
-    // -----------------------------------------------------------------------
-    describe("method: fork", () => {
-        let parentContainer: IContainer;
-
-        beforeEach(() => {
-            parentContainer = createContainerAndExecutionContext().container;
-        });
-
-        test("Should create a child container from the parent", () => {
-            const child = parentContainer.fork();
-            expect(child).toBeDefined();
-        });
-
-        test("Should allow child to override registrations without affecting parent", async () => {
-            parentContainer.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://parent.example.com", timeout: 5000 },
-            });
-
-            const child = parentContainer.fork();
-
-            child.overrideValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://child.example.com", timeout: 100 },
-            });
-
-            await parentContainer.init();
-            const parentConfig = parentContainer.resolveOrFail(ICONFIG);
-            await child.init();
-            const childConfig = child.resolveOrFail(ICONFIG);
-
-            expect(parentConfig.apiUrl).toBe("https://parent.example.com");
-            expect(childConfig.apiUrl).toBe("https://child.example.com");
-        });
-    });
-
-    // -----------------------------------------------------------------------
-    // feature: edge cases
-    // -----------------------------------------------------------------------
-    describe("feature: edge cases", () => {
-        /**
-         * init() is deliberately not called: this only asserts that the
-         * registration API accepts a dependency chain without throwing.
-         */
-        test("Should handle registration of a chain of dependent factories", () => {
-            const container = createContainerAndExecutionContext().container;
-
-            expect(() => {
-                container.registerFactory({
-                    token: Database,
-                    factory: () => new Database(),
                     deps: {},
                     lifetime: LIFETIME.SINGLETON,
                 });
 
+                expect(() => {
+                    container.overrideFactory({
+                        token: ILOGGER,
+                        factory: () => new FileLogger(),
+                        deps: {},
+                    });
+                }).not.toThrow();
+            });
+
+            test("Should override a factory registration with different dependencies", () => {
+                container.registerValue({
+                    token: ICONFIG,
+                    value: { apiUrl: "old", timeout: 1000 },
+                });
+
                 container.registerFactory({
-                    token: UserService,
-                    factory: (args) => new UserService(args.db),
-                    deps: { db: Database },
+                    token: ILOGGER,
+                    factory: () => new ConsoleLogger(),
+                    deps: {},
                     lifetime: LIFETIME.SINGLETON,
                 });
 
-                container.registerFactory({
-                    token: UserController,
-                    factory: (args) =>
-                        new UserController(args.userService, args.consoleLoger),
-                    deps: {
-                        userService: UserService,
-                        consoleLoger: ConsoleLogger,
-                    },
-                    lifetime: LIFETIME.TRANSIENT,
-                });
-            }).not.toThrow();
+                expect(() => {
+                    container.overrideFactory({
+                        token: ILOGGER,
+                        factory: () => new ConsoleLogger(),
+                        deps: { config: ICONFIG },
+                    });
+                }).not.toThrow();
+            });
         });
 
-        test("Should handle multiple unique tokens independently", async () => {
-            const container = createContainerAndExecutionContext().container;
-            const TOKEN_A = genericToken<string>("A");
-            const TOKEN_B = genericToken<string>("B");
+        // -----------------------------------------------------------------------
+        // overrideValue
+        // -----------------------------------------------------------------------
+        describe("method: overrideValue", () => {
+            let container: IContainer;
 
-            container.registerValue({ token: TOKEN_A, value: "value-a" });
-            container.registerValue({ token: TOKEN_B, value: "value-b" });
-
-            await container.init();
-            const a = container.resolveOrFail(TOKEN_A);
-            const b = container.resolveOrFail(TOKEN_B);
-
-            expect(a).toBe("value-a");
-            expect(b).toBe("value-b");
-        });
-
-        test("Should handle a factory that returns an async value", async () => {
-            const container = createContainerAndExecutionContext().container;
-
-            container.registerFactory({
-                token: ILOGGER,
-                factory: () => {
-                    return new ConsoleLogger();
-                },
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
             });
 
-            await container.init();
-            const logger = container.resolveOrFail(ILOGGER);
-            expect(logger).toBeDefined();
-            expect(typeof logger.log).toBe("function");
+            test("Should override an existing value registration", async () => {
+                container.registerValue({
+                    token: ICONFIG,
+                    value: { apiUrl: "https://old.example.com", timeout: 1000 },
+                });
+
+                container.overrideValue({
+                    token: ICONFIG,
+                    value: { apiUrl: "https://new.example.com", timeout: 5000 },
+                });
+
+                await container.init();
+                const result = container.resolveOrFail(ICONFIG);
+                expect(result).toEqual({
+                    apiUrl: "https://new.example.com",
+                    timeout: 5000,
+                });
+            });
         });
 
-        test("Should handle a factory that ignores the execution context parameter", () => {
-            const container = createContainerAndExecutionContext().container;
+        // -----------------------------------------------------------------------
+        // per-registration lifecycle hooks: onInit / onDeInit
+        // -----------------------------------------------------------------------
+        describe("lifecycle hooks", () => {
+            let container: IContainer;
 
-            expect(() => {
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
+            });
+
+            test("Should call the onInit hook with the resolved service when init() is called", async () => {
+                const hook = vi.fn();
+                const value = {
+                    apiUrl: "https://api.example.com",
+                    timeout: 5000,
+                };
+
+                container.registerValue({
+                    token: ICONFIG,
+                    value,
+                    onInit: hook,
+                });
+
+                await container.init();
+
+                expect(hook).toHaveBeenCalledExactlyOnceWith(value);
+            });
+
+            test("Should call the onDeInit hook with the resolved service when deInit() is called", async () => {
+                const hook = vi.fn();
+                const value = {
+                    apiUrl: "https://api.example.com",
+                    timeout: 5000,
+                };
+
+                container.registerValue({
+                    token: ICONFIG,
+                    value,
+                    onDeInit: hook,
+                });
+
+                await container.init();
+                await container.deInit();
+
+                expect(hook).toHaveBeenCalledExactlyOnceWith(value);
+            });
+
+            test("Should not call any hook when the registration provides none", async () => {
+                container.registerValue({
+                    token: ICONFIG,
+                    value: { apiUrl: "https://api.example.com", timeout: 5000 },
+                });
+
+                await expect(container.init()).resolves.toBeUndefined();
+                await expect(container.deInit()).resolves.toBeUndefined();
+            });
+
+            test("Should not call the onDeInit hook during init()", async () => {
+                const hook = vi.fn();
+
+                container.registerValue({
+                    token: ICONFIG,
+                    value: { apiUrl: "https://api.example.com", timeout: 5000 },
+                    onDeInit: hook,
+                });
+
+                await container.init();
+
+                expect(hook).not.toHaveBeenCalled();
+            });
+
+            test("Should support hooks on factory registrations", async () => {
+                const onInit = vi.fn();
+                const onDeInit = vi.fn();
+
+                container.registerFactory({
+                    token: ILOGGER,
+                    factory: () => new ConsoleLogger(),
+                    deps: {},
+                    lifetime: LIFETIME.SINGLETON,
+                    onInit,
+                    onDeInit,
+                });
+
+                await container.init();
+
+                expect(onInit).toHaveBeenCalledOnce();
+                expect(onDeInit).not.toHaveBeenCalled();
+
+                await container.deInit();
+
+                expect(onDeInit).toHaveBeenCalledOnce();
+            });
+
+            test("Should call onInit hooks in registration order", async () => {
+                const hook1 = vi.fn();
+                const hook2 = vi.fn();
+                const TOKEN_A = genericToken<string>("A");
+                const TOKEN_B = genericToken<string>("B");
+
+                container.registerValue({
+                    token: TOKEN_A,
+                    value: "a",
+                    onInit: hook1,
+                });
+                container.registerValue({
+                    token: TOKEN_B,
+                    value: "b",
+                    onInit: hook2,
+                });
+
+                await container.init();
+
+                expect(hook1).toHaveBeenCalledOnce();
+                expect(hook2).toHaveBeenCalledOnce();
+                expect(hook1.mock.invocationCallOrder[0]).toBeLessThan(
+                    hook2.mock.invocationCallOrder[0] as number,
+                );
+            });
+
+            test("Should call onDeInit hooks in registration order", async () => {
+                const hook1 = vi.fn();
+                const hook2 = vi.fn();
+                const TOKEN_A = genericToken<string>("A");
+                const TOKEN_B = genericToken<string>("B");
+
+                container.registerValue({
+                    token: TOKEN_A,
+                    value: "a",
+                    onDeInit: hook1,
+                });
+                container.registerValue({
+                    token: TOKEN_B,
+                    value: "b",
+                    onDeInit: hook2,
+                });
+
+                await container.init();
+                await container.deInit();
+
+                expect(hook1).toHaveBeenCalledOnce();
+                expect(hook2).toHaveBeenCalledOnce();
+                expect(hook1.mock.invocationCallOrder[0]).toBeLessThan(
+                    hook2.mock.invocationCallOrder[0] as number,
+                );
+            });
+
+            test("Should pass the resolved instance to the onInit hook", async () => {
+                const logger = new ConsoleLogger();
+                const hook = vi.fn();
+
+                container.registerFactory({
+                    token: ILOGGER,
+                    factory: () => logger,
+                    deps: {},
+                    lifetime: LIFETIME.SINGLETON,
+                    onInit: hook,
+                });
+
+                await container.init();
+
+                expect(hook).toHaveBeenCalledWith(logger);
+                expect(container.resolveOrFail(ILOGGER)).toBe(logger);
+            });
+
+            test("Should run the onInit hook while the container is active", async () => {
+                const value = {
+                    apiUrl: "https://api.example.com",
+                    timeout: 5000,
+                };
+                let isActiveDuringHook = false;
+
+                container.registerValue({
+                    token: ICONFIG,
+                    value,
+                    onInit: () => {
+                        isActiveDuringHook =
+                            container.resolveOrFail(ICONFIG) === value;
+                    },
+                });
+
+                await container.init();
+
+                expect(isActiveDuringHook).toBe(true);
+            });
+
+            test("Should run the onDeInit hook while the container is active", async () => {
+                const value = {
+                    apiUrl: "https://api.example.com",
+                    timeout: 5000,
+                };
+                let isActiveDuringHook = false;
+
+                container.registerValue({
+                    token: ICONFIG,
+                    value,
+                    onDeInit: () => {
+                        isActiveDuringHook =
+                            container.resolveOrFail(ICONFIG) === value;
+                    },
+                });
+
+                await container.init();
+                await container.deInit();
+
+                expect(isActiveDuringHook).toBe(true);
+            });
+        });
+
+        // -----------------------------------------------------------------------
+        // init / deInit
+        // -----------------------------------------------------------------------
+        describe("method: init / deInit", () => {
+            let container: IContainer;
+
+            beforeEach(() => {
+                container = createContainerAndExecutionContext().container;
+            });
+
+            test("Should initialize without error when no hooks are registered", async () => {
+                await expect(container.init()).resolves.toBeUndefined();
+            });
+
+            test("Should deInit without error when no hooks are registered", async () => {
+                await container.init();
+                await expect(container.deInit()).resolves.toBeUndefined();
+            });
+
+            test("Should support full lifecycle: init → use → deInit", async () => {
+                container.registerValue({
+                    token: ICONFIG,
+                    value: { apiUrl: "https://api.example.com", timeout: 5000 },
+                });
+
+                await container.init();
+
+                const config = container.resolveOrFail(ICONFIG);
+                expect(config.apiUrl).toBe("https://api.example.com");
+
+                await container.deInit();
+            });
+        });
+
+        // -----------------------------------------------------------------------
+        // method: fork
+        // -----------------------------------------------------------------------
+        describe("method: fork", () => {
+            let parentContainer: IContainer;
+
+            beforeEach(() => {
+                parentContainer =
+                    createContainerAndExecutionContext().container;
+            });
+
+            test("Should create a child container from the parent", () => {
+                const child = parentContainer.fork();
+                expect(child).toBeDefined();
+            });
+
+            test("Should allow child to override registrations without affecting parent", async () => {
+                parentContainer.registerValue({
+                    token: ICONFIG,
+                    value: {
+                        apiUrl: "https://parent.example.com",
+                        timeout: 5000,
+                    },
+                });
+
+                const child = parentContainer.fork();
+
+                child.overrideValue({
+                    token: ICONFIG,
+                    value: {
+                        apiUrl: "https://child.example.com",
+                        timeout: 100,
+                    },
+                });
+
+                await parentContainer.init();
+                const parentConfig = parentContainer.resolveOrFail(ICONFIG);
+                await child.init();
+                const childConfig = child.resolveOrFail(ICONFIG);
+
+                expect(parentConfig.apiUrl).toBe("https://parent.example.com");
+                expect(childConfig.apiUrl).toBe("https://child.example.com");
+            });
+        });
+
+        // -----------------------------------------------------------------------
+        // feature: edge cases
+        // -----------------------------------------------------------------------
+        describe("feature: edge cases", () => {
+            /**
+             * init() is deliberately not called: this only asserts that the
+             * registration API accepts a dependency chain without throwing.
+             */
+            test("Should handle registration of a chain of dependent factories", () => {
+                const container =
+                    createContainerAndExecutionContext().container;
+
+                expect(() => {
+                    container.registerFactory({
+                        token: Database,
+                        factory: () => new Database(),
+                        deps: {},
+                        lifetime: LIFETIME.SINGLETON,
+                    });
+
+                    container.registerFactory({
+                        token: UserService,
+                        factory: (args) => new UserService(args.db),
+                        deps: { db: Database },
+                        lifetime: LIFETIME.SINGLETON,
+                    });
+
+                    container.registerFactory({
+                        token: UserController,
+                        factory: (args) =>
+                            new UserController(
+                                args.userService,
+                                args.consoleLoger,
+                            ),
+                        deps: {
+                            userService: UserService,
+                            consoleLoger: ConsoleLogger,
+                        },
+                        lifetime: LIFETIME.TRANSIENT,
+                    });
+                }).not.toThrow();
+            });
+
+            test("Should handle multiple unique tokens independently", async () => {
+                const container =
+                    createContainerAndExecutionContext().container;
+                const TOKEN_A = genericToken<string>("A");
+                const TOKEN_B = genericToken<string>("B");
+
+                container.registerValue({ token: TOKEN_A, value: "value-a" });
+                container.registerValue({ token: TOKEN_B, value: "value-b" });
+
+                await container.init();
+                const a = container.resolveOrFail(TOKEN_A);
+                const b = container.resolveOrFail(TOKEN_B);
+
+                expect(a).toBe("value-a");
+                expect(b).toBe("value-b");
+            });
+
+            test("Should handle a factory that returns an async value", async () => {
+                const container =
+                    createContainerAndExecutionContext().container;
+
                 container.registerFactory({
                     token: ILOGGER,
                     factory: () => {
@@ -841,132 +861,159 @@ describe("class: Container", { tags: ["Memory"] }, () => {
                     deps: {},
                     lifetime: LIFETIME.SINGLETON,
                 });
-            }).not.toThrow();
+
+                await container.init();
+                const logger = container.resolveOrFail(ILOGGER);
+                expect(logger).toBeDefined();
+                expect(typeof logger.log).toBe("function");
+            });
+
+            test("Should handle a factory that ignores the execution context parameter", () => {
+                const container =
+                    createContainerAndExecutionContext().container;
+
+                expect(() => {
+                    container.registerFactory({
+                        token: ILOGGER,
+                        factory: () => {
+                            return new ConsoleLogger();
+                        },
+                        deps: {},
+                        lifetime: LIFETIME.SINGLETON,
+                    });
+                }).not.toThrow();
+            });
+
+            test("Should allow using a class as the factory token", () => {
+                const container =
+                    createContainerAndExecutionContext().container;
+
+                expect(() => {
+                    container.registerFactory({
+                        token: ConsoleLogger,
+                        factory: () => new ConsoleLogger(),
+                        deps: {},
+                        lifetime: LIFETIME.SINGLETON,
+                    });
+                }).not.toThrow();
+            });
         });
 
-        test("Should allow using a class as the factory token", () => {
-            const container = createContainerAndExecutionContext().container;
+        // -----------------------------------------------------------------------
+        // feature: full integration scenarios
+        // -----------------------------------------------------------------------
+        describe("feature: full integration scenarios", () => {
+            test("Should support a complete DI workflow: register → resolve → scope", async () => {
+                const container =
+                    createContainerAndExecutionContext().container;
 
-            expect(() => {
+                // Register configuration
+                container.registerValue({
+                    token: ICONFIG,
+                    value: { apiUrl: "https://api.example.com", timeout: 5000 },
+                });
+
+                // Register database
+                container.registerFactory({
+                    token: Database,
+                    factory: () => new Database(),
+                    deps: {},
+                    lifetime: LIFETIME.SINGLETON,
+                });
+
+                // Register user service (depends on DB)
+                container.registerFactory({
+                    token: IUSER_SERVICE,
+                    factory: ({ db }) => ({
+                        getUser: async (id: string) => {
+                            await db.query(
+                                `SELECT * FROM users WHERE id = ${id}`,
+                            );
+                            return { name: "John Doe" };
+                        },
+                    }),
+                    deps: { db: Database },
+                    lifetime: LIFETIME.SCOPED,
+                });
+
+                // Register logger
                 container.registerFactory({
                     token: ConsoleLogger,
                     factory: () => new ConsoleLogger(),
                     deps: {},
                     lifetime: LIFETIME.SINGLETON,
                 });
-            }).not.toThrow();
-        });
-    });
 
-    // -----------------------------------------------------------------------
-    // feature: full integration scenarios
-    // -----------------------------------------------------------------------
-    describe("feature: full integration scenarios", () => {
-        test("Should support a complete DI workflow: register → resolve → scope", async () => {
-            const container = createContainerAndExecutionContext().container;
+                // Register dynamic request ID
+                container.registerDynamic(REQUEST_ID);
 
-            // Register configuration
-            container.registerValue({
-                token: ICONFIG,
-                value: { apiUrl: "https://api.example.com", timeout: 5000 },
-            });
-
-            // Register database
-            container.registerFactory({
-                token: Database,
-                factory: () => new Database(),
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
-            });
-
-            // Register user service (depends on DB)
-            container.registerFactory({
-                token: IUSER_SERVICE,
-                factory: ({ db }) => ({
-                    getUser: async (id: string) => {
-                        await db.query(`SELECT * FROM users WHERE id = ${id}`);
-                        return { name: "John Doe" };
+                // Execute within a scope (simulating a request)
+                await container.init();
+                await container.run({
+                    registration: (register) => {
+                        register.set({
+                            token: REQUEST_ID,
+                            value: "req-001",
+                        });
                     },
-                }),
-                deps: { db: Database },
-                lifetime: LIFETIME.SCOPED,
+                    scope: async () => {
+                        const requestId = container.resolveOrFail(REQUEST_ID);
+                        expect(requestId).toBe("req-001");
+
+                        const userService =
+                            container.resolveOrFail(IUSER_SERVICE);
+                        const user = await userService.getUser("42");
+                        expect(user).toEqual({ name: "John Doe" });
+
+                        const config = container.resolveOrFail(ICONFIG);
+                        expect(config.apiUrl).toBe("https://api.example.com");
+                    },
+                });
             });
 
-            // Register logger
-            container.registerFactory({
-                token: ConsoleLogger,
-                factory: () => new ConsoleLogger(),
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
-            });
+            test("Should support testing workflow: register → fork → override → resolve", async () => {
+                const appContainer =
+                    createContainerAndExecutionContext().container;
 
-            // Register dynamic request ID
-            container.registerDynamic(REQUEST_ID);
+                // Register real services
+                appContainer.registerFactory({
+                    token: Database,
+                    factory: () => new Database(),
+                    deps: {},
+                    lifetime: LIFETIME.SINGLETON,
+                });
 
-            // Execute within a scope (simulating a request)
-            await container.init();
-            await container.run({
-                registration: (register) => {
-                    register.set({
-                        token: REQUEST_ID,
-                        value: "req-001",
-                    });
-                },
-                scope: async () => {
-                    const requestId = container.resolveOrFail(REQUEST_ID);
-                    expect(requestId).toBe("req-001");
+                appContainer.registerFactory({
+                    token: UserService,
+                    factory: ({ db }) => new UserService(db),
+                    deps: { db: Database },
+                    lifetime: LIFETIME.SINGLETON,
+                });
 
-                    const userService = container.resolveOrFail(IUSER_SERVICE);
-                    const user = await userService.getUser("42");
-                    expect(user).toEqual({ name: "John Doe" });
+                // Create test container
+                const testContainer = appContainer.fork();
 
-                    const config = container.resolveOrFail(ICONFIG);
-                    expect(config.apiUrl).toBe("https://api.example.com");
-                },
+                // Override only the database with a mock
+                testContainer.overrideFactory({
+                    token: Database,
+                    factory: () => new MockDatabase(),
+                    deps: {},
+                });
+
+                await testContainer.init();
+                await appContainer.init();
+
+                // Resolve from test container — should get UserService with MockDatabase
+                const userService = testContainer.resolveOrFail(UserService);
+                expect(userService).toBeInstanceOf(UserService);
+
+                // Parent container still has real Database
+                const parentDb = appContainer.resolveOrFail(Database);
+                expect(parentDb).toBeInstanceOf(Database);
             });
         });
-
-        test("Should support testing workflow: register → fork → override → resolve", async () => {
-            const appContainer = createContainerAndExecutionContext().container;
-
-            // Register real services
-            appContainer.registerFactory({
-                token: Database,
-                factory: () => new Database(),
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
-            });
-
-            appContainer.registerFactory({
-                token: UserService,
-                factory: ({ db }) => new UserService(db),
-                deps: { db: Database },
-                lifetime: LIFETIME.SINGLETON,
-            });
-
-            // Create test container
-            const testContainer = appContainer.fork();
-
-            // Override only the database with a mock
-            testContainer.overrideFactory({
-                token: Database,
-                factory: () => new MockDatabase(),
-                deps: {},
-            });
-
-            await testContainer.init();
-            await appContainer.init();
-
-            // Resolve from test container — should get UserService with MockDatabase
-            const userService = testContainer.resolveOrFail(UserService);
-            expect(userService).toBeInstanceOf(UserService);
-
-            // Parent container still has real Database
-            const parentDb = appContainer.resolveOrFail(Database);
-            expect(parentDb).toBeInstanceOf(Database);
-        });
-    });
-});
+    },
+);
 
 describe(
     "Illegal method call before Container.init or after Container.deInit (when container not active)",
@@ -1199,28 +1246,32 @@ describe(
     },
 );
 
-describe("illegal method call inside Container.run", { tags: ["Memory"] }, () => {
-    /**
-     * Despite the test name the operation exercised inside run() is deInit();
-     * the point is that container lifecycle calls made from a run() scope are rejected.
-     */
-    test("fork method call inside Container.run should fail", async () => {
-        const container = createContainerAndExecutionContext().container;
-        await container.init();
+describe(
+    "illegal method call inside Container.run",
+    { tags: ["Memory"] },
+    () => {
+        /**
+         * Despite the test name the operation exercised inside run() is deInit();
+         * the point is that container lifecycle calls made from a run() scope are rejected.
+         */
+        test("fork method call inside Container.run should fail", async () => {
+            const container = createContainerAndExecutionContext().container;
+            await container.init();
 
-        const promise = container.run({
-            scope: async () => {
-                await container.deInit();
-            },
+            const promise = container.run({
+                scope: async () => {
+                    await container.deInit();
+                },
+            });
+            await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
+            //await promise;
+            await expect(promise).rejects.toHaveProperty(
+                "flag",
+                InvalidMethodCallDiError.FLAG.INSIDE_RUN,
+            );
         });
-        await expect(promise).rejects.toThrow(InvalidMethodCallDiError);
-        //await promise;
-        await expect(promise).rejects.toHaveProperty(
-            "flag",
-            InvalidMethodCallDiError.FLAG.INSIDE_RUN,
-        );
-    });
-});
+    },
+);
 
 describe(
     "illegal method call inside DynamicServiceProvider in Container.run block",
@@ -1438,106 +1489,112 @@ describe("register", { tags: ["Memory"] }, () => {
     });
 });
 
-describe("resolve & Container.init & Container.run", { tags: ["Memory"] }, () => {
-    let container: IContainer;
-    let tokenA: DiToken<string>;
-    beforeEach(async () => {
-        container = createContainerAndExecutionContext().container;
-        tokenA = genericToken<string>("token");
-        await container.init();
-    });
-
-    describe("nonexistent token", () => {
-        test("should return null when resolving a nonexistent token at top with Container.resolve", () => {
-            expect(container.resolve(tokenA)).toBe(null);
+describe(
+    "resolve & Container.init & Container.run",
+    { tags: ["Memory"] },
+    () => {
+        let container: IContainer;
+        let tokenA: DiToken<string>;
+        beforeEach(async () => {
+            container = createContainerAndExecutionContext().container;
+            tokenA = genericToken<string>("token");
+            await container.init();
         });
 
-        /**
-         * container.resolveOrFail can be implemented as:
-         * ```ts
-         * declare const token:DiToken;
-         * declare const defaultValue:unknown;
-         *
-         * const value = container.resolve(token)
-         * if (value === null) {
-         *  throw new Error
-         * }
-         * ```
-         * This behaviour should be same for singleton, transient, scoped, dynamic and transient tokens.
-         */
-        test("should fail when resolving a nonexistent token at top with Container.resolveOrFail", () => {
-            const fn = () => container.resolveOrFail(tokenA);
-            expect(fn).toThrow(CanNotResolveServiceDiError);
-            let error: unknown;
-            try {
-                fn();
-            } catch (caught) {
-                error = caught;
-            }
-            expect(error).toHaveProperty(
-                "flag",
-                CanNotResolveServiceDiError.FLAG.NOT_REGISTERED_TOKEN,
-            );
-        });
-
-        /**
-         * container.resolveOr can be implemented as:
-         * ```ts
-         * declare const token:DiToken;
-         * declare const defaultValue:unknown;
-         *
-         * const value = container.resolve(token)
-         * return value !== null ? value : defaultValue
-         * ```
-         * This behaviour should be same for all singleton,transient,scoped,dynamic and transient tokens.
-         */
-        test("should return the default value when resolving a nonexistent token at top with Container.resolveOr", () => {
-            const defaultValue = "_";
-            expect(container.resolveOr(tokenA, defaultValue)).toBe(
-                defaultValue,
-            );
-        });
-
-        test("should return null when resolving a nonexistent token inside run block scope with Container.resolve", async () => {
-            let value: undefined | string | null = undefined as
-                undefined | string | null;
-
-            await container.run({
-                scope: () => {
-                    value = container.resolve(tokenA);
-                },
+        describe("nonexistent token", () => {
+            test("should return null when resolving a nonexistent token at top with Container.resolve", () => {
+                expect(container.resolve(tokenA)).toBe(null);
             });
 
-            expect(value).toBe(null);
-        });
-
-        test("should fail when resolving a nonexistent token inside run block scope with Container.resolveOrFail", async () => {
-            const promise = container.run({
-                scope: () => {
-                    return container.resolveOrFail(tokenA);
-                },
+            /**
+             * container.resolveOrFail can be implemented as:
+             * ```ts
+             * declare const token:DiToken;
+             * declare const defaultValue:unknown;
+             *
+             * const value = container.resolve(token)
+             * if (value === null) {
+             *  throw new Error
+             * }
+             * ```
+             * This behaviour should be same for singleton, transient, scoped, dynamic and transient tokens.
+             */
+            test("should fail when resolving a nonexistent token at top with Container.resolveOrFail", () => {
+                const fn = () => container.resolveOrFail(tokenA);
+                expect(fn).toThrow(CanNotResolveServiceDiError);
+                let error: unknown;
+                try {
+                    fn();
+                } catch (caught) {
+                    error = caught;
+                }
+                expect(error).toHaveProperty(
+                    "flag",
+                    CanNotResolveServiceDiError.FLAG.NOT_REGISTERED_TOKEN,
+                );
             });
-            await expect(promise).rejects.toThrow(CanNotResolveServiceDiError);
-            await expect(promise).rejects.toHaveProperty(
-                "flag",
-                CanNotResolveServiceDiError.FLAG.NOT_REGISTERED_TOKEN,
-            );
-        });
 
-        test("should return the default value when resolving a nonexistent token inside run block scope with Container.resolveOr", async () => {
-            const defaultValue = "_";
-            let value: undefined | string = undefined as undefined | string;
-
-            await container.run({
-                scope: () => {
-                    value = container.resolveOr(tokenA, defaultValue);
-                },
+            /**
+             * container.resolveOr can be implemented as:
+             * ```ts
+             * declare const token:DiToken;
+             * declare const defaultValue:unknown;
+             *
+             * const value = container.resolve(token)
+             * return value !== null ? value : defaultValue
+             * ```
+             * This behaviour should be same for all singleton,transient,scoped,dynamic and transient tokens.
+             */
+            test("should return the default value when resolving a nonexistent token at top with Container.resolveOr", () => {
+                const defaultValue = "_";
+                expect(container.resolveOr(tokenA, defaultValue)).toBe(
+                    defaultValue,
+                );
             });
 
-            expect(value).toBe(defaultValue);
+            test("should return null when resolving a nonexistent token inside run block scope with Container.resolve", async () => {
+                let value: undefined | string | null = undefined as
+                    undefined | string | null;
+
+                await container.run({
+                    scope: () => {
+                        value = container.resolve(tokenA);
+                    },
+                });
+
+                expect(value).toBe(null);
+            });
+
+            test("should fail when resolving a nonexistent token inside run block scope with Container.resolveOrFail", async () => {
+                const promise = container.run({
+                    scope: () => {
+                        return container.resolveOrFail(tokenA);
+                    },
+                });
+                await expect(promise).rejects.toThrow(
+                    CanNotResolveServiceDiError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "flag",
+                    CanNotResolveServiceDiError.FLAG.NOT_REGISTERED_TOKEN,
+                );
+            });
+
+            test("should return the default value when resolving a nonexistent token inside run block scope with Container.resolveOr", async () => {
+                const defaultValue = "_";
+                let value: undefined | string = undefined as undefined | string;
+
+                await container.run({
+                    scope: () => {
+                        value = container.resolveOr(tokenA, defaultValue);
+                    },
+                });
+
+                expect(value).toBe(defaultValue);
+            });
         });
-    });
-});
+    },
+);
 
 describe("register & Container.init & resolve", { tags: ["Memory"] }, () => {
     let container: IContainer;

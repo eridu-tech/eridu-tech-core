@@ -8,133 +8,137 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 
 import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
 
-describe("function: withCachePrefix", { tags: ["Memory"] }, () => {
-    const adapter = new NoOpCacheAdapter();
-    const prefix = "test-prefix:";
-    const currentDate = new Date();
-    const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
+describe(
+    "function: withCachePrefix",
+    { tags: ["Memory", "Plugins", "Implementations", "Cache"] },
+    () => {
+        const adapter = new NoOpCacheAdapter();
+        const prefix = "test-prefix:";
+        const currentDate = new Date();
+        const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
-
-    describe("method: add", () => {
-        test("Should prefix keys", async () => {
-            const spy = vi.spyOn(adapter, "add");
-
-            const enhanced = withPlugin(adapter, withCachePrefix(prefix));
-
-            await enhanced.add("myKey", "value", currentDate);
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICacheAdapter["add"]>
-            >(`${prefix}myKey`, "value", currentDate);
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
         });
-    });
-    describe("method: get", () => {
-        test("Should prefix keys", async () => {
-            const spy = vi.spyOn(adapter, "get");
 
-            const enhanced = withPlugin(adapter, withCachePrefix(prefix));
+        describe("method: add", () => {
+            test("Should prefix keys", async () => {
+                const spy = vi.spyOn(adapter, "add");
 
-            await enhanced.get("myKey");
+                const enhanced = withPlugin(adapter, withCachePrefix(prefix));
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICacheAdapter["get"]>
-            >(`${prefix}myKey`);
+                await enhanced.add("myKey", "value", currentDate);
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICacheAdapter["add"]>
+                >(`${prefix}myKey`, "value", currentDate);
+            });
         });
-    });
-    describe("method: getAndRemove", () => {
-        test("Should prefix keys", async () => {
-            const spy = vi.spyOn(adapter, "getAndRemove");
+        describe("method: get", () => {
+            test("Should prefix keys", async () => {
+                const spy = vi.spyOn(adapter, "get");
 
-            const enhanced = withPlugin(adapter, withCachePrefix(prefix));
+                const enhanced = withPlugin(adapter, withCachePrefix(prefix));
 
-            await enhanced.getAndRemove("myKey");
+                await enhanced.get("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICacheAdapter["getAndRemove"]>
-            >(`${prefix}myKey`);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICacheAdapter["get"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-    describe("method: increment", () => {
-        test("Should prefix keys", async () => {
-            const spy = vi.spyOn(adapter, "increment");
+        describe("method: getAndRemove", () => {
+            test("Should prefix keys", async () => {
+                const spy = vi.spyOn(adapter, "getAndRemove");
 
-            const enhanced = withPlugin(adapter, withCachePrefix(prefix));
+                const enhanced = withPlugin(adapter, withCachePrefix(prefix));
 
-            await enhanced.increment("myKey", 5);
+                await enhanced.getAndRemove("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICacheAdapter["increment"]>
-            >(`${prefix}myKey`, 5);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICacheAdapter["getAndRemove"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-    describe("method: put", () => {
-        test("Should prefix keys", async () => {
-            const spy = vi.spyOn(adapter, "put");
+        describe("method: increment", () => {
+            test("Should prefix keys", async () => {
+                const spy = vi.spyOn(adapter, "increment");
 
-            const enhanced = withPlugin(adapter, withCachePrefix(prefix));
+                const enhanced = withPlugin(adapter, withCachePrefix(prefix));
 
-            await enhanced.put("myKey", "value", currentDate);
+                await enhanced.increment("myKey", 5);
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICacheAdapter["put"]>
-            >(`${prefix}myKey`, "value", currentDate);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICacheAdapter["increment"]>
+                >(`${prefix}myKey`, 5);
+            });
         });
-    });
-    describe("method: removeByPrefix", () => {
-        test("Should prefix keys", async () => {
-            const spy = vi.spyOn(adapter, "removeByPrefix");
+        describe("method: put", () => {
+            test("Should prefix keys", async () => {
+                const spy = vi.spyOn(adapter, "put");
 
-            const enhanced = withPlugin(adapter, withCachePrefix(prefix));
+                const enhanced = withPlugin(adapter, withCachePrefix(prefix));
 
-            await enhanced.removeByPrefix("myKey");
+                await enhanced.put("myKey", "value", currentDate);
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICacheAdapter["removeByPrefix"]>
-            >(`${prefix}myKey`);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICacheAdapter["put"]>
+                >(`${prefix}myKey`, "value", currentDate);
+            });
         });
-    });
-    describe("method: removeMany", () => {
-        test("Should prefix keys", async () => {
-            const spy = vi.spyOn(adapter, "removeMany");
+        describe("method: removeByPrefix", () => {
+            test("Should prefix keys", async () => {
+                const spy = vi.spyOn(adapter, "removeByPrefix");
 
-            const enhanced = withPlugin(adapter, withCachePrefix(prefix));
+                const enhanced = withPlugin(adapter, withCachePrefix(prefix));
 
-            await enhanced.removeMany(["key1", "key2"]);
+                await enhanced.removeByPrefix("myKey");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICacheAdapter["removeMany"]>
-            >([`${prefix}key1`, `${prefix}key2`]);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICacheAdapter["removeByPrefix"]>
+                >(`${prefix}myKey`);
+            });
         });
-    });
-    describe("method: update", () => {
-        test("Should prefix keys", async () => {
-            const spy = vi.spyOn(adapter, "update");
+        describe("method: removeMany", () => {
+            test("Should prefix keys", async () => {
+                const spy = vi.spyOn(adapter, "removeMany");
 
-            const enhanced = withPlugin(adapter, withCachePrefix(prefix));
+                const enhanced = withPlugin(adapter, withCachePrefix(prefix));
 
-            await enhanced.update("myKey", "newValue");
+                await enhanced.removeMany(["key1", "key2"]);
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICacheAdapter["update"]>
-            >(`${prefix}myKey`, "newValue");
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICacheAdapter["removeMany"]>
+                >([`${prefix}key1`, `${prefix}key2`]);
+            });
         });
-    });
-    describe("method: getOrAdd", () => {
-        test("Should prefix keys", async () => {
-            const spy = vi.spyOn(adapter, "getOrAdd");
+        describe("method: update", () => {
+            test("Should prefix keys", async () => {
+                const spy = vi.spyOn(adapter, "update");
 
-            const enhanced = withPlugin(adapter, withCachePrefix(prefix));
+                const enhanced = withPlugin(adapter, withCachePrefix(prefix));
 
-            const lazyValue = () => "value";
-            await enhanced.getOrAdd("myKey", lazyValue, currentDate);
+                await enhanced.update("myKey", "newValue");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ICacheAdapter["getOrAdd"]>
-            >(`${prefix}myKey`, lazyValue, currentDate);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICacheAdapter["update"]>
+                >(`${prefix}myKey`, "newValue");
+            });
         });
-    });
-});
+        describe("method: getOrAdd", () => {
+            test("Should prefix keys", async () => {
+                const spy = vi.spyOn(adapter, "getOrAdd");
+
+                const enhanced = withPlugin(adapter, withCachePrefix(prefix));
+
+                const lazyValue = () => "value";
+                await enhanced.getOrAdd("myKey", lazyValue, currentDate);
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ICacheAdapter["getOrAdd"]>
+                >(`${prefix}myKey`, lazyValue, currentDate);
+            });
+        });
+    },
+);

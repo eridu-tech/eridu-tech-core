@@ -32,7 +32,7 @@ const moneyTransformer: ISerdeTransformer<Money, SerializedMoney> = {
 
 describe(
     "class: SuperJsonSerde",
-    { tags: ["Memory", "Implementations"] },
+    { tags: ["Memory", "Implementations", "Serde"] },
     () => {
         describe("method: serialize", () => {
             test("Should serialize plain objects to a string", () => {

@@ -11,96 +11,100 @@ import type {
     ISignedFileStorageAdapter,
 } from "@/file-storage/contracts/_module-exports.js";
 
-describe("function: withFileStorageInferContentTypeOnRead", { tags: ["Memory"] }, () => {
-    const adapter = new NoOpFileStorageAdapter();
-    const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
-    const metadata: FileAdapterMetadata = {
-        etag: "etag-123",
-        contentType: "application/json",
-        fileSizeInBytes: 1024,
-        updatedAt: new Date("2024-01-01T00:00:00.000Z"),
-    };
+describe(
+    "function: withFileStorageInferContentTypeOnRead",
+    { tags: ["Memory", "Plugins", "Implementations", "FileStorage"] },
+    () => {
+        const adapter = new NoOpFileStorageAdapter();
+        const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
+        const metadata: FileAdapterMetadata = {
+            etag: "etag-123",
+            contentType: "application/json",
+            fileSizeInBytes: 1024,
+            updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+        };
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
-    describe("method: getMetaData", () => {
-        test("Should infer the content type from the file key extension when the metadata content type is null", async () => {
-            const spy = vi
-                .spyOn(adapter, "getMetaData")
-                .mockResolvedValue({ ...metadata, contentType: null });
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
+        });
+        describe("method: getMetaData", () => {
+            test("Should infer the content type from the file key extension when the metadata content type is null", async () => {
+                const spy = vi
+                    .spyOn(adapter, "getMetaData")
+                    .mockResolvedValue({ ...metadata, contentType: null });
 
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageInferContentTypeOnRead(),
-            );
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageInferContentTypeOnRead(),
+                );
 
-            const result = await enhanced.getMetaData("folder/file.txt");
+                const result = await enhanced.getMetaData("folder/file.txt");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getMetaData"]>
-            >("folder/file.txt");
-            expect(result).toEqual({
-                ...metadata,
-                contentType: "text/plain",
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["getMetaData"]>
+                >("folder/file.txt");
+                expect(result).toEqual({
+                    ...metadata,
+                    contentType: "text/plain",
+                });
+            });
+            test("Should fall back to application/octet-stream when the metadata content type is null and the extension is unknown", async () => {
+                const spy = vi
+                    .spyOn(adapter, "getMetaData")
+                    .mockResolvedValue({ ...metadata, contentType: null });
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageInferContentTypeOnRead(),
+                );
+
+                const result = await enhanced.getMetaData(
+                    "folder/file.unknownExtension",
+                );
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["getMetaData"]>
+                >("folder/file.unknownExtension");
+                expect(result).toEqual({
+                    ...metadata,
+                    contentType: "application/octet-stream",
+                });
+            });
+            test("Should keep the metadata content type when it is not null", async () => {
+                const spy = vi
+                    .spyOn(adapter, "getMetaData")
+                    .mockResolvedValue(metadata);
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageInferContentTypeOnRead(),
+                );
+
+                const result = await enhanced.getMetaData("folder/file.txt");
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["getMetaData"]>
+                >("folder/file.txt");
+                expect(result).toEqual(metadata);
+            });
+            test("Should return null when the adapter returns null", async () => {
+                const spy = vi
+                    .spyOn(adapter, "getMetaData")
+                    .mockResolvedValue(null);
+
+                const enhanced = withPlugin(
+                    adapter,
+                    withFileStorageInferContentTypeOnRead(),
+                );
+
+                const result = await enhanced.getMetaData("folder/file.txt");
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<ISignedFileStorageAdapter["getMetaData"]>
+                >("folder/file.txt");
+                expect(result).toBeNull();
             });
         });
-        test("Should fall back to application/octet-stream when the metadata content type is null and the extension is unknown", async () => {
-            const spy = vi
-                .spyOn(adapter, "getMetaData")
-                .mockResolvedValue({ ...metadata, contentType: null });
-
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageInferContentTypeOnRead(),
-            );
-
-            const result = await enhanced.getMetaData(
-                "folder/file.unknownExtension",
-            );
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getMetaData"]>
-            >("folder/file.unknownExtension");
-            expect(result).toEqual({
-                ...metadata,
-                contentType: "application/octet-stream",
-            });
-        });
-        test("Should keep the metadata content type when it is not null", async () => {
-            const spy = vi
-                .spyOn(adapter, "getMetaData")
-                .mockResolvedValue(metadata);
-
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageInferContentTypeOnRead(),
-            );
-
-            const result = await enhanced.getMetaData("folder/file.txt");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getMetaData"]>
-            >("folder/file.txt");
-            expect(result).toEqual(metadata);
-        });
-        test("Should return null when the adapter returns null", async () => {
-            const spy = vi
-                .spyOn(adapter, "getMetaData")
-                .mockResolvedValue(null);
-
-            const enhanced = withPlugin(
-                adapter,
-                withFileStorageInferContentTypeOnRead(),
-            );
-
-            const result = await enhanced.getMetaData("folder/file.txt");
-
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<ISignedFileStorageAdapter["getMetaData"]>
-            >("folder/file.txt");
-            expect(result).toBeNull();
-        });
-    });
-});
+    },
+);

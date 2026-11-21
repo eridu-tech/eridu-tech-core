@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 import { iterableToAsyncIterable } from "@/utilities/functions/iterable-to-async-iterable.js";
 import { OnStreamLifeCycle } from "@/utilities/on-stream-life-cycle.js";
 
-describe("class: OnStreamLifeCycle", () => {
+describe("class: OnStreamLifeCycle", { tags: ["Utilities"] }, () => {
     test("Should yield every value of the wrapped iterable in order", async () => {
         const result: Array<number> = [];
 

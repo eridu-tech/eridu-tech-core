@@ -6,7 +6,7 @@ import {
     KeyNotFoundCacheError,
 } from "@/cache/contracts/cache.errors.js";
 
-describe("file: cache.errors.ts", () => {
+describe("file: cache.errors.ts", { tags: ["Contracts", "Cache"] }, () => {
     describe("function: isCacheError", () => {
         test("Should return true when given KeyNotFoundCacheError instance", () => {
             const error = KeyNotFoundCacheError.create("a");

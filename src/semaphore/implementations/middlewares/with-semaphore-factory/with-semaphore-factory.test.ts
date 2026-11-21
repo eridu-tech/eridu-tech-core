@@ -12,123 +12,147 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { SemaphoreFactoryCreateSettings } from "@/semaphore/contracts/_module-exports.js";
 
-describe("function: withSemaphoreFactory", { tags: ["Memory"] }, () => {
-    const semaphoreFactoryResolver = new SemaphoreFactoryResolver<"memory">({
-        adapters: { memory: new NoOpSemaphoreAdapter() },
-        defaultAdapter: "memory",
-    });
-    semaphoreFactoryResolver.init();
-
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
-
-    test("Should call SemaphoreFactory.create method", async () => {
-        const spy = vi.spyOn(SemaphoreFactory.prototype, "create");
-
-        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
-
-        async function fn(_value: string): Promise<void> {}
-        const argValue = "value";
-        const limit = 4;
-        const settings: SemaphoreFactoryCreateSettings = {
-            slotId: argValue,
-            ttl: TimeSpan.fromSeconds(20),
-            limit,
-        };
-        await use(
-            fn,
-            withSemaphore({
-                ...settings,
-                key: ([value]) => value,
-                slotId: ([value]) => value,
-            }),
-        )(argValue);
-
-        expect(spy).toHaveBeenCalledExactlyOnceWith(argValue, settings);
-    });
-    test("Should call Semaphore.run method", async () => {
-        const spy = vi.spyOn(Semaphore.prototype, "runOrFail");
-
-        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
-
-        async function fn(_value: string): Promise<void> {}
-        const argValue = "value";
-        const limit = 4;
-        await use(
-            fn,
-            withSemaphore({
-                key: ([value]) => value,
-                limit,
-            }),
-        )(argValue);
-
-        expect(spy).toHaveBeenCalledOnce();
-    });
-    test("Should derive the key from multiple wrapped function arguments", async () => {
-        const spy = vi.spyOn(SemaphoreFactory.prototype, "create");
-
-        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
-
-        async function fn(_userId: string, _postId: string): Promise<void> {}
-        await use(
-            fn,
-            withSemaphore({
-                key: ([userId, postId]) => `user:${userId}:post:${postId}`,
-                limit: 4,
-            }),
-        )("u1", "p2");
-
-        expect(spy).toHaveBeenCalledWith("user:u1:post:p2", expect.anything());
-    });
-    test("Should pass through the wrapped function's arguments and return value", async () => {
-        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
-
-        function fn(a: string, b: string): Promise<string> {
-            return Promise.resolve(`${a}-${b}`);
-        }
-
-        const wrapped = use(
-            fn,
-            withSemaphore({
-                key: ([a, b]) => `${a}:${b}`,
-                limit: 4,
-            }),
+describe(
+    "function: withSemaphoreFactory",
+    { tags: ["Memory", "Middlewares", "Implementations", "Semaphore"] },
+    () => {
+        const semaphoreFactoryResolver = new SemaphoreFactoryResolver<"memory">(
+            {
+                adapters: { memory: new NoOpSemaphoreAdapter() },
+                defaultAdapter: "memory",
+            },
         );
+        semaphoreFactoryResolver.init();
 
-        expect(await wrapped("2", "3")).toBe("2-3");
-    });
-    test("Should use the default adapter when use is not called", async () => {
-        const spy = vi.spyOn(semaphoreFactoryResolver, "use");
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
+        });
 
-        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
+        test("Should call SemaphoreFactory.create method", async () => {
+            const spy = vi.spyOn(SemaphoreFactory.prototype, "create");
 
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withSemaphore({
-                key: ([value]) => value,
-                limit: 4,
-            }),
-        )("value");
+            const withSemaphore = withSemaphoreFactory(
+                semaphoreFactoryResolver,
+            );
 
-        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
-    });
-    test("Should select the adapter passed to use", async () => {
-        const spy = vi.spyOn(semaphoreFactoryResolver, "use");
+            async function fn(_value: string): Promise<void> {}
+            const argValue = "value";
+            const limit = 4;
+            const settings: SemaphoreFactoryCreateSettings = {
+                slotId: argValue,
+                ttl: TimeSpan.fromSeconds(20),
+                limit,
+            };
+            await use(
+                fn,
+                withSemaphore({
+                    ...settings,
+                    key: ([value]) => value,
+                    slotId: ([value]) => value,
+                }),
+            )(argValue);
 
-        const withSemaphore = withSemaphoreFactory(semaphoreFactoryResolver);
+            expect(spy).toHaveBeenCalledExactlyOnceWith(argValue, settings);
+        });
+        test("Should call Semaphore.run method", async () => {
+            const spy = vi.spyOn(Semaphore.prototype, "runOrFail");
 
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withSemaphore.use("memory")({
-                key: ([value]) => value,
-                limit: 4,
-            }),
-        )("value");
+            const withSemaphore = withSemaphoreFactory(
+                semaphoreFactoryResolver,
+            );
 
-        expect(spy).toHaveBeenCalledWith("memory");
-    });
-});
+            async function fn(_value: string): Promise<void> {}
+            const argValue = "value";
+            const limit = 4;
+            await use(
+                fn,
+                withSemaphore({
+                    key: ([value]) => value,
+                    limit,
+                }),
+            )(argValue);
+
+            expect(spy).toHaveBeenCalledOnce();
+        });
+        test("Should derive the key from multiple wrapped function arguments", async () => {
+            const spy = vi.spyOn(SemaphoreFactory.prototype, "create");
+
+            const withSemaphore = withSemaphoreFactory(
+                semaphoreFactoryResolver,
+            );
+
+            async function fn(
+                _userId: string,
+                _postId: string,
+            ): Promise<void> {}
+            await use(
+                fn,
+                withSemaphore({
+                    key: ([userId, postId]) => `user:${userId}:post:${postId}`,
+                    limit: 4,
+                }),
+            )("u1", "p2");
+
+            expect(spy).toHaveBeenCalledWith(
+                "user:u1:post:p2",
+                expect.anything(),
+            );
+        });
+        test("Should pass through the wrapped function's arguments and return value", async () => {
+            const withSemaphore = withSemaphoreFactory(
+                semaphoreFactoryResolver,
+            );
+
+            function fn(a: string, b: string): Promise<string> {
+                return Promise.resolve(`${a}-${b}`);
+            }
+
+            const wrapped = use(
+                fn,
+                withSemaphore({
+                    key: ([a, b]) => `${a}:${b}`,
+                    limit: 4,
+                }),
+            );
+
+            expect(await wrapped("2", "3")).toBe("2-3");
+        });
+        test("Should use the default adapter when use is not called", async () => {
+            const spy = vi.spyOn(semaphoreFactoryResolver, "use");
+
+            const withSemaphore = withSemaphoreFactory(
+                semaphoreFactoryResolver,
+            );
+
+            async function fn(_value: string): Promise<void> {}
+            await use(
+                fn,
+                withSemaphore({
+                    key: ([value]) => value,
+                    limit: 4,
+                }),
+            )("value");
+
+            expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
+        });
+        test("Should select the adapter passed to use", async () => {
+            const spy = vi.spyOn(semaphoreFactoryResolver, "use");
+
+            const withSemaphore = withSemaphoreFactory(
+                semaphoreFactoryResolver,
+            );
+
+            async function fn(_value: string): Promise<void> {}
+            await use(
+                fn,
+                withSemaphore.use("memory")({
+                    key: ([value]) => value,
+                    limit: 4,
+                }),
+            )("value");
+
+            expect(spy).toHaveBeenCalledWith("memory");
+        });
+    },
+);

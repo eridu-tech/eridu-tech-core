@@ -3,7 +3,7 @@ import { describe, test, expect } from "vitest";
 import { isAsyncIterable } from "@/utilities/functions/is-async-iterable.js";
 import { iterableToAsyncIterable } from "@/utilities/functions/iterable-to-async-iterable.js";
 
-describe("function: iterableToAsyncIterable", () => {
+describe("function: iterableToAsyncIterable", { tags: ["Utilities"] }, () => {
     test("Should convert Iterable to AsyncIterable", () => {
         const iterable: Iterable<unknown> = {
             *[Symbol.iterator](): Iterator<unknown> {

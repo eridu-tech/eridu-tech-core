@@ -13,7 +13,7 @@ import type {
 } from "@/utilities/functions/_module.js";
 import type { Promisable } from "@/utilities/types/_module.js";
 
-describe("file: lazy.ts", () => {
+describe("file: lazy.ts", { tags: ["Utilities"] }, () => {
     describe("function: isLazy", () => {
         test("Should return true when given a InvocableFn", () => {
             const invocable: InvocableFn<[], string> = () => "";

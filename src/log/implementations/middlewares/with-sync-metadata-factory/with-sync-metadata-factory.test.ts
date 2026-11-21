@@ -9,286 +9,295 @@ import { use } from "@/middleware/implementations/_module-exports.js";
 
 import type { Mock } from "vitest";
 
-describe("function: withSyncMetadataFactory", { tags: ["Memory"] }, () => {
-    const transport = new NoOpLogTransport();
-    const log = new Log({
-        transport,
-        executionContext: new ExecutionContext(
-            new AlsExecutionContextAdapter(),
-        ),
-    });
-    let logSpy: Mock<NoOpLogTransport["log"]>;
-
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-
-        logSpy = vi.spyOn(transport, "log");
-    });
-
-    test("Should select the transport passed to use", () => {
-        const logResolver = {
-            use: vi.fn((_transportName?: "primary" | "secondary") => log),
-        };
-        const fn = use<[], number>(
-            function handler(): number {
-                log.info(["inside"]);
-                return 1;
-            },
-            withSyncMetadataFactory(logResolver).use("secondary")<[], number>({
-                getCurrentFilePath: () => "/app/src/math.ts",
-            }),
-        );
-
-        fn();
-
-        expect(logResolver.use).toHaveBeenCalledExactlyOnceWith("secondary");
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.metadata).toStrictEqual({
-            filePath: "/app/src/math.ts",
-            class: undefined,
-            function: "handler",
+describe(
+    "function: withSyncMetadataFactory",
+    { tags: ["Memory", "Middlewares", "Implementations", "Log"] },
+    () => {
+        const transport = new NoOpLogTransport();
+        const log = new Log({
+            transport,
+            executionContext: new ExecutionContext(
+                new AlsExecutionContextAdapter(),
+            ),
         });
-    });
+        let logSpy: Mock<NoOpLogTransport["log"]>;
 
-    test("Should attach the file path, class name, and function name while the wrapped function runs", () => {
-        const fn = use(
-            function handler(first: number, second: number): number {
-                log.info(["inside"]);
-                return first + second;
-            },
-            withSyncMetadataFactory({ use: () => log })<
-                [number, number],
-                number
-            >({
-                className: "MathService",
-                getCurrentFilePath: () => "/app/src/math.ts",
-            }),
-        );
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
 
-        fn(1, 2);
+            logSpy = vi.spyOn(transport, "log");
+        });
 
-        expect(logSpy).toHaveBeenCalledExactlyOnceWith(
-            expect.objectContaining({
-                messages: ["inside"],
-                metadata: {
-                    filePath: "/app/src/math.ts",
-                    class: "MathService",
-                    function: "handler",
+        test("Should select the transport passed to use", () => {
+            const logResolver = {
+                use: vi.fn((_transportName?: "primary" | "secondary") => log),
+            };
+            const fn = use<[], number>(
+                function handler(): number {
+                    log.info(["inside"]);
+                    return 1;
                 },
-            }),
-        );
-    });
-
-    test("Should merge the metadata returned by the metadata callback", () => {
-        const fn = use(
-            function handler(first: number, second: number): number {
-                log.info(["inside"]);
-                return first + second;
-            },
-            withSyncMetadataFactory({ use: () => log })<
-                [number, number],
-                number
-            >({
-                getCurrentFilePath: () => "/app/src/math.ts",
-                metadata: ({ functionName, args }) => ({
-                    functionName,
-                    argCount: args.length,
+                withSyncMetadataFactory(logResolver).use("secondary")<
+                    [],
+                    number
+                >({
+                    getCurrentFilePath: () => "/app/src/math.ts",
                 }),
-            }),
-        );
+            );
 
-        fn(1, 2);
+            fn();
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.metadata).toStrictEqual({
-            functionName: "handler",
-            argCount: 2,
-            filePath: "/app/src/math.ts",
-            class: undefined,
-            function: "handler",
+            expect(logResolver.use).toHaveBeenCalledExactlyOnceWith(
+                "secondary",
+            );
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.metadata).toStrictEqual({
+                filePath: "/app/src/math.ts",
+                class: undefined,
+                function: "handler",
+            });
         });
-    });
 
-    test("Should pass the function name and arguments to the metadata callback", () => {
-        const metadata = vi.fn(() => ({}));
-        const fn = use(
-            function handler(_name: string, _count: number): string {
-                return "ok";
-            },
-            withSyncMetadataFactory({ use: () => log })<
-                [string, number],
-                string
-            >({ metadata }),
-        );
-
-        fn("Ada", 1);
-
-        expect(metadata).toHaveBeenCalledExactlyOnceWith({
-            functionName: "handler",
-            args: ["Ada", 1],
-        });
-    });
-
-    test("Should let the built-in entries override the metadata callback values", () => {
-        const fn = use(
-            function handler(): string {
-                log.info(["inside"]);
-                return "ok";
-            },
-            withSyncMetadataFactory({ use: () => log })<[], string>({
-                className: "MathService",
-                getCurrentFilePath: () => "/app/src/math.ts",
-                metadata: () => ({
-                    function: "overridden",
-                    class: "Overridden",
-                    extra: true,
+        test("Should attach the file path, class name, and function name while the wrapped function runs", () => {
+            const fn = use(
+                function handler(first: number, second: number): number {
+                    log.info(["inside"]);
+                    return first + second;
+                },
+                withSyncMetadataFactory({ use: () => log })<
+                    [number, number],
+                    number
+                >({
+                    className: "MathService",
+                    getCurrentFilePath: () => "/app/src/math.ts",
                 }),
-            }),
-        );
+            );
 
-        fn();
+            fn(1, 2);
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.metadata).toStrictEqual({
-            extra: true,
-            filePath: "/app/src/math.ts",
-            class: "MathService",
-            function: "handler",
+            expect(logSpy).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining({
+                    messages: ["inside"],
+                    metadata: {
+                        filePath: "/app/src/math.ts",
+                        class: "MathService",
+                        function: "handler",
+                    },
+                }),
+            );
         });
-    });
 
-    test("Should attach a null file path when the resolver returns null", () => {
-        const fn = use(
-            function handler(): string {
-                log.info(["inside"]);
-                return "ok";
-            },
-            withSyncMetadataFactory({ use: () => log })<[], string>({
-                getCurrentFilePath: () => null,
-            }),
-        );
+        test("Should merge the metadata returned by the metadata callback", () => {
+            const fn = use(
+                function handler(first: number, second: number): number {
+                    log.info(["inside"]);
+                    return first + second;
+                },
+                withSyncMetadataFactory({ use: () => log })<
+                    [number, number],
+                    number
+                >({
+                    getCurrentFilePath: () => "/app/src/math.ts",
+                    metadata: ({ functionName, args }) => ({
+                        functionName,
+                        argCount: args.length,
+                    }),
+                }),
+            );
 
-        fn();
+            fn(1, 2);
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.metadata).toStrictEqual({
-            filePath: null,
-            class: undefined,
-            function: "handler",
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.metadata).toStrictEqual({
+                functionName: "handler",
+                argCount: 2,
+                filePath: "/app/src/math.ts",
+                class: undefined,
+                function: "handler",
+            });
         });
-    });
 
-    test("Should default the file path to the middleware module path", () => {
-        const fn = use(
-            function handler(): string {
-                log.info(["inside"]);
-                return "ok";
-            },
-            withSyncMetadataFactory({ use: () => log })<[], string>(),
-        );
+        test("Should pass the function name and arguments to the metadata callback", () => {
+            const metadata = vi.fn(() => ({}));
+            const fn = use(
+                function handler(_name: string, _count: number): string {
+                    return "ok";
+                },
+                withSyncMetadataFactory({ use: () => log })<
+                    [string, number],
+                    string
+                >({ metadata }),
+            );
 
-        fn();
+            fn("Ada", 1);
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.metadata?.["filePath"]).toMatch(
-            /with-sync-metadata-factory\.ts$/,
-        );
-    });
+            expect(metadata).toHaveBeenCalledExactlyOnceWith({
+                functionName: "handler",
+                args: ["Ada", 1],
+            });
+        });
 
-    test("Should leave the class name undefined when it is not configured", () => {
-        const fn = use(
-            function handler(): string {
-                log.info(["inside"]);
-                return "ok";
-            },
-            withSyncMetadataFactory({ use: () => log })<[], string>({
-                getCurrentFilePath: () => "/app/src/math.ts",
-            }),
-        );
+        test("Should let the built-in entries override the metadata callback values", () => {
+            const fn = use(
+                function handler(): string {
+                    log.info(["inside"]);
+                    return "ok";
+                },
+                withSyncMetadataFactory({ use: () => log })<[], string>({
+                    className: "MathService",
+                    getCurrentFilePath: () => "/app/src/math.ts",
+                    metadata: () => ({
+                        function: "overridden",
+                        class: "Overridden",
+                        extra: true,
+                    }),
+                }),
+            );
 
-        fn();
+            fn();
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.metadata).toHaveProperty("class", undefined);
-    });
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.metadata).toStrictEqual({
+                extra: true,
+                filePath: "/app/src/math.ts",
+                class: "MathService",
+                function: "handler",
+            });
+        });
 
-    test("Should resolve the file path on every invocation", () => {
-        const getCurrentFilePath = vi.fn(() => "/app/src/math.ts");
-        const fn = use(
-            function handler(): string {
-                return "ok";
-            },
-            withSyncMetadataFactory({ use: () => log })<[], string>({
-                getCurrentFilePath,
-            }),
-        );
+        test("Should attach a null file path when the resolver returns null", () => {
+            const fn = use(
+                function handler(): string {
+                    log.info(["inside"]);
+                    return "ok";
+                },
+                withSyncMetadataFactory({ use: () => log })<[], string>({
+                    getCurrentFilePath: () => null,
+                }),
+            );
 
-        fn();
-        fn();
+            fn();
 
-        expect(getCurrentFilePath).toHaveBeenCalledTimes(2);
-    });
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.metadata).toStrictEqual({
+                filePath: null,
+                class: undefined,
+                function: "handler",
+            });
+        });
 
-    test("Should not attach the metadata to entries logged after the call", () => {
-        const fn = use(
-            function handler(): string {
-                return "ok";
-            },
-            withSyncMetadataFactory({ use: () => log })<[], string>({
-                className: "MathService",
-                getCurrentFilePath: () => "/app/src/math.ts",
-            }),
-        );
+        test("Should default the file path to the middleware module path", () => {
+            const fn = use(
+                function handler(): string {
+                    log.info(["inside"]);
+                    return "ok";
+                },
+                withSyncMetadataFactory({ use: () => log })<[], string>(),
+            );
 
-        fn();
-        log.info(["after"]);
+            fn();
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.metadata).toBeUndefined();
-    });
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.metadata?.["filePath"]).toMatch(
+                /with-sync-metadata-factory\.ts$/,
+            );
+        });
 
-    test("Should not set the other extra info of the entry", () => {
-        const fn = use(
-            function handler(): string {
-                log.info(["inside"]);
-                return "ok";
-            },
-            withSyncMetadataFactory({ use: () => log })<[], string>({
-                getCurrentFilePath: () => "/app/src/math.ts",
-            }),
-        );
+        test("Should leave the class name undefined when it is not configured", () => {
+            const fn = use(
+                function handler(): string {
+                    log.info(["inside"]);
+                    return "ok";
+                },
+                withSyncMetadataFactory({ use: () => log })<[], string>({
+                    getCurrentFilePath: () => "/app/src/math.ts",
+                }),
+            );
 
-        fn();
+            fn();
 
-        const [entry] = logSpy.mock.calls[0] ?? [];
-        expect(entry?.group).toBeUndefined();
-        expect(entry?.error).toBeUndefined();
-        expect(entry?.spans).toBeUndefined();
-    });
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.metadata).toHaveProperty("class", undefined);
+        });
 
-    test("Should return the value of the wrapped function synchronously", () => {
-        const fn = use(
-            function handler(): string {
-                return "result";
-            },
-            withSyncMetadataFactory({ use: () => log })<[], string>(),
-        );
+        test("Should resolve the file path on every invocation", () => {
+            const getCurrentFilePath = vi.fn(() => "/app/src/math.ts");
+            const fn = use(
+                function handler(): string {
+                    return "ok";
+                },
+                withSyncMetadataFactory({ use: () => log })<[], string>({
+                    getCurrentFilePath,
+                }),
+            );
 
-        const result = fn();
+            fn();
+            fn();
 
-        expect(result).toBe("result");
-        expect(result).not.toBeInstanceOf(Promise);
-    });
+            expect(getCurrentFilePath).toHaveBeenCalledTimes(2);
+        });
 
-    test("Should propagate an error from the wrapped function", () => {
-        const fn = use(
-            function handler(): string {
-                throw new Error("boom");
-            },
-            withSyncMetadataFactory({ use: () => log })<[], string>(),
-        );
+        test("Should not attach the metadata to entries logged after the call", () => {
+            const fn = use(
+                function handler(): string {
+                    return "ok";
+                },
+                withSyncMetadataFactory({ use: () => log })<[], string>({
+                    className: "MathService",
+                    getCurrentFilePath: () => "/app/src/math.ts",
+                }),
+            );
 
-        expect(() => fn()).toThrow("boom");
-    });
-});
+            fn();
+            log.info(["after"]);
+
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.metadata).toBeUndefined();
+        });
+
+        test("Should not set the other extra info of the entry", () => {
+            const fn = use(
+                function handler(): string {
+                    log.info(["inside"]);
+                    return "ok";
+                },
+                withSyncMetadataFactory({ use: () => log })<[], string>({
+                    getCurrentFilePath: () => "/app/src/math.ts",
+                }),
+            );
+
+            fn();
+
+            const [entry] = logSpy.mock.calls[0] ?? [];
+            expect(entry?.group).toBeUndefined();
+            expect(entry?.error).toBeUndefined();
+            expect(entry?.spans).toBeUndefined();
+        });
+
+        test("Should return the value of the wrapped function synchronously", () => {
+            const fn = use(
+                function handler(): string {
+                    return "result";
+                },
+                withSyncMetadataFactory({ use: () => log })<[], string>(),
+            );
+
+            const result = fn();
+
+            expect(result).toBe("result");
+            expect(result).not.toBeInstanceOf(Promise);
+        });
+
+        test("Should propagate an error from the wrapped function", () => {
+            const fn = use(
+                function handler(): string {
+                    throw new Error("boom");
+                },
+                withSyncMetadataFactory({ use: () => log })<[], string>(),
+            );
+
+            expect(() => fn()).toThrow("boom");
+        });
+    },
+);

@@ -8,57 +8,70 @@ import { withPluginFactory } from "@/middleware/implementations/with-plugin-fact
 
 import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
 
-describe("function: withEventBusPrefix", { tags: ["Memory"] }, () => {
-    const adapter = new NoOpEventBusAdapter();
-    const prefix = "test-prefix:";
-    const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
+describe(
+    "function: withEventBusPrefix",
+    { tags: ["Memory", "Plugins", "Implementations", "EventBus"] },
+    () => {
+        const adapter = new NoOpEventBusAdapter();
+        const prefix = "test-prefix:";
+        const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
+        });
 
-    describe("method: dispatch", () => {
-        test("Should prefix event name", async () => {
-            const spy = vi.spyOn(adapter, "dispatch");
+        describe("method: dispatch", () => {
+            test("Should prefix event name", async () => {
+                const spy = vi.spyOn(adapter, "dispatch");
 
-            const enhanced = withPlugin(adapter, withEventBusPrefix(prefix));
+                const enhanced = withPlugin(
+                    adapter,
+                    withEventBusPrefix(prefix),
+                );
 
-            await enhanced.dispatch("user.created", { userId: "123" });
+                await enhanced.dispatch("user.created", { userId: "123" });
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<IEventBusAdapter["dispatch"]>
-            >(`${prefix}user.created`, {
-                userId: "123",
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<IEventBusAdapter["dispatch"]>
+                >(`${prefix}user.created`, {
+                    userId: "123",
+                });
             });
         });
-    });
-    describe("method: addListener", () => {
-        test("Should prefix event name", async () => {
-            const spy = vi.spyOn(adapter, "addListener");
-            const listener = vi.fn();
+        describe("method: addListener", () => {
+            test("Should prefix event name", async () => {
+                const spy = vi.spyOn(adapter, "addListener");
+                const listener = vi.fn();
 
-            const enhanced = withPlugin(adapter, withEventBusPrefix(prefix));
+                const enhanced = withPlugin(
+                    adapter,
+                    withEventBusPrefix(prefix),
+                );
 
-            await enhanced.addListener("user.created", listener);
+                await enhanced.addListener("user.created", listener);
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<IEventBusAdapter["addListener"]>
-            >(`${prefix}user.created`, listener);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<IEventBusAdapter["addListener"]>
+                >(`${prefix}user.created`, listener);
+            });
         });
-    });
-    describe("method: removeListener", () => {
-        test("Should prefix event name", async () => {
-            const spy = vi.spyOn(adapter, "removeListener");
-            const listener = vi.fn();
+        describe("method: removeListener", () => {
+            test("Should prefix event name", async () => {
+                const spy = vi.spyOn(adapter, "removeListener");
+                const listener = vi.fn();
 
-            const enhanced = withPlugin(adapter, withEventBusPrefix(prefix));
+                const enhanced = withPlugin(
+                    adapter,
+                    withEventBusPrefix(prefix),
+                );
 
-            await enhanced.removeListener("user.created", listener);
+                await enhanced.removeListener("user.created", listener);
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith<
-                Parameters<IEventBusAdapter["removeListener"]>
-            >(`${prefix}user.created`, listener);
+                expect(spy).toHaveBeenCalledExactlyOnceWith<
+                    Parameters<IEventBusAdapter["removeListener"]>
+                >(`${prefix}user.created`, listener);
+            });
         });
-    });
-});
+    },
+);

@@ -13,171 +13,179 @@ import { enhanceFactory } from "@/middleware/implementations/enhance-factory/_mo
 import { useFactory } from "@/middleware/implementations/use-factory/_module.js";
 import { withPluginFactory } from "@/middleware/implementations/with-plugin-factory/_module.js";
 
-describe("function: handleUnexpectedLockAdapterError", () => {
-    const adapter = new NoOpLockAdapter();
-    const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
-    const unexpectedError = new Error("Unexpected adapter error");
-    const key = "myKey";
-    const lockId = "myLockId";
-    const currentDate = new Date();
+describe(
+    "function: handleUnexpectedLockAdapterError",
+    { tags: ["Derivables", "Implementations", "Lock"] },
+    () => {
+        const adapter = new NoOpLockAdapter();
+        const withPlugin = withPluginFactory(enhanceFactory(useFactory()));
+        const unexpectedError = new Error("Unexpected adapter error");
+        const key = "myKey";
+        const lockId = "myLockId";
+        const currentDate = new Date();
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
-
-    describe("method: acquire", () => {
-        test("Should return adapter result when adapter succeeds", async () => {
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
-
-            await expect(enhanced.acquire(key, lockId, null)).resolves.toBe(
-                true,
-            );
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
         });
-        test("Should throw UnableToAcquireLockError when adapter rejects", async () => {
-            vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
 
-            const promise = enhanced.acquire(key, lockId, null);
+        describe("method: acquire", () => {
+            test("Should return adapter result when adapter succeeds", async () => {
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
 
-            await expect(promise).rejects.toThrow(UnableToAcquireLockError);
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-        test("Should throw UnableToAcquireLockError when adapter throws synchronously", async () => {
-            vi.spyOn(adapter, "acquire").mockImplementation(() => {
-                throw unexpectedError;
+                await expect(enhanced.acquire(key, lockId, null)).resolves.toBe(
+                    true,
+                );
             });
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
+            test("Should throw UnableToAcquireLockError when adapter rejects", async () => {
+                vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
 
-            const promise = enhanced.acquire(key, lockId, null);
+                const promise = enhanced.acquire(key, lockId, null);
 
-            await expect(promise).rejects.toThrow(UnableToAcquireLockError);
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
+                await expect(promise).rejects.toThrow(UnableToAcquireLockError);
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
+            test("Should throw UnableToAcquireLockError when adapter throws synchronously", async () => {
+                vi.spyOn(adapter, "acquire").mockImplementation(() => {
+                    throw unexpectedError;
+                });
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
+
+                const promise = enhanced.acquire(key, lockId, null);
+
+                await expect(promise).rejects.toThrow(UnableToAcquireLockError);
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-    });
 
-    describe("method: release", () => {
-        test("Should return adapter result when adapter succeeds", async () => {
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
+        describe("method: release", () => {
+            test("Should return adapter result when adapter succeeds", async () => {
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
 
-            await expect(enhanced.release(key, lockId)).resolves.toBe(true);
+                await expect(enhanced.release(key, lockId)).resolves.toBe(true);
+            });
+            test("Should throw UnableToReleaseLockError when adapter rejects", async () => {
+                vi.spyOn(adapter, "release").mockRejectedValue(unexpectedError);
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
+
+                const promise = enhanced.release(key, lockId);
+
+                await expect(promise).rejects.toThrow(UnableToReleaseLockError);
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-        test("Should throw UnableToReleaseLockError when adapter rejects", async () => {
-            vi.spyOn(adapter, "release").mockRejectedValue(unexpectedError);
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
 
-            const promise = enhanced.release(key, lockId);
+        describe("method: forceRelease", () => {
+            test("Should return adapter result when adapter succeeds", async () => {
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
 
-            await expect(promise).rejects.toThrow(UnableToReleaseLockError);
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
+                await expect(enhanced.forceRelease(key)).resolves.toBe(true);
+            });
+            test("Should throw UnableToForceReleaseLockError when adapter rejects", async () => {
+                vi.spyOn(adapter, "forceRelease").mockRejectedValue(
+                    unexpectedError,
+                );
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
+
+                const promise = enhanced.forceRelease(key);
+
+                await expect(promise).rejects.toThrow(
+                    UnableToForceReleaseLockError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-    });
 
-    describe("method: forceRelease", () => {
-        test("Should return adapter result when adapter succeeds", async () => {
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
+        describe("method: refresh", () => {
+            test("Should return adapter result when adapter succeeds", async () => {
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
 
-            await expect(enhanced.forceRelease(key)).resolves.toBe(true);
+                await expect(
+                    enhanced.refresh(key, lockId, currentDate),
+                ).resolves.toBe(true);
+            });
+            test("Should throw UnableToRefreshLockError when adapter rejects", async () => {
+                vi.spyOn(adapter, "refresh").mockRejectedValue(unexpectedError);
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
+
+                const promise = enhanced.refresh(key, lockId, currentDate);
+
+                await expect(promise).rejects.toThrow(UnableToRefreshLockError);
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-        test("Should throw UnableToForceReleaseLockError when adapter rejects", async () => {
-            vi.spyOn(adapter, "forceRelease").mockRejectedValue(
-                unexpectedError,
-            );
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
 
-            const promise = enhanced.forceRelease(key);
+        describe("method: getState", () => {
+            test("Should return adapter result when adapter succeeds", async () => {
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
 
-            await expect(promise).rejects.toThrow(
-                UnableToForceReleaseLockError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
+                await expect(enhanced.getState(key)).resolves.toBeNull();
+            });
+            test("Should throw UnableToGetStateLockError when adapter rejects", async () => {
+                vi.spyOn(adapter, "getState").mockRejectedValue(
+                    unexpectedError,
+                );
+                const enhanced = withPlugin(
+                    adapter,
+                    handleUnexpectedLockAdapterError(),
+                );
+
+                const promise = enhanced.getState(key);
+
+                await expect(promise).rejects.toThrow(
+                    UnableToGetStateLockError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
+            });
         });
-    });
-
-    describe("method: refresh", () => {
-        test("Should return adapter result when adapter succeeds", async () => {
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
-
-            await expect(
-                enhanced.refresh(key, lockId, currentDate),
-            ).resolves.toBe(true);
-        });
-        test("Should throw UnableToRefreshLockError when adapter rejects", async () => {
-            vi.spyOn(adapter, "refresh").mockRejectedValue(unexpectedError);
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
-
-            const promise = enhanced.refresh(key, lockId, currentDate);
-
-            await expect(promise).rejects.toThrow(UnableToRefreshLockError);
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-    });
-
-    describe("method: getState", () => {
-        test("Should return adapter result when adapter succeeds", async () => {
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
-
-            await expect(enhanced.getState(key)).resolves.toBeNull();
-        });
-        test("Should throw UnableToGetStateLockError when adapter rejects", async () => {
-            vi.spyOn(adapter, "getState").mockRejectedValue(unexpectedError);
-            const enhanced = withPlugin(
-                adapter,
-                handleUnexpectedLockAdapterError(),
-            );
-
-            const promise = enhanced.getState(key);
-
-            await expect(promise).rejects.toThrow(UnableToGetStateLockError);
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-    });
-});
+    },
+);

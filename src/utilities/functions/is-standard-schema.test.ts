@@ -5,7 +5,7 @@ import { isStandardSchema } from "@/utilities/functions/is-standard-schema.js";
 
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
-describe("function: isStandardSchema", () => {
+describe("function: isStandardSchema", { tags: ["Utilities"] }, () => {
     test("Should return true when a zod schema", () => {
         expect(isStandardSchema(z.string())).toBe(true);
     });

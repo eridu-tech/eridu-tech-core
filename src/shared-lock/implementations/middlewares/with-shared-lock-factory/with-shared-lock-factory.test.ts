@@ -15,185 +15,204 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { SharedLockFactoryCreateSettings } from "@/shared-lock/contracts/_module-exports.js";
 
-describe("function: withSharedLockFactory", { tags: ["Memory"] }, () => {
-    const sharedLockFactoryResolver = new SharedLockFactoryResolver<"memory">({
-        adapters: { memory: new NoOpSharedLockAdapter() },
-        defaultAdapter: "memory",
-    });
-    sharedLockFactoryResolver.init();
+describe(
+    "function: withSharedLockFactory",
+    { tags: ["Memory", "Middlewares", "Implementations", "SharedLock"] },
+    () => {
+        const sharedLockFactoryResolver =
+            new SharedLockFactoryResolver<"memory">({
+                adapters: { memory: new NoOpSharedLockAdapter() },
+                defaultAdapter: "memory",
+            });
+        sharedLockFactoryResolver.init();
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
+        });
 
-    describe("When writer:", () => {
-        test("Should call SharedLockFactory.create method", async () => {
+        describe("When writer:", () => {
+            test("Should call SharedLockFactory.create method", async () => {
+                const spy = vi.spyOn(SharedLockFactory.prototype, "create");
+
+                const withSharedLock = withSharedLockFactory(
+                    sharedLockFactoryResolver,
+                );
+
+                async function fn(_value: string): Promise<void> {}
+                const argValue = "value";
+                const limit = 4;
+                const settings: SharedLockFactoryCreateSettings = {
+                    lockId: argValue,
+                    limit,
+                    ttl: TimeSpan.fromSeconds(20),
+                };
+                await use(
+                    fn,
+                    withSharedLock({
+                        ...settings,
+                        key: ([value]) => value,
+                        lockId: ([value]) => value,
+                        when: SHARED_LOCK_WHEN.WRITER,
+                    }),
+                )(argValue);
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith(argValue, settings);
+            });
+            test("Should call SharedLock.run method", async () => {
+                const spy = vi.spyOn(SharedLock.prototype, "runWriterOrFail");
+
+                const withSharedLock = withSharedLockFactory(
+                    sharedLockFactoryResolver,
+                );
+
+                async function fn(_value: string): Promise<void> {}
+                const argValue = "value";
+                const limit = 4;
+                await use(
+                    fn,
+                    withSharedLock({
+                        key: ([value]) => value,
+                        limit,
+                        when: SHARED_LOCK_WHEN.WRITER,
+                    }),
+                )(argValue);
+
+                expect(spy).toHaveBeenCalledOnce();
+            });
+        });
+        describe("When reader:", () => {
+            test("Should call SharedLockFactory.create method", async () => {
+                const spy = vi.spyOn(SharedLockFactory.prototype, "create");
+
+                const withSharedLock = withSharedLockFactory(
+                    sharedLockFactoryResolver,
+                );
+
+                async function fn(_value: string): Promise<void> {}
+                const argValue = "value";
+                const limit = 4;
+                const settings: SharedLockFactoryCreateSettings = {
+                    lockId: argValue,
+                    ttl: TimeSpan.fromSeconds(20),
+                    limit,
+                };
+                await use(
+                    fn,
+                    withSharedLock({
+                        ...settings,
+                        key: ([value]) => value,
+                        lockId: ([value]) => value,
+                        when: SHARED_LOCK_WHEN.READER,
+                    }),
+                )(argValue);
+
+                expect(spy).toHaveBeenCalledExactlyOnceWith(argValue, settings);
+            });
+            test("Should call SharedLock.run method", async () => {
+                const spy = vi.spyOn(SharedLock.prototype, "runReaderOrFail");
+
+                const withSharedLock = withSharedLockFactory(
+                    sharedLockFactoryResolver,
+                );
+
+                async function fn(_value: string): Promise<void> {}
+                const argValue = "value";
+                const limit = 4;
+                await use(
+                    fn,
+                    withSharedLock({
+                        key: ([value]) => value,
+                        limit,
+                        when: SHARED_LOCK_WHEN.READER,
+                    }),
+                )(argValue);
+
+                expect(spy).toHaveBeenCalledOnce();
+            });
+        });
+        test("Should derive the key from multiple wrapped function arguments", async () => {
             const spy = vi.spyOn(SharedLockFactory.prototype, "create");
 
             const withSharedLock = withSharedLockFactory(
                 sharedLockFactoryResolver,
             );
 
-            async function fn(_value: string): Promise<void> {}
-            const argValue = "value";
-            const limit = 4;
-            const settings: SharedLockFactoryCreateSettings = {
-                lockId: argValue,
-                limit,
-                ttl: TimeSpan.fromSeconds(20),
-            };
+            async function fn(
+                _userId: string,
+                _postId: string,
+            ): Promise<void> {}
             await use(
                 fn,
                 withSharedLock({
-                    ...settings,
-                    key: ([value]) => value,
-                    lockId: ([value]) => value,
+                    key: ([userId, postId]) => `user:${userId}:post:${postId}`,
+                    limit: 4,
                     when: SHARED_LOCK_WHEN.WRITER,
                 }),
-            )(argValue);
+            )("u1", "p2");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith(argValue, settings);
+            expect(spy).toHaveBeenCalledWith(
+                "user:u1:post:p2",
+                expect.anything(),
+            );
         });
-        test("Should call SharedLock.run method", async () => {
-            const spy = vi.spyOn(SharedLock.prototype, "runWriterOrFail");
-
+        test("Should pass through the wrapped function's arguments and return value", async () => {
             const withSharedLock = withSharedLockFactory(
                 sharedLockFactoryResolver,
             );
 
-            async function fn(_value: string): Promise<void> {}
-            const argValue = "value";
-            const limit = 4;
-            await use(
+            function fn(a: string, b: string): Promise<string> {
+                return Promise.resolve(`${a}-${b}`);
+            }
+
+            const wrapped = use(
                 fn,
                 withSharedLock({
-                    key: ([value]) => value,
-                    limit,
+                    key: ([a, b]) => `${a}:${b}`,
+                    limit: 4,
                     when: SHARED_LOCK_WHEN.WRITER,
                 }),
-            )(argValue);
+            );
 
-            expect(spy).toHaveBeenCalledOnce();
+            expect(await wrapped("2", "3")).toBe("2-3");
         });
-    });
-    describe("When reader:", () => {
-        test("Should call SharedLockFactory.create method", async () => {
-            const spy = vi.spyOn(SharedLockFactory.prototype, "create");
+        test("Should use the default adapter when use is not called", async () => {
+            const spy = vi.spyOn(sharedLockFactoryResolver, "use");
 
             const withSharedLock = withSharedLockFactory(
                 sharedLockFactoryResolver,
             );
 
             async function fn(_value: string): Promise<void> {}
-            const argValue = "value";
-            const limit = 4;
-            const settings: SharedLockFactoryCreateSettings = {
-                lockId: argValue,
-                ttl: TimeSpan.fromSeconds(20),
-                limit,
-            };
             await use(
                 fn,
                 withSharedLock({
-                    ...settings,
                     key: ([value]) => value,
-                    lockId: ([value]) => value,
-                    when: SHARED_LOCK_WHEN.READER,
+                    limit: 4,
+                    when: SHARED_LOCK_WHEN.WRITER,
                 }),
-            )(argValue);
+            )("value");
 
-            expect(spy).toHaveBeenCalledExactlyOnceWith(argValue, settings);
+            expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
         });
-        test("Should call SharedLock.run method", async () => {
-            const spy = vi.spyOn(SharedLock.prototype, "runReaderOrFail");
+        test("Should select the adapter passed to use", async () => {
+            const spy = vi.spyOn(sharedLockFactoryResolver, "use");
 
             const withSharedLock = withSharedLockFactory(
                 sharedLockFactoryResolver,
             );
 
             async function fn(_value: string): Promise<void> {}
-            const argValue = "value";
-            const limit = 4;
             await use(
                 fn,
-                withSharedLock({
+                withSharedLock.use("memory")({
                     key: ([value]) => value,
-                    limit,
-                    when: SHARED_LOCK_WHEN.READER,
+                    limit: 4,
+                    when: SHARED_LOCK_WHEN.WRITER,
                 }),
-            )(argValue);
+            )("value");
 
-            expect(spy).toHaveBeenCalledOnce();
+            expect(spy).toHaveBeenCalledWith("memory");
         });
-    });
-    test("Should derive the key from multiple wrapped function arguments", async () => {
-        const spy = vi.spyOn(SharedLockFactory.prototype, "create");
-
-        const withSharedLock = withSharedLockFactory(sharedLockFactoryResolver);
-
-        async function fn(_userId: string, _postId: string): Promise<void> {}
-        await use(
-            fn,
-            withSharedLock({
-                key: ([userId, postId]) => `user:${userId}:post:${postId}`,
-                limit: 4,
-                when: SHARED_LOCK_WHEN.WRITER,
-            }),
-        )("u1", "p2");
-
-        expect(spy).toHaveBeenCalledWith("user:u1:post:p2", expect.anything());
-    });
-    test("Should pass through the wrapped function's arguments and return value", async () => {
-        const withSharedLock = withSharedLockFactory(sharedLockFactoryResolver);
-
-        function fn(a: string, b: string): Promise<string> {
-            return Promise.resolve(`${a}-${b}`);
-        }
-
-        const wrapped = use(
-            fn,
-            withSharedLock({
-                key: ([a, b]) => `${a}:${b}`,
-                limit: 4,
-                when: SHARED_LOCK_WHEN.WRITER,
-            }),
-        );
-
-        expect(await wrapped("2", "3")).toBe("2-3");
-    });
-    test("Should use the default adapter when use is not called", async () => {
-        const spy = vi.spyOn(sharedLockFactoryResolver, "use");
-
-        const withSharedLock = withSharedLockFactory(sharedLockFactoryResolver);
-
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withSharedLock({
-                key: ([value]) => value,
-                limit: 4,
-                when: SHARED_LOCK_WHEN.WRITER,
-            }),
-        )("value");
-
-        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
-    });
-    test("Should select the adapter passed to use", async () => {
-        const spy = vi.spyOn(sharedLockFactoryResolver, "use");
-
-        const withSharedLock = withSharedLockFactory(sharedLockFactoryResolver);
-
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withSharedLock.use("memory")({
-                key: ([value]) => value,
-                limit: 4,
-                when: SHARED_LOCK_WHEN.WRITER,
-            }),
-        )("value");
-
-        expect(spy).toHaveBeenCalledWith("memory");
-    });
-});
+    },
+);

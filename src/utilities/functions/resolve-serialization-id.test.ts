@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { resolveSerializationId } from "@/utilities/functions/resolve-serialization-id.js";
 
-describe("function: resolveSerializationId", () => {
+describe("function: resolveSerializationId", { tags: ["Utilities"] }, () => {
     test("Should return the constructor name when no serialization id", () => {
         class Example {
             readonly value = 1;

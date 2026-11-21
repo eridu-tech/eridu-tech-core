@@ -22,29 +22,33 @@ import type { StartedRedisContainer } from "@testcontainers/redis";
 import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: RedisSharedLockAdapter", { tags: ["Redis"] }, () => {
-    let client: Redis;
-    let startedContainer: StartedRedisContainer;
-    let adapter: ISharedLockAdapter;
-    beforeAll(async () => {
-        startedContainer = await new RedisContainer("redis:7.4.2").start();
-        client = new Redis(startedContainer.getConnectionUrl());
-    }, timeout.toMilliseconds());
-    beforeEach(() => {
-        adapter = withPlugin(
-            new RedisSharedLockAdapter(client),
-            withSharedLockPrefix(randomUUID()),
-        );
-    });
-    afterAll(async () => {
-        await client.quit();
-        await startedContainer.stop();
-    }, timeout.toMilliseconds());
-    sharedLockAdapterTestSuite({
-        createAdapter: () => adapter,
-        test,
-        beforeEach,
-        expect,
-        describe,
-    });
-});
+describe(
+    "class: RedisSharedLockAdapter",
+    { tags: ["Redis", "Adapters", "Implementations", "SharedLock"] },
+    () => {
+        let client: Redis;
+        let startedContainer: StartedRedisContainer;
+        let adapter: ISharedLockAdapter;
+        beforeAll(async () => {
+            startedContainer = await new RedisContainer("redis:7.4.2").start();
+            client = new Redis(startedContainer.getConnectionUrl());
+        }, timeout.toMilliseconds());
+        beforeEach(() => {
+            adapter = withPlugin(
+                new RedisSharedLockAdapter(client),
+                withSharedLockPrefix(randomUUID()),
+            );
+        });
+        afterAll(async () => {
+            await client.quit();
+            await startedContainer.stop();
+        }, timeout.toMilliseconds());
+        sharedLockAdapterTestSuite({
+            createAdapter: () => adapter,
+            test,
+            beforeEach,
+            expect,
+            describe,
+        });
+    },
+);

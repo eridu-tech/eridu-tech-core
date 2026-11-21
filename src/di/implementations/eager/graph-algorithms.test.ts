@@ -22,60 +22,64 @@ function predecessorsFromDependencies(
             .map(([dependent]) => dependent);
 }
 
-describe("findEffectedNodes", { tags: ["Memory"] }, () => {
-    test("should return only the start node when nothing depends on it", () => {
-        const result = findEffectedNodes({
-            predecessorOf: predecessorsFromDependencies({
-                A: [],
-                B: [],
-            }),
-            startNodeId: "A",
+describe(
+    "findEffectedNodes",
+    { tags: ["Memory", "Implementations", "Di"] },
+    () => {
+        test("should return only the start node when nothing depends on it", () => {
+            const result = findEffectedNodes({
+                predecessorOf: predecessorsFromDependencies({
+                    A: [],
+                    B: [],
+                }),
+                startNodeId: "A",
+            });
+
+            expect(result).toEqual(["A"]);
         });
 
-        expect(result).toEqual(["A"]);
-    });
+        test("should return all transitively affected nodes", () => {
+            // A depends on C, B depends on C, D depends on A.
+            const result = findEffectedNodes({
+                predecessorOf: predecessorsFromDependencies({
+                    A: ["C"],
+                    B: ["C"],
+                    D: ["A"],
+                }),
+                startNodeId: "C",
+            });
 
-    test("should return all transitively affected nodes", () => {
-        // A depends on C, B depends on C, D depends on A.
-        const result = findEffectedNodes({
-            predecessorOf: predecessorsFromDependencies({
-                A: ["C"],
-                B: ["C"],
-                D: ["A"],
-            }),
-            startNodeId: "C",
+            expect(new Set(result)).toEqual(new Set(["C", "A", "B", "D"]));
         });
 
-        expect(new Set(result)).toEqual(new Set(["C", "A", "B", "D"]));
-    });
+        test("should not include duplicate nodes in a diamond", () => {
+            // A and B both depend on C; D depends on both A and B.
+            const result = findEffectedNodes({
+                predecessorOf: predecessorsFromDependencies({
+                    A: ["C"],
+                    B: ["C"],
+                    D: ["A", "B"],
+                }),
+                startNodeId: "C",
+            });
 
-    test("should not include duplicate nodes in a diamond", () => {
-        // A and B both depend on C; D depends on both A and B.
-        const result = findEffectedNodes({
-            predecessorOf: predecessorsFromDependencies({
-                A: ["C"],
-                B: ["C"],
-                D: ["A", "B"],
-            }),
-            startNodeId: "C",
+            expect(new Set(result)).toEqual(new Set(["C", "A", "B", "D"]));
+            expect(result.length).toBe(4);
         });
 
-        expect(new Set(result)).toEqual(new Set(["C", "A", "B", "D"]));
-        expect(result.length).toBe(4);
-    });
+        test("should terminate on a cyclic dependency graph", () => {
+            const result = findEffectedNodes({
+                predecessorOf: predecessorsFromDependencies({
+                    A: ["B"],
+                    B: ["A"],
+                }),
+                startNodeId: "A",
+            });
 
-    test("should terminate on a cyclic dependency graph", () => {
-        const result = findEffectedNodes({
-            predecessorOf: predecessorsFromDependencies({
-                A: ["B"],
-                B: ["A"],
-            }),
-            startNodeId: "A",
+            expect(new Set(result)).toEqual(new Set(["A", "B"]));
         });
-
-        expect(new Set(result)).toEqual(new Set(["A", "B"]));
-    });
-});
+    },
+);
 
 describe("visitedNodes", { tags: ["Memory"] }, () => {
     test("should return the start node when it has no neighbors", () => {

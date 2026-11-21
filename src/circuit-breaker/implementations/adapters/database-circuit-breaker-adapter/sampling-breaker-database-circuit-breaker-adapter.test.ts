@@ -8,7 +8,7 @@ import { samplingBreakerTestSuite } from "@/circuit-breaker/implementations/test
 
 describe(
     "sampling-breaker class: DatabaseCircuitBreakerAdapter",
-    { tags: ["Memory"] },
+    { tags: ["Memory", "Adapters", "Implementations", "CircuitBreaker"] },
     () => {
         samplingBreakerTestSuite({
             createAdapter: () => {

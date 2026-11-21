@@ -24,7 +24,7 @@ import type { ICircuitBreakerAdapter } from "@/circuit-breaker/contracts/_module
 const timeout = TimeSpan.fromMinutes(2);
 describe(
     "consecutive-breaker class: RedisCircuitBreakerAdapter",
-    { tags: ["Redis"] },
+    { tags: ["Redis", "Adapters", "Implementations", "CircuitBreaker"] },
     () => {
         let client: Redis;
         let startedContainer: StartedRedisContainer;

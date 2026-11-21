@@ -20,7 +20,7 @@ const PASSIVE_PORT_END = 32009;
 describe(
     "class: FtpFactory",
     {
-        tags: ["FTP"],
+        tags: ["FTP", "Adapters", "Implementations", "FileStorage"],
         concurrent: false,
         timeout: TimeSpan.fromSeconds(10).toMilliseconds(),
     },

@@ -6,7 +6,7 @@ import {
     removeUndefinedProperties,
 } from "@/utilities/functions/object.js";
 
-describe("file: object.ts", () => {
+describe("file: object.ts", { tags: ["Utilities"] }, () => {
     describe("function: objectSize", () => {
         test("Should return 0 when object is empty", () => {
             expect(objectSize({})).toBe(0);

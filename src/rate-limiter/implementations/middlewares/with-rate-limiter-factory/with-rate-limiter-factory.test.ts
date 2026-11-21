@@ -9,136 +9,145 @@ import { withRateLimiterFactory } from "@/rate-limiter/implementations/middlewar
 
 import type { RateLimiterFactoryCreateSettings } from "@/rate-limiter/contracts/_module-exports.js";
 
-describe("function: withRateLimiterFactory", { tags: ["Memory"] }, () => {
-    const rateLimiterFactoryResolver = new RateLimiterFactoryResolver<"memory">(
-        {
-            adapters: { memory: new NoOpRateLimiterAdapter() },
-            defaultAdapter: "memory",
-        },
-    );
-    rateLimiterFactoryResolver.init();
+describe(
+    "function: withRateLimiterFactory",
+    { tags: ["Memory", "Middlewares", "Implementations", "RateLimiter"] },
+    () => {
+        const rateLimiterFactoryResolver =
+            new RateLimiterFactoryResolver<"memory">({
+                adapters: { memory: new NoOpRateLimiterAdapter() },
+                defaultAdapter: "memory",
+            });
+        rateLimiterFactoryResolver.init();
 
-    beforeEach(() => {
-        vi.restoreAllMocks();
-        vi.clearAllMocks();
-    });
+        beforeEach(() => {
+            vi.restoreAllMocks();
+            vi.clearAllMocks();
+        });
 
-    test("Should call RateLimiterFactory.create method", async () => {
-        const spy = vi.spyOn(RateLimiterFactory.prototype, "create");
+        test("Should call RateLimiterFactory.create method", async () => {
+            const spy = vi.spyOn(RateLimiterFactory.prototype, "create");
 
-        const withRateLimiter = withRateLimiterFactory(
-            rateLimiterFactoryResolver,
-        );
+            const withRateLimiter = withRateLimiterFactory(
+                rateLimiterFactoryResolver,
+            );
 
-        async function fn(_value: string): Promise<void> {}
-        const key = "key";
-        const limit = 4;
-        const settings: RateLimiterFactoryCreateSettings = {
-            errorPolicy: Error,
-            limit,
-            onlyError: true,
-        };
-        await use(
-            fn,
-            withRateLimiter({
-                ...settings,
-                key: ([value]) => value,
-            }),
-        )(key);
-
-        expect(spy).toHaveBeenCalledExactlyOnceWith(key, settings);
-    });
-    test("Should call RateLimiter.run method", async () => {
-        const spy = vi.spyOn(RateLimiter.prototype, "runOrFail");
-
-        const withRateLimiter = withRateLimiterFactory(
-            rateLimiterFactoryResolver,
-        );
-
-        async function fn(_value: string): Promise<void> {}
-        const argValue = "value";
-        const limit = 4;
-        await use(
-            fn,
-            withRateLimiter({
-                key: ([value]) => value,
+            async function fn(_value: string): Promise<void> {}
+            const key = "key";
+            const limit = 4;
+            const settings: RateLimiterFactoryCreateSettings = {
+                errorPolicy: Error,
                 limit,
-            }),
-        )(argValue);
+                onlyError: true,
+            };
+            await use(
+                fn,
+                withRateLimiter({
+                    ...settings,
+                    key: ([value]) => value,
+                }),
+            )(key);
 
-        expect(spy).toHaveBeenCalledOnce();
-    });
-    test("Should derive the key from multiple wrapped function arguments", async () => {
-        const spy = vi.spyOn(RateLimiterFactory.prototype, "create");
+            expect(spy).toHaveBeenCalledExactlyOnceWith(key, settings);
+        });
+        test("Should call RateLimiter.run method", async () => {
+            const spy = vi.spyOn(RateLimiter.prototype, "runOrFail");
 
-        const withRateLimiter = withRateLimiterFactory(
-            rateLimiterFactoryResolver,
-        );
+            const withRateLimiter = withRateLimiterFactory(
+                rateLimiterFactoryResolver,
+            );
 
-        async function fn(_userId: string, _postId: string): Promise<void> {}
-        await use(
-            fn,
-            withRateLimiter({
-                key: ([userId, postId]) => `user:${userId}:post:${postId}`,
-                limit: 4,
-            }),
-        )("u1", "p2");
+            async function fn(_value: string): Promise<void> {}
+            const argValue = "value";
+            const limit = 4;
+            await use(
+                fn,
+                withRateLimiter({
+                    key: ([value]) => value,
+                    limit,
+                }),
+            )(argValue);
 
-        expect(spy).toHaveBeenCalledWith("user:u1:post:p2", expect.anything());
-    });
-    test("Should pass through the wrapped function's arguments and return value", async () => {
-        const withRateLimiter = withRateLimiterFactory(
-            rateLimiterFactoryResolver,
-        );
+            expect(spy).toHaveBeenCalledOnce();
+        });
+        test("Should derive the key from multiple wrapped function arguments", async () => {
+            const spy = vi.spyOn(RateLimiterFactory.prototype, "create");
 
-        function fn(a: string, b: string): Promise<string> {
-            return Promise.resolve(`${a}-${b}`);
-        }
+            const withRateLimiter = withRateLimiterFactory(
+                rateLimiterFactoryResolver,
+            );
 
-        const wrapped = use(
-            fn,
-            withRateLimiter({
-                key: ([a, b]) => `${a}:${b}`,
-                limit: 4,
-            }),
-        );
+            async function fn(
+                _userId: string,
+                _postId: string,
+            ): Promise<void> {}
+            await use(
+                fn,
+                withRateLimiter({
+                    key: ([userId, postId]) => `user:${userId}:post:${postId}`,
+                    limit: 4,
+                }),
+            )("u1", "p2");
 
-        expect(await wrapped("2", "3")).toBe("2-3");
-    });
-    test("Should use the default adapter when use is not called", async () => {
-        const spy = vi.spyOn(rateLimiterFactoryResolver, "use");
+            expect(spy).toHaveBeenCalledWith(
+                "user:u1:post:p2",
+                expect.anything(),
+            );
+        });
+        test("Should pass through the wrapped function's arguments and return value", async () => {
+            const withRateLimiter = withRateLimiterFactory(
+                rateLimiterFactoryResolver,
+            );
 
-        const withRateLimiter = withRateLimiterFactory(
-            rateLimiterFactoryResolver,
-        );
+            function fn(a: string, b: string): Promise<string> {
+                return Promise.resolve(`${a}-${b}`);
+            }
 
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withRateLimiter({
-                key: ([value]) => value,
-                limit: 4,
-            }),
-        )("value");
+            const wrapped = use(
+                fn,
+                withRateLimiter({
+                    key: ([a, b]) => `${a}:${b}`,
+                    limit: 4,
+                }),
+            );
 
-        expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
-    });
-    test("Should select the adapter passed to use", async () => {
-        const spy = vi.spyOn(rateLimiterFactoryResolver, "use");
+            expect(await wrapped("2", "3")).toBe("2-3");
+        });
+        test("Should use the default adapter when use is not called", async () => {
+            const spy = vi.spyOn(rateLimiterFactoryResolver, "use");
 
-        const withRateLimiter = withRateLimiterFactory(
-            rateLimiterFactoryResolver,
-        );
+            const withRateLimiter = withRateLimiterFactory(
+                rateLimiterFactoryResolver,
+            );
 
-        async function fn(_value: string): Promise<void> {}
-        await use(
-            fn,
-            withRateLimiter.use("memory")({
-                key: ([value]) => value,
-                limit: 4,
-            }),
-        )("value");
+            async function fn(_value: string): Promise<void> {}
+            await use(
+                fn,
+                withRateLimiter({
+                    key: ([value]) => value,
+                    limit: 4,
+                }),
+            )("value");
 
-        expect(spy).toHaveBeenCalledWith("memory");
-    });
-});
+            expect(spy).toHaveBeenCalledExactlyOnceWith(undefined);
+        });
+        test("Should select the adapter passed to use", async () => {
+            const spy = vi.spyOn(rateLimiterFactoryResolver, "use");
+
+            const withRateLimiter = withRateLimiterFactory(
+                rateLimiterFactoryResolver,
+            );
+
+            async function fn(_value: string): Promise<void> {}
+            await use(
+                fn,
+                withRateLimiter.use("memory")({
+                    key: ([value]) => value,
+                    limit: 4,
+                }),
+            )("value");
+
+            expect(spy).toHaveBeenCalledWith("memory");
+        });
+    },
+);

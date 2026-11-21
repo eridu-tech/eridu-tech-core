@@ -23,162 +23,169 @@ import type { ISemaphore } from "@/semaphore/contracts/_module-exports.js";
 import type { KyselySemaphoreTables } from "@/semaphore/implementations/adapters/kysely-semaphore-adapter/_module-exports.js";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
-describe("class: SemaphoreFactory", { tags: ["Memory"] }, () => {
-    function createSemaphoreFactory() {
-        const serde = new SuperJsonSerde();
-        const semaphoreFactory = new SemaphoreFactory({
-            serde,
-            adapter: new MemorySemaphoreAdapter(),
+describe(
+    "class: SemaphoreFactory",
+    { tags: ["Memory", "Derivables", "Implementations", "Semaphore"] },
+    () => {
+        function createSemaphoreFactory() {
+            const serde = new SuperJsonSerde();
+            const semaphoreFactory = new SemaphoreFactory({
+                serde,
+                adapter: new MemorySemaphoreAdapter(),
+            });
+            semaphoreFactory.init();
+            return {
+                semaphoreFactory,
+                serde,
+            };
+        }
+
+        semaphoreFactoryTestSuite({
+            createSemaphoreFactory,
+            beforeEach,
+            describe,
+            expect,
+            test,
         });
-        semaphoreFactory.init();
-        return {
-            semaphoreFactory,
-            serde,
-        };
-    }
 
-    semaphoreFactoryTestSuite({
-        createSemaphoreFactory,
-        beforeEach,
-        describe,
-        expect,
-        test,
-    });
+        semaphoreFactorySerdeTestSuite({
+            createSemaphoreFactory,
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
 
-    semaphoreFactorySerdeTestSuite({
-        createSemaphoreFactory,
-        beforeEach,
-        describe,
-        expect,
-        test,
-    });
-
-    function createTrxCtx(
-        database_: Database,
-    ): ITransactionContext<Kysely<KyselySemaphoreTables>> {
-        return new TransactionContext({
-            token: contextToken("kysely"),
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-            adapter: new KyselyTransactionAdapter({
-                database: new Kysely({
-                    dialect: new SqliteDialect({
-                        database: database_,
+        function createTrxCtx(
+            database_: Database,
+        ): ITransactionContext<Kysely<KyselySemaphoreTables>> {
+            return new TransactionContext({
+                token: contextToken("kysely"),
+                executionContext: new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                ),
+                adapter: new KyselyTransactionAdapter({
+                    database: new Kysely({
+                        dialect: new SqliteDialect({
+                            database: database_,
+                        }),
                     }),
                 }),
-            }),
-        });
-    }
-    describe("Serde tests:", () => {
-        test("Should differentiate between different adapters", async () => {
-            const serde = new SuperJsonSerde();
-            const key = "a";
-            const ttl = null;
-            const limit = 1;
-
-            const adapter1 = new MemorySemaphoreAdapter();
-            const lockProvider1 = new SemaphoreFactory({
-                adapter: adapter1,
-                serde,
             });
-            lockProvider1.init();
-            const lock1 = lockProvider1.create(key, { ttl, limit });
+        }
+        describe("Serde tests:", () => {
+            test("Should differentiate between different adapters", async () => {
+                const serde = new SuperJsonSerde();
+                const key = "a";
+                const ttl = null;
+                const limit = 1;
 
-            await lock1.acquire();
+                const adapter1 = new MemorySemaphoreAdapter();
+                const lockProvider1 = new SemaphoreFactory({
+                    adapter: adapter1,
+                    serde,
+                });
+                lockProvider1.init();
+                const lock1 = lockProvider1.create(key, { ttl, limit });
 
-            const adapter2 = new KyselySemaphoreAdapter({
-                transactionContext: createTrxCtx(new Sqlite(":memory:")),
+                await lock1.acquire();
+
+                const adapter2 = new KyselySemaphoreAdapter({
+                    transactionContext: createTrxCtx(new Sqlite(":memory:")),
+                });
+                await adapter2.init();
+                const lockProvider2 = new SemaphoreFactory({
+                    adapter: adapter2,
+                    serde,
+                });
+                lockProvider2.init();
+                const lock2 = lockProvider2.create(key, { ttl, limit });
+
+                const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
+                    serde.serialize(lock2),
+                );
+                const result = await deserializeSemaphore2.acquire();
+
+                expect(result).toBe(true);
             });
-            await adapter2.init();
-            const lockProvider2 = new SemaphoreFactory({
-                adapter: adapter2,
-                serde,
+            test("Should differentiate between different serializationIds", async () => {
+                const serde = new SuperJsonSerde();
+                const key = "a";
+                const ttl = null;
+                const limit = 1;
+
+                const lockProvider1 = new SemaphoreFactory({
+                    adapter: new MemorySemaphoreAdapter(),
+                    serializationId: "adapter1",
+                    serde,
+                });
+                lockProvider1.init();
+                const lock1 = lockProvider1.create(key, { ttl, limit });
+
+                await lock1.acquire();
+
+                const lockProvider2 = new SemaphoreFactory({
+                    adapter: new MemorySemaphoreAdapter(),
+                    serializationId: "adapter2",
+                    serde,
+                });
+                lockProvider2.init();
+                const lock2 = lockProvider2.create(key, { ttl, limit });
+
+                const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
+                    serde.serialize(lock2),
+                );
+                const result = await deserializeSemaphore2.acquire();
+
+                expect(result).toBe(true);
             });
-            lockProvider2.init();
-            const lock2 = lockProvider2.create(key, { ttl, limit });
-
-            const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(lock2),
-            );
-            const result = await deserializeSemaphore2.acquire();
-
-            expect(result).toBe(true);
         });
-        test("Should differentiate between different serializationIds", async () => {
-            const serde = new SuperJsonSerde();
-            const key = "a";
-            const ttl = null;
-            const limit = 1;
+        describe("Unexpected adapter error handling:", () => {
+            test("Should reject with UnableToAcquireSemaphoreError when adapter acquire fails", async () => {
+                const unexpectedError = new Error("Unexpected adapter error");
+                const adapter = new MemorySemaphoreAdapter();
+                vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
+                const semaphoreFactory = new SemaphoreFactory({ adapter });
+                semaphoreFactory.init();
 
-            const lockProvider1 = new SemaphoreFactory({
-                adapter: new MemorySemaphoreAdapter(),
-                serializationId: "adapter1",
-                serde,
+                const promise = semaphoreFactory
+                    .create("a", { ttl: null, limit: 1 })
+                    .acquire();
+
+                await expect(promise).rejects.toThrow(
+                    UnableToAcquireSemaphoreError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
             });
-            lockProvider1.init();
-            const lock1 = lockProvider1.create(key, { ttl, limit });
+            test("Should reject with UnableToAcquireSemaphoreError when deserialized semaphore acquire fails", async () => {
+                const serde = new SuperJsonSerde();
+                const unexpectedError = new Error("Unexpected adapter error");
+                const adapter = new MemorySemaphoreAdapter();
+                vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
+                const semaphoreFactory = new SemaphoreFactory({
+                    adapter,
+                    serde,
+                });
+                semaphoreFactory.init();
 
-            await lock1.acquire();
+                const deserializedSemaphore = serde.deserialize<ISemaphore>(
+                    serde.serialize(
+                        semaphoreFactory.create("a", { ttl: null, limit: 1 }),
+                    ),
+                );
+                const promise = deserializedSemaphore.acquire();
 
-            const lockProvider2 = new SemaphoreFactory({
-                adapter: new MemorySemaphoreAdapter(),
-                serializationId: "adapter2",
-                serde,
+                await expect(promise).rejects.toThrow(
+                    UnableToAcquireSemaphoreError,
+                );
+                await expect(promise).rejects.toHaveProperty(
+                    "cause",
+                    unexpectedError,
+                );
             });
-            lockProvider2.init();
-            const lock2 = lockProvider2.create(key, { ttl, limit });
-
-            const deserializeSemaphore2 = serde.deserialize<ISemaphore>(
-                serde.serialize(lock2),
-            );
-            const result = await deserializeSemaphore2.acquire();
-
-            expect(result).toBe(true);
         });
-    });
-    describe("Unexpected adapter error handling:", () => {
-        test("Should reject with UnableToAcquireSemaphoreError when adapter acquire fails", async () => {
-            const unexpectedError = new Error("Unexpected adapter error");
-            const adapter = new MemorySemaphoreAdapter();
-            vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
-            const semaphoreFactory = new SemaphoreFactory({ adapter });
-            semaphoreFactory.init();
-
-            const promise = semaphoreFactory
-                .create("a", { ttl: null, limit: 1 })
-                .acquire();
-
-            await expect(promise).rejects.toThrow(
-                UnableToAcquireSemaphoreError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-        test("Should reject with UnableToAcquireSemaphoreError when deserialized semaphore acquire fails", async () => {
-            const serde = new SuperJsonSerde();
-            const unexpectedError = new Error("Unexpected adapter error");
-            const adapter = new MemorySemaphoreAdapter();
-            vi.spyOn(adapter, "acquire").mockRejectedValue(unexpectedError);
-            const semaphoreFactory = new SemaphoreFactory({ adapter, serde });
-            semaphoreFactory.init();
-
-            const deserializedSemaphore = serde.deserialize<ISemaphore>(
-                serde.serialize(
-                    semaphoreFactory.create("a", { ttl: null, limit: 1 }),
-                ),
-            );
-            const promise = deserializedSemaphore.acquire();
-
-            await expect(promise).rejects.toThrow(
-                UnableToAcquireSemaphoreError,
-            );
-            await expect(promise).rejects.toHaveProperty(
-                "cause",
-                unexpectedError,
-            );
-        });
-    });
-});
+    },
+);

@@ -26,127 +26,131 @@ import type { ClientSession, Db } from "mongodb";
 import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-describe("class: MongodbCircuitBreakerStorageAdapter", { tags: ["Mongodb"] }, () => {
-    let client: MongoClient;
-    const mongodbServer = new MongodbServer();
-    let adapter: MongodbCircuitBreakerStorageAdapter;
-    let database: Db;
-    let collectionName: string;
-    let trxCtx: ITransactionContext<Db, ClientSession>;
+describe(
+    "class: MongodbCircuitBreakerStorageAdapter",
+    { tags: ["Mongodb", "Adapters", "Implementations", "CircuitBreaker"] },
+    () => {
+        let client: MongoClient;
+        const mongodbServer = new MongodbServer();
+        let adapter: MongodbCircuitBreakerStorageAdapter;
+        let database: Db;
+        let collectionName: string;
+        let trxCtx: ITransactionContext<Db, ClientSession>;
 
-    beforeAll(async () => {
-        await mongodbServer.init();
-        client = new MongoClient(mongodbServer.getSettings().url, {
-            directConnection: true,
+        beforeAll(async () => {
+            await mongodbServer.init();
+            client = new MongoClient(mongodbServer.getSettings().url, {
+                directConnection: true,
+            });
+        }, timeout.toMilliseconds());
+        afterAll(async () => {
+            await client.close();
+            await mongodbServer.deInit();
+        }, timeout.toMilliseconds());
+        beforeEach(() => {
+            database = client.db("database");
+            collectionName = randomUUID();
+            trxCtx = new TransactionContext({
+                token: contextToken("mongodb"),
+                executionContext: new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                ),
+                adapter: new MongodbTransactionAdapter({
+                    client,
+                    database,
+                }),
+            });
+            adapter = new MongodbCircuitBreakerStorageAdapter({
+                transactionContext: trxCtx,
+                collectionName,
+                serde: new SuperJsonSerde(),
+            });
         });
-    }, timeout.toMilliseconds());
-    afterAll(async () => {
-        await client.close();
-        await mongodbServer.deInit();
-    }, timeout.toMilliseconds());
-    beforeEach(() => {
-        database = client.db("database");
-        collectionName = randomUUID();
-        trxCtx = new TransactionContext({
-            token: contextToken("mongodb"),
-            executionContext: new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            ),
-            adapter: new MongodbTransactionAdapter({
-                client,
-                database,
-            }),
+        circuitBreakerStorageAdapterTestSuite({
+            createAdapter: async () => {
+                await adapter.init();
+                return adapter;
+            },
+            beforeEach,
+            describe,
+            test,
+            expect,
         });
-        adapter = new MongodbCircuitBreakerStorageAdapter({
-            transactionContext: trxCtx,
-            collectionName,
-            serde: new SuperJsonSerde(),
+        describe("method: init", () => {
+            test("Should not throw error when called multiple times", async () => {
+                await adapter.init();
+
+                const promise = adapter.init();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
         });
-    });
-    circuitBreakerStorageAdapterTestSuite({
-        createAdapter: async () => {
-            await adapter.init();
-            return adapter;
-        },
-        beforeEach,
-        describe,
-        test,
-        expect,
-    });
-    describe("method: init", () => {
-        test("Should not throw error when called multiple times", async () => {
-            await adapter.init();
+        describe("method: deInit", () => {
+            test("Should remove collection", async () => {
+                await adapter.init();
+                await adapter.deInit();
 
-            const promise = adapter.init();
+                const collections = await client
+                    .db("database")
+                    .listCollections()
+                    .toArray();
 
-            await expect(promise).resolves.toBeUndefined();
+                const collection = collections.find(
+                    (collection_) => collection_.name === collectionName,
+                );
+
+                expect(collection).toBeUndefined();
+            });
+            test("Should not throw error when called multiple times", async () => {
+                await adapter.init();
+                await adapter.deInit();
+
+                const promise = adapter.deInit();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+            test("Should not throw error when called before init", async () => {
+                const promise = adapter.deInit();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
         });
-    });
-    describe("method: deInit", () => {
-        test("Should remove collection", async () => {
-            await adapter.init();
-            await adapter.deInit();
+        describe("Transaction tests:", () => {
+            test("Should not persist changes when the transaction fails", async () => {
+                await adapter.init();
 
-            const collections = await client
-                .db("database")
-                .listCollections()
-                .toArray();
+                try {
+                    await trxCtx.run(async () => {
+                        await adapter.transaction(async (trx) => {
+                            await trx.upsert("a", 1);
+                            await trx.upsert("b", 1);
+                        });
+                        throw new Error("Transaction failure");
+                    });
+                } catch {
+                    /* EMPTY */
+                }
 
-            const collection = collections.find(
-                (collection_) => collection_.name === collectionName,
-            );
+                const collection = trxCtx.client.collection(collectionName);
 
-            expect(collection).toBeUndefined();
-        });
-        test("Should not throw error when called multiple times", async () => {
-            await adapter.init();
-            await adapter.deInit();
+                const docs = await collection.find().toArray();
+                expect(docs.length).toBe(0);
+            });
+            test("Should persist changes when the transaction succeeds", async () => {
+                await adapter.init();
 
-            const promise = adapter.deInit();
-
-            await expect(promise).resolves.toBeUndefined();
-        });
-        test("Should not throw error when called before init", async () => {
-            const promise = adapter.deInit();
-
-            await expect(promise).resolves.toBeUndefined();
-        });
-    });
-    describe("Transaction tests:", () => {
-        test("Should not persist changes when the transaction fails", async () => {
-            await adapter.init();
-
-            try {
                 await trxCtx.run(async () => {
                     await adapter.transaction(async (trx) => {
                         await trx.upsert("a", 1);
                         await trx.upsert("b", 1);
                     });
-                    throw new Error("Transaction failure");
                 });
-            } catch {
-                /* EMPTY */
-            }
 
-            const collection = trxCtx.client.collection(collectionName);
+                const collection = trxCtx.client.collection(collectionName);
 
-            const docs = await collection.find().toArray();
-            expect(docs.length).toBe(0);
-        });
-        test("Should persist changes when the transaction succeeds", async () => {
-            await adapter.init();
-
-            await trxCtx.run(async () => {
-                await adapter.transaction(async (trx) => {
-                    await trx.upsert("a", 1);
-                    await trx.upsert("b", 1);
-                });
+                const docs = await collection.find().toArray();
+                expect(docs.length).toBe(2);
             });
-
-            const collection = trxCtx.client.collection(collectionName);
-
-            const docs = await collection.find().toArray();
-            expect(docs.length).toBe(2);
         });
-    });
-});
+    },
+);

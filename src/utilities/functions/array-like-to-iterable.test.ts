@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { arrayLikeToIterable } from "@/utilities/functions/array-like-to-iterable.js";
 import { isIterable } from "@/utilities/functions/is-iterable.js";
 
-describe("function: arrayLikeToIterable", () => {
+describe("function: arrayLikeToIterable", { tags: ["Utilities"] }, () => {
     test("Should convert ArrayLike to Iterable", () => {
         const arrayLike: ArrayLike<unknown> = {
             0: "a",

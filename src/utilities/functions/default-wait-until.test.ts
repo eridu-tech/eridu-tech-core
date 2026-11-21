@@ -9,7 +9,7 @@ function flushPromises(): Promise<void> {
     });
 }
 
-describe("function: defaultWaitUntil", () => {
+describe("function: defaultWaitUntil", { tags: ["Utilities"] }, () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });

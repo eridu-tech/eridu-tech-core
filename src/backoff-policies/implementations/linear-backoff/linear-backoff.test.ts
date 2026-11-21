@@ -8,100 +8,104 @@ import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { callInvocable } from "@/utilities/_module-exports.js";
 
-describe("function: resolveLinearBackoffSettings", { tags: ["Memory"] }, () => {
-    test("Should use default values when no settings are provided", () => {
-        const resolved = resolveLinearBackoffSettings({});
+describe(
+    "function: resolveLinearBackoffSettings",
+    { tags: ["Memory", "Implementations", "BackoffPolicies"] },
+    () => {
+        test("Should use default values when no settings are provided", () => {
+            const resolved = resolveLinearBackoffSettings({});
 
-        expect(resolved.maxDelay[TO_MILLISECONDS]()).toBe(60_000);
-        expect(resolved.minDelay[TO_MILLISECONDS]()).toBe(500);
-        expect(resolved.jitter).toBe(0.5);
-    });
-
-    test("Should use provided values", () => {
-        const resolved = resolveLinearBackoffSettings({
-            maxDelay: TimeSpan.fromSeconds(30),
-            minDelay: TimeSpan.fromMilliseconds(100),
-            jitter: 0.2,
+            expect(resolved.maxDelay[TO_MILLISECONDS]()).toBe(60_000);
+            expect(resolved.minDelay[TO_MILLISECONDS]()).toBe(500);
+            expect(resolved.jitter).toBe(0.5);
         });
 
-        expect(resolved.maxDelay[TO_MILLISECONDS]()).toBe(30_000);
-        expect(resolved.minDelay[TO_MILLISECONDS]()).toBe(100);
-        expect(resolved.jitter).toBe(0.2);
-    });
+        test("Should use provided values", () => {
+            const resolved = resolveLinearBackoffSettings({
+                maxDelay: TimeSpan.fromSeconds(30),
+                minDelay: TimeSpan.fromMilliseconds(100),
+                jitter: 0.2,
+            });
 
-    test("Should allow null jitter", () => {
-        const resolved = resolveLinearBackoffSettings({
-            jitter: null,
+            expect(resolved.maxDelay[TO_MILLISECONDS]()).toBe(30_000);
+            expect(resolved.minDelay[TO_MILLISECONDS]()).toBe(100);
+            expect(resolved.jitter).toBe(0.2);
         });
 
-        expect(resolved.jitter).toBeNull();
-    });
+        test("Should allow null jitter", () => {
+            const resolved = resolveLinearBackoffSettings({
+                jitter: null,
+            });
 
-    test("Should throw TypeError when minDelay is zero", () => {
-        expect(() =>
-            resolveLinearBackoffSettings({
-                minDelay: TimeSpan.fromMilliseconds(0),
-            }),
-        ).toThrow("'minDelay' must be positive");
-    });
+            expect(resolved.jitter).toBeNull();
+        });
 
-    test("Should throw TypeError when minDelay is negative", () => {
-        expect(() =>
-            resolveLinearBackoffSettings({
-                minDelay: TimeSpan.fromMilliseconds(-100),
-            }),
-        ).toThrow("'minDelay' must be positive");
-    });
+        test("Should throw TypeError when minDelay is zero", () => {
+            expect(() =>
+                resolveLinearBackoffSettings({
+                    minDelay: TimeSpan.fromMilliseconds(0),
+                }),
+            ).toThrow("'minDelay' must be positive");
+        });
 
-    test("Should throw TypeError when minDelay is NaN", () => {
-        expect(() =>
-            resolveLinearBackoffSettings({
-                minDelay: TimeSpan.fromMilliseconds(NaN),
-            }),
-        ).toThrow("'minDelay' must be positive");
-    });
+        test("Should throw TypeError when minDelay is negative", () => {
+            expect(() =>
+                resolveLinearBackoffSettings({
+                    minDelay: TimeSpan.fromMilliseconds(-100),
+                }),
+            ).toThrow("'minDelay' must be positive");
+        });
 
-    test("Should throw TypeError when maxDelay is NaN", () => {
-        expect(() =>
-            resolveLinearBackoffSettings({
-                maxDelay: TimeSpan.fromMilliseconds(NaN),
-            }),
-        ).toThrow("'maxDelay' must be greater than or equal to 'minDelay'");
-    });
+        test("Should throw TypeError when minDelay is NaN", () => {
+            expect(() =>
+                resolveLinearBackoffSettings({
+                    minDelay: TimeSpan.fromMilliseconds(NaN),
+                }),
+            ).toThrow("'minDelay' must be positive");
+        });
 
-    test("Should throw TypeError when maxDelay is less than minDelay", () => {
-        expect(() =>
-            resolveLinearBackoffSettings({
-                maxDelay: TimeSpan.fromMilliseconds(100),
-                minDelay: TimeSpan.fromMilliseconds(200),
-            }),
-        ).toThrow("'maxDelay' must be greater than or equal to 'minDelay'");
-    });
+        test("Should throw TypeError when maxDelay is NaN", () => {
+            expect(() =>
+                resolveLinearBackoffSettings({
+                    maxDelay: TimeSpan.fromMilliseconds(NaN),
+                }),
+            ).toThrow("'maxDelay' must be greater than or equal to 'minDelay'");
+        });
 
-    test("Should throw TypeError when jitter is negative", () => {
-        expect(() =>
-            resolveLinearBackoffSettings({
-                jitter: -0.1,
-            }),
-        ).toThrow("'jitter' must be between 0 and 1 or null");
-    });
+        test("Should throw TypeError when maxDelay is less than minDelay", () => {
+            expect(() =>
+                resolveLinearBackoffSettings({
+                    maxDelay: TimeSpan.fromMilliseconds(100),
+                    minDelay: TimeSpan.fromMilliseconds(200),
+                }),
+            ).toThrow("'maxDelay' must be greater than or equal to 'minDelay'");
+        });
 
-    test("Should throw TypeError when jitter is greater than 1", () => {
-        expect(() =>
-            resolveLinearBackoffSettings({
-                jitter: 1.1,
-            }),
-        ).toThrow("'jitter' must be between 0 and 1 or null");
-    });
+        test("Should throw TypeError when jitter is negative", () => {
+            expect(() =>
+                resolveLinearBackoffSettings({
+                    jitter: -0.1,
+                }),
+            ).toThrow("'jitter' must be between 0 and 1 or null");
+        });
 
-    test("Should throw TypeError when jitter is NaN", () => {
-        expect(() =>
-            resolveLinearBackoffSettings({
-                jitter: NaN,
-            }),
-        ).toThrow("'jitter' must be between 0 and 1 or null");
-    });
-});
+        test("Should throw TypeError when jitter is greater than 1", () => {
+            expect(() =>
+                resolveLinearBackoffSettings({
+                    jitter: 1.1,
+                }),
+            ).toThrow("'jitter' must be between 0 and 1 or null");
+        });
+
+        test("Should throw TypeError when jitter is NaN", () => {
+            expect(() =>
+                resolveLinearBackoffSettings({
+                    jitter: NaN,
+                }),
+            ).toThrow("'jitter' must be between 0 and 1 or null");
+        });
+    },
+);
 
 describe("function: linearBackoff", { tags: ["Memory"] }, () => {
     test("Should grow linearly with each attempt", () => {

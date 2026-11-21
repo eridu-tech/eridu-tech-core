@@ -24,7 +24,7 @@ import type { IRateLimiterAdapter } from "@/rate-limiter/contracts/_module-expor
 const timeout = TimeSpan.fromMinutes(2);
 describe(
     "fixed-window-limiter class: RedisRateLimiterAdapter",
-    { tags: ["Redis"] },
+    { tags: ["Redis", "Adapters", "Implementations", "RateLimiter"] },
     () => {
         let client: Redis;
         let startedContainer: StartedRedisContainer;

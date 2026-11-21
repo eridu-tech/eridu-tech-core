@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { isArrayLike } from "@/utilities/functions/is-array-like.js";
 
-describe("function: isArrayLike", () => {
+describe("function: isArrayLike", { tags: ["Utilities"] }, () => {
     test("Should return true when ArrayLike", () => {
         const arrayLike: ArrayLike<unknown> = {
             0: "a",

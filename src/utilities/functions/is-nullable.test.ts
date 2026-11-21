@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { isNullable } from "@/utilities/functions/is-nullable.js";
 
-describe("function: isNullable", () => {
+describe("function: isNullable", { tags: ["Utilities"] }, () => {
     test("Should return true when null", () => {
         expect(isNullable(null)).toBe(true);
     });

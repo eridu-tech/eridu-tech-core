@@ -6,44 +6,48 @@ import { fileStorageAdapterTestSuite } from "@/file-storage/implementations/test
 import type { WritableFileAdapterContent } from "@/file-storage/contracts/_module-exports.js";
 import type { MemoryFile } from "@/file-storage/implementations/adapters/memory-file-storage-adapter/_module-exports.js";
 
-describe("class: MemoryFileStorageAdapter", { tags: ["Memory"] }, () => {
-    let map = new Map<string, MemoryFile>();
-    let adapter: MemoryFileStorageAdapter;
-    beforeEach(() => {
-        map = new Map();
-        adapter = new MemoryFileStorageAdapter(map);
-    });
-    afterEach(async () => {
-        await adapter.deInit();
-    });
-    fileStorageAdapterTestSuite({
-        createAdapter: () => adapter,
-        test,
-        beforeEach,
-        expect,
-        describe,
-    });
-    describe("method: deInit", () => {
-        test("Should clear map", async () => {
-            const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
-            const contentType = "text/plain";
-            const content: WritableFileAdapterContent = {
-                data,
-                fileSizeInBytes: data.byteLength,
-                contentType,
-                contentLanguage: null,
-                contentEncoding: null,
-                contentDisposition: null,
-                cacheControl: null,
-            };
-            await adapter.add("a", content);
-            await adapter.add("a", content);
-            await adapter.add("b", content);
-            await adapter.add("b", content);
-
-            await adapter.deInit();
-
-            expect(map.size).toBe(0);
+describe(
+    "class: MemoryFileStorageAdapter",
+    { tags: ["Memory", "Adapters", "Implementations", "FileStorage"] },
+    () => {
+        let map = new Map<string, MemoryFile>();
+        let adapter: MemoryFileStorageAdapter;
+        beforeEach(() => {
+            map = new Map();
+            adapter = new MemoryFileStorageAdapter(map);
         });
-    });
-});
+        afterEach(async () => {
+            await adapter.deInit();
+        });
+        fileStorageAdapterTestSuite({
+            createAdapter: () => adapter,
+            test,
+            beforeEach,
+            expect,
+            describe,
+        });
+        describe("method: deInit", () => {
+            test("Should clear map", async () => {
+                const data = new Uint8Array(Buffer.from("CONTENT", "utf8"));
+                const contentType = "text/plain";
+                const content: WritableFileAdapterContent = {
+                    data,
+                    fileSizeInBytes: data.byteLength,
+                    contentType,
+                    contentLanguage: null,
+                    contentEncoding: null,
+                    contentDisposition: null,
+                    cacheControl: null,
+                };
+                await adapter.add("a", content);
+                await adapter.add("a", content);
+                await adapter.add("b", content);
+                await adapter.add("b", content);
+
+                await adapter.deInit();
+
+                expect(map.size).toBe(0);
+            });
+        });
+    },
+);

@@ -8,7 +8,7 @@ import { slidingWindowLimiterTestSuite } from "@/rate-limiter/implementations/te
 
 describe(
     "sliding-window-limiter class: DatabaseRateLimiterAdapter",
-    { tags: ["Memory"] },
+    { tags: ["Memory", "Adapters", "Implementations", "RateLimiter"] },
     () => {
         slidingWindowLimiterTestSuite({
             createAdapter: () => {

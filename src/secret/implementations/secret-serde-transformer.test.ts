@@ -7,7 +7,7 @@ import {
 
 describe(
     "class: SecretSerdeTransformer",
-    { tags: ["Memory", "Implementations"] },
+    { tags: ["Memory", "Implementations", "Secret"] },
     () => {
         describe("method: isApplicable", () => {
             test("Should return true for secrets created by secret()", () => {

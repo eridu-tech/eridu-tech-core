@@ -10,7 +10,7 @@ import {
 import type { ErrorPolicyBoolSetting } from "@/utilities/functions/error-policy.js";
 import type { IInvocableObject } from "@/utilities/functions/invocable.js";
 
-describe("file: error-policy.ts", () => {
+describe("file: error-policy.ts", { tags: ["Utilities"] }, () => {
     describe("function: isErrorPolicyBoolSetting", () => {
         test("Should return false when given Class", () => {
             // eslint-disable-next-line @typescript-eslint/no-extraneous-class

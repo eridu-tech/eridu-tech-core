@@ -21,265 +21,287 @@ import type {
 } from "@/file-storage/contracts/_module-exports.js";
 import type { IFlexibleSerde } from "@/serde/contracts/_module-exports.js";
 
-describe("class: ProxyFileStorageResolver", { tags: ["Memory"] }, () => {
-    type Adapters = "adapter1" | "adapter2";
-    let fileStorage: IFileStorageResolver<Adapters> & IFileStorage;
-    let container: Container;
-    let exists1: Mock<ISignedFileStorageAdapter["exists"]>;
-    let exists2: Mock<ISignedFileStorageAdapter["exists"]>;
-    let serde: IFlexibleSerde;
+describe(
+    "class: ProxyFileStorageResolver",
+    { tags: ["Memory", "Derivables", "Implementations", "FileStorage"] },
+    () => {
+        type Adapters = "adapter1" | "adapter2";
+        let fileStorage: IFileStorageResolver<Adapters> & IFileStorage;
+        let container: Container;
+        let exists1: Mock<ISignedFileStorageAdapter["exists"]>;
+        let exists2: Mock<ISignedFileStorageAdapter["exists"]>;
+        let serde: IFlexibleSerde;
 
-    describe("LIFETIME.SINGLETON:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
+        describe("LIFETIME.SINGLETON:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-            const adapter1 = new MemoryFileStorageAdapter();
-            exists1 = vi.spyOn(adapter1, "exists");
+                const adapter1 = new MemoryFileStorageAdapter();
+                exists1 = vi.spyOn(adapter1, "exists");
 
-            const adapter2 = new MemoryFileStorageAdapter();
-            exists2 = vi.spyOn(adapter2, "exists");
+                const adapter2 = new MemoryFileStorageAdapter();
+                exists2 = vi.spyOn(adapter2, "exists");
 
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
+                serde = new SuperJsonSerde();
+                container.registerFactory({
+                    token: FileStorageResolver,
+                    factory: () => {
+                        return new FileStorageResolver<Adapters>({
+                            adapters: {
+                                adapter1: new SignedFileStorageAdapter({
+                                    adapter: adapter1,
+                                    urlAdapter: new NoOpFileUrlAdapter(),
+                                }),
+                                adapter2: new SignedFileStorageAdapter({
+                                    adapter: adapter2,
+                                    urlAdapter: new NoOpFileUrlAdapter(),
+                                }),
+                            },
+                            defaultAdapter: "adapter1",
+                            serde,
+                        });
+                    },
+                    onInit: (factory) => {
+                        factory.init();
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.SINGLETON,
+                });
+                fileStorage = new ProxyFileStorageResolver<Adapters>({
+                    container,
+                    resolverToken: FileStorageResolver,
+                });
+
+                await container.init();
             });
-            serde = new SuperJsonSerde();
-            container.registerFactory({
-                token: FileStorageResolver,
-                factory: () => {
-                    return new FileStorageResolver<Adapters>({
-                        adapters: {
-                            adapter1: new SignedFileStorageAdapter({
-                                adapter: adapter1,
-                                urlAdapter: new NoOpFileUrlAdapter(),
-                            }),
-                            adapter2: new SignedFileStorageAdapter({
-                                adapter: adapter2,
-                                urlAdapter: new NoOpFileUrlAdapter(),
-                            }),
-                        },
-                        defaultAdapter: "adapter1",
+
+            test("Default adapter:", async () => {
+                const key = "a";
+                await fileStorage.create(key).exists();
+
+                const args: Parameters<ISignedFileStorageAdapter["exists"]> = [
+                    key,
+                ];
+
+                expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(exists2).not.toHaveBeenCalled();
+            });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                await fileStorage.use("adapter1").create(key).exists();
+
+                const args: Parameters<ISignedFileStorageAdapter["exists"]> = [
+                    key,
+                ];
+
+                expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(exists2).not.toHaveBeenCalled();
+            });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                await fileStorage.use("adapter2").create(key).exists();
+
+                const args: Parameters<ISignedFileStorageAdapter["exists"]> = [
+                    key,
+                ];
+
+                expect(exists2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(exists1).not.toHaveBeenCalled();
+            });
+
+            fileStorageSerdeTestSuite({
+                createFileStorage: () => {
+                    return {
+                        fileStorage,
                         serde,
-                    });
+                    };
                 },
-                onInit: (factory) => {
-                    factory.init();
-                },
-                deps: {},
-                lifetime: LIFETIME.SINGLETON,
+                beforeEach,
+                describe,
+                expect,
+                test,
             });
-            fileStorage = new ProxyFileStorageResolver<Adapters>({
-                container,
-                resolverToken: FileStorageResolver,
-            });
-
-            await container.init();
         });
+        describe("LIFETIME.TRANSIENT:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-        test("Default adapter:", async () => {
-            const key = "a";
-            await fileStorage.create(key).exists();
+                const adapter1 = new MemoryFileStorageAdapter();
+                exists1 = vi.spyOn(adapter1, "exists");
 
-            const args: Parameters<ISignedFileStorageAdapter["exists"]> = [key];
+                const adapter2 = new MemoryFileStorageAdapter();
+                exists2 = vi.spyOn(adapter2, "exists");
 
-            expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(exists2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            await fileStorage.use("adapter1").create(key).exists();
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
+                container.registerFactory({
+                    token: FileStorageResolver,
+                    factory: () => {
+                        const factory = new FileStorageResolver<Adapters>({
+                            adapters: {
+                                adapter1: new SignedFileStorageAdapter({
+                                    adapter: adapter1,
+                                    urlAdapter: new NoOpFileUrlAdapter(),
+                                }),
+                                adapter2: new SignedFileStorageAdapter({
+                                    adapter: adapter2,
+                                    urlAdapter: new NoOpFileUrlAdapter(),
+                                }),
+                            },
+                            defaultAdapter: "adapter1",
+                        });
+                        factory.init();
+                        return factory;
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.TRANSIENT,
+                });
+                fileStorage = new ProxyFileStorageResolver<Adapters>({
+                    container,
+                    resolverToken: FileStorageResolver,
+                });
 
-            const args: Parameters<ISignedFileStorageAdapter["exists"]> = [key];
-
-            expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(exists2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            await fileStorage.use("adapter2").create(key).exists();
-
-            const args: Parameters<ISignedFileStorageAdapter["exists"]> = [key];
-
-            expect(exists2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(exists1).not.toHaveBeenCalled();
-        });
-
-        fileStorageSerdeTestSuite({
-            createFileStorage: () => {
-                return {
-                    fileStorage,
-                    serde,
-                };
-            },
-            beforeEach,
-            describe,
-            expect,
-            test,
-        });
-    });
-    describe("LIFETIME.TRANSIENT:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
-
-            const adapter1 = new MemoryFileStorageAdapter();
-            exists1 = vi.spyOn(adapter1, "exists");
-
-            const adapter2 = new MemoryFileStorageAdapter();
-            exists2 = vi.spyOn(adapter2, "exists");
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
-            });
-            container.registerFactory({
-                token: FileStorageResolver,
-                factory: () => {
-                    const factory = new FileStorageResolver<Adapters>({
-                        adapters: {
-                            adapter1: new SignedFileStorageAdapter({
-                                adapter: adapter1,
-                                urlAdapter: new NoOpFileUrlAdapter(),
-                            }),
-                            adapter2: new SignedFileStorageAdapter({
-                                adapter: adapter2,
-                                urlAdapter: new NoOpFileUrlAdapter(),
-                            }),
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    factory.init();
-                    return factory;
-                },
-                deps: {},
-                lifetime: LIFETIME.TRANSIENT,
-            });
-            fileStorage = new ProxyFileStorageResolver<Adapters>({
-                container,
-                resolverToken: FileStorageResolver,
+                await container.init();
             });
 
-            await container.init();
-        });
+            test("Default adapter:", async () => {
+                const key = "a";
+                await fileStorage.create(key).exists();
 
-        test("Default adapter:", async () => {
-            const key = "a";
-            await fileStorage.create(key).exists();
+                const args: Parameters<ISignedFileStorageAdapter["exists"]> = [
+                    key,
+                ];
 
-            const args: Parameters<ISignedFileStorageAdapter["exists"]> = [key];
-
-            expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(exists2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            await fileStorage.use("adapter1").create(key).exists();
-
-            const args: Parameters<ISignedFileStorageAdapter["exists"]> = [key];
-
-            expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(exists2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            await fileStorage.use("adapter2").create(key).exists();
-
-            const args: Parameters<ISignedFileStorageAdapter["exists"]> = [key];
-
-            expect(exists2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(exists1).not.toHaveBeenCalled();
-        });
-    });
-    describe("LIFETIME.SCOPED:", () => {
-        beforeEach(async () => {
-            vi.restoreAllMocks();
-            vi.clearAllMocks();
-
-            const adapter1 = new MemoryFileStorageAdapter();
-            exists1 = vi.spyOn(adapter1, "exists");
-
-            const adapter2 = new MemoryFileStorageAdapter();
-            exists2 = vi.spyOn(adapter2, "exists");
-
-            const executionContext = new ExecutionContext(
-                new AlsExecutionContextAdapter(),
-            );
-            container = new Container({
-                executionContext,
+                expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(exists2).not.toHaveBeenCalled();
             });
-            container.registerFactory({
-                token: FileStorageResolver,
-                factory: () => {
-                    const factory = new FileStorageResolver<Adapters>({
-                        adapters: {
-                            adapter1: new SignedFileStorageAdapter({
-                                adapter: adapter1,
-                                urlAdapter: new NoOpFileUrlAdapter(),
-                            }),
-                            adapter2: new SignedFileStorageAdapter({
-                                adapter: adapter2,
-                                urlAdapter: new NoOpFileUrlAdapter(),
-                            }),
-                        },
-                        defaultAdapter: "adapter1",
-                    });
-                    factory.init();
-                    return factory;
-                },
-                deps: {},
-                lifetime: LIFETIME.SCOPED,
-            });
-            fileStorage = new ProxyFileStorageResolver<Adapters>({
-                container,
-                resolverToken: FileStorageResolver,
-            });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                await fileStorage.use("adapter1").create(key).exists();
 
-            await container.init();
+                const args: Parameters<ISignedFileStorageAdapter["exists"]> = [
+                    key,
+                ];
+
+                expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(exists2).not.toHaveBeenCalled();
+            });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                await fileStorage.use("adapter2").create(key).exists();
+
+                const args: Parameters<ISignedFileStorageAdapter["exists"]> = [
+                    key,
+                ];
+
+                expect(exists2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(exists1).not.toHaveBeenCalled();
+            });
         });
+        describe("LIFETIME.SCOPED:", () => {
+            beforeEach(async () => {
+                vi.restoreAllMocks();
+                vi.clearAllMocks();
 
-        test("Default adapter:", async () => {
-            const key = "a";
-            await container.run({
-                scope: async () => {
-                    await fileStorage.create(key).exists();
-                },
+                const adapter1 = new MemoryFileStorageAdapter();
+                exists1 = vi.spyOn(adapter1, "exists");
+
+                const adapter2 = new MemoryFileStorageAdapter();
+                exists2 = vi.spyOn(adapter2, "exists");
+
+                const executionContext = new ExecutionContext(
+                    new AlsExecutionContextAdapter(),
+                );
+                container = new Container({
+                    executionContext,
+                });
+                container.registerFactory({
+                    token: FileStorageResolver,
+                    factory: () => {
+                        const factory = new FileStorageResolver<Adapters>({
+                            adapters: {
+                                adapter1: new SignedFileStorageAdapter({
+                                    adapter: adapter1,
+                                    urlAdapter: new NoOpFileUrlAdapter(),
+                                }),
+                                adapter2: new SignedFileStorageAdapter({
+                                    adapter: adapter2,
+                                    urlAdapter: new NoOpFileUrlAdapter(),
+                                }),
+                            },
+                            defaultAdapter: "adapter1",
+                        });
+                        factory.init();
+                        return factory;
+                    },
+                    deps: {},
+                    lifetime: LIFETIME.SCOPED,
+                });
+                fileStorage = new ProxyFileStorageResolver<Adapters>({
+                    container,
+                    resolverToken: FileStorageResolver,
+                });
+
+                await container.init();
             });
 
-            const args: Parameters<ISignedFileStorageAdapter["exists"]> = [key];
+            test("Default adapter:", async () => {
+                const key = "a";
+                await container.run({
+                    scope: async () => {
+                        await fileStorage.create(key).exists();
+                    },
+                });
 
-            expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(exists2).not.toHaveBeenCalled();
-        });
-        test("Adapter 1:", async () => {
-            const key = "a";
-            await container.run({
-                scope: async () => {
-                    await fileStorage.use("adapter1").create(key).exists();
-                },
+                const args: Parameters<ISignedFileStorageAdapter["exists"]> = [
+                    key,
+                ];
+
+                expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(exists2).not.toHaveBeenCalled();
             });
+            test("Adapter 1:", async () => {
+                const key = "a";
+                await container.run({
+                    scope: async () => {
+                        await fileStorage.use("adapter1").create(key).exists();
+                    },
+                });
 
-            const args: Parameters<ISignedFileStorageAdapter["exists"]> = [key];
+                const args: Parameters<ISignedFileStorageAdapter["exists"]> = [
+                    key,
+                ];
 
-            expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(exists2).not.toHaveBeenCalled();
-        });
-        test("Adapter 2:", async () => {
-            const key = "a";
-            await container.run({
-                scope: async () => {
-                    await fileStorage.use("adapter2").create(key).exists();
-                },
+                expect(exists1).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(exists2).not.toHaveBeenCalled();
             });
+            test("Adapter 2:", async () => {
+                const key = "a";
+                await container.run({
+                    scope: async () => {
+                        await fileStorage.use("adapter2").create(key).exists();
+                    },
+                });
 
-            const args: Parameters<ISignedFileStorageAdapter["exists"]> = [key];
+                const args: Parameters<ISignedFileStorageAdapter["exists"]> = [
+                    key,
+                ];
 
-            expect(exists2).toHaveBeenCalledExactlyOnceWith(...args);
-            expect(exists1).not.toHaveBeenCalled();
+                expect(exists2).toHaveBeenCalledExactlyOnceWith(...args);
+                expect(exists1).not.toHaveBeenCalled();
+            });
         });
-    });
-});
+    },
+);
