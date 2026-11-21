@@ -21,7 +21,7 @@ import type {
 import type { ICacheAdapter } from "@/cache/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
 import type {
-    ITransactionContext,
+    ITransactionConnection,
     TransactionAware,
 } from "@/transaction-context/contracts/_module-exports.js";
 import type {
@@ -130,7 +130,10 @@ export class MongodbCacheAdapter<TType = unknown>
         );
     }
 
-    private readonly trxCtx: ITransactionContext<Db, ClientSession>;
+    private readonly trxCtx: Pick<
+        ITransactionConnection<Db, ClientSession>,
+        "client" | "transaction"
+    >;
     private readonly serde: ISerde<string | number>;
     private readonly collection: Collection<MongodbCacheEntryDocument>;
 

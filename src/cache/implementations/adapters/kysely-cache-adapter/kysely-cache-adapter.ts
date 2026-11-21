@@ -59,7 +59,7 @@ export type KyselyCacheAdapterSettings = {
 
 /**
  * To utilize the `KyselyCacheAdapter`, you must install the [`"kysely"`](https://www.npmjs.com/package/kysely) package and configure a `Kysely` class instance.
- * The adapter have been tested with `sqlite`, `postgres` and `mysql` databases.
+ * The adapter have been tested with `sqlite` and `postgres` databases.
  *
  * IMPORT_PATH: `"eridu-tech/cache/kysely-cache-adapter"`
  * @group Adapters

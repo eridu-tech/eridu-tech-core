@@ -17,7 +17,7 @@ import type {
     ILockAdapterState,
 } from "@/lock/contracts/_module-exports.js";
 import type {
-    ITransactionContext,
+    ITransactionConnection,
     TransactionAware,
 } from "@/transaction-context/contracts/_module-exports.js";
 import type {
@@ -72,7 +72,10 @@ export type MongodbLockEntryDocument = {
 export class MongodbLockAdapter
     implements ILockAdapter, IAsyncDeinitizable, IAsyncInitizable
 {
-    private readonly trxCtx: ITransactionContext<Db, ClientSession>;
+    private readonly trxCtx: Pick<
+        ITransactionConnection<Db, ClientSession>,
+        "client" | "transaction"
+    >;
     private readonly collection: Collection<MongodbLockEntryDocument>;
 
     constructor(settings: MongodbLockAdapterSettings) {

@@ -90,7 +90,7 @@ describe(
                 await lock1.acquire();
 
                 const adapter2 = new KyselyLockAdapter({
-                    transactionContext: createTrxCtx(new Sqlite(":memory:")),
+                    database: createTrxCtx(new Sqlite(":memory:")),
                 });
                 await adapter2.init();
                 const lockFactory2 = new LockFactory({

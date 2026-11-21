@@ -28,7 +28,6 @@ export type KyselyRateLimiterTable = {
     key: string;
     state: string;
     // In ms since unix epoch.
-    // The type in mysql is bigint and will be returned as a string.
     // Some sql database drivers have support for js bigint if enabled. Meaning bigint will be returned.
     expiration: number | bigint | string;
 };
