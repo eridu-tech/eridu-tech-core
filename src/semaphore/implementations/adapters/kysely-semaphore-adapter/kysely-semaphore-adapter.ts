@@ -64,6 +64,9 @@ export type KyselySemaphoreEntryTable = {
     key: string;
     limit: number;
     slots: KyselySemaphoreSlots;
+    // In ms since unix epoch. The row can be pruned after this date.
+    // Stored as a 64 bit float, the closest sql type to a js number.
+    expiration: number | null;
 };
 
 /**
@@ -148,7 +151,9 @@ export class KyselySemaphoreAdapter
 
     private slotExpirationExpression(): RawBuilder<number | null> {
         if (this.isPostgres) {
-            return sql<number | null>`(slot.value->>'expiration')::bigint`;
+            return sql<
+                number | null
+            >`(slot.value->>'expiration')::double precision`;
         }
         return sql<number | null>`json_extract(slot.value, '$.expiration')`;
     }
@@ -181,9 +186,9 @@ export class KyselySemaphoreAdapter
         return sql<number>`${value}`;
     }
 
-    private bigintValue(value: number | null): RawBuilder<number | null> {
+    private floatValue(value: number | null): RawBuilder<number | null> {
         if (this.isPostgres) {
-            return sql<number | null>`${value}::bigint`;
+            return sql<number | null>`${value}::double precision`;
         }
         return sql<number | null>`${value}`;
     }
@@ -205,7 +210,7 @@ export class KyselySemaphoreAdapter
     }): RawBuilder<unknown> {
         const values = {
             id: this.textValue(slot.id),
-            expiration: this.bigintValue(slot.expiration),
+            expiration: this.floatValue(slot.expiration),
         };
         if (this.isPostgres) {
             return jsonBuildObjectPostgres(values);
@@ -268,6 +273,29 @@ export class KyselySemaphoreAdapter
             .orderBy(this.slotIndexExpression());
     }
 
+    /**
+     * The expiration of the row is the expiration of the latest slot while at
+     * least one slot is acquired. A row without acquired slots expires
+     * immediately.
+     */
+    private expirationValue(
+        slots: Expression<unknown>,
+        now: number,
+    ): RawBuilder<number | null> {
+        if (this.isPostgres) {
+            return sql<number | null>`case
+                when jsonb_array_length(${slots}) = 0 then ${now - 60000}
+                when exists (select 1 from jsonb_array_elements(${slots}) as s where s->>'expiration' is null) then null
+                else (select max((s->>'expiration')::double precision) from jsonb_array_elements(${slots}) as s)
+            end`;
+        }
+        return sql<number | null>`case
+            when json_array_length(${slots}) = 0 then ${now - 60000}
+            when exists (select 1 from json_each(${slots}) as s where json_extract(s.value, '$.expiration') is null) then null
+            else (select max(json_extract(s.value, '$.expiration')) from json_each(${slots}) as s)
+        end`;
+    }
+
     private refreshedSlotRows(slotId: string, ttl: number, now: number) {
         return this.slotsTable()
             .select((eb) => [
@@ -275,19 +303,13 @@ export class KyselySemaphoreAdapter
                 eb
                     .case()
                     .when(eb(this.slotIdExpression(), "=", slotId))
-                    .then(this.bigintValue(ttl))
+                    .then(this.floatValue(ttl))
                     .else(this.slotExpirationExpression())
                     .end()
                     .as("expiration"),
             ])
             .where((eb) => this.slotNotExpiredCondition(eb, now))
             .orderBy(this.slotIndexExpression());
-    }
-
-    private unexpiredSlotsQuery(now: number) {
-        return this.slotsTable()
-            .select(sql`1`.as("one"))
-            .where((eb) => this.slotNotExpiredCondition(eb, now));
     }
 
     private unexpiredSlotQuery(slotId: string, now: number) {
@@ -316,6 +338,21 @@ export class KyselySemaphoreAdapter
                 .addColumn("slots", this.isPostgres ? "jsonb" : "json", (col) =>
                     col.notNull(),
                 )
+                .addColumn(
+                    "expiration",
+                    this.isPostgres ? "double precision" : "real",
+                )
+                .execute();
+        } catch {
+            /* EMPTY */
+        }
+
+        // Should throw if the index already exists thats why the try catch is used.
+        try {
+            await this.trxCtx.client.schema
+                .createIndex("semaphore_expiration")
+                .on("semaphore")
+                .column("expiration")
                 .execute();
         } catch {
             /* EMPTY */
@@ -327,6 +364,16 @@ export class KyselySemaphoreAdapter
      * Note all semaphore data will be removed.
      */
     async deInit(): Promise<void> {
+        // Should throw if the index does not exists thats why the try catch is used.
+        try {
+            await this.trxCtx.client.schema
+                .dropIndex("semaphore_expiration")
+                .on("semaphore")
+                .execute();
+        } catch {
+            /* EMPTY */
+        }
+
         // Should throw if the table does not exists thats why the try catch is used.
         try {
             await this.trxCtx.client.schema.dropTable("semaphore").execute();
@@ -336,10 +383,9 @@ export class KyselySemaphoreAdapter
     }
 
     async removeAllExpired(): Promise<void> {
-        const now = Date.now();
         await this.trxCtx.current
             .deleteFrom("semaphore")
-            .where((eb) => eb.not(eb.exists(this.unexpiredSlotsQuery(now))))
+            .where("semaphore.expiration", "<=", Date.now())
             .execute();
     }
 
@@ -347,18 +393,20 @@ export class KyselySemaphoreAdapter
         const { key, slotId, limit, ttl } = settings;
         const now = Date.now();
         const expiration = ttl?.getTime() ?? null;
+        const insertedSlots = this.slotsArray(
+            this.trxCtx.current.selectNoFrom([
+                this.textValue(slotId).as("id"),
+                this.floatValue(expiration).as("expiration"),
+            ]),
+        );
 
         const semaphore = await this.trxCtx.current
             .insertInto("semaphore")
             .values({
                 key,
                 limit,
-                slots: this.slotsArray(
-                    this.trxCtx.current.selectNoFrom([
-                        this.textValue(slotId).as("id"),
-                        this.bigintValue(expiration).as("expiration"),
-                    ]),
-                ),
+                slots: insertedSlots,
+                expiration: this.expirationValue(insertedSlots, now),
             })
             .onConflict((oc) =>
                 oc.column("key").doUpdateSet((eb) => {
@@ -399,6 +447,7 @@ export class KyselySemaphoreAdapter
                     return {
                         limit: nextLimit,
                         slots: nextSlots,
+                        expiration: this.expirationValue(nextSlots, now),
                     };
                 }),
             )
@@ -418,13 +467,17 @@ export class KyselySemaphoreAdapter
         const now = Date.now();
         const semaphore = await this.trxCtx.current
             .updateTable("semaphore")
-            .set((eb) => ({
-                slots: this.slotsArray(
+            .set((eb) => {
+                const nextSlots = this.slotsArray(
                     this.unexpiredSlotRows(now).where(
                         eb(this.slotIdExpression(), "<>", slotId),
                     ),
-                ),
-            }))
+                );
+                return {
+                    slots: nextSlots,
+                    expiration: this.expirationValue(nextSlots, now),
+                };
+            })
             .where("semaphore.key", "=", key)
             .where((eb) => eb.exists(this.unexpiredSlotQuery(slotId, now)))
             .returning("semaphore.key")
@@ -454,11 +507,15 @@ export class KyselySemaphoreAdapter
         const now = Date.now();
         const semaphore = await this.trxCtx.current
             .updateTable("semaphore")
-            .set(() => ({
-                slots: this.slotsArray(
+            .set(() => {
+                const nextSlots = this.slotsArray(
                     this.refreshedSlotRows(slotId, ttl.getTime(), now),
-                ),
-            }))
+                );
+                return {
+                    slots: nextSlots,
+                    expiration: this.expirationValue(nextSlots, now),
+                };
+            })
             .where("semaphore.key", "=", key)
             .where((eb) =>
                 eb.exists(this.unexpiredExpirableSlotQuery(slotId, now)),
