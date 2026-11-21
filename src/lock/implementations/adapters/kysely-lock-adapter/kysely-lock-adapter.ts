@@ -53,7 +53,7 @@ export type KyselyLockAdapterSettings = {
 /**
  * To utilize the `KyselyLockAdapter`, you must install the [`"kysely"`](https://www.npmjs.com/package/kysely) package and configure a `Kysely` class instance.
  *
- * Note in order to use `KyselyLockAdapter` correctly, ensure you use a single, consistent database across all server instances and use a database that has support for transactions.
+ * Note in order to use `KyselyLockAdapter` correctly, ensure you use a single, consistent database across all server instances.
  * The adapter have been tested with `sqlite` and `postgres` databases.
  *
  * IMPORT_PATH: `"eridu-tech/lock/kysely-lock-adapter"`
