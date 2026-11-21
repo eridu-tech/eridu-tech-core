@@ -58,6 +58,24 @@ describe(
             client.close();
         });
 
+        async function getExpiration(
+            key: string,
+        ): Promise<number | null | undefined> {
+            const semaphore = await database
+                .selectFrom("semaphore")
+                .where("semaphore.key", "=", key)
+                .select("semaphore.expiration")
+                .executeTakeFirst();
+
+            if (semaphore === undefined) {
+                return undefined;
+            }
+            if (semaphore.expiration === null) {
+                return null;
+            }
+            return semaphore.expiration;
+        }
+
         semaphoreAdapterTestSuite({
             createAdapter: async () => {
                 await adapter.init();
@@ -69,7 +87,7 @@ describe(
             describe,
         });
         describe("method: removeAllExpired", () => {
-            test("Should remove all expired keys", async () => {
+            test("Should remove all rows with passed expiration", async () => {
                 await adapter.init();
 
                 await database
@@ -80,6 +98,7 @@ describe(
                         slots: JSON.stringify([
                             { id: "1", expiration: Date.now() - 1000 },
                         ] satisfies Array<KyselySemaphoreSlotEntry>),
+                        expiration: Date.now() - 1000,
                     })
                     .execute();
                 await database
@@ -90,6 +109,7 @@ describe(
                         slots: JSON.stringify([
                             { id: "2", expiration: Date.now() - 1000 },
                         ] satisfies Array<KyselySemaphoreSlotEntry>),
+                        expiration: Date.now() - 1000,
                     })
                     .execute();
                 await database
@@ -100,32 +120,139 @@ describe(
                         slots: JSON.stringify([
                             { id: "3", expiration: Date.now() + 50000 },
                         ] satisfies Array<KyselySemaphoreSlotEntry>),
+                        expiration: Date.now() + 50000,
                     })
                     .execute();
 
                 await adapter.removeAllExpired();
 
-                expect(
-                    await database
-                        .selectFrom("semaphore")
-                        .where("semaphore.key", "=", "a")
-                        .selectAll()
-                        .executeTakeFirst(),
-                ).toBeUndefined();
-                expect(
-                    await database
-                        .selectFrom("semaphore")
-                        .where("semaphore.key", "=", "b")
-                        .selectAll()
-                        .executeTakeFirst(),
-                ).toBeUndefined();
-                expect(
-                    await database
-                        .selectFrom("semaphore")
-                        .where("semaphore.key", "=", "c")
-                        .selectAll()
-                        .executeTakeFirst(),
-                ).toBeDefined();
+                expect(await getExpiration("a")).toBeUndefined();
+                expect(await getExpiration("b")).toBeUndefined();
+                expect(await getExpiration("c")).toBeGreaterThan(Date.now());
+            });
+            test("Should not remove rows without expiration", async () => {
+                await adapter.init();
+
+                await database
+                    .insertInto("semaphore")
+                    .values({
+                        key: "a",
+                        limit: 3,
+                        slots: JSON.stringify([
+                            { id: "1", expiration: null },
+                        ] satisfies Array<KyselySemaphoreSlotEntry>),
+                        expiration: null,
+                    })
+                    .execute();
+
+                await adapter.removeAllExpired();
+
+                expect(await getExpiration("a")).toBeNull();
+            });
+        });
+        describe("Expiration tests", () => {
+            test("Should set expiration to null when slot is unexpireable", async () => {
+                await adapter.init();
+
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "1",
+                    limit: 3,
+                    ttl: null,
+                });
+
+                await expect(getExpiration("a")).resolves.toBeNull();
+            });
+            test("Should set expiration to the slot expiration when slot is expirable", async () => {
+                await adapter.init();
+
+                const expiration = Date.now() + 60000;
+
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "1",
+                    limit: 3,
+                    ttl: new Date(expiration),
+                });
+
+                await expect(getExpiration("a")).resolves.toBe(expiration);
+            });
+            test("Should set expiration to null when one of the slots is unexpireable", async () => {
+                await adapter.init();
+
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "1",
+                    limit: 3,
+                    ttl: new Date(Date.now() + 60000),
+                });
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "2",
+                    limit: 3,
+                    ttl: null,
+                });
+
+                await expect(getExpiration("a")).resolves.toBeNull();
+            });
+            test("Should set expiration to the longest slot expiration", async () => {
+                await adapter.init();
+
+                const longestExpiration = Date.now() + 120000;
+
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "1",
+                    limit: 3,
+                    ttl: new Date(Date.now() + 60000),
+                });
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "2",
+                    limit: 3,
+                    ttl: new Date(longestExpiration),
+                });
+
+                await expect(getExpiration("a")).resolves.toBe(
+                    longestExpiration,
+                );
+            });
+            test("Should update expiration when the slot is refreshed", async () => {
+                await adapter.init();
+
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "1",
+                    limit: 3,
+                    ttl: new Date(Date.now() + 60000),
+                });
+                const expiration = Date.now() + 120000;
+
+                await adapter.refresh("a", "1", new Date(expiration));
+
+                await expect(getExpiration("a")).resolves.toBe(expiration);
+            });
+            test("Should set expiration to before current date when each slot is individually removed", async () => {
+                await adapter.init();
+
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "1",
+                    limit: 3,
+                    ttl: new Date(Date.now() + 60000),
+                });
+                await adapter.acquire({
+                    key: "a",
+                    slotId: "2",
+                    limit: 3,
+                    ttl: new Date(Date.now() + 120000),
+                });
+
+                await adapter.release("a", "1");
+                await adapter.release("a", "2");
+
+                const expiration = await getExpiration("a");
+                expect(expiration).toBeLessThan(Date.now());
             });
         });
         describe("method: init", () => {
@@ -157,6 +284,12 @@ describe(
                                 name: "slots",
                                 dataType: "json",
                                 isNullable: false,
+                                hasDefaultValue: false,
+                            }),
+                            expect.objectContaining<Partial<ColumnMetadata>>({
+                                name: "expiration",
+                                dataType: "REAL",
+                                isNullable: true,
                                 hasDefaultValue: false,
                             }),
                         ] as Array<Partial<ColumnMetadata>>),

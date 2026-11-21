@@ -2,9 +2,6 @@ import Sqlite from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { contextToken } from "@/execution-context/contracts/_module-exports.js";
-import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { UnableToAcquireWriterLockError } from "@/shared-lock/contracts/_module-exports.js";
 import { KyselySharedLockAdapter } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
@@ -14,31 +11,31 @@ import {
     sharedLockFactorySerdeTestSuite,
     sharedLockFactoryTestSuite,
 } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
-import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
-import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
-
-import type { Database } from "better-sqlite3";
 
 import type { ISharedLock } from "@/shared-lock/contracts/_module-exports.js";
 import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
 
 describe(
     "class: SharedLockFactory",
     { tags: ["Memory", "Derivables", "Implementations", "SharedLock"] },
     () => {
-        function createSharedLockFactory() {
-            const serde = new SuperJsonSerde();
-            const sharedLockFactory = new SharedLockFactory({
-                serde,
+        let suiteSerde: SuperJsonSerde;
+        let suiteSharedLockFactory: SharedLockFactory;
+
+        beforeEach(() => {
+            suiteSerde = new SuperJsonSerde();
+            suiteSharedLockFactory = new SharedLockFactory({
+                serde: suiteSerde,
                 adapter: new MemorySharedLockAdapter(),
             });
-            sharedLockFactory.init();
-            return { sharedLockFactory, serde };
-        }
+            suiteSharedLockFactory.init();
+        });
 
         sharedLockFactoryTestSuite({
-            createSharedLockFactory,
+            createSharedLockFactory: () => ({
+                sharedLockFactory: suiteSharedLockFactory,
+                serde: suiteSerde,
+            }),
             beforeEach,
             describe,
             expect,
@@ -47,30 +44,16 @@ describe(
         });
 
         sharedLockFactorySerdeTestSuite({
-            createSharedLockFactory,
+            createSharedLockFactory: () => ({
+                sharedLockFactory: suiteSharedLockFactory,
+                serde: suiteSerde,
+            }),
             beforeEach,
             describe,
             expect,
             test,
         });
 
-        function createTrxCtx(
-            database_: Database,
-        ): ITransactionContext<Kysely<KyselySharedLockTables>> {
-            return new TransactionContext({
-                token: contextToken("kysely"),
-                executionContext: new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                ),
-                adapter: new KyselyTransactionAdapter({
-                    database: new Kysely({
-                        dialect: new SqliteDialect({
-                            database: database_,
-                        }),
-                    }),
-                }),
-            });
-        }
         describe("Serde tests:", () => {
             test("Should differentiate between different adapters", async () => {
                 const serde = new SuperJsonSerde();
@@ -89,7 +72,11 @@ describe(
                 await lock1.acquireWriter();
 
                 const adapter2 = new KyselySharedLockAdapter({
-                    transactionContext: createTrxCtx(new Sqlite(":memory:")),
+                    database: new Kysely<KyselySharedLockTables>({
+                        dialect: new SqliteDialect({
+                            database: new Sqlite(":memory:"),
+                        }),
+                    }),
                 });
                 await adapter2.init();
                 const sharedLockFactory2 = new SharedLockFactory({

@@ -14,20 +14,19 @@ import {
     vi,
 } from "vitest";
 
-import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
-import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
 import { KyselySharedLockAdapter } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
 import { sharedLockAdapterTestSuite } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
 import { WithKyselyTableName } from "@/test-utilities/functions/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
-import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import type { ColumnMetadata, TableMetadata } from "kysely";
 
-import type { KyselySharedLockTables } from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
+import type {
+    KyselyReaderSemaphoreEntry,
+    KyselySharedLockTables,
+    KyselyWriterLockEntry,
+} from "@/shared-lock/implementations/adapters/kysely-shared-lock-adapter/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
 describe(
@@ -35,14 +34,14 @@ describe(
     { tags: ["Postgres", "Adapters", "Implementations", "SharedLock"] },
     () => {
         let container: StartedPostgreSqlContainer;
-        let database: Pool;
-        let trxCtx: ITransactionContext<Kysely<KyselySharedLockTables>>;
+        let client: Pool;
+        let database: Kysely<KyselySharedLockTables>;
         let adapter: KyselySharedLockAdapter;
         let tableNames: Record<keyof KyselySharedLockTables, string>;
 
         beforeAll(async () => {
             container = await new PostgreSqlContainer("postgres:17.5").start();
-            database = new Pool({
+            client = new Pool({
                 database: container.getDatabase(),
                 host: container.getHost(),
                 user: container.getUsername(),
@@ -52,49 +51,44 @@ describe(
             });
         }, timeout.toMilliseconds());
         afterAll(async () => {
-            await database.end();
+            await client.end();
             await container.stop();
         }, timeout.toMilliseconds());
         beforeEach(() => {
             vi.clearAllMocks();
             vi.resetAllMocks();
             tableNames = {
-                writerLock: randomUUID(),
-                readerSemaphore: randomUUID(),
-                readerSemaphoreSlot: randomUUID(),
+                sharedLock: randomUUID(),
             };
-            const kysely = new Kysely<KyselySharedLockTables>({
+            database = new Kysely<KyselySharedLockTables>({
                 dialect: new PostgresDialect({
-                    pool: database,
+                    pool: client,
                 }),
                 plugins: [new WithKyselyTableName(tableNames)],
             });
-            trxCtx = new TransactionContext({
-                executionContext: new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                ),
-                adapter: new KyselyTransactionAdapter({
-                    database: kysely,
-                }),
-            });
-            adapter = new KyselySharedLockAdapter({
-                transactionContext: trxCtx,
-            });
+            adapter = new KyselySharedLockAdapter({ database });
         });
         afterEach(async () => {
-            await trxCtx.client.schema
-                .dropTable("readerSemaphoreSlot")
-                .ifExists()
-                .execute();
-            await trxCtx.client.schema
-                .dropTable("readerSemaphore")
-                .ifExists()
-                .execute();
-            await trxCtx.client.schema
-                .dropTable("writerLock")
-                .ifExists()
-                .execute();
+            await database.schema.dropTable("sharedLock").ifExists().execute();
         });
+
+        async function getExpiration(
+            key: string,
+        ): Promise<number | null | undefined> {
+            const sharedLock = await database
+                .selectFrom("sharedLock")
+                .where("sharedLock.key", "=", key)
+                .select("sharedLock.expiration")
+                .executeTakeFirst();
+
+            if (sharedLock === undefined) {
+                return undefined;
+            }
+            if (sharedLock.expiration === null) {
+                return null;
+            }
+            return sharedLock.expiration;
+        }
 
         sharedLockAdapterTestSuite({
             createAdapter: async () => {
@@ -107,168 +101,218 @@ describe(
             describe,
         });
         describe("method: removeAllExpired", () => {
-            test("Should remove all expired writer locks", async () => {
+            test("Should remove all rows with passed expiration", async () => {
                 await adapter.init();
 
-                await trxCtx.client
-                    .insertInto("writerLock")
+                await database
+                    .insertInto("sharedLock")
                     .values({
                         key: "a",
-                        owner: "owner",
+                        writerLock: JSON.stringify({
+                            owner: "owner",
+                            expiration: Date.now() - 1000,
+                        } satisfies KyselyWriterLockEntry),
+                        readerSemaphore: null,
                         expiration: Date.now() - 1000,
                     })
                     .execute();
-                await trxCtx.client
-                    .insertInto("writerLock")
+                await database
+                    .insertInto("sharedLock")
                     .values({
                         key: "b",
-                        owner: "owner",
+                        writerLock: null,
+                        readerSemaphore: JSON.stringify({
+                            limit: 3,
+                            slots: [{ id: "1", expiration: Date.now() - 1000 }],
+                        } satisfies KyselyReaderSemaphoreEntry),
                         expiration: Date.now() - 1000,
                     })
                     .execute();
-                await trxCtx.client
-                    .insertInto("writerLock")
+                await database
+                    .insertInto("sharedLock")
                     .values({
                         key: "c",
-                        owner: "owner",
+                        writerLock: JSON.stringify({
+                            owner: "owner",
+                            expiration: Date.now() + 50000,
+                        } satisfies KyselyWriterLockEntry),
+                        readerSemaphore: null,
                         expiration: Date.now() + 50000,
                     })
                     .execute();
 
                 await adapter.removeAllExpired();
 
-                expect(
-                    await trxCtx.client
-                        .selectFrom("writerLock")
-                        .where("writerLock.key", "=", "a")
-                        .selectAll()
-                        .executeTakeFirst(),
-                ).toBeUndefined();
-                expect(
-                    await trxCtx.client
-                        .selectFrom("writerLock")
-                        .where("writerLock.key", "=", "b")
-                        .selectAll()
-                        .executeTakeFirst(),
-                ).toBeUndefined();
-                expect(
-                    await trxCtx.client
-                        .selectFrom("writerLock")
-                        .where("writerLock.key", "=", "c")
-                        .selectAll()
-                        .executeTakeFirst(),
-                ).toBeDefined();
+                expect(await getExpiration("a")).toBeUndefined();
+                expect(await getExpiration("b")).toBeUndefined();
+                expect(await getExpiration("c")).toBeGreaterThan(Date.now());
             });
-            test("Should remove all expired reader semaphores", async () => {
+            test("Should not remove rows without expiration", async () => {
                 await adapter.init();
 
-                const limit = 3;
-                const key1 = "1";
-                const key2 = "2";
-
-                await trxCtx.client
-                    .insertInto("readerSemaphore")
-                    .values({ key: key1, limit })
-                    .execute();
-                await trxCtx.client
-                    .insertInto("readerSemaphore")
-                    .values({ key: key2, limit })
-                    .execute();
-
-                await trxCtx.client
-                    .insertInto("readerSemaphoreSlot")
+                await database
+                    .insertInto("sharedLock")
                     .values({
-                        key: key1,
-                        id: "1",
-                        expiration: Date.now() - 1000,
-                    })
-                    .execute();
-                await trxCtx.client
-                    .insertInto("readerSemaphoreSlot")
-                    .values({
-                        key: key1,
-                        id: "2",
-                        expiration: Date.now() - 1000,
-                    })
-                    .execute();
-                await trxCtx.client
-                    .insertInto("readerSemaphoreSlot")
-                    .values({
-                        key: key1,
-                        id: "3",
-                        expiration: Date.now() - 1000,
-                    })
-                    .execute();
-
-                await trxCtx.client
-                    .insertInto("readerSemaphoreSlot")
-                    .values({
-                        key: key2,
-                        id: "4",
-                        expiration: Date.now() - 1000,
-                    })
-                    .execute();
-                await trxCtx.client
-                    .insertInto("readerSemaphoreSlot")
-                    .values({
-                        key: key2,
-                        id: "5",
-                        expiration: Date.now() - 1000,
-                    })
-                    .execute();
-                await trxCtx.client
-                    .insertInto("readerSemaphoreSlot")
-                    .values({
-                        key: key2,
-                        id: "6",
-                        expiration: Date.now() - 1000,
+                        key: "a",
+                        writerLock: JSON.stringify({
+                            owner: "owner",
+                            expiration: null,
+                        } satisfies KyselyWriterLockEntry),
+                        readerSemaphore: null,
+                        expiration: null,
                     })
                     .execute();
 
                 await adapter.removeAllExpired();
 
-                expect(
-                    await trxCtx.client
-                        .selectFrom("readerSemaphore")
-                        .where("readerSemaphore.key", "=", key1)
-                        .selectAll()
-                        .executeTakeFirst(),
-                ).toBeUndefined();
+                expect(await getExpiration("a")).toBeNull();
+            });
+        });
+        describe("Writer expiration tests", () => {
+            test("Should set expiration to null when given no expiration", async () => {
+                await adapter.init();
 
-                expect(
-                    await trxCtx.client
-                        .selectFrom("readerSemaphoreSlot")
-                        .where("readerSemaphoreSlot.key", "=", key1)
-                        .selectAll()
-                        .execute(),
-                ).toEqual([]);
+                await adapter.acquireWriter("a", "1", null);
 
-                expect(
-                    await trxCtx.client
-                        .selectFrom("readerSemaphoreSlot")
-                        .where("readerSemaphoreSlot.key", "=", key2)
-                        .selectAll()
-                        .execute(),
-                ).toEqual([]);
+                await expect(getExpiration("a")).resolves.toBeNull();
+            });
+            test("Should set expiration to the ttl when given expiration", async () => {
+                await adapter.init();
 
-                expect(
-                    await trxCtx.client
-                        .selectFrom("readerSemaphore")
-                        .where("readerSemaphore.key", "=", key2)
-                        .selectAll()
-                        .executeTakeFirst(),
-                ).toBeUndefined();
+                const expiration = Date.now() + 60000;
+
+                await adapter.acquireWriter("a", "1", new Date(expiration));
+
+                await expect(getExpiration("a")).resolves.toBe(expiration);
+            });
+            test("Should update expiration when the writer is refreshed", async () => {
+                await adapter.init();
+
+                await adapter.acquireWriter(
+                    "a",
+                    "1",
+                    new Date(Date.now() + 60000),
+                );
+                const expiration = Date.now() + 120000;
+
+                await adapter.refreshWriter("a", "1", new Date(expiration));
+
+                await expect(getExpiration("a")).resolves.toBe(expiration);
+            });
+            test("Should remove the row when the writer is released", async () => {
+                await adapter.init();
+
+                await adapter.acquireWriter(
+                    "a",
+                    "1",
+                    new Date(Date.now() + 60000),
+                );
+
+                await expect(adapter.releaseWriter("a", "1")).resolves.toBe(
+                    true,
+                );
+                await expect(getExpiration("a")).resolves.toBeUndefined();
+            });
+        });
+        describe("Reader expiration tests", () => {
+            test("Should set expiration to null when slot is unexpirable", async () => {
+                await adapter.init();
+
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "1",
+                    limit: 3,
+                    ttl: null,
+                });
+
+                await expect(getExpiration("a")).resolves.toBeNull();
+            });
+            test("Should set expiration to the slot expiration when slot is expirable", async () => {
+                await adapter.init();
+
+                const expiration = Date.now() + 60000;
+
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "1",
+                    limit: 3,
+                    ttl: new Date(expiration),
+                });
+
+                await expect(getExpiration("a")).resolves.toBe(expiration);
+            });
+            test("Should set expiration to null when one of the slots is unexpirable", async () => {
+                await adapter.init();
+
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "1",
+                    limit: 3,
+                    ttl: new Date(Date.now() + 60000),
+                });
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "2",
+                    limit: 3,
+                    ttl: null,
+                });
+
+                await expect(getExpiration("a")).resolves.toBeNull();
+            });
+            test("Should set expiration to the longest slot expiration", async () => {
+                await adapter.init();
+
+                const longestExpiration = Date.now() + 120000;
+
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "1",
+                    limit: 3,
+                    ttl: new Date(Date.now() + 60000),
+                });
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "2",
+                    limit: 3,
+                    ttl: new Date(longestExpiration),
+                });
+
+                await expect(getExpiration("a")).resolves.toBe(
+                    longestExpiration,
+                );
+            });
+            test("Should set expiration to before current date when all slots are removed", async () => {
+                await adapter.init();
+
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "1",
+                    limit: 3,
+                    ttl: new Date(Date.now() + 60000),
+                });
+                await adapter.acquireReader({
+                    key: "a",
+                    lockId: "2",
+                    limit: 3,
+                    ttl: new Date(Date.now() + 120000),
+                });
+
+                await adapter.releaseReader("a", "1");
+                await adapter.releaseReader("a", "2");
+
+                const expiration = await getExpiration("a");
+                expect(expiration).toBeLessThan(Date.now());
             });
         });
         describe("method: init", () => {
-            test("Should create writerLock table", async () => {
+            test("Should create sharedLock table", async () => {
                 await adapter.init();
 
-                const tables = await trxCtx.client.introspection.getTables();
+                const tables = await database.introspection.getTables();
 
                 expect(tables).toContainEqual(
                     expect.objectContaining<Partial<TableMetadata>>({
-                        name: tableNames.writerLock,
+                        name: tableNames.sharedLock,
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
                         columns: expect.arrayContaining<
                             Partial<ColumnMetadata>
@@ -280,76 +324,20 @@ describe(
                                 hasDefaultValue: false,
                             }),
                             expect.objectContaining<Partial<ColumnMetadata>>({
-                                name: "owner",
-                                dataType: "varchar",
-                                isNullable: false,
-                                hasDefaultValue: false,
-                            }),
-                            expect.objectContaining<Partial<ColumnMetadata>>({
-                                name: "expiration",
-                                dataType: "int8",
+                                name: "writerLock",
+                                dataType: "jsonb",
                                 isNullable: true,
                                 hasDefaultValue: false,
                             }),
-                        ] as Array<Partial<ColumnMetadata>>),
-                    }),
-                );
-            });
-            test("Should create readerSemaphore table", async () => {
-                await adapter.init();
-
-                const tables = await trxCtx.client.introspection.getTables();
-
-                expect(tables).toContainEqual(
-                    expect.objectContaining<Partial<TableMetadata>>({
-                        name: tableNames.readerSemaphore,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
-                        columns: expect.arrayContaining<
-                            Partial<ColumnMetadata>
-                        >([
                             expect.objectContaining<Partial<ColumnMetadata>>({
-                                name: "key",
-                                dataType: "varchar",
-                                isNullable: false,
-                                hasDefaultValue: false,
-                            }),
-                            expect.objectContaining<Partial<ColumnMetadata>>({
-                                name: "limit",
-                                dataType: "int4",
-                                isNullable: false,
-                                hasDefaultValue: false,
-                            }),
-                        ] as Array<Partial<ColumnMetadata>>),
-                    }),
-                );
-            });
-            test("Should create readerSemaphoreSlot table", async () => {
-                await adapter.init();
-
-                const tables = await trxCtx.client.introspection.getTables();
-
-                expect(tables).toContainEqual(
-                    expect.objectContaining<Partial<TableMetadata>>({
-                        name: tableNames.readerSemaphoreSlot,
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
-                        columns: expect.arrayContaining<
-                            Partial<ColumnMetadata>
-                        >([
-                            expect.objectContaining<Partial<ColumnMetadata>>({
-                                name: "key",
-                                dataType: "varchar",
-                                isNullable: false,
-                                hasDefaultValue: false,
-                            }),
-                            expect.objectContaining<Partial<ColumnMetadata>>({
-                                name: "id",
-                                dataType: "varchar",
-                                isNullable: false,
+                                name: "readerSemaphore",
+                                dataType: "jsonb",
+                                isNullable: true,
                                 hasDefaultValue: false,
                             }),
                             expect.objectContaining<Partial<ColumnMetadata>>({
                                 name: "expiration",
-                                dataType: "int8",
+                                dataType: "float8",
                                 isNullable: true,
                                 hasDefaultValue: false,
                             }),
@@ -366,121 +354,30 @@ describe(
             });
         });
         describe("method: deInit", () => {
-            test("Should remove writer lock table", async () => {
+            test("Should remove sharedLock table", async () => {
                 await adapter.init();
                 await adapter.deInit();
 
-                const tables = await trxCtx.client.introspection.getTables();
+                const tables = await database.introspection.getTables();
 
                 expect(tables).not.toContainEqual(
                     expect.objectContaining<Partial<TableMetadata>>({
-                        name: tableNames.writerLock,
-                    }),
-                );
-            });
-            test("Should remove readerSemaphore table", async () => {
-                await adapter.init();
-                await adapter.deInit();
-
-                const tables = await trxCtx.client.introspection.getTables();
-
-                expect(tables).not.toContainEqual(
-                    expect.objectContaining<Partial<TableMetadata>>({
-                        name: tableNames.readerSemaphore,
-                    }),
-                );
-            });
-            test("Should remove readerSemaphoreSlot table", async () => {
-                await adapter.init();
-                await adapter.deInit();
-
-                const tables = await trxCtx.client.introspection.getTables();
-
-                expect(tables).not.toContainEqual(
-                    expect.objectContaining<Partial<TableMetadata>>({
-                        name: tableNames.readerSemaphoreSlot,
+                        name: tableNames.sharedLock,
                     }),
                 );
             });
             test("Should not throw error when called multiple times", async () => {
                 await adapter.init();
                 await adapter.deInit();
+
                 const promise = adapter.deInit();
 
                 await expect(promise).resolves.toBeUndefined();
             });
             test("Should not throw error when called before init", async () => {
                 const promise = adapter.deInit();
-                await adapter.init();
 
                 await expect(promise).resolves.toBeUndefined();
-            });
-        });
-        describe("Transaction tests:", () => {
-            test("Should not persist changes when the transaction fails", async () => {
-                await adapter.init();
-
-                try {
-                    await trxCtx.run(async () => {
-                        await adapter.acquireReader({
-                            key: "a",
-                            lockId: "1",
-                            limit: 4,
-                            ttl: null,
-                        });
-                        await adapter.acquireReader({
-                            key: "b",
-                            lockId: "1",
-                            limit: 4,
-                            ttl: null,
-                        });
-                        throw new Error("Transaction failure");
-                    });
-                } catch {
-                    /* EMPTY */
-                }
-
-                const semaphoreRows = await trxCtx.client
-                    .selectFrom("readerSemaphore")
-                    .select("readerSemaphore.key")
-                    .execute();
-                const slotRows = await trxCtx.client
-                    .selectFrom("readerSemaphoreSlot")
-                    .select("readerSemaphoreSlot.key")
-                    .execute();
-
-                expect(semaphoreRows.length).toBe(0);
-                expect(slotRows.length).toBe(0);
-            });
-            test("Should persist changes when the transaction succeeds", async () => {
-                await adapter.init();
-
-                await trxCtx.run(async () => {
-                    await adapter.acquireReader({
-                        key: "a",
-                        lockId: "1",
-                        limit: 4,
-                        ttl: null,
-                    });
-                    await adapter.acquireReader({
-                        key: "b",
-                        lockId: "2",
-                        limit: 4,
-                        ttl: null,
-                    });
-                });
-
-                const semaphoreRows = await trxCtx.client
-                    .selectFrom("readerSemaphore")
-                    .select("readerSemaphore.key")
-                    .execute();
-                const slotRows = await trxCtx.client
-                    .selectFrom("readerSemaphoreSlot")
-                    .select("readerSemaphoreSlot.key")
-                    .execute();
-
-                expect(semaphoreRows.length).toBe(2);
-                expect(slotRows.length).toBe(2);
             });
         });
     },
