@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, test } from "vitest";
 
 import { MemorySharedLockAdapter } from "@/shared-lock/implementations/adapters/memory-shared-lock-adapter/_module-exports.js";
 import { sharedLockAdapterTestSuite } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
-import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { delay } from "@/utilities/_module-exports.js";
 
 import type { MemorySharedLockData } from "@/shared-lock/implementations/adapters/memory-shared-lock-adapter/_module-exports.js";
+
+const EXPIRED_AT = (): Date => new Date(Date.now() - 1_000);
+const FUTURE_AT = (): Date => new Date(Date.now() + 300_000);
 
 describe("class: MemorySharedLockAdapter", { tags: ["Memory"] }, () => {
     sharedLockAdapterTestSuite({
@@ -17,113 +18,131 @@ describe("class: MemorySharedLockAdapter", { tags: ["Memory"] }, () => {
     });
     describe("method: removeAllExpired", () => {
         test("Should remove expired writer locks", async () => {
-            const map = new Map<string, MemorySharedLockData>();
+            const map = new Map<string, MemorySharedLockData>([
+                [
+                    "expired",
+                    {
+                        writerLock: { owner: "1", expiration: EXPIRED_AT() },
+                        readerSemaphore: null,
+                    },
+                ],
+            ]);
             const adapter = new MemorySharedLockAdapter(map);
-
-            await adapter.acquireWriter(
-                "expired",
-                "1",
-                TimeSpan.fromMilliseconds(100).toEndDate(),
-            );
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
             expect(map.has("expired")).toBe(false);
         });
         test("Should keep unexpired writer locks", async () => {
-            const map = new Map<string, MemorySharedLockData>();
+            const map = new Map<string, MemorySharedLockData>([
+                [
+                    "unexpired",
+                    {
+                        writerLock: { owner: "3", expiration: FUTURE_AT() },
+                        readerSemaphore: null,
+                    },
+                ],
+            ]);
             const adapter = new MemorySharedLockAdapter(map);
-
-            await adapter.acquireWriter(
-                "unexpired",
-                "3",
-                TimeSpan.fromMinutes(5).toEndDate(),
-            );
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
             expect(map.has("unexpired")).toBe(true);
         });
         test("Should keep unexpireable writer locks", async () => {
-            const map = new Map<string, MemorySharedLockData>();
+            const map = new Map<string, MemorySharedLockData>([
+                [
+                    "unexpireable",
+                    {
+                        writerLock: { owner: "2", expiration: null },
+                        readerSemaphore: null,
+                    },
+                ],
+            ]);
             const adapter = new MemorySharedLockAdapter(map);
-
-            await adapter.acquireWriter("unexpireable", "2", null);
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
             expect(map.has("unexpireable")).toBe(true);
         });
         test("Should remove expired reader slots", async () => {
-            const map = new Map<string, MemorySharedLockData>();
+            const map = new Map<string, MemorySharedLockData>([
+                [
+                    "expired",
+                    {
+                        writerLock: null,
+                        readerSemaphore: {
+                            limit: 4,
+                            slots: new Map([["1", EXPIRED_AT()]]),
+                        },
+                    },
+                ],
+            ]);
             const adapter = new MemorySharedLockAdapter(map);
-
-            await adapter.acquireReader({
-                key: "expired",
-                lockId: "1",
-                limit: 4,
-                ttl: TimeSpan.fromMilliseconds(100).toEndDate(),
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
             expect(map.has("expired")).toBe(false);
         });
         test("Should keep unexpired reader slots", async () => {
-            const map = new Map<string, MemorySharedLockData>();
+            const map = new Map<string, MemorySharedLockData>([
+                [
+                    "unexpired",
+                    {
+                        writerLock: null,
+                        readerSemaphore: {
+                            limit: 4,
+                            slots: new Map([["2", FUTURE_AT()]]),
+                        },
+                    },
+                ],
+            ]);
             const adapter = new MemorySharedLockAdapter(map);
-
-            await adapter.acquireReader({
-                key: "unexpired",
-                lockId: "2",
-                limit: 4,
-                ttl: TimeSpan.fromMinutes(5).toEndDate(),
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
             expect(map.has("unexpired")).toBe(true);
         });
         test("Should keep unexpireable reader slots", async () => {
-            const map = new Map<string, MemorySharedLockData>();
+            const map = new Map<string, MemorySharedLockData>([
+                [
+                    "unexpireable",
+                    {
+                        writerLock: null,
+                        readerSemaphore: {
+                            limit: 4,
+                            slots: new Map([["3", null]]),
+                        },
+                    },
+                ],
+            ]);
             const adapter = new MemorySharedLockAdapter(map);
-
-            await adapter.acquireReader({
-                key: "unexpireable",
-                lockId: "3",
-                limit: 4,
-                ttl: null,
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
             expect(map.has("unexpireable")).toBe(true);
         });
         test("Should not remove any shared locks when none are expired", async () => {
-            const map = new Map<string, MemorySharedLockData>();
+            const map = new Map<string, MemorySharedLockData>([
+                [
+                    "writer-unexpireable",
+                    {
+                        writerLock: { owner: "1", expiration: null },
+                        readerSemaphore: null,
+                    },
+                ],
+                [
+                    "reader-unexpired",
+                    {
+                        writerLock: null,
+                        readerSemaphore: {
+                            limit: 4,
+                            slots: new Map([["1", FUTURE_AT()]]),
+                        },
+                    },
+                ],
+            ]);
             const adapter = new MemorySharedLockAdapter(map);
-
-            await adapter.acquireWriter("writer-unexpireable", "1", null);
-            await adapter.acquireReader({
-                key: "reader-unexpired",
-                lockId: "1",
-                limit: 4,
-                ttl: TimeSpan.fromMinutes(5).toEndDate(),
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
@@ -132,23 +151,22 @@ describe("class: MemorySharedLockAdapter", { tags: ["Memory"] }, () => {
             expect(map.has("reader-unexpired")).toBe(true);
         });
         test("Should remove expired reader slots and keep entry when unexpired slots remain", async () => {
-            const map = new Map<string, MemorySharedLockData>();
+            const map = new Map<string, MemorySharedLockData>([
+                [
+                    "a",
+                    {
+                        writerLock: null,
+                        readerSemaphore: {
+                            limit: 4,
+                            slots: new Map([
+                                ["expired", EXPIRED_AT()],
+                                ["unexpireable", null],
+                            ]),
+                        },
+                    },
+                ],
+            ]);
             const adapter = new MemorySharedLockAdapter(map);
-
-            await adapter.acquireReader({
-                key: "a",
-                lockId: "expired",
-                limit: 4,
-                ttl: TimeSpan.fromMilliseconds(100).toEndDate(),
-            });
-            await adapter.acquireReader({
-                key: "a",
-                lockId: "unexpireable",
-                limit: 4,
-                ttl: null,
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
@@ -169,47 +187,43 @@ describe("class: MemorySharedLockAdapter", { tags: ["Memory"] }, () => {
     });
     describe("method: deInit", () => {
         test("Should clear map", async () => {
-            const map = new Map<string, MemorySharedLockData>();
+            const map = new Map<string, MemorySharedLockData>([
+                [
+                    "a",
+                    {
+                        writerLock: { owner: "1", expiration: null },
+                        readerSemaphore: null,
+                    },
+                ],
+                [
+                    "b",
+                    {
+                        writerLock: { owner: "2", expiration: EXPIRED_AT() },
+                        readerSemaphore: null,
+                    },
+                ],
+                [
+                    "c",
+                    {
+                        writerLock: null,
+                        readerSemaphore: {
+                            limit: 4,
+                            slots: new Map([["1", null]]),
+                        },
+                    },
+                ],
+                [
+                    "d",
+                    {
+                        writerLock: null,
+                        readerSemaphore: {
+                            limit: 4,
+                            slots: new Map([["1", EXPIRED_AT()]]),
+                        },
+                    },
+                ],
+            ]);
             const adapter = new MemorySharedLockAdapter(map);
-
-            await adapter.acquireWriter("a", "1", null);
-            await adapter.acquireWriter(
-                "a",
-                "2",
-                TimeSpan.fromMilliseconds(100).toEndDate(),
-            );
-            await adapter.acquireWriter("b", "1", null);
-            await adapter.acquireWriter(
-                "b",
-                "2",
-                TimeSpan.fromMilliseconds(100).toEndDate(),
-            );
-
-            await adapter.acquireReader({
-                key: "c",
-                lockId: "1",
-                ttl: null,
-                limit: 4,
-            });
-            await adapter.acquireReader({
-                key: "d",
-                lockId: "1",
-                ttl: TimeSpan.fromMilliseconds(100).toEndDate(),
-                limit: 4,
-            });
-
-            await adapter.acquireReader({
-                key: "c",
-                lockId: "1",
-                ttl: null,
-                limit: 4,
-            });
-            await adapter.acquireReader({
-                key: "d",
-                lockId: "1",
-                ttl: TimeSpan.fromMilliseconds(100).toEndDate(),
-                limit: 4,
-            });
 
             await adapter.deInit();
 

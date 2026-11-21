@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, test } from "vitest";
 
 import { MemorySemaphoreAdapter } from "@/semaphore/implementations/adapters/memory-semaphore-adapter/_module-exports.js";
 import { semaphoreAdapterTestSuite } from "@/semaphore/implementations/test-utilities/_module-exports.js";
-import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-import { delay } from "@/utilities/_module-exports.js";
 
 import type { ISemaphoreAdapterState } from "@/semaphore/contracts/_module-exports.js";
+
+const EXPIRED_AT = (): Date => new Date(Date.now() - 1_000);
+const FUTURE_AT = (): Date => new Date(Date.now() + 300_000);
 
 describe("class: MemorySemaphoreAdapter", { tags: ["Memory"] }, () => {
     semaphoreAdapterTestSuite({
@@ -17,74 +18,71 @@ describe("class: MemorySemaphoreAdapter", { tags: ["Memory"] }, () => {
     });
     describe("method: removeAllExpired", () => {
         test("Should remove expired semaphore slots", async () => {
-            const map = new Map<string, ISemaphoreAdapterState>();
+            const map = new Map<string, ISemaphoreAdapterState>([
+                [
+                    "expired",
+                    {
+                        limit: 4,
+                        acquiredSlots: new Map([["1", EXPIRED_AT()]]),
+                    },
+                ],
+            ]);
             const adapter = new MemorySemaphoreAdapter(map);
-
-            await adapter.acquire({
-                key: "expired",
-                slotId: "1",
-                limit: 4,
-                ttl: TimeSpan.fromMilliseconds(100).toEndDate(),
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
             expect(map.has("expired")).toBe(false);
         });
         test("Should keep unexpired semaphore slots", async () => {
-            const map = new Map<string, ISemaphoreAdapterState>();
+            const map = new Map<string, ISemaphoreAdapterState>([
+                [
+                    "unexpired",
+                    {
+                        limit: 4,
+                        acquiredSlots: new Map([["1", FUTURE_AT()]]),
+                    },
+                ],
+            ]);
             const adapter = new MemorySemaphoreAdapter(map);
-
-            await adapter.acquire({
-                key: "unexpired",
-                slotId: "1",
-                limit: 4,
-                ttl: TimeSpan.fromMinutes(5).toEndDate(),
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
             expect(map.has("unexpired")).toBe(true);
         });
         test("Should keep unexpireable semaphore slots", async () => {
-            const map = new Map<string, ISemaphoreAdapterState>();
+            const map = new Map<string, ISemaphoreAdapterState>([
+                [
+                    "unexpireable",
+                    {
+                        limit: 4,
+                        acquiredSlots: new Map([["1", null]]),
+                    },
+                ],
+            ]);
             const adapter = new MemorySemaphoreAdapter(map);
-
-            await adapter.acquire({
-                key: "unexpireable",
-                slotId: "1",
-                limit: 4,
-                ttl: null,
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
             expect(map.has("unexpireable")).toBe(true);
         });
         test("Should not remove any semaphore data when none slots are expired", async () => {
-            const map = new Map<string, ISemaphoreAdapterState>();
+            const map = new Map<string, ISemaphoreAdapterState>([
+                [
+                    "unexpireable",
+                    {
+                        limit: 4,
+                        acquiredSlots: new Map([["1", null]]),
+                    },
+                ],
+                [
+                    "unexpired",
+                    {
+                        limit: 4,
+                        acquiredSlots: new Map([["1", FUTURE_AT()]]),
+                    },
+                ],
+            ]);
             const adapter = new MemorySemaphoreAdapter(map);
-
-            await adapter.acquire({
-                key: "unexpireable",
-                slotId: "1",
-                limit: 4,
-                ttl: null,
-            });
-            await adapter.acquire({
-                key: "unexpired",
-                slotId: "1",
-                limit: 4,
-                ttl: TimeSpan.fromMinutes(5).toEndDate(),
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
@@ -93,23 +91,19 @@ describe("class: MemorySemaphoreAdapter", { tags: ["Memory"] }, () => {
             expect(map.has("unexpired")).toBe(true);
         });
         test("Should remove expired slots and keep entry when unexpired slots remain", async () => {
-            const map = new Map<string, ISemaphoreAdapterState>();
+            const map = new Map<string, ISemaphoreAdapterState>([
+                [
+                    "a",
+                    {
+                        limit: 4,
+                        acquiredSlots: new Map([
+                            ["expired", EXPIRED_AT()],
+                            ["unexpireable", null],
+                        ]),
+                    },
+                ],
+            ]);
             const adapter = new MemorySemaphoreAdapter(map);
-
-            await adapter.acquire({
-                key: "a",
-                slotId: "expired",
-                limit: 4,
-                ttl: TimeSpan.fromMilliseconds(100).toEndDate(),
-            });
-            await adapter.acquire({
-                key: "a",
-                slotId: "unexpireable",
-                limit: 4,
-                ttl: null,
-            });
-
-            await delay(TimeSpan.fromMilliseconds(200));
 
             await adapter.removeAllExpired();
 
@@ -128,21 +122,23 @@ describe("class: MemorySemaphoreAdapter", { tags: ["Memory"] }, () => {
     });
     describe("method: deInit", () => {
         test("Should clear map", async () => {
-            const map = new Map<string, ISemaphoreAdapterState>();
+            const map = new Map<string, ISemaphoreAdapterState>([
+                [
+                    "a",
+                    {
+                        limit: 4,
+                        acquiredSlots: new Map([["1", null]]),
+                    },
+                ],
+                [
+                    "b",
+                    {
+                        limit: 4,
+                        acquiredSlots: new Map([["1", EXPIRED_AT()]]),
+                    },
+                ],
+            ]);
             const adapter = new MemorySemaphoreAdapter(map);
-
-            await adapter.acquire({
-                key: "a",
-                slotId: "1",
-                limit: 4,
-                ttl: null,
-            });
-            await adapter.acquire({
-                key: "b",
-                slotId: "1",
-                limit: 4,
-                ttl: null,
-            });
 
             await adapter.deInit();
 
