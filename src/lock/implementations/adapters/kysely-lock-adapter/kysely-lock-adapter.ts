@@ -2,7 +2,7 @@
  * @module Lock
  */
 
-import { MysqlAdapter } from "kysely";
+import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 import type { Kysely } from "kysely";
 
@@ -10,7 +10,10 @@ import type {
     ILockAdapter,
     ILockAdapterState,
 } from "@/lock/contracts/_module-exports.js";
-import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
+import type {
+    ITransactionConnection,
+    TransactionAware,
+} from "@/transaction-context/contracts/_module-exports.js";
 import type {
     IAsyncDeinitizable,
     IAsyncInitizable,
@@ -24,9 +27,7 @@ import type {
 export type KyselyLockEntryTable = {
     key: string;
     owner: string;
-    // In ms since unix epoch.
-    // The type in mysql is bigint and will be returned as a string.
-    // Some sql database drivers have support for js bigint if enabled. Meaning bigint will be returned.
+    // Some sql database drivers (e.g. postgres) return bigint columns as strings or bigints.
     expiration: number | bigint | string | null;
 };
 
@@ -46,19 +47,14 @@ export type KyselyLockTables = {
  * @group Adapters
  */
 export type KyselyLockAdapterSettings = {
-    /**
-     * The `TransactionContext` used to store lock state.
-     *
-     * The adapter is transaction aware: its operations run inside the context's active transaction. Adapters given the same instance share the same transaction.
-     */
-    transactionContext: ITransactionContext<Kysely<KyselyLockTables>>;
+    database: TransactionAware<Kysely<KyselyLockTables>>;
 };
 
 /**
  * To utilize the `KyselyLockAdapter`, you must install the [`"kysely"`](https://www.npmjs.com/package/kysely) package and configure a `Kysely` class instance.
  *
  * Note in order to use `KyselyLockAdapter` correctly, ensure you use a single, consistent database across all server instances and use a database that has support for transactions.
- * The adapter have been tested with `sqlite`, `postgres` and `mysql` databases.
+ * The adapter have been tested with `sqlite` and `postgres` databases.
  *
  * IMPORT_PATH: `"eridu-tech/lock/kysely-lock-adapter"`
  * @group Adapters
@@ -66,17 +62,14 @@ export type KyselyLockAdapterSettings = {
 export class KyselyLockAdapter
     implements ILockAdapter, IAsyncDeinitizable, IAsyncInitizable, IPrunable
 {
-    private readonly transactionContext: ITransactionContext<
-        Kysely<KyselyLockTables>
+    private readonly trxCtx: Pick<
+        ITransactionConnection<Kysely<KyselyLockTables>>,
+        "client" | "current"
     >;
-    private readonly isMysql: boolean;
 
     constructor(settings: KyselyLockAdapterSettings) {
-        const { transactionContext } = settings;
-        this.transactionContext = transactionContext;
-        this.isMysql =
-            this.transactionContext.client.getExecutor().adapter instanceof
-            MysqlAdapter;
+        const { database } = settings;
+        this.trxCtx = resolveTransactionAware(database);
     }
 
     /**
@@ -86,7 +79,7 @@ export class KyselyLockAdapter
     async deInit(): Promise<void> {
         // Should throw if the index does not exists thats why the try catch is used.
         try {
-            await this.transactionContext.client.schema
+            await this.trxCtx.client.schema
                 .dropIndex("lock_expiration")
                 .on("lock")
                 .execute();
@@ -96,9 +89,7 @@ export class KyselyLockAdapter
 
         // Should throw if the table does not exists thats why the try catch is used.
         try {
-            await this.transactionContext.client.schema
-                .dropTable("lock")
-                .execute();
+            await this.trxCtx.client.schema.dropTable("lock").execute();
         } catch {
             /* EMPTY */
         }
@@ -111,7 +102,7 @@ export class KyselyLockAdapter
     async init(): Promise<void> {
         // Should throw if the table already exists thats why the try catch is used.
         try {
-            await this.transactionContext.client.schema
+            await this.trxCtx.client.schema
                 .createTable("lock")
                 .addColumn("key", "varchar(255)", (col) =>
                     col.primaryKey().notNull(),
@@ -125,7 +116,7 @@ export class KyselyLockAdapter
 
         // Should throw if the index already exists thats why the try catch is used.
         try {
-            await this.transactionContext.client.schema
+            await this.trxCtx.client.schema
                 .createIndex("lock_expiration")
                 .on("lock")
                 .column("expiration")
@@ -136,7 +127,7 @@ export class KyselyLockAdapter
     }
 
     async removeAllExpired(): Promise<void> {
-        await this.transactionContext.client
+        await this.trxCtx.client
             .deleteFrom("lock")
             .where("lock.expiration", "<=", Date.now())
             .execute();
@@ -147,81 +138,52 @@ export class KyselyLockAdapter
         lockId: string,
         ttl: Date | null,
     ): Promise<boolean> {
-        return await this.transactionContext.run(async () => {
-            const existing = await this.transactionContext.current
-                .selectFrom("lock")
-                .where("lock.key", "=", key)
-                .select(["lock.owner", "lock.expiration"])
-                .executeTakeFirst();
+        const now = Date.now();
+        const expiration = ttl?.getTime() ?? null;
 
-            if (existing) {
-                const isExpired =
-                    existing.expiration !== null &&
-                    Number(existing.expiration) <= Date.now();
-
-                if (!isExpired && existing.owner !== lockId) {
-                    return false;
-                }
-            }
-
-            const expiration = ttl?.getTime() ?? null;
-
-            await this.transactionContext.current
-                .insertInto("lock")
-                .values({ key, owner: lockId, expiration })
-                .$if(!this.isMysql, (eb) =>
-                    eb.onConflict((oc) =>
-                        oc.column("key").doUpdateSet({
-                            key,
-                            owner: lockId,
-                            expiration,
-                        }),
-                    ),
-                )
-                .$if(this.isMysql, (eb) =>
-                    eb.onDuplicateKeyUpdate({
-                        key,
+        const lock = await this.trxCtx.current
+            .insertInto("lock")
+            .values({
+                key,
+                owner: lockId,
+                expiration,
+            })
+            .onConflict((oc) =>
+                oc
+                    .column("key")
+                    .doUpdateSet({
                         owner: lockId,
-                        expiration,
-                    }),
-                )
-                .execute();
+                        expiration: (eb) =>
+                            eb
+                                .case()
+                                .when(
+                                    eb.and([
+                                        eb("lock.expiration", "is not", null),
+                                        eb("lock.expiration", "<=", now),
+                                    ]),
+                                )
+                                .then(expiration)
+                                .else(eb.ref("lock.expiration"))
+                                .end(),
+                    })
+                    .where((eb) =>
+                        eb.or([
+                            eb("lock.owner", "=", lockId),
+                            eb.and([
+                                eb("lock.expiration", "is not", null),
+                                eb("lock.expiration", "<=", now),
+                            ]),
+                        ]),
+                    ),
+            )
+            .returning("lock.key")
+            .executeTakeFirst();
 
-            return true;
-        });
+        return lock !== undefined;
     }
 
     async release(key: string, lockId: string): Promise<boolean> {
-        if (this.isMysql) {
-            return await this.transactionContext.run(async () => {
-                const existing = await this.transactionContext.current
-                    .selectFrom("lock")
-                    .where("lock.key", "=", key)
-                    .where("lock.owner", "=", lockId)
-                    .where((eb) =>
-                        eb.or([
-                            eb("lock.expiration", "is", null),
-                            eb("lock.expiration", ">", Date.now()),
-                        ]),
-                    )
-                    .select("lock.key")
-                    .executeTakeFirst();
-
-                if (!existing) {
-                    return false;
-                }
-
-                await this.transactionContext.current
-                    .deleteFrom("lock")
-                    .where("lock.key", "=", key)
-                    .where("lock.owner", "=", lockId)
-                    .execute();
-
-                return true;
-            });
-        }
-
-        const result = await this.transactionContext.current
+        const lock = await this.trxCtx.current
             .deleteFrom("lock")
             .where("lock.key", "=", key)
             .where("lock.owner", "=", lockId)
@@ -234,56 +196,31 @@ export class KyselyLockAdapter
             .returning("lock.key")
             .executeTakeFirst();
 
-        return result !== undefined;
+        return lock !== undefined;
     }
 
     async forceRelease(key: string): Promise<boolean> {
-        if (this.isMysql) {
-            return await this.transactionContext.run(async () => {
-                const existing = await this.transactionContext.current
-                    .selectFrom("lock")
-                    .where("lock.key", "=", key)
-                    .where((eb) =>
-                        eb.or([
-                            eb("lock.expiration", "is", null),
-                            eb("lock.expiration", ">", Date.now()),
-                        ]),
-                    )
-                    .select("lock.key")
-                    .executeTakeFirst();
-
-                if (!existing) {
-                    return false;
-                }
-
-                await this.transactionContext.current
-                    .deleteFrom("lock")
-                    .where("lock.key", "=", key)
-                    .execute();
-
-                return true;
-            });
-        }
-
-        const result = await this.transactionContext.current
+        const lock = await this.trxCtx.current
             .deleteFrom("lock")
             .where("lock.key", "=", key)
-            .where((eb) =>
-                eb.or([
-                    eb("lock.expiration", "is", null),
-                    eb("lock.expiration", ">", Date.now()),
-                ]),
-            )
-            .returning("lock.key")
+            .returning("lock.expiration")
             .executeTakeFirst();
 
-        return result !== undefined;
+        if (lock === undefined) {
+            return false;
+        }
+        if (lock.expiration === null) {
+            return true;
+        }
+        return Number(lock.expiration) >= Date.now();
     }
 
     async refresh(key: string, lockId: string, ttl: Date): Promise<boolean> {
-        const expiration = ttl.getTime();
-        const result = await this.transactionContext.current
+        const lock = await this.trxCtx.current
             .updateTable("lock")
+            .set({
+                expiration: ttl.getTime(),
+            })
             .where("lock.key", "=", key)
             .where("lock.owner", "=", lockId)
             .where((eb) =>
@@ -292,33 +229,31 @@ export class KyselyLockAdapter
                     eb("lock.expiration", ">", Date.now()),
                 ]),
             )
-            .set({ expiration })
-            .execute();
+            .returning("lock.key")
+            .executeTakeFirst();
 
-        return Number(result[0]?.numUpdatedRows ?? 0n) > 0;
+        return lock !== undefined;
     }
 
     async getState(key: string): Promise<ILockAdapterState | null> {
-        const row = await this.transactionContext.current
+        const lock = await this.trxCtx.current
             .selectFrom("lock")
             .where("lock.key", "=", key)
             .select(["lock.owner", "lock.expiration"])
             .executeTakeFirst();
 
-        if (row === undefined) {
+        if (lock === undefined) {
             return null;
         }
-
-        if (row.expiration !== null && Number(row.expiration) <= Date.now()) {
+        if (lock.expiration !== null && Number(lock.expiration) <= Date.now()) {
             return null;
         }
-
         return {
-            owner: row.owner,
+            owner: lock.owner,
             expiration:
-                row.expiration === null
+                lock.expiration === null
                     ? null
-                    : new Date(Number(row.expiration)),
+                    : new Date(Number(lock.expiration)),
         };
     }
 }

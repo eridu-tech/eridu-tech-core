@@ -35,14 +35,14 @@ describe(
     { tags: ["Postgres", "Adapters", "Implementations", "Lock"] },
     () => {
         let container: StartedPostgreSqlContainer;
-        let database: Pool;
-        let trxCtx: ITransactionContext<Kysely<KyselyLockTables>>;
+        let client: Pool;
+        let database: Kysely<KyselyLockTables>;
         let adapter: KyselyLockAdapter;
         let tableNames: Record<keyof KyselyLockTables, string>;
 
         beforeAll(async () => {
             container = await new PostgreSqlContainer("postgres:17.5").start();
-            database = new Pool({
+            client = new Pool({
                 database: container.getDatabase(),
                 host: container.getHost(),
                 user: container.getUsername(),
@@ -52,7 +52,7 @@ describe(
             });
         }, timeout.toMilliseconds());
         afterAll(async () => {
-            await database.end();
+            await client.end();
             await container.stop();
         }, timeout.toMilliseconds());
         beforeEach(() => {
@@ -61,24 +61,16 @@ describe(
             tableNames = {
                 lock: randomUUID(),
             };
-            const kysely = new Kysely<KyselyLockTables>({
+            database = new Kysely<KyselyLockTables>({
                 dialect: new PostgresDialect({
-                    pool: database,
+                    pool: client,
                 }),
                 plugins: [new WithKyselyTableName(tableNames)],
             });
-            trxCtx = new TransactionContext({
-                executionContext: new ExecutionContext(
-                    new AlsExecutionContextAdapter(),
-                ),
-                adapter: new KyselyTransactionAdapter({
-                    database: kysely,
-                }),
-            });
-            adapter = new KyselyLockAdapter({ transactionContext: trxCtx });
+            adapter = new KyselyLockAdapter({ database });
         });
         afterEach(async () => {
-            await trxCtx.client.schema.dropTable("lock").ifExists().execute();
+            await database.schema.dropTable("lock").ifExists().execute();
         });
 
         lockAdapterTestSuite({
@@ -95,7 +87,7 @@ describe(
             test("Should remove all expired keys", async () => {
                 await adapter.init();
 
-                await trxCtx.client
+                await database
                     .insertInto("lock")
                     .values({
                         key: "a",
@@ -103,7 +95,7 @@ describe(
                         expiration: Date.now() - 1000,
                     })
                     .execute();
-                await trxCtx.client
+                await database
                     .insertInto("lock")
                     .values({
                         key: "b",
@@ -111,7 +103,7 @@ describe(
                         expiration: Date.now() - 1000,
                     })
                     .execute();
-                await trxCtx.client
+                await database
                     .insertInto("lock")
                     .values({
                         key: "c",
@@ -123,21 +115,21 @@ describe(
                 await adapter.removeAllExpired();
 
                 expect(
-                    await trxCtx.client
+                    await database
                         .selectFrom("lock")
                         .where("lock.key", "=", "a")
                         .selectAll()
                         .executeTakeFirst(),
                 ).toBeUndefined();
                 expect(
-                    await trxCtx.client
+                    await database
                         .selectFrom("lock")
                         .where("lock.key", "=", "b")
                         .selectAll()
                         .executeTakeFirst(),
                 ).toBeUndefined();
                 expect(
-                    await trxCtx.client
+                    await database
                         .selectFrom("lock")
                         .where("lock.key", "=", "c")
                         .selectAll()
@@ -149,7 +141,7 @@ describe(
             test("Should create lock table", async () => {
                 await adapter.init();
 
-                const tables = await trxCtx.client.introspection.getTables();
+                const tables = await database.introspection.getTables();
 
                 expect(tables).toContainEqual(
                     expect.objectContaining<Partial<TableMetadata>>({
@@ -193,7 +185,7 @@ describe(
                 await adapter.init();
                 await adapter.deInit();
 
-                const tables = await trxCtx.client.introspection.getTables();
+                const tables = await database.introspection.getTables();
 
                 expect(tables).not.toContainEqual(
                     expect.objectContaining<Partial<TableMetadata>>({
@@ -216,20 +208,36 @@ describe(
             });
         });
         describe("Transaction tests:", () => {
+            let trxAdapter: KyselyLockAdapter;
+            let trxCtx: ITransactionContext<Kysely<KyselyLockTables>>;
+            beforeEach(async () => {
+                trxCtx = new TransactionContext({
+                    executionContext: new ExecutionContext(
+                        new AlsExecutionContextAdapter(),
+                    ),
+                    adapter: new KyselyTransactionAdapter({
+                        database,
+                    }),
+                });
+                trxAdapter = new KyselyLockAdapter({
+                    database: trxCtx,
+                });
+                await trxAdapter.init();
+            });
             test("Should not persist changes when the transaction fails", async () => {
-                await adapter.init();
+                await trxAdapter.init();
 
                 try {
                     await trxCtx.run(async () => {
-                        await adapter.acquire("a", "1", null);
-                        await adapter.acquire("b", "1", null);
+                        await trxAdapter.acquire("a", "1", null);
+                        await trxAdapter.acquire("b", "1", null);
                         throw new Error("Transaction failure");
                     });
                 } catch {
                     /* EMPTY */
                 }
 
-                const rows = await trxCtx.client
+                const rows = await database
                     .selectFrom("lock")
                     .select("lock.key")
                     .execute();
@@ -237,14 +245,14 @@ describe(
                 expect(rows.length).toBe(0);
             });
             test("Should persist changes when the transaction succeeds", async () => {
-                await adapter.init();
+                await trxAdapter.init();
 
                 await trxCtx.run(async () => {
-                    await adapter.acquire("a", "1", null);
-                    await adapter.acquire("b", "1", null);
+                    await trxAdapter.acquire("a", "1", null);
+                    await trxAdapter.acquire("b", "1", null);
                 });
 
-                const rows = await trxCtx.client
+                const rows = await database
                     .selectFrom("lock")
                     .select("lock.key")
                     .execute();
