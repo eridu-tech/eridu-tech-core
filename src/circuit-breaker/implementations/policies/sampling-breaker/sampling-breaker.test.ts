@@ -534,7 +534,7 @@ describe(
             });
         });
         describe("method: trackFailure", () => {
-            test(`Should return empty samples when "samples" is empty`, () => {
+            test(`Should create a new sample when "samples" is empty`, () => {
                 const currentDate = new Date();
                 const policy = new SamplingBreaker({
                     failureThreshold: 0.5,
@@ -556,15 +556,100 @@ describe(
                 );
 
                 expect(newMetrics).toEqual({
-                    samples: [],
+                    samples: [
+                        {
+                            startedAt: currentDate.getTime(),
+                            failures: 1,
+                            successes: 0,
+                        },
+                    ],
                 } satisfies SamplingBreakerState);
             });
-            test(`Should increment failure count of the last sample when sample is outside the time window`, () => {
+            test(`Should increment failure count of the current sample`, () => {
+                const currentDate = new Date();
+                // sampleTimeSpan=2s => sampleEnd = currentDate + 2s
+                // sampleEnd > currentDate => the sample is not ended
+                const sampleStart = currentDate.getTime();
+                const policy = new SamplingBreaker({
+                    failureThreshold: 0.5,
+                    minimumRps: 1,
+                    timeSpan: TimeSpan.fromSeconds(10),
+                    sampleTimeSpan: TimeSpan.fromSeconds(2),
+                });
+
+                const newMetrics = policy.trackFailure(
+                    {
+                        type: CIRCUIT_BREAKER_STATE.CLOSED,
+                        metrics: {
+                            samples: [
+                                {
+                                    startedAt: sampleStart,
+                                    failures: 2,
+                                    successes: 3,
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        currentDate,
+                        initialMetrics: policy.initialMetrics(),
+                    },
+                );
+
+                expect(newMetrics).toEqual({
+                    samples: [
+                        {
+                            startedAt: sampleStart,
+                            failures: 3,
+                            successes: 3,
+                        },
+                    ],
+                } satisfies SamplingBreakerState);
+            });
+            test(`Should not mutate the samples it receives`, () => {
+                const currentDate = new Date();
+                const sampleStart = currentDate.getTime();
+                const currentMetrics = {
+                    samples: [
+                        {
+                            startedAt: sampleStart,
+                            failures: 2,
+                            successes: 3,
+                        },
+                    ],
+                } satisfies SamplingBreakerState;
+                const policy = new SamplingBreaker({
+                    failureThreshold: 0.5,
+                    minimumRps: 1,
+                    timeSpan: TimeSpan.fromSeconds(10),
+                    sampleTimeSpan: TimeSpan.fromSeconds(2),
+                });
+
+                policy.trackFailure(
+                    {
+                        type: CIRCUIT_BREAKER_STATE.CLOSED,
+                        metrics: currentMetrics,
+                    },
+                    {
+                        currentDate,
+                        initialMetrics: policy.initialMetrics(),
+                    },
+                );
+
+                expect(currentMetrics.samples).toEqual([
+                    {
+                        startedAt: sampleStart,
+                        failures: 2,
+                        successes: 3,
+                    },
+                ]);
+            });
+            test(`Should drop samples that are outside the time window and create a new sample`, () => {
                 const currentDate = new Date();
                 // timeSpan=10s, sampleTimeSpan=2s
                 // windowStart = currentDate - 10s
                 // sampleEnd = oldSampleStart + 2s = currentDate - 18s
-                // sampleEnd < windowStart => sample is kept by filter
+                // sampleEnd < windowStart => sample is dropped
                 const oldSampleStart = currentDate.getTime() - 20 * 1000;
                 const policy = new SamplingBreaker({
                     failureThreshold: 0.5,
@@ -595,19 +680,20 @@ describe(
                 expect(newMetrics).toEqual({
                     samples: [
                         {
-                            startedAt: oldSampleStart,
-                            failures: 3,
-                            successes: 3,
+                            startedAt: currentDate.getTime(),
+                            failures: 1,
+                            successes: 0,
                         },
                     ],
                 } satisfies SamplingBreakerState);
             });
-            test(`Should remove samples that are within the time window`, () => {
+            test(`Should keep ended samples that are within the time window and create a new sample`, () => {
                 const currentDate = new Date();
                 // timeSpan=10s, sampleTimeSpan=2s
                 // windowStart = currentDate - 10s
                 // sampleEnd = (currentDate - 5s) + 2s = currentDate - 3s
-                // sampleEnd >= windowStart => sample is removed by filter
+                // sampleEnd >= windowStart => sample is kept
+                // sampleEnd <= currentDate => the sample is ended
                 const recentSampleStart = currentDate.getTime() - 5 * 1000;
                 const policy = new SamplingBreaker({
                     failureThreshold: 0.5,
@@ -636,13 +722,23 @@ describe(
                 );
 
                 expect(newMetrics).toEqual({
-                    samples: [],
+                    samples: [
+                        {
+                            startedAt: recentSampleStart,
+                            failures: 5,
+                            successes: 5,
+                        },
+                        {
+                            startedAt: currentDate.getTime(),
+                            failures: 1,
+                            successes: 0,
+                        },
+                    ],
                 } satisfies SamplingBreakerState);
             });
             test(`Should work with half-open state`, () => {
                 const currentDate = new Date();
-                // Old sample outside the window is kept and incremented
-                const oldSampleStart = currentDate.getTime() - 20 * 1000;
+                const sampleStart = currentDate.getTime();
                 const policy = new SamplingBreaker({
                     failureThreshold: 0.5,
                     minimumRps: 1,
@@ -656,7 +752,7 @@ describe(
                         metrics: {
                             samples: [
                                 {
-                                    startedAt: oldSampleStart,
+                                    startedAt: sampleStart,
                                     failures: 1,
                                     successes: 0,
                                 },
@@ -672,19 +768,19 @@ describe(
                 expect(newMetrics).toEqual({
                     samples: [
                         {
-                            startedAt: oldSampleStart,
+                            startedAt: sampleStart,
                             failures: 2,
                             successes: 0,
                         },
                     ],
                 } satisfies SamplingBreakerState);
             });
-            test(`Should keep samples outside the time window and remove samples within it`, () => {
+            test(`Should keep samples within the time window and drop samples outside it`, () => {
                 const currentDate = new Date();
                 // timeSpan=10s, sampleTimeSpan=2s
                 // windowStart = currentDate - 10s
-                // Sample 1 (old, outside window): sampleEnd = (currentDate - 20s) + 2s = currentDate - 18s < windowStart => KEPT
-                // Sample 2 (recent, within window): sampleEnd = (currentDate - 5s) + 2s = currentDate - 3s >= windowStart => REMOVED
+                // Sample 1 (old, outside window): sampleEnd = (currentDate - 20s) + 2s = currentDate - 18s < windowStart => DROPPED
+                // Sample 2 (recent, within window): sampleEnd = (currentDate - 5s) + 2s = currentDate - 3s >= windowStart => KEPT
                 const oldSampleStart = currentDate.getTime() - 20 * 1000;
                 const recentSampleStart = currentDate.getTime() - 5 * 1000;
                 const policy = new SamplingBreaker({
@@ -721,16 +817,21 @@ describe(
                 expect(newMetrics).toEqual({
                     samples: [
                         {
-                            startedAt: oldSampleStart,
-                            failures: 3,
-                            successes: 3,
+                            startedAt: recentSampleStart,
+                            failures: 5,
+                            successes: 5,
+                        },
+                        {
+                            startedAt: currentDate.getTime(),
+                            failures: 1,
+                            successes: 0,
                         },
                     ],
                 } satisfies SamplingBreakerState);
             });
         });
         describe("method: trackSuccess", () => {
-            test(`Should return empty samples when "samples" is empty`, () => {
+            test(`Should create a new sample when "samples" is empty`, () => {
                 const currentDate = new Date();
                 const policy = new SamplingBreaker({
                     failureThreshold: 0.5,
@@ -752,15 +853,100 @@ describe(
                 );
 
                 expect(newMetrics).toEqual({
-                    samples: [],
+                    samples: [
+                        {
+                            startedAt: currentDate.getTime(),
+                            failures: 0,
+                            successes: 1,
+                        },
+                    ],
                 } satisfies SamplingBreakerState);
             });
-            test(`Should increment success count of the last sample when sample is outside the time window`, () => {
+            test(`Should increment success count of the current sample`, () => {
+                const currentDate = new Date();
+                // sampleTimeSpan=2s => sampleEnd = currentDate + 2s
+                // sampleEnd > currentDate => the sample is not ended
+                const sampleStart = currentDate.getTime();
+                const policy = new SamplingBreaker({
+                    failureThreshold: 0.5,
+                    minimumRps: 1,
+                    timeSpan: TimeSpan.fromSeconds(10),
+                    sampleTimeSpan: TimeSpan.fromSeconds(2),
+                });
+
+                const newMetrics = policy.trackSuccess(
+                    {
+                        type: CIRCUIT_BREAKER_STATE.CLOSED,
+                        metrics: {
+                            samples: [
+                                {
+                                    startedAt: sampleStart,
+                                    failures: 2,
+                                    successes: 3,
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        currentDate,
+                        initialMetrics: policy.initialMetrics(),
+                    },
+                );
+
+                expect(newMetrics).toEqual({
+                    samples: [
+                        {
+                            startedAt: sampleStart,
+                            failures: 2,
+                            successes: 4,
+                        },
+                    ],
+                } satisfies SamplingBreakerState);
+            });
+            test(`Should not mutate the samples it receives`, () => {
+                const currentDate = new Date();
+                const sampleStart = currentDate.getTime();
+                const currentMetrics = {
+                    samples: [
+                        {
+                            startedAt: sampleStart,
+                            failures: 2,
+                            successes: 3,
+                        },
+                    ],
+                } satisfies SamplingBreakerState;
+                const policy = new SamplingBreaker({
+                    failureThreshold: 0.5,
+                    minimumRps: 1,
+                    timeSpan: TimeSpan.fromSeconds(10),
+                    sampleTimeSpan: TimeSpan.fromSeconds(2),
+                });
+
+                policy.trackSuccess(
+                    {
+                        type: CIRCUIT_BREAKER_STATE.CLOSED,
+                        metrics: currentMetrics,
+                    },
+                    {
+                        currentDate,
+                        initialMetrics: policy.initialMetrics(),
+                    },
+                );
+
+                expect(currentMetrics.samples).toEqual([
+                    {
+                        startedAt: sampleStart,
+                        failures: 2,
+                        successes: 3,
+                    },
+                ]);
+            });
+            test(`Should drop samples that are outside the time window and create a new sample`, () => {
                 const currentDate = new Date();
                 // timeSpan=10s, sampleTimeSpan=2s
                 // windowStart = currentDate - 10s
                 // sampleEnd = oldSampleStart + 2s = currentDate - 18s
-                // sampleEnd < windowStart => sample is kept by filter
+                // sampleEnd < windowStart => sample is dropped
                 const oldSampleStart = currentDate.getTime() - 20 * 1000;
                 const policy = new SamplingBreaker({
                     failureThreshold: 0.5,
@@ -791,19 +977,20 @@ describe(
                 expect(newMetrics).toEqual({
                     samples: [
                         {
-                            startedAt: oldSampleStart,
-                            failures: 2,
-                            successes: 4,
+                            startedAt: currentDate.getTime(),
+                            failures: 0,
+                            successes: 1,
                         },
                     ],
                 } satisfies SamplingBreakerState);
             });
-            test(`Should remove samples that are within the time window`, () => {
+            test(`Should keep ended samples that are within the time window and create a new sample`, () => {
                 const currentDate = new Date();
                 // timeSpan=10s, sampleTimeSpan=2s
                 // windowStart = currentDate - 10s
                 // sampleEnd = (currentDate - 5s) + 2s = currentDate - 3s
-                // sampleEnd >= windowStart => sample is removed by filter
+                // sampleEnd >= windowStart => sample is kept
+                // sampleEnd <= currentDate => the sample is ended
                 const recentSampleStart = currentDate.getTime() - 5 * 1000;
                 const policy = new SamplingBreaker({
                     failureThreshold: 0.5,
@@ -832,13 +1019,23 @@ describe(
                 );
 
                 expect(newMetrics).toEqual({
-                    samples: [],
+                    samples: [
+                        {
+                            startedAt: recentSampleStart,
+                            failures: 5,
+                            successes: 5,
+                        },
+                        {
+                            startedAt: currentDate.getTime(),
+                            failures: 0,
+                            successes: 1,
+                        },
+                    ],
                 } satisfies SamplingBreakerState);
             });
             test(`Should work with half-open state`, () => {
                 const currentDate = new Date();
-                // Old sample outside the window is kept and incremented
-                const oldSampleStart = currentDate.getTime() - 20 * 1000;
+                const sampleStart = currentDate.getTime();
                 const policy = new SamplingBreaker({
                     failureThreshold: 0.5,
                     minimumRps: 1,
@@ -852,7 +1049,7 @@ describe(
                         metrics: {
                             samples: [
                                 {
-                                    startedAt: oldSampleStart,
+                                    startedAt: sampleStart,
                                     failures: 0,
                                     successes: 1,
                                 },
@@ -868,19 +1065,19 @@ describe(
                 expect(newMetrics).toEqual({
                     samples: [
                         {
-                            startedAt: oldSampleStart,
+                            startedAt: sampleStart,
                             failures: 0,
                             successes: 2,
                         },
                     ],
                 } satisfies SamplingBreakerState);
             });
-            test(`Should keep samples outside the time window and remove samples within it`, () => {
+            test(`Should keep samples within the time window and drop samples outside it`, () => {
                 const currentDate = new Date();
                 // timeSpan=10s, sampleTimeSpan=2s
                 // windowStart = currentDate - 10s
-                // Sample 1 (old, outside window): sampleEnd = (currentDate - 20s) + 2s = currentDate - 18s < windowStart => KEPT
-                // Sample 2 (recent, within window): sampleEnd = (currentDate - 5s) + 2s = currentDate - 3s >= windowStart => REMOVED
+                // Sample 1 (old, outside window): sampleEnd = (currentDate - 20s) + 2s = currentDate - 18s < windowStart => DROPPED
+                // Sample 2 (recent, within window): sampleEnd = (currentDate - 5s) + 2s = currentDate - 3s >= windowStart => KEPT
                 const oldSampleStart = currentDate.getTime() - 20 * 1000;
                 const recentSampleStart = currentDate.getTime() - 5 * 1000;
                 const policy = new SamplingBreaker({
@@ -917,9 +1114,14 @@ describe(
                 expect(newMetrics).toEqual({
                     samples: [
                         {
-                            startedAt: oldSampleStart,
-                            failures: 2,
-                            successes: 4,
+                            startedAt: recentSampleStart,
+                            failures: 5,
+                            successes: 5,
+                        },
+                        {
+                            startedAt: currentDate.getTime(),
+                            failures: 0,
+                            successes: 1,
                         },
                     ],
                 } satisfies SamplingBreakerState);

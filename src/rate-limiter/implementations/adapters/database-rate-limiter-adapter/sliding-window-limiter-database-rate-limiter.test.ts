@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import { constantBackoff } from "@/backoff-policies/implementations/_module-exports.js";
 import { DatabaseRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/database-rate-limiter-adapter/database-rate-limiter-adapter.js";
 import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-storage-adapter/memory-rate-limiter-storage-adapter.js";
-import { FixedWindowLimiter } from "@/rate-limiter/implementations/policies/_module-exports.js";
+import { SlidingWindowLimiter } from "@/rate-limiter/implementations/policies/_module-exports.js";
 import { slidingWindowLimiterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
 
 describe(
@@ -17,7 +17,7 @@ describe(
                         slidingWindowLimiterTestSuite.backoffPolicySettings,
                     ),
                     adapter: new MemoryRateLimiterStorageAdapter(),
-                    rateLimiterPolicy: new FixedWindowLimiter(
+                    rateLimiterPolicy: new SlidingWindowLimiter(
                         slidingWindowLimiterTestSuite.rateLimiterPolicySettings,
                     ),
                 });
