@@ -36,17 +36,24 @@ local function SamplingBreaker(settings)
     -- @return boolean
     local function isMiniumNotMet(total)
         -- settings.timeSpan is in ms
-        return total < math.ceil(settings.timeSpan / 1000) * settings.minimumRps
+        return total < math.ceil((settings.timeSpan / 1000) * settings.minimumRps)
     end
 
     -- @param currentDate number
     -- @return InvocableFn<[sample: Sample], boolean>
-    local function isNotOverLapping(currentDate)
+    local function isWithinWindow(currentDate)
         return function(sample)
             local windowStart = currentDate - settings.timeSpan
-            local sampleEnd = settings.sampleTimeSpan + sample.startedAt
-            return sampleEnd < windowStart
+            local sampleEnd = sample.startedAt + settings.sampleTimeSpan
+            return sampleEnd >= windowStart
         end
+    end
+
+    -- @param sample Sample
+    -- @param currentDate number
+    -- @return boolean
+    local function hasSampleEnded(sample, currentDate)
+        return sample.startedAt + settings.sampleTimeSpan <= currentDate
     end
 
     -- @param success boolean
@@ -56,24 +63,15 @@ local function SamplingBreaker(settings)
     local function track(success, currentState, trackSettings)
         local samples = {}
 
-        for _index, sample in ipairs(currentMetrics.samples)(sample) do
-            if isNotOverlapping(trackSettings.currentDate) then
+        local withinWindow = isWithinWindow(trackSettings.currentDate)
+        for _index, sample in ipairs(currentState.metrics.samples) do
+            if withinWindow(sample) then
                 table.insert(samples, sample)
             end
         end
 
         local currentSample = samples[#samples]
-        if currentSample == nil or currentSample == cjson.null then
-            currentSample = {
-                failures = 0,
-                successes = 0,
-                startedAt = trackSettings.currentDate
-            }
-        end
-
-        local currentSampleEnd = settings.sampleTimeSpan + trackSettings.currentDate
-        local hasCurrentSampleEnded = currentSampleEnd < trackSettings.currentDate
-        if hasCurrentSampleEnded then
+        if currentSample == nil or currentSample == cjson.null or hasSampleEnded(currentSample, trackSettings.currentDate) then
             currentSample = {
                 failures = 0,
                 successes = 0,
@@ -83,9 +81,9 @@ local function SamplingBreaker(settings)
         end
 
         if success then
-            currentSample.failures = currentSample.failures + 1
-        else
             currentSample.successes = currentSample.successes + 1
+        else
+            currentSample.failures = currentSample.failures + 1
         end
 
         return {

@@ -289,14 +289,21 @@ export class SamplingBreaker implements ICircuitBreakerPolicy<SamplingBreakerSta
         return HALF_OPEN_TRANSITIONS.TO_OPEN;
     }
 
-    private isNotOverlapping(currentDate: Date) {
+    private isWithinWindow(currentDate: Date) {
         return (sample: Sample): boolean => {
             const windowStart = this.timeSpan.toStartDate(currentDate);
             const sampleEnd = this.sampleTimeSpan.toEndDate(
                 new Date(sample.startedAt),
             );
-            return sampleEnd < windowStart;
+            return sampleEnd >= windowStart;
         };
+    }
+
+    private hasSampleEnded(sample: Sample, currentDate: Date): boolean {
+        return (
+            this.sampleTimeSpan.toEndDate(new Date(sample.startedAt)) <=
+            currentDate
+        );
     }
 
     private track(
@@ -304,28 +311,25 @@ export class SamplingBreaker implements ICircuitBreakerPolicy<SamplingBreakerSta
         currentState: CircuitBreakerTrackState<SamplingBreakerState>,
         settings: CircuitBreakerTrackSettings<SamplingBreakerState>,
     ): SamplingBreakerState {
-        let samples = [...currentState.metrics.samples].filter(
-            this.isNotOverlapping(settings.currentDate),
+        const samples = [...currentState.metrics.samples].filter(
+            this.isWithinWindow(settings.currentDate),
         );
 
-        let currentSample: Sample = samples.at(-1) ?? {
-            failures: 0,
-            successes: 0,
-            startedAt: settings.currentDate.getTime(),
-        };
-
-        const currentSampleEnd = this.sampleTimeSpan
-            .toEndDate(settings.currentDate)
-            .getTime();
-        const hasCurrentSampleEnded =
-            currentSampleEnd < settings.currentDate.getTime();
-        if (hasCurrentSampleEnded) {
+        const lastSample = samples.at(-1);
+        let currentSample: Sample;
+        if (
+            lastSample === undefined ||
+            this.hasSampleEnded(lastSample, settings.currentDate)
+        ) {
             currentSample = {
                 failures: 0,
                 successes: 0,
                 startedAt: settings.currentDate.getTime(),
             };
-            samples = [...samples, currentSample];
+            samples.push(currentSample);
+        } else {
+            currentSample = { ...lastSample };
+            samples[samples.length - 1] = currentSample;
         }
 
         if (success) {
