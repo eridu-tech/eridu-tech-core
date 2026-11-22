@@ -7,8 +7,6 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type { SlidingWindowLimiterSettings } from "@/rate-limiter/contracts/rate-limiter-policy.contract.js";
 
-export type { SlidingWindowLimiterSettings };
-
 /**
  * @internal
  */

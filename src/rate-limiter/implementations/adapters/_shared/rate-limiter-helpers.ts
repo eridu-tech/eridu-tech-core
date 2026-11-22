@@ -12,20 +12,9 @@ import {
     serializeSlidingWindowLimiterSettings,
 } from "@/rate-limiter/implementations/adapters/_shared/sliding-window-limiter-helpers.js";
 
-import type {
-    FixedWindowLimiterSettingsEnum,
-    RateLimiterPolicySettingsEnum,
-    SlidingWindowLimiterSettingsEnum,
-} from "@/rate-limiter/contracts/rate-limiter-policy.contract.js";
+import type { RateLimiterPolicySettingsEnum } from "@/rate-limiter/contracts/rate-limiter-policy.contract.js";
 import type { SerializedFixedWindowLimiterSettings } from "@/rate-limiter/implementations/adapters/_shared/fixed-window-limiter-helpers.js";
 import type { SerializedSlidingWindowLimiterSettings } from "@/rate-limiter/implementations/adapters/_shared/sliding-window-limiter-helpers.js";
-
-export { LIMITER_POLICIES };
-export type {
-    FixedWindowLimiterSettingsEnum,
-    RateLimiterPolicySettingsEnum,
-    SlidingWindowLimiterSettingsEnum,
-};
 
 /**
  * @internal
