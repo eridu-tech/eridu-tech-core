@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { SlidingWindowLimiter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/policies/sliding-window-limiter/sliding-window-limiter.js";
 import { TimeSpan } from "@/time-span/implementations/time-span.js";
 
-import type { SlidingWindowLimiterState } from "@/rate-limiter/contracts/_module-exports.js";
+import type { SlidingWindowLimiterMetrics } from "@/rate-limiter/contracts/_module-exports.js";
 
 describe(
     "class: SlidingWindowLimiter",
@@ -22,7 +22,7 @@ describe(
 
                 expect(metrics).toEqual({
                     [expectedKey]: 0,
-                } satisfies SlidingWindowLimiterState);
+                } satisfies SlidingWindowLimiterMetrics);
             });
         });
 
@@ -39,7 +39,7 @@ describe(
 
                 expect(metrics).toEqual({
                     [expectedKey]: 0,
-                } satisfies SlidingWindowLimiterState);
+                } satisfies SlidingWindowLimiterMetrics);
             });
 
             test("Should return state with key aligned to window boundary when date is mid-window", () => {
@@ -55,7 +55,7 @@ describe(
 
                 expect(metrics).toEqual({
                     [expectedKey]: 0,
-                } satisfies SlidingWindowLimiterState);
+                } satisfies SlidingWindowLimiterMetrics);
             });
         });
 
@@ -73,7 +73,7 @@ describe(
                 // Current window: 3 attempts, Previous window: 4 attempts
                 // Weighted previous = Math.floor((1 - 0.5) * 4) = 2
                 // Total = 3 + 2 = 5 < 10
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 3,
                     [currentWindowKey - windowMs]: 4,
                 };
@@ -95,7 +95,7 @@ describe(
                 // Current window: 3, Previous window: 4
                 // Weighted previous = Math.floor(0.5 * 4) = 2
                 // Total = 3 + 2 = 5 >= 5
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 3,
                     [currentWindowKey - windowMs]: 4,
                 };
@@ -117,7 +117,7 @@ describe(
                 // Current window: 5, Previous window: 4
                 // Weighted previous = Math.floor(0.5 * 4) = 2
                 // Total = 5 + 2 = 7 >= 5
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 5,
                     [currentWindowKey - windowMs]: 4,
                 };
@@ -134,7 +134,7 @@ describe(
                 const currentWindowKey = baseTime;
                 const currentDate = new Date(baseTime + 30_000);
                 const limit = 5;
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 3,
                 };
                 const result = limiter.shouldBlock(metrics, limit, currentDate);
@@ -155,7 +155,7 @@ describe(
                 // Current window: 1, Previous window: 6
                 // Weighted previous = Math.floor((1 - 0.25) * 6) = Math.floor(4.5) = 4
                 // Total = 1 + 4 = 5 >= 5
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 1,
                     [currentWindowKey - windowMs]: 6,
                 };
@@ -188,7 +188,7 @@ describe(
                 // Current window: 0, Previous window: 5
                 // Weighted previous = Math.floor((1 - 0) * 5) = 5
                 // Total = 0 + 5 = 5 >= 5
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 0,
                     [currentWindowKey - windowMs]: 5,
                 };
@@ -210,7 +210,7 @@ describe(
                 // Current window: 1, Previous window: 10
                 // Weighted previous = Math.floor((1 - 0.95) * 10) = Math.floor(0.5) = 0
                 // Total = 1 + 0 = 1 < 5
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 1,
                     [currentWindowKey - windowMs]: 10,
                 };
@@ -271,7 +271,7 @@ describe(
                 // Current: 3, Previous: 4
                 // Weighted previous = Math.floor(0.5 * 4) = 2
                 // Total = 3 + 2 = 5
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 3,
                     [currentWindowKey - windowMs]: 4,
                 };
@@ -287,7 +287,7 @@ describe(
                 const baseTime = new Date("2025-12-24T00:00:00.000Z").getTime();
                 const currentWindowKey = baseTime;
                 const currentDate = new Date(baseTime + 30_000);
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 7,
                 };
                 const attempts = limiter.getAttempts(metrics, currentDate);
@@ -313,7 +313,7 @@ describe(
                 const windowMs = window.toMilliseconds();
                 const baseTime = new Date("2025-12-24T00:00:00.000Z").getTime();
                 const currentWindowKey = baseTime;
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 2,
                     [currentWindowKey - windowMs]: 10,
                 };
@@ -344,7 +344,7 @@ describe(
                 const baseTime = new Date("2025-12-24T00:00:00.000Z").getTime();
                 const currentWindowKey = baseTime;
                 const currentDate = new Date(baseTime + 30_000);
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 3,
                     [currentWindowKey - windowMs]: 4,
                 };
@@ -362,7 +362,7 @@ describe(
                 const currentWindowKey = baseTime;
                 const previousWindowKey = currentWindowKey - windowMs;
                 const currentDate = new Date(baseTime + 30_000);
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 2,
                     [previousWindowKey]: 5,
                 };
@@ -380,7 +380,7 @@ describe(
                 const currentWindowKey = baseTime;
                 const oldWindowKey = currentWindowKey - windowMs * 3;
                 const currentDate = new Date(baseTime + 30_000);
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 2,
                     [oldWindowKey]: 10,
                 };
@@ -409,7 +409,7 @@ describe(
                 const baseTime = new Date("2025-12-24T00:00:00.000Z").getTime();
                 const currentWindowKey = baseTime;
                 const currentDate = new Date(baseTime + 30_000);
-                const metrics: SlidingWindowLimiterState = {
+                const metrics: SlidingWindowLimiterMetrics = {
                     [currentWindowKey]: 3,
                 };
                 const newMetrics = limiter.updateMetrics(metrics, currentDate);

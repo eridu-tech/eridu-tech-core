@@ -112,7 +112,7 @@ export type RateLimiterPolicySettingsEnum =
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Contracts
  */
-export type FixedWindowLimiterState = {
+export type FixedWindowLimiterMetrics = {
     /**
      * Attempts recorded in the current window.
      */
@@ -130,7 +130,7 @@ export type FixedWindowLimiterState = {
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Contracts
  */
-export type SlidingWindowLimiterState = Partial<Record<number, number>>;
+export type SlidingWindowLimiterMetrics = Partial<Record<number, number>>;
 
 /**
  * Internal policy state while attempts are allowed.

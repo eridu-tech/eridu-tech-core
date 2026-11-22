@@ -5,9 +5,9 @@
 import type { ObjectId } from "mongodb";
 
 import type {
-    FixedWindowLimiterState,
+    FixedWindowLimiterMetrics,
     LIMITER_POLICIES,
-    SlidingWindowLimiterState,
+    SlidingWindowLimiterMetrics,
 } from "@/rate-limiter/contracts/_module-exports.js";
 
 /**
@@ -18,7 +18,7 @@ import type {
  */
 export type SlidingWindowLimiterStateEnum = {
     type: (typeof LIMITER_POLICIES)["SLIDING_WINDOW"];
-    values: SlidingWindowLimiterState;
+    values: SlidingWindowLimiterMetrics;
 };
 
 /**
@@ -47,7 +47,7 @@ export type FixedWindowLimiterBlockedState = {
  */
 export type FixedWindowLimiterStateEnum = {
     type: (typeof LIMITER_POLICIES)["FIXED_WINDOW"];
-    values: FixedWindowLimiterState & {
+    values: FixedWindowLimiterMetrics & {
         /**
          * Set while the limiter is blocking, `null` while it allows attempts.
          */

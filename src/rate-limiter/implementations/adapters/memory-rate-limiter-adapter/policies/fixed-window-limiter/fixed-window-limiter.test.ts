@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { FixedWindowLimiter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/policies/fixed-window-limiter/fixed-window-limiter.js";
 import { TimeSpan } from "@/time-span/implementations/time-span.js";
 
-import type { FixedWindowLimiterState } from "@/rate-limiter/contracts/_module-exports.js";
+import type { FixedWindowLimiterMetrics } from "@/rate-limiter/contracts/_module-exports.js";
 
 describe(
     "class: FixedWindowLimiter",
@@ -21,7 +21,7 @@ describe(
                 expect(metrics).toEqual({
                     attempt: 0,
                     lastAttemptAt: currentDate.getTime(),
-                } satisfies FixedWindowLimiterState);
+                } satisfies FixedWindowLimiterMetrics);
             });
         });
         describe("method: shouldBlock", () => {
@@ -96,7 +96,7 @@ describe(
                 });
 
                 const currentDate = new Date("2025-12-24");
-                const metrics: FixedWindowLimiterState = {
+                const metrics: FixedWindowLimiterMetrics = {
                     attempt: 4,
                     lastAttemptAt: currentDate.getTime(),
                 };
@@ -112,7 +112,7 @@ describe(
                 });
 
                 const currentDate = new Date("2025-12-24");
-                const metrics: FixedWindowLimiterState = {
+                const metrics: FixedWindowLimiterMetrics = {
                     attempt: 4,
                     lastAttemptAt: currentDate.getTime(),
                 };
@@ -128,7 +128,7 @@ describe(
                 });
 
                 const currentDate = new Date("2025-12-24");
-                const metrics: FixedWindowLimiterState = {
+                const metrics: FixedWindowLimiterMetrics = {
                     attempt: 2,
                     lastAttemptAt: currentDate.getTime(),
                 };
@@ -137,7 +137,7 @@ describe(
                 expect(newMetrics).toEqual({
                     attempt: 3,
                     lastAttemptAt: currentDate.getTime(),
-                } satisfies FixedWindowLimiterState);
+                } satisfies FixedWindowLimiterMetrics);
             });
         });
     },

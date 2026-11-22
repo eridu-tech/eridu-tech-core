@@ -7,14 +7,14 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type {
     FixedWindowLimiterSettings,
-    FixedWindowLimiterState,
+    FixedWindowLimiterMetrics,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { IRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-policy.contract.js";
 
 /**
  * @internal
  */
-export class FixedWindowLimiter implements IRateLimiterPolicy<FixedWindowLimiterState> {
+export class FixedWindowLimiter implements IRateLimiterPolicy<FixedWindowLimiterMetrics> {
     private readonly window: TimeSpan;
 
     constructor(settings: FixedWindowLimiterSettings = {}) {
@@ -22,7 +22,7 @@ export class FixedWindowLimiter implements IRateLimiterPolicy<FixedWindowLimiter
         this.window = TimeSpan.fromTimeSpan(window);
     }
 
-    initialMetrics(currentDate: Date): FixedWindowLimiterState {
+    initialMetrics(currentDate: Date): FixedWindowLimiterMetrics {
         return {
             attempt: 0,
             lastAttemptAt: currentDate.getTime(),
@@ -30,7 +30,7 @@ export class FixedWindowLimiter implements IRateLimiterPolicy<FixedWindowLimiter
     }
 
     shouldBlock(
-        currentMetrics: FixedWindowLimiterState,
+        currentMetrics: FixedWindowLimiterMetrics,
         limit: number,
         currentDate: Date,
     ): boolean {
@@ -43,23 +43,23 @@ export class FixedWindowLimiter implements IRateLimiterPolicy<FixedWindowLimiter
     }
 
     getExpiration(
-        currentMetrics: FixedWindowLimiterState,
+        currentMetrics: FixedWindowLimiterMetrics,
         _currentDate: Date,
     ): Date {
         return this.window.toEndDate(new Date(currentMetrics.lastAttemptAt));
     }
 
     getAttempts(
-        currentMetrics: FixedWindowLimiterState,
+        currentMetrics: FixedWindowLimiterMetrics,
         _currentDate: Date,
     ): number {
         return currentMetrics.attempt;
     }
 
     updateMetrics(
-        currentMetrics: FixedWindowLimiterState,
+        currentMetrics: FixedWindowLimiterMetrics,
         currentDate: Date,
-    ): FixedWindowLimiterState {
+    ): FixedWindowLimiterMetrics {
         return {
             attempt: currentMetrics.attempt + 1,
             lastAttemptAt: currentDate.getTime(),

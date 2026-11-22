@@ -7,14 +7,14 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type {
     SlidingWindowLimiterSettings,
-    SlidingWindowLimiterState,
+    SlidingWindowLimiterMetrics,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { IRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-policy.contract.js";
 
 /**
  * @internal
  */
-export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLimiterState> {
+export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLimiterMetrics> {
     private readonly window: TimeSpan;
     private readonly margin: TimeSpan;
 
@@ -37,9 +37,9 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
     }
 
     private cleanup(
-        metrics: SlidingWindowLimiterState,
+        metrics: SlidingWindowLimiterMetrics,
         currentDate: Date,
-    ): SlidingWindowLimiterState {
+    ): SlidingWindowLimiterMetrics {
         const previousWindow = this.previousWindow(currentDate);
         return Object.fromEntries(
             Object.entries(metrics).filter(([timeStampAsStr]) => {
@@ -51,14 +51,14 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
     }
 
     private currentAttempt(
-        currentMetrics: SlidingWindowLimiterState,
+        currentMetrics: SlidingWindowLimiterMetrics,
         currentDate: Date,
     ): number {
         return currentMetrics[this.currentWindow(currentDate)] ?? 0;
     }
 
     private previousAttempt(
-        currentMetrics: SlidingWindowLimiterState,
+        currentMetrics: SlidingWindowLimiterMetrics,
         currentDate: Date,
     ): number {
         let previousAttempt =
@@ -74,14 +74,14 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
         return previousAttempt;
     }
 
-    initialMetrics(currentDate: Date): SlidingWindowLimiterState {
+    initialMetrics(currentDate: Date): SlidingWindowLimiterMetrics {
         return {
             [this.currentWindow(currentDate)]: 0,
         };
     }
 
     shouldBlock(
-        currentMetrics: SlidingWindowLimiterState,
+        currentMetrics: SlidingWindowLimiterMetrics,
         limit: number,
         currentDate: Date,
     ): boolean {
@@ -97,7 +97,7 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
     }
 
     getExpiration(
-        _currentMetrics: SlidingWindowLimiterState,
+        _currentMetrics: SlidingWindowLimiterMetrics,
         currentDate: Date,
     ): Date {
         return this.window
@@ -107,7 +107,7 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
     }
 
     getAttempts(
-        currentMetrics: SlidingWindowLimiterState,
+        currentMetrics: SlidingWindowLimiterMetrics,
         currentDate: Date,
     ): number {
         const currentAttempt = this.currentAttempt(currentMetrics, currentDate);
@@ -119,9 +119,9 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
     }
 
     updateMetrics(
-        currentMetrics: SlidingWindowLimiterState,
+        currentMetrics: SlidingWindowLimiterMetrics,
         currentDate: Date,
-    ): SlidingWindowLimiterState {
+    ): SlidingWindowLimiterMetrics {
         currentMetrics = this.cleanup(currentMetrics, currentDate);
         const currentAttempt = this.currentAttempt(currentMetrics, currentDate);
         const currentKey = this.currentWindow(currentDate);
