@@ -2,28 +2,31 @@
  * @module RateLimiter
  */
 
-import { BACKOFFS } from "@/backoff-policies/implementations/_module-exports.js";
+import {
+    BACKOFFS,
+    serializeBackoffSettingsEnum,
+} from "@/backoff-policies/implementations/_module-exports.js";
 import { LIMITER_POLICIES } from "@/rate-limiter/contracts/_module-exports.js";
+import {
+    serializeFixedWindowLimiterSettings,
+    serializeSlidingWindowLimiterSettings,
+} from "@/rate-limiter/implementations/adapters/_shared/_module.js";
+import { MongodbFixedWindowLimiter } from "@/rate-limiter/implementations/adapters/mongodb-rate-limiter-adapter/mongodb-fixed-window-limiter.js";
+import { MongodbSlidingWindowLimiter } from "@/rate-limiter/implementations/adapters/mongodb-rate-limiter-adapter/mongodb-sliding-window-limiter.js";
 import { resolveTransactionAware } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-import type {
-    ClientSession,
-    Collection,
-    CollectionOptions,
-    Db,
-    ObjectId,
-} from "mongodb";
+import type { ClientSession, Collection, CollectionOptions, Db } from "mongodb";
 
-import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module-exports.js";
 import type {
-    FixedWindowLimiterSettingsEnum,
+    BackoffSettingsEnum,
+    SerializedBackoffSettingsEnum,
+} from "@/backoff-policies/implementations/_module-exports.js";
+import type {
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
     RateLimiterPolicySettingsEnum,
-    SlidingWindowLimiterSettingsEnum,
 } from "@/rate-limiter/contracts/_module-exports.js";
-import type { FixedWindowLimiterState } from "@/rate-limiter/implementations/adapters/_shared/fixed-window-limiter-helpers.js";
-import type { SlidingWindowLimiterState } from "@/rate-limiter/implementations/adapters/_shared/sliding-window-limiter-helpers.js";
+import type { MongodbRateLimiterEntryDocument } from "@/rate-limiter/implementations/adapters/mongodb-rate-limiter-adapter/mongodb-rate-limiter-entry-document.js";
 import type {
     ITransactionConnection,
     TransactionAware,
@@ -32,60 +35,6 @@ import type {
     IAsyncDeinitizable,
     IAsyncInitizable,
 } from "@/utilities/_module-exports.js";
-
-/**
- * @internal
- */
-class FixedWindowLimiter implements IRateLimiterAdapter {
-    constructor(
-        private readonly limiterPolicy: FixedWindowLimiterSettingsEnum,
-        private readonly backoffPolicy: BackoffSettingsEnum,
-        private readonly collection: Collection<MongodbRateLimiterEntryDocument>,
-        private readonly trxCtx: Pick<
-            ITransactionConnection<Db, ClientSession>,
-            "transaction"
-        >,
-    ) {}
-
-    getState(key: string): Promise<IRateLimiterAdapterState | null> {
-        throw new Error("Method not implemented.");
-    }
-
-    updateState(key: string, limit: number): Promise<IRateLimiterAdapterState> {
-        throw new Error("Method not implemented.");
-    }
-
-    reset(key: string): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
-}
-
-/**
- * @internal
- */
-class SlidingWindowLimiter implements IRateLimiterAdapter {
-    constructor(
-        private readonly rateLimiterPolicy: SlidingWindowLimiterSettingsEnum,
-        private readonly backoffPolicy: BackoffSettingsEnum,
-        private readonly collection: Collection<MongodbRateLimiterEntryDocument>,
-        private readonly trxCtx: Pick<
-            ITransactionConnection<Db, ClientSession>,
-            "transaction"
-        >,
-    ) {}
-
-    getState(key: string): Promise<IRateLimiterAdapterState | null> {
-        throw new Error("Method not implemented.");
-    }
-
-    updateState(key: string, limit: number): Promise<IRateLimiterAdapterState> {
-        throw new Error("Method not implemented.");
-    }
-
-    reset(key: string): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
-}
 
 /**
  * Configuration for `MongdobRateLimiter`.
@@ -133,52 +82,6 @@ export type MongodbRateLimiterSettings = {
 };
 
 /**
- * Stored sliding-window limiter state.
- *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/mongodb-rate-limiter-adapter"`
- * @group Adapters
- */
-export type SlidingWindowLimiterStateEnum = {
-    type: (typeof LIMITER_POLICIES)["SLIDING_WINDOW"];
-    values: SlidingWindowLimiterState;
-};
-
-/**
- * Stored fixed-window limiter state.
- *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/mongodb-rate-limiter-adapter"`
- * @group Adapters
- */
-export type FixedWindowLimiterStateEnum = {
-    type: (typeof LIMITER_POLICIES)["FIXED_WINDOW"];
-    values: FixedWindowLimiterState;
-};
-
-/**
- * Stored state of whichever limiter policy the adapter was configured with.
- *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/mongodb-rate-limiter-adapter"`
- * @group Adapters
- */
-export type RateLimiterStateEnum =
-    SlidingWindowLimiterStateEnum | FixedWindowLimiterState;
-
-/**
- * Shape of a rate-limiter document stored in the MongoDB collection.
- *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/mongodb-rate-limiter-adapter"`
- * @group Adapters
- */
-export type MongodbRateLimiterEntryDocument = {
-    _id: ObjectId;
-    state: RateLimiterStateEnum;
-    /**
-     * Date at which the entry is removed by the TTL index.
-     */
-    expiration: Date;
-};
-
-/**
  * To utilize the `MongdobRateLimiter`, you must install the [`"mongodb"`](https://www.npmjs.com/package/mongodb) package.
  *
  * Call `init` once before using the adapter, and `deInit` to remove the collection and its indexes.
@@ -209,7 +112,30 @@ export class MongdobRateLimiter
             collectionName,
             collectionSettings,
         );
-        this.adapter = this.selectLimiter(rateLimiterPolicy, backoffPolicy);
+        this.adapter = this.selectLimiter(
+            rateLimiterPolicy,
+            serializeBackoffSettingsEnum(backoffPolicy),
+        );
+    }
+
+    private selectLimiter(
+        rateLimiterPolicy: RateLimiterPolicySettingsEnum,
+        backoffPolicy: SerializedBackoffSettingsEnum,
+    ): IRateLimiterAdapter {
+        if (rateLimiterPolicy.type === LIMITER_POLICIES.FIXED_WINDOW) {
+            return new MongodbFixedWindowLimiter(
+                serializeFixedWindowLimiterSettings(rateLimiterPolicy),
+                backoffPolicy,
+                this.collection,
+                this.trxCtx,
+            );
+        }
+        return new MongodbSlidingWindowLimiter(
+            serializeSlidingWindowLimiterSettings(rateLimiterPolicy),
+            backoffPolicy,
+            this.collection,
+            this.trxCtx,
+        );
     }
 
     /**
@@ -259,26 +185,6 @@ export class MongdobRateLimiter
         } catch {
             /* EMPTY */
         }
-    }
-
-    private selectLimiter(
-        rateLimiterPolicy: RateLimiterPolicySettingsEnum,
-        backoffPolicy: BackoffSettingsEnum,
-    ): IRateLimiterAdapter {
-        if (rateLimiterPolicy.type === LIMITER_POLICIES.FIXED_WINDOW) {
-            return new FixedWindowLimiter(
-                rateLimiterPolicy,
-                backoffPolicy,
-                this.collection,
-                this.trxCtx,
-            );
-        }
-        return new SlidingWindowLimiter(
-            rateLimiterPolicy,
-            backoffPolicy,
-            this.collection,
-            this.trxCtx,
-        );
     }
 
     /**
