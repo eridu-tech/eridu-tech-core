@@ -2,7 +2,11 @@
  * @module RateLimiter
  */
 
-import { resolveSlidingWindowLimiterSettings } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
+import {
+    resolveSlidingWindowAttempts,
+    resolveSlidingWindowLimiterSettings,
+    resolveSlidingWindowStart,
+} from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
 import type {
@@ -26,9 +30,9 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
     }
 
     private currentWindow(currentDate: Date): number {
-        return (
-            Math.floor(currentDate.getTime() / this.window.toMilliseconds()) *
-            this.window.toMilliseconds()
+        return resolveSlidingWindowStart(
+            currentDate,
+            this.window.toMilliseconds(),
         );
     }
 
@@ -57,23 +61,6 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
         return currentMetrics[this.currentWindow(currentDate)] ?? 0;
     }
 
-    private previousAttempt(
-        currentMetrics: SlidingWindowLimiterMetrics,
-        currentDate: Date,
-    ): number {
-        let previousAttempt =
-            currentMetrics[this.previousWindow(currentDate)] ?? 0;
-
-        const percentageInCurrentWindow =
-            (currentDate.getTime() % this.window.toMilliseconds()) /
-            this.window.toMilliseconds();
-        previousAttempt = Math.floor(
-            (1 - percentageInCurrentWindow) * previousAttempt,
-        );
-
-        return previousAttempt;
-    }
-
     initialMetrics(currentDate: Date): SlidingWindowLimiterMetrics {
         return {
             [this.currentWindow(currentDate)]: 0,
@@ -85,15 +72,7 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
         limit: number,
         currentDate: Date,
     ): boolean {
-        const currentAttempts = this.currentAttempt(
-            currentMetrics,
-            currentDate,
-        );
-        const previousAttempts = this.previousAttempt(
-            currentMetrics,
-            currentDate,
-        );
-        return currentAttempts + previousAttempts >= limit;
+        return this.getAttempts(currentMetrics, currentDate) >= limit;
     }
 
     getExpiration(
@@ -110,12 +89,11 @@ export class SlidingWindowLimiter implements IRateLimiterPolicy<SlidingWindowLim
         currentMetrics: SlidingWindowLimiterMetrics,
         currentDate: Date,
     ): number {
-        const currentAttempt = this.currentAttempt(currentMetrics, currentDate);
-        const previousAttempt = this.previousAttempt(
+        return resolveSlidingWindowAttempts(
             currentMetrics,
             currentDate,
+            this.window.toMilliseconds(),
         );
-        return currentAttempt + previousAttempt;
     }
 
     updateMetrics(

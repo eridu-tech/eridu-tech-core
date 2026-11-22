@@ -69,7 +69,7 @@ export function resolveSlidingWindowStart(
  *
  * @internal
  */
-function resolveSlidingWindowAttempts(
+export function resolveSlidingWindowAttempts(
     metrics: SlidingWindowLimiterMetrics | undefined,
     currentDate: Date,
     window: number,
