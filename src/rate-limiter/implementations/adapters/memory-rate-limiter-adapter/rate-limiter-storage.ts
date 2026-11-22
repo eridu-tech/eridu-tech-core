@@ -51,7 +51,7 @@ export type AtomicUpdateArgs<TMetrics> = {
 export class RateLimiterStorage<TMetrics = unknown>
     implements IDeinitizable, IPrunable
 {
-    private readonly adapter = new SimpleRateLimiterStorage<
+    private readonly simpleStorage = new SimpleRateLimiterStorage<
         AllRateLimiterState<TMetrics>
     >();
     private readonly rateLimiterPolicy: InternalRateLimiterPolicy<TMetrics>;
@@ -65,11 +65,11 @@ export class RateLimiterStorage<TMetrics = unknown>
     }
 
     removeAllExpired(): void {
-        this.adapter.removeAllExpired();
+        this.simpleStorage.removeAllExpired();
     }
 
     deInit(): void {
-        this.adapter.deInit();
+        this.simpleStorage.deInit();
     }
 
     private static resolveStorageData<TMetrics_>(
@@ -101,7 +101,7 @@ export class RateLimiterStorage<TMetrics = unknown>
     update(args: AtomicUpdateArgs<TMetrics>): IRateLimiterStorageState {
         const currentDate = new Date();
         let currentState = RateLimiterStorage.resolveStorageData(
-            this.adapter.find(args.key),
+            this.simpleStorage.find(args.key),
         );
         if (currentState === null) {
             currentState = this.rateLimiterPolicy.initialState(currentDate);
@@ -109,7 +109,7 @@ export class RateLimiterStorage<TMetrics = unknown>
 
         const newState = args.update(currentState);
 
-        this.adapter.upsert(
+        this.simpleStorage.upsert(
             args.key,
             newState,
             this.rateLimiterPolicy.getExpiration(newState, {
@@ -123,7 +123,7 @@ export class RateLimiterStorage<TMetrics = unknown>
 
     find(key: string): IRateLimiterStorageState | null {
         const state = RateLimiterStorage.resolveStorageData(
-            this.adapter.find(key),
+            this.simpleStorage.find(key),
         );
         if (state === null) {
             return null;
@@ -132,6 +132,6 @@ export class RateLimiterStorage<TMetrics = unknown>
     }
 
     remove(key: string): void {
-        this.adapter.remove(key);
+        this.simpleStorage.remove(key);
     }
 }

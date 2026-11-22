@@ -25,6 +25,7 @@ import type {
     RateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { IRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-policy.contract.js";
+import type { IDeinitizable, IPrunable } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `MemoryRateLimiterAdapter`.
@@ -60,7 +61,9 @@ export type MemoryRateLimiterAdapterSettings = {
  * IMPORT_PATH: `"eridu-tech/rate-limiter/memory-rate-limiter-adapter"`
  * @group Adapters
  */
-export class MemoryRateLimiterAdapter implements IRateLimiterAdapter {
+export class MemoryRateLimiterAdapter
+    implements IRateLimiterAdapter, IDeinitizable, IPrunable
+{
     private readonly rateLimiterStorage: RateLimiterStorage<any>;
     private readonly rateLimiterStateManager: RateLimiterStateManager<any>;
 
@@ -114,6 +117,14 @@ export class MemoryRateLimiterAdapter implements IRateLimiterAdapter {
             internalRateLimiterPolicy,
             backoff,
         );
+    }
+
+    removeAllExpired(): void {
+        this.rateLimiterStorage.removeAllExpired();
+    }
+
+    deInit(): void {
+        this.rateLimiterStorage.deInit();
     }
 
     getState(key: string): Promise<IRateLimiterAdapterState | null> {
