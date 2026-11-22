@@ -5,6 +5,7 @@
 import type { ObjectId } from "mongodb";
 
 import type {
+    AllRateLimiterState,
     FixedWindowLimiterMetrics,
     LIMITER_POLICIES,
     SlidingWindowLimiterMetrics,
@@ -18,25 +19,7 @@ import type {
  */
 export type SlidingWindowLimiterStateEnum = {
     type: (typeof LIMITER_POLICIES)["SLIDING_WINDOW"];
-    values: SlidingWindowLimiterMetrics;
-};
-
-/**
- * Stored fixed-window limiter blocked state.
- *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/mongodb-rate-limiter-adapter"`
- * @group Adapters
- */
-export type FixedWindowLimiterBlockedState = {
-    /**
-     * Consecutive attempts made while the limiter has been blocking.
-     */
-    attempt: number;
-
-    /**
-     * Unix timestamp in ms
-     */
-    startedAt: number;
+    state: AllRateLimiterState<SlidingWindowLimiterMetrics>;
 };
 
 /**
@@ -47,12 +30,7 @@ export type FixedWindowLimiterBlockedState = {
  */
 export type FixedWindowLimiterStateEnum = {
     type: (typeof LIMITER_POLICIES)["FIXED_WINDOW"];
-    values: FixedWindowLimiterMetrics & {
-        /**
-         * Set while the limiter is blocking, `null` while it allows attempts.
-         */
-        blocked: FixedWindowLimiterBlockedState | null;
-    };
+    state: AllRateLimiterState<FixedWindowLimiterMetrics>;
 };
 
 /**
@@ -76,7 +54,9 @@ export type MongodbRateLimiterEntryDocument = {
      * Unique identifier for the rate limiter entry.
      */
     key: string;
-    state: RateLimiterStateEnum;
+
+    data: RateLimiterStateEnum;
+
     /**
      * Date at which the entry is removed by the TTL index.
      */

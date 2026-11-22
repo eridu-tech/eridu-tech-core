@@ -120,7 +120,7 @@ export class MongdobRateLimiter
 
     private selectLimiter(
         rateLimiterPolicy: RateLimiterPolicySettingsEnum,
-        backoffPolicy: SerializedBackoffSettingsEnum,
+        backoffPolicy: Required<SerializedBackoffSettingsEnum>,
     ): IRateLimiterAdapter {
         if (rateLimiterPolicy.type === LIMITER_POLICIES.FIXED_WINDOW) {
             return new MongodbFixedWindowLimiter(

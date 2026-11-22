@@ -18,8 +18,8 @@ import type { ITransactionConnection } from "@/transaction-context/contracts/_mo
  */
 export class MongodbSlidingWindowLimiter implements IRateLimiterAdapter {
     constructor(
-        private readonly rateLimiterPolicy: SerializedSlidingWindowLimiterSettings,
-        private readonly backoffPolicy: SerializedBackoffSettingsEnum,
+        private readonly rateLimiterPolicy: Required<SerializedSlidingWindowLimiterSettings>,
+        private readonly backoffPolicy: Required<SerializedBackoffSettingsEnum>,
         private readonly collection: Collection<MongodbRateLimiterEntryDocument>,
         private readonly trxCtx: Pick<
             ITransactionConnection<Db, ClientSession>,
