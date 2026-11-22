@@ -5,25 +5,9 @@
 import { TO_MILLISECONDS } from "@/time-span/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
+import type { FixedWindowLimiterSettings } from "@/rate-limiter/contracts/rate-limiter-policy.contract.js";
 
-/**
- * IMPORT_PATH: `"eridu-tech/rate-limiter/policies"`
- * @group Policies
- */
-export type FixedWindowLimiterSettings = {
-    /**
-     * The time span in which attempts are active before reseting.
-     *
-     * @default
-     * ```ts
-     * import { TimeSpan } from "eridu-tech/time-span";
-     *
-     * TimeSpan.fromSeconds(1)
-     * ```
-     */
-    window?: ITimeSpan;
-};
+export type { FixedWindowLimiterSettings };
 
 /**
  * @internal
@@ -58,8 +42,7 @@ export function serializeFixedWindowLimiterSettings(
 }
 
 /**
- * IMPORT_PATH: `"eridu-tech/rate-limiter/policies"`
- * @group Policies
+ * @internal
  */
 export type FixedWindowLimiterState = {
     attempt: number;

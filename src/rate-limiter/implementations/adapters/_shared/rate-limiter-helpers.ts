@@ -2,6 +2,7 @@
  * @module RateLimiter
  */
 
+import { LIMITER_POLICIES } from "@/rate-limiter/contracts/rate-limiter-policy.contract.js";
 import {
     resolveFixedWindowLimiterSettings,
     serializeFixedWindowLimiterSettings,
@@ -12,50 +13,19 @@ import {
 } from "@/rate-limiter/implementations/adapters/_shared/sliding-window-limiter-helpers.js";
 
 import type {
-    FixedWindowLimiterSettings,
-    SerializedFixedWindowLimiterSettings,
-} from "@/rate-limiter/implementations/adapters/_shared/fixed-window-limiter-helpers.js";
-import type {
-    SerializedSlidingWindowLimiterSettings,
-    SlidingWindowLimiterSettings,
-} from "@/rate-limiter/implementations/adapters/_shared/sliding-window-limiter-helpers.js";
+    FixedWindowLimiterSettingsEnum,
+    RateLimiterPolicySettingsEnum,
+    SlidingWindowLimiterSettingsEnum,
+} from "@/rate-limiter/contracts/rate-limiter-policy.contract.js";
+import type { SerializedFixedWindowLimiterSettings } from "@/rate-limiter/implementations/adapters/_shared/fixed-window-limiter-helpers.js";
+import type { SerializedSlidingWindowLimiterSettings } from "@/rate-limiter/implementations/adapters/_shared/sliding-window-limiter-helpers.js";
 
-/**
- * IMPORT_PATH: `"eridu-tech/rate-limiter/policies"`
- * @group Policies
- */
-export const LIMITER_POLICIES = {
-    FIXED_WINDOW: "FIXED_WINDOW",
-    SLIDING_WINDOW: "SLIDING_WINDOW",
-} as const;
-
-/**
- * IMPORT_PATH: `"eridu-tech/rate-limiter/policies"`
- * @group Policies
- */
-export type FixedWindowLimiterSettingsEnum = FixedWindowLimiterSettings & {
-    /**
-     * Discriminant identifying this as the fixed-window rate-limiter policy.
-     */
-    type: (typeof LIMITER_POLICIES)["FIXED_WINDOW"];
+export { LIMITER_POLICIES };
+export type {
+    FixedWindowLimiterSettingsEnum,
+    RateLimiterPolicySettingsEnum,
+    SlidingWindowLimiterSettingsEnum,
 };
-
-/**
- * IMPORT_PATH: `"eridu-tech/rate-limiter/policies"`
- * @group Policies
- */
-export type SlidingWindowLimiterSettingsEnum = SlidingWindowLimiterSettings & {
-    /**
-     * Discriminant identifying this as the sliding-window rate-limiter policy.
-     */
-    type: (typeof LIMITER_POLICIES)["SLIDING_WINDOW"];
-};
-
-/**
- * @internal
- */
-export type RateLimiterPolicySettingsEnum =
-    FixedWindowLimiterSettingsEnum | SlidingWindowLimiterSettingsEnum;
 
 /**
  * @internal
