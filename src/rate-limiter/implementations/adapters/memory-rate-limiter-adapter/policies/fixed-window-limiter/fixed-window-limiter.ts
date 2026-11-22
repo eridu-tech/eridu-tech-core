@@ -5,10 +5,8 @@
 import { resolveFixedWindowLimiterSettings } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type {
-    FixedWindowLimiterSettings,
-    FixedWindowLimiterState,
-} from "@/rate-limiter/implementations/adapters/_shared/_module.js";
+import type { FixedWindowLimiterSettings } from "@/rate-limiter/contracts/_module-exports.js";
+import type { FixedWindowLimiterState } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import type { IRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-policy.contract.js";
 
 /**

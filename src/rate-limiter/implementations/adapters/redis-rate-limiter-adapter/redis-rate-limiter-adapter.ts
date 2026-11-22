@@ -7,8 +7,8 @@ import {
     resolveBackoffSettingsEnum,
     serializeBackoffSettingsEnum,
 } from "@/backoff-policies/implementations/_module-exports.js";
+import { LIMITER_POLICIES } from "@/rate-limiter/contracts/_module-exports.js";
 import {
-    LIMITER_POLICIES,
     resolveRateLimiterPolicySettings,
     serializeRateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
@@ -20,8 +20,8 @@ import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_mo
 import type {
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
+    RateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/contracts/_module-exports.js";
-import type { RateLimiterPolicySettingsEnum } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 
 /**
  * @internal

@@ -10,7 +10,7 @@ import {
     polynomialBackoff,
     resolveBackoffSettingsEnum,
 } from "@/backoff-policies/implementations/_module-exports.js";
-import { LIMITER_POLICIES } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
+import { LIMITER_POLICIES } from "@/rate-limiter/contracts/_module-exports.js";
 import { InternalRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/internal-rate-limiter-policy.js";
 import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/memory-rate-limiter-storage-adapter.js";
 import { FixedWindowLimiter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/policies/fixed-window-limiter/fixed-window-limiter.js";
@@ -23,8 +23,8 @@ import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_mo
 import type {
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
+    RateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/contracts/_module-exports.js";
-import type { RateLimiterPolicySettingsEnum } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import type { IRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-policy.contract.js";
 
 /**
