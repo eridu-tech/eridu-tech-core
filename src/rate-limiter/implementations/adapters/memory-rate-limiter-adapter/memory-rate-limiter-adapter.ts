@@ -12,7 +12,6 @@ import {
 } from "@/backoff-policies/implementations/_module-exports.js";
 import { LIMITER_POLICIES } from "@/rate-limiter/contracts/_module-exports.js";
 import { InternalRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/internal-rate-limiter-policy.js";
-import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/memory-rate-limiter-storage-adapter.js";
 import { FixedWindowLimiter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/policies/fixed-window-limiter/fixed-window-limiter.js";
 import { SlidingWindowLimiter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/policies/sliding-window-limiter/sliding-window-limiter.js";
 import { RateLimiterStateManager } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-state-manager.js";
@@ -108,7 +107,6 @@ export class MemoryRateLimiterAdapter implements IRateLimiterAdapter {
         );
 
         this.rateLimiterStorage = new RateLimiterStorage({
-            adapter: new MemoryRateLimiterStorageAdapter(),
             rateLimiterPolicy: internalRateLimiterPolicy,
             backoffPolicy: backoff,
         });
@@ -118,29 +116,26 @@ export class MemoryRateLimiterAdapter implements IRateLimiterAdapter {
         );
     }
 
-    async getState(key: string): Promise<IRateLimiterAdapterState | null> {
-        const state = await this.rateLimiterStorage.find(key);
+    getState(key: string): Promise<IRateLimiterAdapterState | null> {
+        const state = this.rateLimiterStorage.find(key);
         if (state === null) {
-            return null;
+            return Promise.resolve(null);
         }
-        return {
+        return Promise.resolve({
             success: state.success,
             attempt: state.attempt,
             resetTime: state.resetTime,
-        };
+        });
     }
 
-    async updateState(
-        key: string,
-        limit: number,
-    ): Promise<IRateLimiterAdapterState> {
+    updateState(key: string, limit: number): Promise<IRateLimiterAdapterState> {
         const currentDate = new Date();
         const track = this.rateLimiterStateManager.track(currentDate);
         const updateState = this.rateLimiterStateManager.updateState(
             limit,
             currentDate,
         );
-        const state = await this.rateLimiterStorage.atomicUpdate({
+        const state = this.rateLimiterStorage.update({
             key,
             update: (prevState) => {
                 const newState1 = track(prevState);
@@ -148,14 +143,15 @@ export class MemoryRateLimiterAdapter implements IRateLimiterAdapter {
                 return newState2;
             },
         });
-        return {
+        return Promise.resolve({
             success: state.success,
             attempt: state.attempt,
             resetTime: state.resetTime,
-        };
+        });
     }
 
-    async reset(key: string): Promise<void> {
-        await this.rateLimiterStorage.remove(key);
+    reset(key: string): Promise<void> {
+        this.rateLimiterStorage.remove(key);
+        return Promise.resolve();
     }
 }
