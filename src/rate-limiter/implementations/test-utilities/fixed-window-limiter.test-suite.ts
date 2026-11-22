@@ -3,7 +3,7 @@
  */
 
 import { BACKOFFS } from "@/backoff-policies/implementations/_module-exports.js";
-import { LIMITER_POLICIES } from "@/rate-limiter/implementations/policies/_module-exports.js";
+import { LIMITER_POLICIES } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { delay } from "@/utilities/_module-exports.js";
 
@@ -14,7 +14,7 @@ import type {
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
 } from "@/rate-limiter/contracts/_module-exports.js";
-import type { FixedWindowLimiterSettingsEnum } from "@/rate-limiter/implementations/policies/_module-exports.js";
+import type { FixedWindowLimiterSettingsEnum } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type { Promisable } from "@/utilities/_module-exports.js";
 
