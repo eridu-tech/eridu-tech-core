@@ -178,3 +178,48 @@ export type BlockedState = {
  */
 export type AllRateLimiterState<TMetrics = unknown> =
     AllowedState<TMetrics> | BlockedState;
+
+/**
+ * Stored sliding-window limiter state, tagged with its policy discriminant.
+ *
+ * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
+ * @group Contracts
+ */
+export type SlidingWindowLimiterStateEnum = {
+    /**
+     * Discriminant identifying the sliding-window policy.
+     */
+    type: (typeof LIMITER_POLICIES)["SLIDING_WINDOW"];
+
+    /**
+     * Allowed or blocked state tracked by the policy.
+     */
+    state: AllRateLimiterState<SlidingWindowLimiterMetrics>;
+};
+
+/**
+ * Stored fixed-window limiter state, tagged with its policy discriminant.
+ *
+ * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
+ * @group Contracts
+ */
+export type FixedWindowLimiterStateEnum = {
+    /**
+     * Discriminant identifying the fixed-window policy.
+     */
+    type: (typeof LIMITER_POLICIES)["FIXED_WINDOW"];
+
+    /**
+     * Allowed or blocked state tracked by the policy.
+     */
+    state: AllRateLimiterState<FixedWindowLimiterMetrics>;
+};
+
+/**
+ * Stored state of whichever limiter policy is in use.
+ *
+ * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
+ * @group Contracts
+ */
+export type RateLimiterStateEnum =
+    SlidingWindowLimiterStateEnum | FixedWindowLimiterStateEnum;

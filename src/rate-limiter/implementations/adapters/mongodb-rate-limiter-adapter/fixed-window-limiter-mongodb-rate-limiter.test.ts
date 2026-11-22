@@ -13,6 +13,10 @@ import {
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import {
+    LIMITER_POLICIES,
+    RATE_LIMITER_STATE,
+} from "@/rate-limiter/contracts/_module-exports.js";
 import { MongdobRateLimiter } from "@/rate-limiter/implementations/adapters/mongodb-rate-limiter-adapter/mongodb-rate-limiter-adapter.js";
 import { fixedWindowLimiterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
 import { MongodbServer } from "@/test-utilities/_module.js";
@@ -22,6 +26,7 @@ import { TransactionContext } from "@/transaction-context/implementations/deriva
 
 import type { ClientSession, Db } from "mongodb";
 
+import type { MongodbRateLimiterEntryDocument } from "@/rate-limiter/implementations/adapters/mongodb-rate-limiter-adapter/mongodb-rate-limiter-entry-document.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
@@ -68,6 +73,119 @@ describe(
             describe,
             expect,
             test,
+        });
+
+        describe("method: init", () => {
+            test("Should not throw error when called multiple times", async () => {
+                await adapter.init();
+
+                const promise = adapter.init();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+        });
+        describe("method: deInit", () => {
+            test("Should remove collection", async () => {
+                await adapter.init();
+                await adapter.deInit();
+
+                const collections = await database.listCollections().toArray();
+
+                const collection = collections.find(
+                    (collection_) => collection_.name === collectionName,
+                );
+
+                expect(collection).toBeUndefined();
+            });
+            test("Should not throw error when called multiple times", async () => {
+                await adapter.init();
+                await adapter.deInit();
+
+                const promise = adapter.deInit();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+            test("Should not throw error when called before init", async () => {
+                const promise = adapter.deInit();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+        });
+        describe("Expiration tests:", () => {
+            const windowMs = TimeSpan.fromTimeSpan(
+                fixedWindowLimiterTestSuite.rateLimiterPolicySettings.window,
+            ).toMilliseconds();
+            const backoffMs = TimeSpan.fromTimeSpan(
+                fixedWindowLimiterTestSuite.backoffPolicySettings.delay,
+            ).toMilliseconds();
+
+            test("Should set expiration to lastAttemptAt plus window when the attempt is allowed", async () => {
+                await adapter.init();
+                const collection =
+                    database.collection<MongodbRateLimiterEntryDocument>(
+                        collectionName,
+                    );
+                const key = "a";
+                const before = Date.now();
+
+                const state = await adapter.updateState(key, 4);
+                const after = Date.now();
+
+                const doc = await collection.findOne({ key });
+                if (
+                    doc === null ||
+                    doc.data.type !== LIMITER_POLICIES.FIXED_WINDOW
+                ) {
+                    throw new Error(
+                        "Expected a stored fixed-window rate limiter document",
+                    );
+                }
+                const storedState = doc.data.state;
+                if (storedState.type !== RATE_LIMITER_STATE.ALLOWED) {
+                    throw new Error("Expected an allowed rate limiter state");
+                }
+
+                expect(state.success).toBe(true);
+                expect(state.resetTime).toEqual(doc.expiration);
+                expect(doc.expiration.getTime()).toBe(
+                    storedState.metrics.lastAttemptAt + windowMs,
+                );
+                expect(doc.expiration.getTime()).toBeGreaterThanOrEqual(
+                    before + windowMs,
+                );
+                expect(doc.expiration.getTime()).toBeLessThanOrEqual(
+                    after + windowMs,
+                );
+            });
+            test("Should set expiration to now plus backoff when the attempt is blocked", async () => {
+                await adapter.init();
+                const collection =
+                    database.collection<MongodbRateLimiterEntryDocument>(
+                        collectionName,
+                    );
+                const key = "a";
+                await adapter.updateState(key, 1);
+
+                const before = Date.now();
+                const state = await adapter.updateState(key, 1);
+                const after = Date.now();
+
+                const doc = await collection.findOne({ key });
+                if (doc === null) {
+                    throw new Error("Expected a stored rate limiter document");
+                }
+
+                expect(state.success).toBe(false);
+                expect(state.resetTime).toEqual(doc.expiration);
+                expect(doc.data.type).toBe(LIMITER_POLICIES.FIXED_WINDOW);
+                expect(doc.data.state.type).toBe(RATE_LIMITER_STATE.BLOCKED);
+                expect(doc.expiration.getTime()).toBeGreaterThanOrEqual(
+                    before + backoffMs,
+                );
+                expect(doc.expiration.getTime()).toBeLessThanOrEqual(
+                    after + backoffMs,
+                );
+            });
         });
 
         describe("Transaction tests:", () => {

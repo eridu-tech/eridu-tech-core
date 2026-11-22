@@ -4,43 +4,7 @@
 
 import type { ObjectId } from "mongodb";
 
-import type {
-    AllRateLimiterState,
-    FixedWindowLimiterMetrics,
-    LIMITER_POLICIES,
-    SlidingWindowLimiterMetrics,
-} from "@/rate-limiter/contracts/_module-exports.js";
-
-/**
- * Stored sliding-window limiter state.
- *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/mongodb-rate-limiter-adapter"`
- * @group Adapters
- */
-export type SlidingWindowLimiterStateEnum = {
-    type: (typeof LIMITER_POLICIES)["SLIDING_WINDOW"];
-    state: AllRateLimiterState<SlidingWindowLimiterMetrics>;
-};
-
-/**
- * Stored fixed-window limiter state.
- *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/mongodb-rate-limiter-adapter"`
- * @group Adapters
- */
-export type FixedWindowLimiterStateEnum = {
-    type: (typeof LIMITER_POLICIES)["FIXED_WINDOW"];
-    state: AllRateLimiterState<FixedWindowLimiterMetrics>;
-};
-
-/**
- * Stored state of whichever limiter policy the adapter was configured with.
- *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/mongodb-rate-limiter-adapter"`
- * @group Adapters
- */
-export type RateLimiterStateEnum =
-    SlidingWindowLimiterStateEnum | FixedWindowLimiterStateEnum;
+import type { RateLimiterStateEnum } from "@/rate-limiter/contracts/_module-exports.js";
 
 /**
  * Shape of a rate-limiter document stored in the MongoDB collection.
@@ -55,6 +19,9 @@ export type MongodbRateLimiterEntryDocument = {
      */
     key: string;
 
+    /**
+     * Stored state of the configured limiter policy.
+     */
     data: RateLimiterStateEnum;
 
     /**
