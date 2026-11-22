@@ -29,8 +29,8 @@ local function SlidingWindowLimiter(settings)
         local newMetrics = {}
 
         for key, value in pairs(metrics) do
-            local timeStamp = tonumber(timeStampAsStr)
-            if timeStamp >= previousWindow_ then
+            local timeStamp = tonumber(key)
+            if timeStamp ~= nil and timeStamp >= previousWindow_ then
                 newMetrics[key] = value
             end
         end
@@ -39,28 +39,35 @@ local function SlidingWindowLimiter(settings)
     end
 
     -- @param currentMetrics SlidingWindowLimiterState
+    -- @param windowStart number
+    -- @return number
+    local function attemptsAt(currentMetrics, windowStart)
+        local attempts = currentMetrics[tostring(windowStart)]
+        if attempts == nil or attempts == cjson.null then
+            return 0
+        end
+
+        return attempts
+    end
+
+    -- @param currentMetrics SlidingWindowLimiterState
     -- @param currentDate number
     -- @return number
     local function currentAttempt(currentMetrics, currentDate)
-        local currentAttempt = currentMetrics[currentWindow(currentDate)]
-        if currentAttempt == nil or currentAttempt == cjson.null then
-            currentAttempt = 0
-        end
-
-        return currentAttempt
+        return attemptsAt(currentMetrics, currentWindow(currentDate))
     end
 
     -- @param currentMetrics SlidingWindowLimiterState
     -- @param currentDate number
     -- @return number
     local function previousAttempt(currentMetrics, currentDate)
-        local previousAttempt = currentMetrics[previousWindow(currentDate)]
-        if previousAttempt == nil or previousAttempt == cjson.null then
-            previousAttempt = 0
-        end
+        local previousAttempt_ = attemptsAt(
+            currentMetrics,
+            previousWindow(currentDate)
+        )
 
         local percentageInCurrentWindow = currentDate % settings.window / settings.window
-        return math.floor((1 - percentageInCurrentWindow) * previousAttempt)
+        return math.floor((1 - percentageInCurrentWindow) * previousAttempt_)
     end
 
     return {
@@ -68,7 +75,7 @@ local function SlidingWindowLimiter(settings)
         -- @return SlidingWindowLimiterState
         initialMetrics = function(currentDate)
             local metrics = {}
-            metrics[currentWindow(currentDate)] = 0
+            metrics[tostring(currentWindow(currentDate))] = 0
             return metrics
         end,
 
@@ -79,14 +86,14 @@ local function SlidingWindowLimiter(settings)
         shouldBlock = function(currentMetrics, limit, currentDate)
             local currentAttempt_ = currentAttempt(currentMetrics, currentDate)
             local previousAttempt_ = previousAttempt(currentMetrics, currentDate)
-            return currentAttempts + previousAttempts >= limit
+            return currentAttempt_ + previousAttempt_ >= limit
         end,
 
         -- @param _currentMetrics SlidingWindowLimiterState
         -- @param currentDate number
         -- @return number
         getExpiration = function(_currentMetrics, currentDate)
-            return settings.window * 2 + settings.margin + currentDate
+            return currentWindow(currentDate) + settings.window * 2 + settings.margin
         end,
 
         -- @param currentMetrics SlidingWindowLimiterState
@@ -103,9 +110,8 @@ local function SlidingWindowLimiter(settings)
         -- @return SlidingWindowLimiterState
         updateMetrics = function(currentMetrics, currentDate)
             local currentMetrics_ = cleanup(currentMetrics, currentDate)
-            local currentAttempt = currentAttempt(currentMetrics, currentDate)
-            local currentKey = currentWindow(currentDate)
-            currentMetrics_[currentKey] = currentAttempt + 1
+            local currentAttempt_ = currentAttempt(currentMetrics_, currentDate)
+            currentMetrics_[tostring(currentWindow(currentDate))] = currentAttempt_ + 1
             return currentMetrics_
         end
     }
