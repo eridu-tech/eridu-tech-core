@@ -1,0 +1,158 @@
+/**
+ * @module RateLimiter
+ */
+
+import {
+    BACKOFFS,
+    constantBackoff,
+    exponentialBackoff,
+    linearBackoff,
+    polynomialBackoff,
+    resolveBackoffSettingsEnum,
+} from "@/backoff-policies/implementations/_module-exports.js";
+import { LIMITER_POLICIES } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
+import { InternalRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/internal-rate-limiter-policy.js";
+import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/memory-rate-limiter-storage-adapter.js";
+import { FixedWindowLimiter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/policies/fixed-window-limiter/fixed-window-limiter.js";
+import { SlidingWindowLimiter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/policies/sliding-window-limiter/sliding-window-limiter.js";
+import { RateLimiterStateManager } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-state-manager.js";
+import { RateLimiterStorage } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-storage.js";
+
+import type { BackoffPolicy } from "@/backoff-policies/contracts/_module.js";
+import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module-exports.js";
+import type {
+    IRateLimiterAdapter,
+    IRateLimiterAdapterState,
+} from "@/rate-limiter/contracts/_module-exports.js";
+import type { RateLimiterPolicySettingsEnum } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
+import type { IRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-policy.contract.js";
+
+/**
+ * Configuration for `MemoryRateLimiterAdapter`.
+ * Wraps a {@link IRateLimiterStorageAdapter | `IRateLimiterStorageAdapter`} with rate-limiter logic.
+ *
+ * IMPORT_PATH: `"eridu-tech/rate-limiter/memory-rate-limiter-adapter"`
+ * @group Adapters
+ */
+export type MemoryRateLimiterAdapterSettings = {
+    /**
+     * You can choose between different types of predefined backoff policies.
+     * @default
+     * ```ts
+     * { type: BACKOFFS.EXPONENTIAL }
+     * ```
+     */
+    backoffPolicy?: BackoffSettingsEnum;
+
+    /**
+     * You can choose between different types of predefined circuit breaker policies.
+     * @default
+     * ```ts
+     * { type: LIMITER.FIXED_WINDOW }
+     * ```
+     */
+    rateLimiterPolicy?: RateLimiterPolicySettingsEnum;
+};
+
+/**
+ * IMPORT_PATH: `"eridu-tech/rate-limiter/memory-rate-limiter-adapter"`
+ * @group Adapters
+ */
+export class MemoryRateLimiterAdapter implements IRateLimiterAdapter {
+    private readonly rateLimiterStorage: RateLimiterStorage<any>;
+    private readonly rateLimiterStateManager: RateLimiterStateManager<any>;
+
+    private static selectBackoff(
+        backoffPolicy: BackoffSettingsEnum,
+    ): BackoffPolicy {
+        if (backoffPolicy.type === "CONSTANT") {
+            return constantBackoff(backoffPolicy);
+        } else if (backoffPolicy.type === "LINEAR") {
+            return linearBackoff(backoffPolicy);
+        } else if (backoffPolicy.type === "EXPONENTIAL") {
+            return exponentialBackoff(backoffPolicy);
+        }
+        return polynomialBackoff(backoffPolicy);
+    }
+
+    private static selectLimiter(
+        rateLimiterPolicy: RateLimiterPolicySettingsEnum,
+    ): IRateLimiterPolicy<any> {
+        if (rateLimiterPolicy.type === LIMITER_POLICIES.FIXED_WINDOW) {
+            return new FixedWindowLimiter(rateLimiterPolicy);
+        }
+        return new SlidingWindowLimiter(rateLimiterPolicy);
+    }
+
+    constructor(settings: MemoryRateLimiterAdapterSettings = {}) {
+        const {
+            backoffPolicy = {
+                type: BACKOFFS.EXPONENTIAL,
+            },
+            rateLimiterPolicy = {
+                type: LIMITER_POLICIES.FIXED_WINDOW,
+            },
+        } = settings;
+
+        const backoff = MemoryRateLimiterAdapter.selectBackoff(
+            resolveBackoffSettingsEnum(backoffPolicy),
+        );
+        const limiter =
+            MemoryRateLimiterAdapter.selectLimiter(rateLimiterPolicy);
+
+        const internalRateLimiterPolicy = new InternalRateLimiterPolicy(
+            limiter,
+        );
+
+        this.rateLimiterStorage = new RateLimiterStorage({
+            adapter: new MemoryRateLimiterStorageAdapter(),
+            rateLimiterPolicy: internalRateLimiterPolicy,
+            backoffPolicy: backoff,
+        });
+        this.rateLimiterStateManager = new RateLimiterStateManager(
+            internalRateLimiterPolicy,
+            backoff,
+        );
+    }
+
+    async getState(key: string): Promise<IRateLimiterAdapterState | null> {
+        const state = await this.rateLimiterStorage.find(key);
+        if (state === null) {
+            return null;
+        }
+        return {
+            success: state.success,
+            attempt: state.attempt,
+            resetTime: state.resetTime,
+        };
+    }
+
+    async updateState(
+        key: string,
+        limit: number,
+    ): Promise<IRateLimiterAdapterState> {
+        const currentDate = new Date();
+        const track = this.rateLimiterStateManager.track(currentDate);
+        const updateState = this.rateLimiterStateManager.updateState(
+            limit,
+            currentDate,
+        );
+        const state = await this.rateLimiterStorage.atomicUpdate({
+            key,
+            update: (prevState) => {
+                const newState1 = track(prevState);
+                const newState2 = updateState(newState1);
+                return newState2;
+            },
+        });
+        return {
+            success: state.success,
+            attempt: state.attempt,
+            resetTime: state.resetTime,
+        };
+    }
+
+    async reset(key: string): Promise<void> {
+        await this.rateLimiterStorage.remove(key);
+    }
+}
