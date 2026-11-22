@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { FixedWindowLimiter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/policies/fixed-window-limiter/fixed-window-limiter.js";
 import { TimeSpan } from "@/time-span/implementations/time-span.js";
 
-import type { FixedWindowLimiterState } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
+import type { FixedWindowLimiterState } from "@/rate-limiter/contracts/_module-exports.js";
 
 describe(
     "class: FixedWindowLimiter",

@@ -60,7 +60,11 @@ export type KyselyLockAdapterSettings = {
  * @group Adapters
  */
 export class KyselyLockAdapter
-    implements ILockAdapter, IAsyncDeinitizable, IAsyncInitizable, IAsyncPrunable
+    implements
+        ILockAdapter,
+        IAsyncDeinitizable,
+        IAsyncInitizable,
+        IAsyncPrunable
 {
     private readonly trxCtx: Pick<
         ITransactionConnection<Kysely<KyselyLockTables>>,

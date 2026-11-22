@@ -6,74 +6,59 @@
 import type { IRateLimiterFactory } from "@/rate-limiter/contracts/rate-limiter-factory.contract.js";
 
 /**
- * Low-level state snapshot for rate limiter operations.
- * Provides the current quota tracking metrics at the adapter level.
- * Contains information about success status, attempt count, and reset timing.
+ * State snapshot of a stored rate limiter entry.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Contracts
  */
 export type IRateLimiterAdapterState = {
     /**
-     * Indicates whether the attempt was successful (allowed) or blocked.
-     * - true: Request was allowed, counter incremented
-     * - false: Request was blocked due to limit being reached
+     * Whether the attempt was allowed (`true`) or blocked (`false`).
      */
     success: boolean;
 
     /**
-     * Sequential attempt number tracking usage in the current window.
-     * Incremented on each call to updateState, regardless of success.
+     * Attempt sequence number, incremented on every update whether allowed or not.
      */
     attempt: number;
 
     /**
-     * The date and time when the rate limiter resets to its initial state.
-     * Attempts counter and blocking status will reset at this time.
+     * When the entry expires or its block is lifted.
      */
     resetTime: Date;
 };
 
 /**
- * Low-level adapter contract for rate limiter implementations.
- * Provides core operations for tracking attempts and enforcing limits according to the adapter's configured policy.
- * This contract is not meant to be used directly; instead use {@link IRateLimiterFactory | `IRateLimiterFactory`}.
+ * Storage contract implemented by rate limiter adapters.
  *
- * The adapter works with a policy interface that determines the blocking algorithm (e.g., fixed-window, sliding-window).
- * This separation allows multiple algorithm implementations to share the same storage layer.
+ * Adapters persist the state machine of a configured policy (fixed or sliding window).
+ * Use {@link IRateLimiterFactory | `IRateLimiterFactory`} instead of this contract directly.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Contracts
  */
 export type IRateLimiterAdapter = {
     /**
-     * Retrieves the current rate limiter state without modifying it.
-     * Returns the tracking metrics if the rate limiter exists, otherwise null.
+     * Reads the entry for `key` without recording an attempt.
      *
-     * @param key Unique identifier for the rate limiter
-     *
-     * @returns Current adapter state if found, or null if not yet initialized
+     * @param key - Key of the rate limiter
+     * @returns The current state, or `null` when nothing is stored or the entry expired
      */
     getState(key: string): Promise<IRateLimiterAdapterState | null>;
 
     /**
-     * Updates the rate limiter state and checks against the configured limit.
-     * Increments attempt counter and determines if the request should be allowed or blocked.
-     * The decision logic is handled by the policy interface configured for this adapter.
+     * Records an attempt for `key` and applies the configured policy.
      *
-     * @param key Unique identifier for the rate limiter
-     * @param limit Maximum allowed attempts in the current window
-     *
-     * @returns Updated state with incremented attempt and success flag
+     * @param key - Key of the rate limiter
+     * @param limit - Maximum attempts allowed in the current window
+     * @returns The resulting state, including whether the attempt was allowed
      */
     updateState(key: string, limit: number): Promise<IRateLimiterAdapterState>;
 
     /**
-     * Resets the rate limiter to its initial state.
-     * Clears all attempt tracking and lifts any blocking status.
-     * Can be called even if the rate limiter has expired or was never initialized.
+     * Removes the entry for `key`. Safe to call when no entry exists.
      *
-     * @param key Unique identifier for the rate limiter to reset
+     * @param key - Key of the rate limiter to clear
      */
     reset(key: string): Promise<void>;
 };

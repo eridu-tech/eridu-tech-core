@@ -5,8 +5,10 @@
 import { resolveSlidingWindowLimiterSettings } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
-import type { SlidingWindowLimiterSettings } from "@/rate-limiter/contracts/_module-exports.js";
-import type { SlidingWindowLimiterState } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
+import type {
+    SlidingWindowLimiterSettings,
+    SlidingWindowLimiterState,
+} from "@/rate-limiter/contracts/_module-exports.js";
 import type { IRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-policy.contract.js";
 
 /**

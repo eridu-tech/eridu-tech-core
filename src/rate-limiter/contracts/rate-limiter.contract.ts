@@ -10,60 +10,57 @@ import type { RateLimiterState } from "@/rate-limiter/contracts/_module-exports.
 import type { AsyncLazy } from "@/utilities/_module-exports.js";
 
 /**
- * State and metadata methods for a rate limiter instance.
- * Provides read-only access to rate limiter state and configuration properties.
+ * State and configuration of a rate limiter instance.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Contracts
  */
 export type IRateLimiterStateMethods = {
     /**
-     * Retrieves the current state of the rate limiter.
+     * Reads the current state without recording an attempt.
      *
-     * @returns The current rate limiter state (allowed, blocked, expired, etc.)
-     * @throws {UnableToGetStateRateLimiterError} If the rate limiter adapter fails with an unexpected error while retrieving the state
+     * @returns The current state: allowed, blocked or expired
+     * @throws {UnableToGetStateRateLimiterError} When the adapter fails unexpectedly
      */
     getState(): Promise<RateLimiterState>;
 
     /**
-     * The unique identifier for this rate limiter instance.
-     * Multiple rate limiter instances with the same key share the same request quota.
+     * Identifier of the quota this instance uses; instances sharing a key share the quota.
      */
     readonly key: string;
 
     /**
-     * The maximum number of allowed requests within the rate limiting window.
+     * Maximum attempts allowed per rate limiter window.
      */
     readonly limit: number;
 };
 
 /**
- * Rate limiting operations for controlling request throughput.
- * Provides methods to execute async functions within rate limit constraints.
+ * Rate limiter operations.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Contracts
  */
 export type IRateLimiter = IRateLimiterStateMethods & {
     /**
-     * Executes an async function if the rate limit quota is available.
-     * The request is blocked if the limit has been reached, throwing an error.
+     * Runs `asyncInvocable` when the rate limiter allows it.
+     * Depending on how the limiter was created, the attempt is recorded before running
+     * or only when the call throws.
      *
-     * @template TValue - The return type of the async function
-     * @param asyncFn - The function to execute if rate limit allows
-     * @returns The return value of the function
-     * @throws {BlockedRateLimiterError} If the rate limiter has reached its limit
-     * @throws {UnableToUpdateStateRateLimiterError} If the rate limiter adapter fails with an unexpected error while updating the state
+     * @template TValue - Value produced by `asyncInvocable`
+     * @param asyncInvocable - Work to run when the attempt is allowed
+     * @returns The value returned by `asyncInvocable`
+     * @throws {BlockedRateLimiterError} When the limit is reached
+     * @throws {UnableToUpdateStateRateLimiterError} When the adapter fails unexpectedly
      */
     runOrFail<TValue = void>(
         asyncInvocable: AsyncLazy<TValue>,
     ): Promise<TValue>;
 
     /**
-     * Resets the rate limiter to its initial state.
-     * Clears the request count and allows a fresh quota of requests.
+     * Removes the stored state, giving the key a fresh quota.
      *
-     * @throws {UnableToResetRateLimiterError} If the rate limiter adapter fails with an unexpected error while resetting the rate limiter
+     * @throws {UnableToResetRateLimiterError} When the adapter fails unexpectedly
      */
     reset(): Promise<void>;
 };

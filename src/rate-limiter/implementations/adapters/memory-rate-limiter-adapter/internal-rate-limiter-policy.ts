@@ -7,33 +7,12 @@ import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { callInvocable } from "@/utilities/_module-exports.js";
 
 import type { BackoffPolicy } from "@/backoff-policies/contracts/_module.js";
+import type {
+    AllowedState,
+    AllRateLimiterState,
+    BlockedState,
+} from "@/rate-limiter/contracts/_module-exports.js";
 import type { IRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/rate-limiter-policy.contract.js";
-
-/**
- * @internal
- */
-export type AllowedState<TMetrics = unknown> = {
-    type: (typeof RATE_LIMITER_STATE)["ALLOWED"];
-    metrics: TMetrics;
-};
-
-/**
- * @internal
- */
-export type BlockedState = {
-    type: (typeof RATE_LIMITER_STATE)["BLOCKED"];
-    /**
-     * Unix timestamp in miliseconds
-     */
-    startedAt: number;
-    attempt: number;
-};
-
-/**
- * @internal
- */
-export type AllRateLimiterState<TMetrics = unknown> =
-    AllowedState<TMetrics> | BlockedState;
 
 /**
  * @internal

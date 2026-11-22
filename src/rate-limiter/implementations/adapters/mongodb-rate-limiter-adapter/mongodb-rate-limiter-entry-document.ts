@@ -4,9 +4,11 @@
 
 import type { ObjectId } from "mongodb";
 
-import type { LIMITER_POLICIES } from "@/rate-limiter/contracts/_module-exports.js";
-import type { FixedWindowLimiterState } from "@/rate-limiter/implementations/adapters/_shared/fixed-window-limiter-helpers.js";
-import type { SlidingWindowLimiterState } from "@/rate-limiter/implementations/adapters/_shared/sliding-window-limiter-helpers.js";
+import type {
+    FixedWindowLimiterState,
+    LIMITER_POLICIES,
+    SlidingWindowLimiterState,
+} from "@/rate-limiter/contracts/_module-exports.js";
 
 /**
  * Stored sliding-window limiter state.

@@ -6,10 +6,8 @@ import { RATE_LIMITER_STATE } from "@/rate-limiter/contracts/_module-exports.js"
 import { SimpleRateLimiterStorage } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/simple-rate-limiter-storage.js";
 
 import type { BackoffPolicy } from "@/backoff-policies/contracts/_module.js";
-import type {
-    AllRateLimiterState,
-    InternalRateLimiterPolicy,
-} from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/internal-rate-limiter-policy.js";
+import type { AllRateLimiterState } from "@/rate-limiter/contracts/_module-exports.js";
+import type { InternalRateLimiterPolicy } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/internal-rate-limiter-policy.js";
 import type { MemoryRateLimiterData } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/simple-rate-limiter-storage.js";
 import type {
     IDeinitizable,

@@ -38,15 +38,3 @@ export function serializeFixedWindowLimiterSettings(
         window: window[TO_MILLISECONDS](),
     };
 }
-
-/**
- * @internal
- */
-export type FixedWindowLimiterState = {
-    attempt: number;
-
-    /**
-     * Unix timestamp in ms
-     */
-    lastAttemptAt: number;
-};

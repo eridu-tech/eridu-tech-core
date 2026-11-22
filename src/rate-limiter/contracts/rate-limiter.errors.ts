@@ -6,12 +6,20 @@ import type { RateLimiterBlockedState } from "@/rate-limiter/contracts/rate-limi
 import type { InferInstance } from "@/utilities/_module-exports.js";
 
 /**
- * The error is throw when rate limiter blocks the attempts.
+ * Thrown when the rate limiter blocks an attempt because the limit is reached.
+ * The state that triggered the block is exposed through `state`.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
 export class BlockedRateLimiterError extends Error {
+    /**
+     * Creates the error from the blocked `state` of the rate limiter identified by `key`.
+     *
+     * @param state - State that triggered the block
+     * @param key - Key of the rate limiter that blocked the attempt
+     * @param cause - Optional underlying error
+     */
     static create(
         state: Omit<RateLimiterBlockedState, "type">,
         key: string,
@@ -31,7 +39,13 @@ export class BlockedRateLimiterError extends Error {
      * @internal
      */
     constructor(
+        /**
+         * State that triggered the block.
+         */
         public readonly state: Omit<RateLimiterBlockedState, "type">,
+        /**
+         * Key of the rate limiter that blocked the attempt.
+         */
         readonly key: string,
         message?: string,
         cause?: unknown,
@@ -42,13 +56,16 @@ export class BlockedRateLimiterError extends Error {
 }
 
 /**
- * The error is thrown when the underlying rate limiter adapter fails with an unexpected error while retrieving the state.
- * The original adapter error is preserved in the `cause` property.
+ * Thrown when the adapter fails unexpectedly while reading the rate limiter state.
+ * The adapter error is preserved in `cause`.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
 export class UnableToGetStateRateLimiterError extends Error {
+    /**
+     * Creates the error for `key`, preserving the adapter error in `cause`.
+     */
     static create(
         key: string,
         cause?: unknown,
@@ -66,6 +83,9 @@ export class UnableToGetStateRateLimiterError extends Error {
      * @internal
      */
     constructor(
+        /**
+         * Key of the rate limiter whose state could not be read.
+         */
         readonly key: string,
         message: string,
         cause?: unknown,
@@ -76,13 +96,16 @@ export class UnableToGetStateRateLimiterError extends Error {
 }
 
 /**
- * The error is thrown when the underlying rate limiter adapter fails with an unexpected error while updating the state.
- * The original adapter error is preserved in the `cause` property.
+ * Thrown when the adapter fails unexpectedly while recording an attempt.
+ * The adapter error is preserved in `cause`.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
 export class UnableToUpdateStateRateLimiterError extends Error {
+    /**
+     * Creates the error for `key`, preserving the adapter error in `cause`.
+     */
     static create(
         key: string,
         cause?: unknown,
@@ -100,6 +123,9 @@ export class UnableToUpdateStateRateLimiterError extends Error {
      * @internal
      */
     constructor(
+        /**
+         * Key of the rate limiter that could not record the attempt.
+         */
         readonly key: string,
         message: string,
         cause?: unknown,
@@ -110,13 +136,16 @@ export class UnableToUpdateStateRateLimiterError extends Error {
 }
 
 /**
- * The error is thrown when the underlying rate limiter adapter fails with an unexpected error while resetting the rate limiter.
- * The original adapter error is preserved in the `cause` property.
+ * Thrown when the adapter fails unexpectedly while resetting the rate limiter.
+ * The adapter error is preserved in `cause`.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
 export class UnableToResetRateLimiterError extends Error {
+    /**
+     * Creates the error for `key`, preserving the adapter error in `cause`.
+     */
     static create(key: string, cause?: unknown): UnableToResetRateLimiterError {
         return new UnableToResetRateLimiterError(
             key,
@@ -131,6 +160,9 @@ export class UnableToResetRateLimiterError extends Error {
      * @internal
      */
     constructor(
+        /**
+         * Key of the rate limiter that could not be reset.
+         */
         readonly key: string,
         message: string,
         cause?: unknown,
@@ -141,6 +173,8 @@ export class UnableToResetRateLimiterError extends Error {
 }
 
 /**
+ * Adapter failure errors, keyed by the operation that failed.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
@@ -151,6 +185,8 @@ export const UNABLE_RATE_LIMITER_ERRORS = {
 } as const;
 
 /**
+ * Any error from {@link UNABLE_RATE_LIMITER_ERRORS | `UNABLE_RATE_LIMITER_ERRORS`}.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
@@ -159,6 +195,8 @@ export type AllUnableRateLimiterErrors = InferInstance<
 >;
 
 /**
+ * Returns `true` when `value` is one of {@link AllUnableRateLimiterErrors | `AllUnableRateLimiterErrors`}.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
@@ -174,6 +212,9 @@ export function isUnableToRateLimiterError(
 }
 
 /**
+ * Every rate limiter error: {@link BlockedRateLimiterError | `BlockedRateLimiterError`} plus
+ * {@link UNABLE_RATE_LIMITER_ERRORS | `UNABLE_RATE_LIMITER_ERRORS`}.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
@@ -183,6 +224,8 @@ export const RATE_LIMITER_ERRORS = {
 } as const;
 
 /**
+ * Any error raised by the rate limiter.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
@@ -191,6 +234,8 @@ export type AllRateLimiterErrors = InferInstance<
 >;
 
 /**
+ * Returns `true` when `value` is one of {@link AllRateLimiterErrors | `AllRateLimiterErrors`}.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Errors
  */
