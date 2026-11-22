@@ -18,8 +18,7 @@ import type {
 } from "@/utilities/_module-exports.js";
 
 /**
- * IMPORT_PATH: `"eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter"`
- * @group Adapters
+ * @internal
  */
 export type MemoryRateLimiterData<TType = unknown> = {
     state: TType;
@@ -27,10 +26,7 @@ export type MemoryRateLimiterData<TType = unknown> = {
 };
 
 /**
- * The `MemoryRateLimiterStorageAdapter` is used for easily facking {@link IRateLimiterFactory | `IRateLimiterFactory`} for testing.
- *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter"`
- * @group Adapters
+ * @internal
  */
 export class MemoryRateLimiterStorageAdapter<TType>
     implements IRateLimiterStorageAdapter<TType>, IAsyncDeinitizable, IPrunable

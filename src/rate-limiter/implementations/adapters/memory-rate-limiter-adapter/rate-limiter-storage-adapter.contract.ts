@@ -32,7 +32,6 @@ export type IRateLimiterData<TType = unknown> = {
  * Provides atomic operations within a database transaction context.
  * All methods execute within the same transaction for ACID compliance.
  *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @internal
  * @template TType - The type of metrics/state object being stored
  */
@@ -68,7 +67,6 @@ export type IRateLimiterStorageAdapterTransaction<TType = unknown> = {
  * Adapters implementing this contract serialize the policy's TMetrics type for storage
  * and deserialize it when loading, handling the conversion to/from TType.
  *
- * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @internal
  * @template TType - The type of persisted metrics/state object in the database
  */
