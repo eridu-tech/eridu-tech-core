@@ -29,7 +29,7 @@ import type { IRateLimiterPolicy } from "@/rate-limiter/implementations/adapters
 
 /**
  * Configuration for `MemoryRateLimiterAdapter`.
- * Wraps a {@link IRateLimiterStorageAdapter | `IRateLimiterStorageAdapter`} with rate-limiter logic.
+ * The adapter owns its in-memory storage, so the settings only choose the policies it applies.
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/memory-rate-limiter-adapter"`
  * @group Adapters
@@ -45,16 +45,19 @@ export type MemoryRateLimiterAdapterSettings = {
     backoffPolicy?: BackoffSettingsEnum;
 
     /**
-     * You can choose between different types of predefined circuit breaker policies.
+     * You can choose between different types of predefined rate limiter policies.
      * @default
      * ```ts
-     * { type: LIMITER.FIXED_WINDOW }
+     * { type: LIMITER_POLICIES.FIXED_WINDOW }
      * ```
      */
     rateLimiterPolicy?: RateLimiterPolicySettingsEnum;
 };
 
 /**
+ * In-memory `IRateLimiterAdapter` that stores every key's state in the current process.
+ * State is not shared between processes and is lost when the process restarts.
+ *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/memory-rate-limiter-adapter"`
  * @group Adapters
  */
