@@ -201,13 +201,13 @@ export class MongdobRateLimiter
      * configured window; blocked attempts are retried according to the backoff policy.
      */
     updateState(key: string, limit: number): Promise<IRateLimiterAdapterState> {
-        return this.updateState(key, limit);
+        return this.adapter.updateState(key, limit);
     }
 
     /**
      * Removes the stored state for `key`.
      */
     reset(key: string): Promise<void> {
-        return this.reset(key);
+        return this.adapter.reset(key);
     }
 }
