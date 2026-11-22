@@ -7,10 +7,8 @@ import {
     UnableToResetRateLimiterError,
     UnableToUpdateStateRateLimiterError,
 } from "@/rate-limiter/contracts/_module-exports.js";
-import { DatabaseRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/database-rate-limiter-adapter/_module-exports.js";
-import { MemoryRateLimiterStorageAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-storage-adapter/_module-exports.js";
+import { MemoryRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/memory-rate-limiter-adapter/memory-rate-limiter-adapter.js";
 import { RateLimiterFactory } from "@/rate-limiter/implementations/derivables/rate-limiter-factory/rate-limiter-factory.js";
-import { FixedWindowLimiter } from "@/rate-limiter/implementations/policies/_module-exports.js";
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 
@@ -428,16 +426,10 @@ describe(
 
                 const serde = new SuperJsonSerde();
                 const key = "a";
-                const rateLimiterPolicy = new FixedWindowLimiter({
-                    window: TimeSpan.fromMinutes(1),
-                });
 
                 const rateLimiterFactory1 = new RateLimiterFactory({
                     adapter: new WrapperRateLimiterAdapter(
-                        new DatabaseRateLimiterAdapter({
-                            adapter: new MemoryRateLimiterStorageAdapter(),
-                            rateLimiterPolicy,
-                        }),
+                        new MemoryRateLimiterAdapter(),
                     ),
                     serde,
                 });
@@ -459,10 +451,7 @@ describe(
                 }
 
                 const rateLimiterFactory2 = new RateLimiterFactory({
-                    adapter: new DatabaseRateLimiterAdapter({
-                        adapter: new MemoryRateLimiterStorageAdapter(),
-                        rateLimiterPolicy,
-                    }),
+                    adapter: new MemoryRateLimiterAdapter(),
                     serde,
                 });
                 rateLimiterFactory2.init();
@@ -481,15 +470,9 @@ describe(
             test("Should differentiate between different serializationIds", async () => {
                 const serde = new SuperJsonSerde();
                 const key = "a";
-                const rateLimiterPolicy = new FixedWindowLimiter({
-                    window: TimeSpan.fromMinutes(1),
-                });
 
                 const rateLimiterFactory1 = new RateLimiterFactory({
-                    adapter: new DatabaseRateLimiterAdapter({
-                        adapter: new MemoryRateLimiterStorageAdapter(),
-                        rateLimiterPolicy,
-                    }),
+                    adapter: new MemoryRateLimiterAdapter(),
                     serializationId: "adapter1",
                     serde,
                 });
@@ -511,10 +494,7 @@ describe(
                 }
 
                 const rateLimiterFactory2 = new RateLimiterFactory({
-                    adapter: new DatabaseRateLimiterAdapter({
-                        adapter: new MemoryRateLimiterStorageAdapter(),
-                        rateLimiterPolicy,
-                    }),
+                    adapter: new MemoryRateLimiterAdapter(),
                     serializationId: "adapter2",
                     serde,
                 });
