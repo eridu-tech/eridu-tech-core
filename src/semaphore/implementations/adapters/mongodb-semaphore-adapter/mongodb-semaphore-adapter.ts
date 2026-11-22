@@ -64,7 +64,7 @@ export type MongodbSemaphoreAdapterSettings = {
      */
     database: TransactionAware<Db, ClientSession>;
     /**
-     * Name of the MongoDB collection used to store semaphore records.
+     * Name of the MongoDB collection used to store semaphore entries.
      * @default "semaphore"
      */
     collectionName?: string;
