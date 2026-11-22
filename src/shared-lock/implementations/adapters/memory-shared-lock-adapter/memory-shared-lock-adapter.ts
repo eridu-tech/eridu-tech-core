@@ -15,7 +15,7 @@ import type {
 } from "@/shared-lock/contracts/_module-exports.js";
 import type {
     IAsyncDeinitizable,
-    IPrunable,
+    IAsyncPrunable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -53,7 +53,7 @@ export type MemorySharedLockData = {
  * @group Adapters
  */
 export class MemorySharedLockAdapter
-    implements ISharedLockAdapter, IAsyncDeinitizable, IPrunable
+    implements ISharedLockAdapter, IAsyncDeinitizable, IAsyncPrunable
 {
     /**
      * You can also provide an `Map`.

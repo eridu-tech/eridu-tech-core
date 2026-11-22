@@ -10,7 +10,7 @@ import type {
 } from "@/lock/contracts/_module-exports.js";
 import type {
     IAsyncDeinitizable,
-    IPrunable,
+    IAsyncPrunable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -21,7 +21,7 @@ import type {
  * @group Adapters
  */
 export class MemoryLockAdapter
-    implements ILockAdapter, IAsyncDeinitizable, IPrunable
+    implements ILockAdapter, IAsyncDeinitizable, IAsyncPrunable
 {
     /**
      * You can also provide an `Map`.

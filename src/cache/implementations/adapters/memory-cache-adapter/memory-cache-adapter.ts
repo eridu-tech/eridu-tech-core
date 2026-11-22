@@ -10,7 +10,7 @@ import type {
 import type {
     IAsyncDeinitizable,
     InvocableFn,
-    IPrunable,
+    IAsyncPrunable,
     Promisable,
 } from "@/utilities/_module-exports.js";
 
@@ -30,7 +30,7 @@ export type MemoryCacheEntryData<TValue = unknown> = {
  * @group Adapters
  */
 export class MemoryCacheAdapter<TType = unknown>
-    implements ICacheAdapter<TType>, IAsyncDeinitizable, IPrunable
+    implements ICacheAdapter<TType>, IAsyncDeinitizable, IAsyncPrunable
 {
     /**
      * You can provide an optional {@link Map | `Map`}, that will be used for storing the data.
