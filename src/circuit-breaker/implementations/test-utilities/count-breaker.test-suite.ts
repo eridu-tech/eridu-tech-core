@@ -3,8 +3,10 @@
  */
 
 import { BACKOFFS } from "@/backoff-policies/implementations/_module-exports.js";
-import { CIRCUIT_BREAKER_STATE } from "@/circuit-breaker/contracts/_module-exports.js";
-import { BREAKER_POLICIES } from "@/circuit-breaker/implementations/policies/_module-exports.js";
+import {
+    BREAKER_POLICIES,
+    CIRCUIT_BREAKER_STATE,
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { delay } from "@/utilities/_module-exports.js";
 
@@ -14,8 +16,8 @@ import type { ConstantBackoffSettingsEnum } from "@/backoff-policies/implementat
 import type {
     CircuitBreakerStateTransition,
     ICircuitBreakerAdapter,
+    CountBreakerSettingsEnum,
 } from "@/circuit-breaker/contracts/_module-exports.js";
-import type { CountBreakerSettingsEnum } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type { Promisable } from "@/utilities/_module-exports.js";
 
@@ -78,6 +80,9 @@ export function countBreakerTestSuite(
     } = settings;
     let adapter: ICircuitBreakerAdapter;
     const waitTime = TimeSpan.fromTimeSpan(backoffPolicySettings.delay);
+    // The `wait time is not reached` cases sleep for a fraction of the wait time so slow
+    // adapters (network or database backed) still keep a wide margin before it elapses.
+    const partialWaitTime = TimeSpan.fromMilliseconds(1);
 
     describe("count-breaker ICircuitBreakerAdapter tests:", () => {
         beforeEach_(async () => {
@@ -321,7 +326,7 @@ export function countBreakerTestSuite(
                 await adapter.trackFailure(KEY);
                 await adapter.updateState(KEY);
 
-                await delayWithBuffer(waitTime.divide(2));
+                await delayWithBuffer(partialWaitTime);
                 const state = await adapter.updateState(KEY);
 
                 expect(state).toEqual({
@@ -504,7 +509,7 @@ export function countBreakerTestSuite(
                 await adapter.trackFailure(KEY);
                 await adapter.updateState(KEY);
 
-                await delayWithBuffer(waitTime.divide(2));
+                await delayWithBuffer(partialWaitTime);
                 const state = await adapter.updateState(KEY);
 
                 expect(state).toEqual({

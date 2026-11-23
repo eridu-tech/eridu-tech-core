@@ -3,8 +3,10 @@
  */
 
 import { BACKOFFS } from "@/backoff-policies/implementations/_module-exports.js";
-import { CIRCUIT_BREAKER_STATE } from "@/circuit-breaker/contracts/_module-exports.js";
-import { BREAKER_POLICIES } from "@/circuit-breaker/implementations/policies/_module-exports.js";
+import {
+    BREAKER_POLICIES,
+    CIRCUIT_BREAKER_STATE,
+} from "@/circuit-breaker/contracts/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { delay } from "@/utilities/_module-exports.js";
 
@@ -14,8 +16,8 @@ import type { ConstantBackoffSettingsEnum } from "@/backoff-policies/implementat
 import type {
     CircuitBreakerStateTransition,
     ICircuitBreakerAdapter,
+    SamplingBreakerSettingsEnum,
 } from "@/circuit-breaker/contracts/_module-exports.js";
-import type { SamplingBreakerSettingsEnum } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type { Promisable } from "@/utilities/_module-exports.js";
 
