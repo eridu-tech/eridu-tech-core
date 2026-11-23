@@ -2,11 +2,11 @@
  * @module CircuitBreaker
  */
 
+import { CIRCUIT_BREAKER_STATE } from "@/circuit-breaker/contracts/_module-exports.js";
 import {
-    CIRCUIT_BREAKER_STATE,
     CLOSED_TRANSITIONS,
     HALF_OPEN_TRANSITIONS,
-} from "@/circuit-breaker/contracts/_module-exports.js";
+} from "@/circuit-breaker/implementations/adapters/_shared/_module.js";
 
 /**
  * @internal

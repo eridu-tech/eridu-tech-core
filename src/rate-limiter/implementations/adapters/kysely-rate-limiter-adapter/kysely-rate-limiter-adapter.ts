@@ -28,7 +28,7 @@ import type {
     IRateLimiterAdapterState,
     RateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/contracts/_module-exports.js";
-import type { KyselyRateLimiterTables } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-entry-document.js";
+import type { KyselyRateLimiterTables } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-tables.js";
 import type {
     ITransactionContext,
     TransactionAware,

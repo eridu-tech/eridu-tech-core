@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import {
+    BREAKER_POLICIES,
     IsolatedCircuitBreakerError,
     OpenCircuitBreakerError,
     CIRCUIT_BREAKER_TRIGGER,
@@ -10,10 +11,8 @@ import {
     UnableToResetCircuitBreakerError,
     UnableToUpdateStateCircuitBreakerError,
 } from "@/circuit-breaker/contracts/_module-exports.js";
-import { DatabaseCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/database-circuit-breaker-adapter/_module-exports.js";
-import { MemoryCircuitBreakerStorageAdapter } from "@/circuit-breaker/implementations/adapters/memory-circuit-breaker-storage-adapter/_module-exports.js";
+import { MemoryCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/memory-circuit-breaker-adapter/_module-exports.js";
 import { CircuitBreakerFactory } from "@/circuit-breaker/implementations/derivables/circuit-breaker-factory/circuit-breaker-factory.js";
-import { ConsecutiveBreaker } from "@/circuit-breaker/implementations/policies/_module-exports.js";
 import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { delay } from "@/utilities/_module-exports.js";
@@ -657,15 +656,15 @@ describe(
 
                 const serde = new SuperJsonSerde();
                 const key = "a";
-                const circuitBreakerPolicy = new ConsecutiveBreaker({
+                const circuitBreakerPolicy = {
+                    type: BREAKER_POLICIES.CONSECUTIVE,
                     failureThreshold: 1,
                     successThreshold: 1,
-                });
+                } as const;
 
                 const circuitBreakerFactory1 = new CircuitBreakerFactory({
                     adapter: new WrapperCircuitBreakerAdapter(
-                        new DatabaseCircuitBreakerAdapter({
-                            adapter: new MemoryCircuitBreakerStorageAdapter(),
+                        new MemoryCircuitBreakerAdapter({
                             circuitBreakerPolicy,
                         }),
                     ),
@@ -688,8 +687,7 @@ describe(
                 }
 
                 const circuitBreakerFactory2 = new CircuitBreakerFactory({
-                    adapter: new DatabaseCircuitBreakerAdapter({
-                        adapter: new MemoryCircuitBreakerStorageAdapter(),
+                    adapter: new MemoryCircuitBreakerAdapter({
                         circuitBreakerPolicy,
                     }),
                     enableAsyncTracking: false,
@@ -709,14 +707,14 @@ describe(
             test("Should differentiate between different serializationIds", async () => {
                 const serde = new SuperJsonSerde();
                 const key = "a";
-                const circuitBreakerPolicy = new ConsecutiveBreaker({
+                const circuitBreakerPolicy = {
+                    type: BREAKER_POLICIES.CONSECUTIVE,
                     failureThreshold: 1,
                     successThreshold: 1,
-                });
+                } as const;
 
                 const circuitBreakerFactory1 = new CircuitBreakerFactory({
-                    adapter: new DatabaseCircuitBreakerAdapter({
-                        adapter: new MemoryCircuitBreakerStorageAdapter(),
+                    adapter: new MemoryCircuitBreakerAdapter({
                         circuitBreakerPolicy,
                     }),
                     enableAsyncTracking: false,
@@ -739,8 +737,7 @@ describe(
                 }
 
                 const circuitBreakerFactory2 = new CircuitBreakerFactory({
-                    adapter: new DatabaseCircuitBreakerAdapter({
-                        adapter: new MemoryCircuitBreakerStorageAdapter(),
+                    adapter: new MemoryCircuitBreakerAdapter({
                         circuitBreakerPolicy,
                     }),
                     enableAsyncTracking: false,

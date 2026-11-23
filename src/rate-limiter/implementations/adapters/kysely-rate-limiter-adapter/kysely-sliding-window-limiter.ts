@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @module RateLimiter
  */
 import { sql } from "kysely";
@@ -22,7 +22,7 @@ import {
 import {
     parseRateLimiterData,
     toRateLimiterExpiration,
-} from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-entry-document.js";
+} from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-tables.js";
 import { UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type { Kysely, RawBuilder } from "kysely";
@@ -33,7 +33,7 @@ import type {
     IRateLimiterAdapterState,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import type { SerializedSlidingWindowLimiterSettings } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
-import type { KyselyRateLimiterTables } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-entry-document.js";
+import type { KyselyRateLimiterTables } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-tables.js";
 import type { ITransactionConnection } from "@/transaction-context/contracts/_module-exports.js";
 
 type LimiterStateExpression = {

@@ -3,212 +3,363 @@
  */
 
 import type { CIRCUIT_BREAKER_STATE } from "@/circuit-breaker/contracts/circuit-breaker-state.contract.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 
 /**
- * Represents circuit breaker metrics during HALF_OPEN state.
- * Tracks diagnostic data for determining if the service has recovered.
+ * Available circuit breaker policies.
  *
- * @template TMetrics - The type of metrics being tracked
+ * - CONSECUTIVE: opens after a number of consecutive failures
+ * - COUNT: opens when the failure ratio of a count based window is exceeded
+ * - SAMPLING: opens when the failure ratio of a time based window is exceeded
+ *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
  * @group Contracts
  */
-export type CircuitBreakerHalfOpenState<TMetrics = unknown> = {
+export const BREAKER_POLICIES = {
+    CONSECUTIVE: "CONSECUTIVE",
+    COUNT: "COUNT",
+    SAMPLING: "SAMPLING",
+} as const;
+
+/**
+ * Settings for the consecutive policy.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type ConsecutiveBreakerSettings = {
     /**
-     * The current state type indicator.
+     * Amount of consecutive failures before going from closed -> open.
+     *
+     * @default 5
      */
-    type: typeof CIRCUIT_BREAKER_STATE.HALF_OPEN;
+    failureThreshold?: number;
 
     /**
-     * Accumulated metrics from the half-open testing period.
+     * Amount of consecutive success before going from half-open -> closed.
+     *
+     * @default settings.failureThreshold
      */
-    metrics: TMetrics;
+    successThreshold?: number;
 };
 
 /**
- * Represents circuit breaker metrics during CLOSED state.
- * Tracks performance data for determining if failures warrant opening the circuit.
+ * Settings for the count policy.
  *
- * @template TMetrics - The type of metrics being tracked
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
  * @group Contracts
  */
-export type CircuitBreakerClosedState<TMetrics = unknown> = {
+export type CountBreakerSettings = {
     /**
-     * The current state type indicator.
+     * Percentage (from 0 to 1) failures before going from closed -> open.
+     *
+     * @default 0.2
+     */
+    failureThreshold?: number;
+
+    /**
+     * Percentage (from 0 to 1) successes before going from half-open -> closed.
+     *
+     * @default
+     * ```ts
+     * 1 - settings.failureThreshold
+     * ```
+     */
+    successThreshold?: number;
+
+    /**
+     * Size of the count based sliding window.
+     *
+     * @default 20
+     */
+    size?: number;
+
+    /**
+     * The minimum number of calls to go from closed -> open, half-opened -> closed or half-opened -> open.
+     *
+     * @default
+     * ```ts
+     * settings.size
+     * ```
+     */
+    minimumNumberOfCalls?: number;
+};
+
+/**
+ * Settings for the sampling policy.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type SamplingBreakerSettings = {
+    /**
+     * Percentage (from 0 to 1) failures before going from closed -> open.
+     *
+     * @default 0.2
+     */
+    failureThreshold?: number;
+
+    /**
+     * Percentage (from 0 to 1) successes before going from half-open -> closed.
+     *
+     * @default
+     * ```ts
+     * 1 - settings.failureThreshold
+     * ```
+     */
+    successThreshold?: number;
+
+    /**
+     * Length of time over which to sample.
+     *
+     * @default
+     * ```ts
+     * import { TimeSpan } from "eridu-tech/time-span";
+     *
+     * TimeSpan.fromMinutes(1)
+     * ```
+     */
+    timeSpan?: ITimeSpan;
+
+    /**
+     * The sample length time.
+     *
+     * @default
+     * ```ts
+     * import { TimeSpan } from "eridu-tech/time-span";
+     *
+     * TimeSpan.fromTimeSpan(settings.timeSpan).divide(6)
+     * ```
+     */
+    sampleTimeSpan?: ITimeSpan;
+
+    /**
+     * The minimum number of calls per seconds to go from closed -> open, half-opened -> closed or half-opened -> open.
+     *
+     * @default 5
+     */
+    minimumRps?: number;
+};
+
+/**
+ * Settings of the consecutive policy including its discriminant.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type ConsecutiveBreakerSettingsEnum = ConsecutiveBreakerSettings & {
+    /**
+     * Discriminant identifying this as the consecutive breaker policy.
+     */
+    type: (typeof BREAKER_POLICIES)["CONSECUTIVE"];
+};
+
+/**
+ * Settings of the count policy including its discriminant.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type CountBreakerSettingsEnum = CountBreakerSettings & {
+    /**
+     * Discriminant identifying this as the count breaker policy.
+     */
+    type: (typeof BREAKER_POLICIES)["COUNT"];
+};
+
+/**
+ * Settings of the sampling policy including its discriminant.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type SamplingBreakerSettingsEnum = SamplingBreakerSettings & {
+    /**
+     * Discriminant identifying this as the sampling breaker policy.
+     */
+    type: (typeof BREAKER_POLICIES)["SAMPLING"];
+};
+
+/**
+ * Union of every circuit breaker policy settings.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type CircuitBreakerPolicySettingsEnum =
+    | ConsecutiveBreakerSettingsEnum
+    | CountBreakerSettingsEnum
+    | SamplingBreakerSettingsEnum;
+
+/**
+ * Metrics tracked by the consecutive policy.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type ConsecutiveBreakerMetrics = {
+    failureCount: number;
+    successCount: number;
+};
+
+/**
+ * Metrics tracked by the count policy.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type CountBreakerMetrics = {
+    samples: Array<boolean>;
+};
+
+/**
+ * A single time bucket of the sampling policy.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type Sample = {
+    startedAt: number;
+    failures: number;
+    successes: number;
+};
+
+/**
+ * Metrics tracked by the sampling policy.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type SamplingBreakerMetrics = {
+    samples: Array<Sample>;
+};
+
+/**
+ * A circuit breaker that is operating normally.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type ClosedState<TMetrics = unknown> = {
+    /**
+     * Discriminator for the `CLOSED` state.
      */
     type: typeof CIRCUIT_BREAKER_STATE.CLOSED;
 
     /**
-     * Accumulated metrics tracking failures, successes, and slow calls.
+     * Accumulated metrics used to decide if the circuit should open.
      */
     metrics: TMetrics;
 };
 
 /**
- * Union of trackable circuit breaker states (CLOSED and HALF_OPEN).
- * Represents states where metrics are actively being accumulated.
- *
- * @template TMetrics - The type of metrics being tracked
- * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
- * @group Contracts
- */
-export type CircuitBreakerTrackState<TMetrics = unknown> =
-    CircuitBreakerClosedState<TMetrics> | CircuitBreakerHalfOpenState<TMetrics>;
-
-/**
- * Enumerated state transitions when circuit breaker is in CLOSED state.
- * Determines whether to transition to OPEN or remain CLOSED.
+ * A circuit breaker that is testing if the service recovered.
  *
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
  * @group Contracts
  */
-export const CLOSED_TRANSITIONS = {
+export type HalfOpenState<TMetrics = unknown> = {
     /**
-     * Transition from CLOSED to OPEN state based on failure/slowness detection.
+     * Discriminator for the `HALF_OPEN` state.
      */
-    TO_OPEN: "TO_OPEN",
-
-    /**
-     * Remain in CLOSED state; no transition needed.
-     */
-    NONE: "NONE",
-} as const;
-
-/**
- * Union type of all possible state transitions when in CLOSED state.
- *
- * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
- * @group Contracts
- */
-export type ClosedTransitions =
-    (typeof CLOSED_TRANSITIONS)[keyof typeof CLOSED_TRANSITIONS];
-
-/**
- * Enumerated state transitions when circuit breaker is in HALF_OPEN state.
- * Determines recovery (transition to CLOSED), continued failure (transition to OPEN), or hold (remain HALF_OPEN).
- *
- * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
- * @group Contracts
- */
-export const HALF_OPEN_TRANSITIONS = {
-    /**
-     * Return to OPEN state if recovery failed.
-     */
-    TO_OPEN: "TO_OPEN",
+    type: typeof CIRCUIT_BREAKER_STATE.HALF_OPEN;
 
     /**
-     * Transition to CLOSED state if recovery succeeded.
+     * Amount of times the circuit opened so far.
      */
-    TO_CLOSED: "TO_CLOSED",
+    attempt: number;
 
     /**
-     * Remain in HALF_OPEN state; continue testing.
+     * Metrics collected while the circuit is half open.
      */
-    NONE: "NONE",
-} as const;
-
-/**
- * Union type of all possible state transitions when in HALF_OPEN state.
- *
- * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
- * @group Contracts
- */
-export type HalfOpenTransitions =
-    (typeof HALF_OPEN_TRANSITIONS)[keyof typeof HALF_OPEN_TRANSITIONS];
-
-/**
- * Initial settings for circuit breaker tracking configuration.
- *
- * @template TMetrics - The type of metrics to track
- * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
- * @group Contracts
- */
-export type CircuitBreakerTrackSettings<TMetrics = unknown> = {
-    /**
-     * The current timestamp for metric evaluation.
-     */
-    currentDate: Date;
-
-    /**
-     * Initial metrics state before tracking begins.
-     */
-    initialMetrics: TMetrics;
+    metrics: TMetrics;
 };
 
 /**
- * Pluggable policy contract defining the circuit breaker algorithm.
- * Implementations are responsible for tracking metrics, evaluating state transitions, and determining when to trip the circuit.
- * **Important:** All methods must be pure functions and should return new metrics objects without mutating input data.
+ * A circuit breaker that blocks every call until the backoff has elapsed.
  *
- * @template TMetrics - Custom metrics type for tracking failures, successes, and diagnostics
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
  * @group Contracts
  */
-export type ICircuitBreakerPolicy<TMetrics = unknown> = {
+export type OpenState = {
     /**
-     * Creates initial metrics for a new circuit breaker instance.
-     *
-     * @returns A new metrics object in initial state
+     * Discriminator for the `OPEN` state.
      */
-    initialMetrics(): TMetrics;
+    type: typeof CIRCUIT_BREAKER_STATE.OPEN;
 
     /**
-     * Evaluates state transition when circuit breaker is in CLOSED state.
-     * Analyzes current metrics to decide whether to open the circuit or remain closed.
-     *
-     * @param currentMetrics - Current failure/success metrics
-     * @param currentDate - Current timestamp for time-based evaluations
-     * @returns Transition decision: TO_OPEN or NONE
+     * Amount of times the circuit opened so far.
      */
-    whenClosed(currentMetrics: TMetrics, currentDate: Date): ClosedTransitions;
+    attempt: number;
 
     /**
-     * Evaluates state transition when circuit breaker is in HALF_OPEN state.
-     * Determines if recovery succeeded, recovery failed, or testing should continue.
-     *
-     * @param currentMetrics - Current recovery testing metrics
-     * @param currentDate - Current timestamp for time-based evaluations
-     * @returns Transition decision: TO_OPEN, TO_CLOSED, or NONE
+     * Unix timestamp in milliseconds.
      */
-    whenHalfOpened(
-        currentMetrics: TMetrics,
-        currentDate: Date,
-    ): HalfOpenTransitions;
-
-    /**
-     * Updates metrics after a failure is detected.
-     * Used to accumulate failure counts, timestamps, and other diagnostic data.
-     *
-     * @param currentState - The current circuit breaker tracking state
-     * @param settings - Configuration including current date and initial metrics
-     * @returns Updated metrics reflecting the failure
-     */
-    trackFailure(
-        currentState: CircuitBreakerTrackState<TMetrics>,
-        settings: CircuitBreakerTrackSettings<TMetrics>,
-    ): TMetrics;
-
-    /**
-     * Updates metrics after a successful call is recorded.
-     * Used to reset failure counts or accumulate success data for recovery validation.
-     *
-     * @param currentState - The current circuit breaker tracking state
-     * @param settings - Configuration including current date and initial metrics
-     * @returns Updated metrics reflecting the success
-     */
-    trackSuccess(
-        currentState: CircuitBreakerTrackState<TMetrics>,
-        settings: CircuitBreakerTrackSettings<TMetrics>,
-    ): TMetrics;
-
-    /**
-     * Compares two metrics objects for equality.
-     * Used internally for optimization purposes to detect when metrics haven't changed.
-     * This method is optional - if not implemented, every update is treated as a change.
-     *
-     * @param metricsA - First metrics object to compare
-     * @param metricsB - Second metrics object to compare
-     * @returns true if both metrics are equivalent, false otherwise
-     */
-    isEqual?(metricsA: TMetrics, metricsB: TMetrics): boolean;
+    startedAt: number;
 };
+
+/**
+ * A circuit breaker that was manually isolated.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type IsolatedState = {
+    /**
+     * Discriminator for the `ISOLATED` state.
+     */
+    type: typeof CIRCUIT_BREAKER_STATE.ISOLATED;
+};
+
+/**
+ * Every state a stored circuit breaker entry can have.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type AllCircuitBreakerState<TMetrics = unknown> =
+    ClosedState<TMetrics> | HalfOpenState<TMetrics> | OpenState | IsolatedState;
+
+/**
+ * Stored state of the consecutive policy.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type ConsecutiveBreakerStateEnum = {
+    type: (typeof BREAKER_POLICIES)["CONSECUTIVE"];
+    state: AllCircuitBreakerState<ConsecutiveBreakerMetrics>;
+};
+
+/**
+ * Stored state of the count policy.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type CountBreakerStateEnum = {
+    type: (typeof BREAKER_POLICIES)["COUNT"];
+    state: AllCircuitBreakerState<CountBreakerMetrics>;
+};
+
+/**
+ * Stored state of the sampling policy.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type SamplingBreakerStateEnum = {
+    type: (typeof BREAKER_POLICIES)["SAMPLING"];
+    state: AllCircuitBreakerState<SamplingBreakerMetrics>;
+};
+
+/**
+ * Union of every stored circuit breaker policy state.
+ *
+ * IMPORT_PATH: `"eridu-tech/circuit-breaker/contracts"`
+ * @group Contracts
+ */
+export type CircuitBreakerStateEnum =
+    | ConsecutiveBreakerStateEnum
+    | CountBreakerStateEnum
+    | SamplingBreakerStateEnum;
