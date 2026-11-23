@@ -90,7 +90,7 @@ describe(
             describe,
         });
 
-        describe("constructor", () => {
+        describe("constructor:", () => {
             let channelAdapter: PostgresEventBusAdapter;
             let channelName: string;
 
