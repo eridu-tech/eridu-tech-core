@@ -85,9 +85,10 @@ export class KyselyRateLimiterAdapter
     implements IRateLimiterAdapter, IAsyncInitizable, IAsyncDeinitizable
 {
     private readonly adapter: IRateLimiterAdapter;
-    private readonly trxCtx: Pick<ITransactionContext<
-        Kysely<KyselyRateLimiterTables>
-    >, "client" | "current">;
+    private readonly trxCtx: Pick<
+        ITransactionContext<Kysely<KyselyRateLimiterTables>>,
+        "client" | "current"
+    >;
     private readonly isPostgres: boolean;
 
     constructor(settings: KyselyRateLimiterAdapterSettings) {
