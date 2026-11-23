@@ -90,6 +90,129 @@ describe(
             describe,
         });
 
+        describe("constructor", () => {
+            let channelAdapter: PostgresEventBusAdapter;
+            let channelName: string;
+
+            beforeEach(() => {
+                channelName = `eridu_test_${randomUUID().replace(/-/g, "")}`;
+            });
+            afterEach(async () => {
+                await channelAdapter.deInit();
+            });
+
+            async function getListeningChannels(): Promise<
+                ReadonlyArray<string>
+            > {
+                const result = await client.query<{ channel: string }>(
+                    "SELECT pg_listening_channels() AS channel",
+                );
+                return result.rows.map((row) => row.channel);
+            }
+
+            test("Should listen on a default channel when channelName is not provided", async () => {
+                channelAdapter = new PostgresEventBusAdapter({ client, serde });
+                const listenerFn = vi.fn();
+                await channelAdapter.addListener("event", listenerFn);
+
+                const listeningChannels = await getListeningChannels();
+                expect(listeningChannels).toHaveLength(1);
+                const [defaultChannelName] = listeningChannels;
+
+                await extraClient.query("SELECT pg_notify($1, $2)", [
+                    defaultChannelName,
+                    serde.serialize({
+                        eventName: "event",
+                        eventData: { type: "event" },
+                    }),
+                ]);
+
+                await delay(dispatchDelay);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+            });
+
+            test("Should listen on the provided channel name", async () => {
+                channelAdapter = new PostgresEventBusAdapter({
+                    client,
+                    serde,
+                    channelName,
+                });
+                const listenerFn = vi.fn();
+                await channelAdapter.addListener("event", listenerFn);
+
+                const listeningChannels = await getListeningChannels();
+                expect(listeningChannels).toEqual([channelName]);
+
+                await extraClient.query("SELECT pg_notify($1, $2)", [
+                    channelName,
+                    serde.serialize({
+                        eventName: "event",
+                        eventData: { type: "event" },
+                    }),
+                ]);
+
+                await delay(dispatchDelay);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+            });
+
+            test("Should ignore notifications sent on another channel", async () => {
+                const otherChannelName = `${channelName}_other`;
+                channelAdapter = new PostgresEventBusAdapter({
+                    client,
+                    serde,
+                    channelName,
+                });
+                const listenerFn = vi.fn();
+                await channelAdapter.addListener("event", listenerFn);
+
+                await extraClient.query("SELECT pg_notify($1, $2)", [
+                    otherChannelName,
+                    serde.serialize({
+                        eventName: "event",
+                        eventData: { type: "event" },
+                    }),
+                ]);
+
+                await delay(dispatchDelay);
+                expect(listenerFn).not.toHaveBeenCalled();
+            });
+
+            test("Should dispatch on the provided channel name", async () => {
+                channelAdapter = new PostgresEventBusAdapter({
+                    client,
+                    serde,
+                    channelName,
+                });
+                const notifications: Array<{
+                    channel: string;
+                    payload?: string;
+                }> = [];
+                extraClient.on("notification", (notification) => {
+                    notifications.push({
+                        channel: notification.channel,
+                        payload: notification.payload,
+                    });
+                });
+                await extraClient.query(
+                    `LISTEN ${extraClient.escapeIdentifier(channelName)}`,
+                );
+
+                await channelAdapter.dispatch("event", { type: "event" });
+
+                await delay(dispatchDelay);
+                expect(notifications).toHaveLength(1);
+                expect(notifications[0]?.channel).toBe(channelName);
+                expect(
+                    serde.deserialize(notifications[0]?.payload ?? ""),
+                ).toEqual({
+                    eventName: "event",
+                    eventData: { type: "event" },
+                });
+            });
+        });
+
         describe("method: addListener, dispatch", () => {
             let prefixlessAdapter: PostgresEventBusAdapter;
             beforeEach(() => {
