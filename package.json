@@ -677,9 +677,6 @@
         "node": ">=24"
     },
     "scripts": {
-        "db-test": "npx vitest run --tagsFilter=\"Postgres || Mongodb || Redis\" --no-file-parallelism",
-        "memory-test": "npx vitest run --tagsFilter=Memory",
-        "new-test": "npm run memory-test && npm run db-test",
         "module-exports-files-check": "npx tsx --tsconfig ./tsconfig.json scripts/module-exports-files-check.ts",
         "test": "npx vitest run",
         "check": "npx tsc --project \"./tsconfig.json\"",
