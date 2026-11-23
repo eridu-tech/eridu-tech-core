@@ -1,4 +1,4 @@
-﻿import { randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
 import { Kysely, PostgresDialect } from "kysely";
@@ -22,7 +22,7 @@ import {
     RATE_LIMITER_STATE,
 } from "@/rate-limiter/contracts/_module-exports.js";
 import { KyselyRateLimiterAdapter } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/_module-exports.js";
-import { parseRateLimiterData } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-entry-document.js";
+import { parseRateLimiterData } from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-tables.js";
 import { fixedWindowLimiterTestSuite } from "@/rate-limiter/implementations/test-utilities/_module-exports.js";
 import { WithKyselyTableName } from "@/test-utilities/functions/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";

@@ -2,4 +2,4 @@ export * from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapt
 export type {
     KyselyRateLimiterEntryTable,
     KyselyRateLimiterTables,
-} from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-entry-document.js";
+} from "@/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/kysely-rate-limiter-tables.js";
