@@ -135,6 +135,69 @@ describe(
                 await expect(promise).resolves.toBeUndefined();
             });
         });
+        describe("method: removeAllExpired", () => {
+            test("Should remove all expired keys", async () => {
+                await adapter.init();
+                const data = JSON.stringify({
+                    type: LIMITER_POLICIES.SLIDING_WINDOW,
+                    state: {
+                        type: RATE_LIMITER_STATE.ALLOWED,
+                        metrics: {
+                            [Date.now()]: 1,
+                        },
+                    },
+                });
+
+                await database
+                    .insertInto("rateLimiter")
+                    .values({
+                        key: "a",
+                        data,
+                        expiration: Date.now() - 1000,
+                    })
+                    .execute();
+                await database
+                    .insertInto("rateLimiter")
+                    .values({
+                        key: "b",
+                        data,
+                        expiration: Date.now() - 1000,
+                    })
+                    .execute();
+                await database
+                    .insertInto("rateLimiter")
+                    .values({
+                        key: "c",
+                        data,
+                        expiration: Date.now() + 50000,
+                    })
+                    .execute();
+
+                await adapter.removeAllExpired();
+
+                expect(
+                    await database
+                        .selectFrom("rateLimiter")
+                        .where("rateLimiter.key", "=", "a")
+                        .selectAll()
+                        .executeTakeFirst(),
+                ).toBeUndefined();
+                expect(
+                    await database
+                        .selectFrom("rateLimiter")
+                        .where("rateLimiter.key", "=", "b")
+                        .selectAll()
+                        .executeTakeFirst(),
+                ).toBeUndefined();
+                expect(
+                    await database
+                        .selectFrom("rateLimiter")
+                        .where("rateLimiter.key", "=", "c")
+                        .selectAll()
+                        .executeTakeFirst(),
+                ).toBeDefined();
+            });
+        });
         describe("Expiration tests:", () => {
             test("Should set expiration to the end of the next window plus margin when the attempt is allowed", async () => {
                 await adapter.init();

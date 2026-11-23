@@ -487,10 +487,6 @@
             "types": "./dist/rate-limiter/contracts/_module-exports.d.ts",
             "import": "./dist/rate-limiter/contracts/_module-exports.js"
         },
-        "./rate-limiter/policies": {
-            "types": "./dist/rate-limiter/implementations/policies/_module-exports.d.ts",
-            "import": "./dist/rate-limiter/implementations/policies/_module-exports.js"
-        },
         "./rate-limiter/kysely-rate-limiter-adapter": {
             "types": "./dist/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/_module-exports.d.ts",
             "import": "./dist/rate-limiter/implementations/adapters/kysely-rate-limiter-adapter/_module-exports.js"

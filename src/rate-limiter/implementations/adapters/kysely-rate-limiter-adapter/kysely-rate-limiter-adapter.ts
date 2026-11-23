@@ -36,6 +36,7 @@ import type {
 import type {
     IAsyncDeinitizable,
     IAsyncInitizable,
+    IAsyncPrunable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -82,7 +83,11 @@ export type KyselyRateLimiterAdapterSettings = {
  * @group Adapters
  */
 export class KyselyRateLimiterAdapter
-    implements IRateLimiterAdapter, IAsyncInitizable, IAsyncDeinitizable
+    implements
+        IRateLimiterAdapter,
+        IAsyncInitizable,
+        IAsyncDeinitizable,
+        IAsyncPrunable
 {
     private readonly adapter: IRateLimiterAdapter;
     private readonly trxCtx: Pick<
@@ -104,6 +109,16 @@ export class KyselyRateLimiterAdapter
             rateLimiterPolicy,
             serializeBackoffSettingsEnum(backoffPolicy),
         );
+    }
+    /**
+     * Removes every expired rate limiter entry.
+     * Note unexpired entries are kept, so this is safe to call periodically.
+     */
+    async removeAllExpired(): Promise<void> {
+        await this.trxCtx.current
+            .deleteFrom("rateLimiter")
+            .where("rateLimiter.expiration", "<=", Date.now())
+            .execute();
     }
 
     private selectLimiter(
