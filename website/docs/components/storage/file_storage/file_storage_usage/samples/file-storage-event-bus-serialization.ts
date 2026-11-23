@@ -3,7 +3,7 @@ import { MemoryFileStorageAdapter } from "eridu-tech/file-storage/memory-file-st
 import { SignedFileStorageAdapter } from "eridu-tech/file-storage/signed-file-storage-adapter";
 import type { IFile } from "eridu-tech/file-storage/contracts";
 import { FileStorage } from "eridu-tech/file-storage";
-import { RedisPubSubEventBusAdapter } from "eridu-tech/event-bus/redis-pub-sub-event-bus-adapter";
+import { RedisEventBusAdapter } from "eridu-tech/event-bus/redis-event-bus-adapter";
 import { EventBus } from "eridu-tech/event-bus";
 import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
@@ -16,7 +16,7 @@ type EventMap = {
     };
 };
 const eventBus = new EventBus<EventMap>({
-    adapter: new RedisPubSubEventBusAdapter({
+    adapter: new RedisEventBusAdapter({
         client: redis,
         serde,
     }),

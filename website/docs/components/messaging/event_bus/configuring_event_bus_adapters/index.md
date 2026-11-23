@@ -46,22 +46,22 @@ Pass any [`ITransactionHooks`](https://eridu-tech.github.io/eridu-tech-core/type
 `MemoryEventBusAdapter` lets you test your app without external dependencies like `Redis`, ideal for local development, unit tests, integration tests and fast E2E test for the backend application.
 :::
 
-## RedisPubSubEventBusAdapter
+## RedisEventBusAdapter
 
-To use the `RedisPubSubEventBusAdapter`, you'll need to:
+To use the `RedisEventBusAdapter`, you'll need to:
 
 1. Install the required dependency: [`ioredis`](https://www.npmjs.com/package/ioredis) package:
 2. Provide a string serializer ([`ISerde`](/docs/components/foundation/serde)):
 
 - We recommend using `SuperJsonSerdeAdapter` for this purpose
 
-```ts file=./samples/redis-pub-sub-event-bus-adapter.ts
+```ts file=./samples/redis-event-bus-adapter.ts
 
 ```
 
 Pass any [`ITransactionHooks`](https://eridu-tech.github.io/eridu-tech-core/types/TransactionContext.ITransactionHooks.html) (like a [`TransactionContext`](/docs/components/foundation/transaction_context/transaction_context_usage), [`MultiTransactionHooks`](/docs/components/foundation/transaction_context/transaction_context_usage)) as the `transactionHooks` setting to make the adapter transaction aware. Events dispatch immediately outside a transaction, and inside transaction events dispatch after commit:
 
-```ts file=./samples/redis-pub-sub-event-bus-adapter-transaction-aware.ts
+```ts file=./samples/redis-event-bus-adapter-transaction-aware.ts
 
 ```
 

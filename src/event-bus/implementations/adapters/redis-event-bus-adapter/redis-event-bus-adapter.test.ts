@@ -15,7 +15,7 @@ import {
     afterAll,
 } from "vitest";
 
-import { RedisPubSubEventBusAdapter } from "@/event-bus/implementations/adapters/redis-pub-sub-event-bus-adapter/redis-pub-sub-event-bus-adapter.js";
+import { RedisEventBusAdapter } from "@/event-bus/implementations/adapters/redis-event-bus-adapter/redis-event-bus-adapter.js";
 import { withEventBusPrefix } from "@/event-bus/implementations/plugins/_module-exports.js";
 import { eventBusAdapterTestSuite } from "@/event-bus/implementations/test-utilities/_module-exports.js";
 import { contextToken } from "@/execution-context/contracts/_module-exports.js";
@@ -35,12 +35,12 @@ import type { ITransactionData } from "@/transaction-context/implementations/der
 const timeout = TimeSpan.fromMinutes(2);
 const dispatchDelay = TimeSpan.fromMilliseconds(500);
 describe(
-    "class: RedisPubSubEventBusAdapter",
+    "class: RedisEventBusAdapter",
     { tags: ["Redis", "Adapters", "Implementations", "EventBus"] },
     () => {
         let client: Redis;
         let startedContainer: StartedRedisContainer;
-        let adapter: RedisPubSubEventBusAdapter;
+        let adapter: RedisEventBusAdapter;
         const serde = new SuperJsonSerde();
         beforeAll(async () => {
             startedContainer = await new RedisContainer("redis:7.2").start();
@@ -48,7 +48,7 @@ describe(
         }, timeout.toMilliseconds());
         beforeEach(() => {
             adapter = withPlugin(
-                new RedisPubSubEventBusAdapter({
+                new RedisEventBusAdapter({
                     client,
                     serde,
                 }),
@@ -71,9 +71,9 @@ describe(
         });
 
         describe("method: addListener, dispatch", () => {
-            let prefixlessAdapter: RedisPubSubEventBusAdapter;
+            let prefixlessAdapter: RedisEventBusAdapter;
             beforeEach(() => {
-                prefixlessAdapter = new RedisPubSubEventBusAdapter({
+                prefixlessAdapter = new RedisEventBusAdapter({
                     client,
                     serde,
                 });
@@ -119,7 +119,7 @@ describe(
                 Kysely<any>,
                 Kysely<any>
             >;
-            let trxAwareAdapter: RedisPubSubEventBusAdapter;
+            let trxAwareAdapter: RedisEventBusAdapter;
 
             beforeEach(() => {
                 database = new Sqlite(":memory:");
@@ -138,7 +138,7 @@ describe(
                         new AlsExecutionContextAdapter(),
                     ),
                 });
-                trxAwareAdapter = new RedisPubSubEventBusAdapter({
+                trxAwareAdapter = new RedisEventBusAdapter({
                     client,
                     serde,
                     transactionHooks: transactionContext,

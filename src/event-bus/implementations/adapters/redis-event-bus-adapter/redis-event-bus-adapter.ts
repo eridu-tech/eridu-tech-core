@@ -22,13 +22,13 @@ import type { ITransactionHooks } from "@/transaction-context/contracts/_module-
 import type { IAsyncDeinitizable } from "@/utilities/_module-exports.js";
 
 /**
- * Configuration for `RedisPubSubEventBusAdapter`.
+ * Configuration for `RedisEventBusAdapter`.
  * Requires a Redis client and a serde for serialising event payloads.
  *
- * IMPORT_PATH: `"eridu-tech/event-bus/redis-pub-sub-event-bus-adapter"`
+ * IMPORT_PATH: `"eridu-tech/event-bus/redis-event-bus-adapter"`
  * @group Adapters
  */
-export type RedisPubSubEventBusAdapterSettings = {
+export type RedisEventBusAdapterSettings = {
     /**
      * The Redis client instance used for pub/sub messaging.
      */
@@ -49,12 +49,12 @@ export type RedisPubSubEventBusAdapterSettings = {
 };
 
 /**
- * To utilize the `RedisPubSubEventBusAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package and supply a {@link ISerde | `ISerde`}, with a {@link SuperJsonSerde | `SuperJsonSerde`}.
+ * To utilize the `RedisEventBusAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package and supply a {@link ISerde | `ISerde`}, with a {@link SuperJsonSerde | `SuperJsonSerde`}.
  *
- * IMPORT_PATH: `"eridu-tech/event-bus/redis-pub-sub-event-bus-adapter"`
+ * IMPORT_PATH: `"eridu-tech/event-bus/redis-event-bus-adapter"`
  * @group Adapters
  */
-export class RedisPubSubEventBusAdapter
+export class RedisEventBusAdapter
     implements IEventBusAdapter, IAsyncDeinitizable
 {
     private readonly serde: ISerde<string>;
@@ -64,7 +64,7 @@ export class RedisPubSubEventBusAdapter
     private readonly transactionHooks: ITransactionHooks;
     private isDeInitialized = false;
 
-    constructor(settings: RedisPubSubEventBusAdapterSettings) {
+    constructor(settings: RedisEventBusAdapterSettings) {
         const {
             client,
             serde,
