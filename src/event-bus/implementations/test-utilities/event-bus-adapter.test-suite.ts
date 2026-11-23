@@ -40,7 +40,7 @@ export function eventBusAdapterTestSuite(
 
     let adapter: IEventBusAdapter;
 
-    const TTL = TimeSpan.fromMilliseconds(50);
+    const TTL = TimeSpan.fromMilliseconds(20);
 
     describe("IEventBusAdapter tests:", () => {
         beforeEach_(async () => {
@@ -81,6 +81,24 @@ export function eventBusAdapterTestSuite(
 
                 await delay(TTL);
                 expect(handlerFn).not.toHaveBeenCalled();
+            });
+            test("Should call the remaining listener when one of multiple listeners is removed", async () => {
+                const firstHandlerFn = vi.fn((_event: BaseEvent) => {});
+                const secondHandlerFn = vi.fn((_event: BaseEvent) => {});
+
+                await adapter.addListener("event", firstHandlerFn);
+                await adapter.addListener("event", secondHandlerFn);
+                await adapter.removeListener("event", firstHandlerFn);
+                const event = {
+                    type: "event",
+                };
+
+                await adapter.dispatch("event", event);
+
+                await delay(TTL);
+                expect(firstHandlerFn).not.toHaveBeenCalled();
+                expect(secondHandlerFn).toHaveBeenCalledTimes(1);
+                expect(secondHandlerFn).toHaveBeenCalledWith(event);
             });
         });
     });

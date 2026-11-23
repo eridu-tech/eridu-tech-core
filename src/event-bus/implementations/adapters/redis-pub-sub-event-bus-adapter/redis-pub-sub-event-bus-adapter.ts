@@ -71,6 +71,8 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
         this.dispatcherClient = client;
         this.listenerClient = client.duplicate();
         this.serde = serde;
+
+        this.listenerClient.on("message", this.redisListener);
     }
 
     private redisListener = (channel: string, message: string): void => {
@@ -81,23 +83,22 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
         eventName: string,
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        if (this.eventEmitter.listenerCount(eventName) === 0) {
+            await this.listenerClient.subscribe(eventName);
+        }
+
         this.eventEmitter.on(eventName, listener);
-
-        await this.listenerClient.subscribe(eventName);
-
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        this.listenerClient.on("message", this.redisListener);
     }
 
     async removeListener(
         eventName: string,
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         this.eventEmitter.off(eventName, listener);
 
-        await this.listenerClient.unsubscribe(eventName);
+        if (this.eventEmitter.listenerCount(eventName) === 0) {
+            await this.listenerClient.unsubscribe(eventName);
+        }
     }
 
     dispatch(eventName: string, eventData: BaseEvent): Promise<void> {
