@@ -9,7 +9,7 @@ import {
     CIRCUIT_BREAKER_STATE,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import { resolveBackoffDelayExpression } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-backoff-delay-expression.js";
-import { parseCircuitBreakerData } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-entry-document.js";
+import { parseCircuitBreakerData } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-tables.js";
 import {
     resolveIntegerExpression,
     resolveJsonNumberExpression,
@@ -28,7 +28,7 @@ import type {
     ConsecutiveBreakerSettingsEnum,
     ICircuitBreakerAdapter,
 } from "@/circuit-breaker/contracts/_module-exports.js";
-import type { KyselyCircuitBreakerTables } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-entry-document.js";
+import type { KyselyCircuitBreakerTables } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-tables.js";
 import type { ITransactionConnection } from "@/transaction-context/contracts/_module-exports.js";
 
 /**

@@ -9,7 +9,7 @@ import {
     CIRCUIT_BREAKER_STATE,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import { KyselyCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/_module-exports.js";
-import { parseCircuitBreakerData } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-entry-document.js";
+import { parseCircuitBreakerData } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-tables.js";
 import { samplingBreakerTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
 import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
 import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";

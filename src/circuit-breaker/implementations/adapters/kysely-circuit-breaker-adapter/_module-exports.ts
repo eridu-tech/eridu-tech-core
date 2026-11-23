@@ -2,4 +2,4 @@ export * from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker
 export type {
     KyselyCircuitBreakerEntryTable,
     KyselyCircuitBreakerTables,
-} from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-entry-document.js";
+} from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-tables.js";

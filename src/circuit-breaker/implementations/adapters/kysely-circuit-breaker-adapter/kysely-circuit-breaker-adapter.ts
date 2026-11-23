@@ -28,7 +28,7 @@ import type {
     ICircuitBreakerAdapter,
 } from "@/circuit-breaker/contracts/_module-exports.js";
 import type { SerializedCircuitBreakerPolicySettingsEnum } from "@/circuit-breaker/implementations/adapters/_shared/_module.js";
-import type { KyselyCircuitBreakerTables } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-entry-document.js";
+import type { KyselyCircuitBreakerTables } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-tables.js";
 import type {
     ITransactionContext,
     TransactionAware,
