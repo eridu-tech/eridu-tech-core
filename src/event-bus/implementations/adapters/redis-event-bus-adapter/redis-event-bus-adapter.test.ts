@@ -167,6 +167,20 @@ describe(
                 expect(listenerFn).not.toHaveBeenCalled();
             });
 
+            test("Should dispatch only after the transaction commits", async () => {
+                const listenerFn = vi.fn();
+                await trxAwareAdapter.addListener("eventA", listenerFn);
+
+                await transactionContext.run(async () => {
+                    await trxAwareAdapter.dispatch("eventA", { data: "A" });
+                    expect(listenerFn).not.toHaveBeenCalled();
+                });
+
+                await delay(dispatchDelay);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ data: "A" });
+            });
+
             test("Should dispatch immediately when there is no active transaction", async () => {
                 const listenerFn = vi.fn();
                 await trxAwareAdapter.addListener("eventA", listenerFn);
