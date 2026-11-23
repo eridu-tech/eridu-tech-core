@@ -2,7 +2,7 @@
  * @module EventBus
  */
 
-import { EventEmitter } from "node:events";
+import { EventEmitter } from "eventemitter3";
 
 import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

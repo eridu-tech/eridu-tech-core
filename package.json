@@ -255,9 +255,9 @@
             "types": "./dist/event-bus/implementations/adapters/postgres-event-bus-adapter/_module-exports.d.ts",
             "import": "./dist/event-bus/implementations/adapters/postgres-event-bus-adapter/_module-exports.js"
         },
-        "./event-bus/redis-pub-sub-event-bus-adapter": {
-            "types": "./dist/event-bus/implementations/adapters/redis-pub-sub-event-bus-adapter/_module-exports.d.ts",
-            "import": "./dist/event-bus/implementations/adapters/redis-pub-sub-event-bus-adapter/_module-exports.js"
+        "./event-bus/redis-event-bus-adapter": {
+            "types": "./dist/event-bus/implementations/adapters/redis-event-bus-adapter/_module-exports.d.ts",
+            "import": "./dist/event-bus/implementations/adapters/redis-event-bus-adapter/_module-exports.js"
         },
         "./event-bus/test-utilities": {
             "types": "./dist/event-bus/implementations/test-utilities/_module-exports.d.ts",
@@ -813,6 +813,7 @@
         "@lukeed/ms": "^2.0.2",
         "escape-string-regexp": "^5.0.0",
         "etag": "^1.8.1",
+        "eventemitter3": "^5.0.4",
         "file-type": "^22.0.1",
         "mime-types": "^3.0.2",
         "superjson": "^2.2.6",

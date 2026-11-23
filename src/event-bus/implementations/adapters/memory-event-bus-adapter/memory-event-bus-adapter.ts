@@ -2,7 +2,7 @@
  * @module EventBus
  */
 
-import { EventEmitter } from "node:events";
+import { EventEmitter } from "eventemitter3";
 
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
