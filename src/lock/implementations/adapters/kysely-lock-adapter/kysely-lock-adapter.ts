@@ -17,7 +17,7 @@ import type {
 import type {
     IAsyncDeinitizable,
     IAsyncInitizable,
-    IPrunable,
+    IAsyncPrunable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -60,7 +60,11 @@ export type KyselyLockAdapterSettings = {
  * @group Adapters
  */
 export class KyselyLockAdapter
-    implements ILockAdapter, IAsyncDeinitizable, IAsyncInitizable, IPrunable
+    implements
+        ILockAdapter,
+        IAsyncDeinitizable,
+        IAsyncInitizable,
+        IAsyncPrunable
 {
     private readonly trxCtx: Pick<
         ITransactionConnection<Kysely<KyselyLockTables>>,

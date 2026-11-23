@@ -40,7 +40,7 @@ export type MongodbLockAdapterSettings = {
      */
     database: TransactionAware<Db, ClientSession>;
     /**
-     * Name of the MongoDB collection used to store lock records.
+     * Name of the MongoDB collection used to store lock entries.
      * @default "lock"
      */
     collectionName?: string;

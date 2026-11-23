@@ -50,7 +50,7 @@ export type MongodbSharedLockAdapterSettings = {
      */
     database: TransactionAware<Db, ClientSession>;
     /**
-     * Name of the MongoDB collection used to store shared-lock records.
+     * Name of the MongoDB collection used to store shared-lock entries.
      * @default "sharedLock"
      */
     collectionName?: string;

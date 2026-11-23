@@ -7,12 +7,12 @@ import {
     resolveBackoffSettingsEnum,
     serializeBackoffSettingsEnum,
 } from "@/backoff-policies/implementations/_module-exports.js";
-import { rateLimiterFactoryLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/_module.js";
+import { LIMITER_POLICIES } from "@/rate-limiter/contracts/_module-exports.js";
 import {
-    LIMITER_POLICIES,
     resolveRateLimiterPolicySettings,
     serializeRateLimiterPolicySettingsEnum,
-} from "@/rate-limiter/implementations/policies/_module-exports.js";
+} from "@/rate-limiter/implementations/adapters/_shared/_module.js";
+import { rateLimiterFactoryLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/_module.js";
 
 import type { Redis, Result } from "ioredis";
 
@@ -20,8 +20,8 @@ import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_mo
 import type {
     IRateLimiterAdapter,
     IRateLimiterAdapterState,
+    RateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/contracts/_module-exports.js";
-import type { RateLimiterPolicySettingsEnum } from "@/rate-limiter/implementations/policies/_module-exports.js";
 
 /**
  * @internal
@@ -137,7 +137,7 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
             local currentDate = tonumber(ARGV[3]);
 
             local rateLimiter = rateLimiterFactory(backoffSettings, policySettings, currentDate)
-            local state = rateLimiter.getState(key)
+            local state = rateLimiter.storage.find(key)
             return cjson.encode(state)
             `,
         });
@@ -162,7 +162,16 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
             local currentDate = tonumber(ARGV[4]);
 
             local rateLimiter = rateLimiterFactory(backoffSettings, policySettings, currentDate)
-            local state = rateLimiter.updateState(key, limit)
+            local track = rateLimiter.stateManager.track(currentDate)
+            local updateState = rateLimiter.stateManager.updateState(limit, currentDate)
+            local state = rateLimiter.storage.update({
+                key = key,
+                update = function(prevState)
+                    local newState1 = track(prevState)
+                    local newState2 = updateState(newState1)
+                    return newState2
+                end
+            })
             return cjson.encode(state)
             `,
         });

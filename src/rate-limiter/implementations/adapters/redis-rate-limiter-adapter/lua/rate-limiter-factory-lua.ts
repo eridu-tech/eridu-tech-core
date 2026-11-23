@@ -1,15 +1,14 @@
-/**
+﻿/**
  * @module RateLimiter
  */
 import { BACKOFFS } from "@/backoff-policies/implementations/_module-exports.js";
 import { backoffsLua } from "@/backoff-policies/implementations/backoffs-lua.js";
+import { LIMITER_POLICIES } from "@/rate-limiter/contracts/_module-exports.js";
 import { fixedWindowLimiterLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/fixed-window-limiter-lua.js";
 import { rateLimiterPolicyLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/internal-rate-limiter-policy-lua.js";
-import { rateLimiterLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/rate-limiter-lua.js";
 import { rateLimiterStateManagerLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/rate-limiter-state-manager-lua.js";
 import { rateLimterStorageLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/rate-limiter-storage-lua.js";
 import { slidingWindowLimiterLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/sliding-window-limiter-lua.js";
-import { LIMITER_POLICIES } from "@/rate-limiter/implementations/policies/_module-exports.js";
 
 /**
  * @internal
@@ -23,15 +22,15 @@ local function backoffPolicyFactory(settings)
     if settings.type == "${BACKOFFS.CONSTANT}" then
         return constantBackoff(settings)
     end
-    
+
     if settings.type == "${BACKOFFS.EXPONENTIAL}" then
         return exponentialBackoff(settings)
     end
-    
+
     if settings.type == "${BACKOFFS.LINEAR}" then
         return linearBackoff(settings)
     end
-    
+
     if settings.type == "${BACKOFFS.POLYNOMIAL}" then
         return polynomialBackoff(settings)
     end
@@ -55,17 +54,19 @@ end
 ${rateLimiterPolicyLua}
 ${rateLimterStorageLua}
 ${rateLimiterStateManagerLua}
-${rateLimiterLua}
 
--- @param backoff Required<BackoffSettingsEnum>
--- @param policy Required<RateLimiterPolicySettingsEnum>
+-- Mirrors the MemoryRateLimiterAdapter constructor.
+-- @param backoffSettings Required<SerializedBackoffSettingsEnum>
+-- @param policySettings Required<RateLimiterPolicySettingsEnum>
 -- @param currentDate number
--- @return IRateLimiterAdapter
+-- @return { storage RateLimiterStorage, stateManager RateLimiterStateManager }
 local function rateLimiterFactory(backoffSettings, policySettings, currentDate)
     local rateLimiterPolicy = InternalRateLimiterPolicy(rateLimiterPolicyFactory(policySettings))
     local backoffPolicy = backoffPolicyFactory(backoffSettings)
-    local storage = RateLimiterStorage(rateLimiterPolicy, backoffPolicy, currentDate)
-    local stateManager = RateLimiterStateManager(rateLimiterPolicy, backoffPolicy)
-    return RateLimiter(storage, stateManager, currentDate)
+
+    return {
+        storage = RateLimiterStorage(rateLimiterPolicy, backoffPolicy, currentDate),
+        stateManager = RateLimiterStateManager(rateLimiterPolicy, backoffPolicy),
+    }
 end
 `;

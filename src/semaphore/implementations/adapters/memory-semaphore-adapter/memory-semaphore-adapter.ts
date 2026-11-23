@@ -11,7 +11,7 @@ import type {
 } from "@/semaphore/contracts/_module-exports.js";
 import type {
     IAsyncDeinitizable,
-    IPrunable,
+    IAsyncPrunable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -22,7 +22,7 @@ import type {
  * @group Adapters
  */
 export class MemorySemaphoreAdapter
-    implements ISemaphoreAdapter, IAsyncDeinitizable, IPrunable
+    implements ISemaphoreAdapter, IAsyncDeinitizable, IAsyncPrunable
 {
     /**
      * You can also provide an `Map`.

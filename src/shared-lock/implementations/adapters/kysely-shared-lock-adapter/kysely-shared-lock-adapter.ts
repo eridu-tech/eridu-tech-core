@@ -36,7 +36,7 @@ import type {
 import type {
     IAsyncDeinitizable,
     IAsyncInitizable,
-    IPrunable,
+    IAsyncPrunable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -121,7 +121,7 @@ export class KyselySharedLockAdapter
         ISharedLockAdapter,
         IAsyncDeinitizable,
         IAsyncInitizable,
-        IPrunable
+        IAsyncPrunable
 {
     private static toWriterLock(
         writerLock: KyselyWriterLockEntry | string | null,

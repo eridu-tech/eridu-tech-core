@@ -13,7 +13,7 @@ import type {
     IAsyncDeinitizable,
     IAsyncInitizable,
     InvocableFn,
-    IPrunable,
+    IAsyncPrunable,
     Promisable,
 } from "@/utilities/_module-exports.js";
 
@@ -69,7 +69,7 @@ export class KyselyCacheAdapter<TType = unknown>
         ICacheAdapter<TType>,
         IAsyncInitizable,
         IAsyncDeinitizable,
-        IPrunable
+        IAsyncPrunable
 {
     private readonly isMysql: boolean;
     private readonly serde: ISerde<string>;

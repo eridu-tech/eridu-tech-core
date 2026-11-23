@@ -34,7 +34,7 @@ import type {
 import type {
     IAsyncDeinitizable,
     IAsyncInitizable,
-    IPrunable,
+    IAsyncPrunable,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -104,7 +104,7 @@ export class KyselySemaphoreAdapter
         ISemaphoreAdapter,
         IAsyncDeinitizable,
         IAsyncInitizable,
-        IPrunable
+        IAsyncPrunable
 {
     private static toSlots(
         slots: KyselySemaphoreSlots,

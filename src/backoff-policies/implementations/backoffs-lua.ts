@@ -36,7 +36,7 @@ local function exponentialBackoff(settings)
     -- @param attempt number
     -- @return number
     return function(attempt)
-        local exponential = math.min(settings.maxDelay, settings.minDelay, math.pow(settings.multiplier, attempt))
+        local exponential = math.min(settings.maxDelay, settings.minDelay * math.pow(settings.multiplier, attempt))
         return withJitter({
             jitter = settings.jitter,
             value = exponential,

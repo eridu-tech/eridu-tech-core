@@ -47,7 +47,7 @@ export type MongodbCircuitBreakerStorageAdapterSettings = {
      */
     transactionContext: ITransactionContext<Db, ClientSession>;
     /**
-     * Name of the MongoDB collection used to store circuit-breaker state records.
+     * Name of the MongoDB collection used to store circuit-breaker state entries.
      * @default "circuitBreaker"
      */
     collectionName?: string;

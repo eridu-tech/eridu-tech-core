@@ -5,27 +5,25 @@
 import type { IRateLimiterFactory } from "@/rate-limiter/contracts/rate-limiter-factory.contract.js";
 
 /**
- * Rate limiter factory resolver contract for dynamically selecting rate limiter factory implementations.
- * Abstracts the factory selection logic, allowing different implementations to be swapped at runtime.
+ * Resolves a rate limiter factory by adapter name.
  *
- * This resolver selects a registered rate limiter adapter and returns a factory that creates rate limiters with it.
- * Useful when the rate limiter backend needs to vary (e.g., memory, database, or Redis).
+ * Keeps the adapter choice (memory, database, Redis, ...) out of call sites so the
+ * backend can vary at runtime.
  *
- * @template TAdapters - Union type of registered adapter names (e.g., "memory" | "database" | "redis")
+ * @template TAdapters - Registered adapter names
  *
  * IMPORT_PATH: `"eridu-tech/rate-limiter/contracts"`
  * @group Contracts
  */
 export type IRateLimiterFactoryResolver<TAdapters extends string = string> = {
     /**
-     * Retrieves a rate limiter factory for the selected adapter.
-     * If no adapter name is provided, uses the default registered adapter.
+     * Returns the factory registered for `adapterName`, or the default factory when omitted.
      *
-     * @param adapterName - The adapter name to use (optional). If not provided, uses the default adapter.
-     * @returns The requested rate limiter factory instance
+     * @param adapterName - Adapter to use; defaults to the registered default
+     * @returns The resolved rate limiter factory
      *
-     * @throws {UnregisteredAdapterError} If the specified factory name is not registered
-     * @throws {DefaultAdapterNotDefinedError} If no factory name is provided and no default factory is defined
+     * @throws {UnregisteredAdapterError} When `adapterName` is not registered
+     * @throws {DefaultAdapterNotDefinedError} When no name is given and no default is registered
      */
     use(adapterName?: TAdapters): IRateLimiterFactory;
 };
