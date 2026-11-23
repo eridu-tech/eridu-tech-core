@@ -235,6 +235,41 @@ describe(
                 expect(listenerFn).toHaveBeenCalledTimes(1);
                 expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
             });
+
+            test("Should dispatch to listeners on a different client", async () => {
+                const publishingAdapter = new PostgresEventBusAdapter({
+                    client: extraClient,
+                    serde,
+                });
+                try {
+                    const listeningClientListenerFn = vi.fn();
+                    const publishingClientListenerFn = vi.fn();
+                    await prefixlessAdapter.addListener(
+                        "event",
+                        listeningClientListenerFn,
+                    );
+                    await publishingAdapter.addListener(
+                        "event",
+                        publishingClientListenerFn,
+                    );
+
+                    await publishingAdapter.dispatch("event", {
+                        type: "event",
+                    });
+
+                    await delay(dispatchDelay);
+                    expect(listeningClientListenerFn).toHaveBeenCalledTimes(1);
+                    expect(listeningClientListenerFn).toHaveBeenCalledWith({
+                        type: "event",
+                    });
+                    expect(publishingClientListenerFn).toHaveBeenCalledTimes(1);
+                    expect(publishingClientListenerFn).toHaveBeenCalledWith({
+                        type: "event",
+                    });
+                } finally {
+                    await publishingAdapter.deInit();
+                }
+            });
         });
 
         describe("method: deInit", () => {
