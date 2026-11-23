@@ -137,7 +137,7 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
             local currentDate = tonumber(ARGV[3]);
 
             local rateLimiter = rateLimiterFactory(backoffSettings, policySettings, currentDate)
-            local state = rateLimiter.getState(key)
+            local state = rateLimiter.storage.find(key)
             return cjson.encode(state)
             `,
         });
@@ -162,7 +162,16 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
             local currentDate = tonumber(ARGV[4]);
 
             local rateLimiter = rateLimiterFactory(backoffSettings, policySettings, currentDate)
-            local state = rateLimiter.updateState(key, limit)
+            local track = rateLimiter.stateManager.track(currentDate)
+            local updateState = rateLimiter.stateManager.updateState(limit, currentDate)
+            local state = rateLimiter.storage.update({
+                key = key,
+                update = function(prevState)
+                    local newState1 = track(prevState)
+                    local newState2 = updateState(newState1)
+                    return newState2
+                end
+            })
             return cjson.encode(state)
             `,
         });
