@@ -19,6 +19,7 @@ import type {
 } from "@/event-bus/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
 import type { ITransactionHooks } from "@/transaction-context/contracts/_module-exports.js";
+import type { IAsyncDeinitizable } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `RedisPubSubEventBusAdapter`.
@@ -53,12 +54,15 @@ export type RedisPubSubEventBusAdapterSettings = {
  * IMPORT_PATH: `"eridu-tech/event-bus/redis-pub-sub-event-bus-adapter"`
  * @group Adapters
  */
-export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
+export class RedisPubSubEventBusAdapter
+    implements IEventBusAdapter, IAsyncDeinitizable
+{
     private readonly serde: ISerde<string>;
     private readonly dispatcherClient: Redis;
     private readonly listenerClient: Redis;
     private readonly eventEmitter = new EventEmitter();
     private readonly transactionHooks: ITransactionHooks;
+    private isDeInitialized = false;
 
     constructor(settings: RedisPubSubEventBusAdapterSettings) {
         const {
@@ -108,5 +112,24 @@ export class RedisPubSubEventBusAdapter implements IEventBusAdapter {
                 this.serde.serialize(eventData),
             );
         });
+    }
+
+    /**
+     * Removes all internal listeners, unsubscribes from every Redis channel and
+     * closes the dedicated listener connection.
+     */
+    async deInit(): Promise<void> {
+        if (this.isDeInitialized) {
+            return;
+        }
+        this.isDeInitialized = true;
+
+        this.eventEmitter.removeAllListeners();
+        this.listenerClient.removeListener("message", this.redisListener);
+        try {
+            await this.listenerClient.unsubscribe();
+        } finally {
+            await this.listenerClient.quit();
+        }
     }
 }

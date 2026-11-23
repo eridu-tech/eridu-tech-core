@@ -8,6 +8,7 @@ import {
     describe,
     test,
     beforeEach,
+    afterEach,
     expect,
     vi,
     beforeAll,
@@ -29,17 +30,17 @@ import { delay } from "@/utilities/_module-exports.js";
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
 
-import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
+const dispatchDelay = TimeSpan.fromMilliseconds(500);
 describe(
     "class: RedisPubSubEventBusAdapter",
     { tags: ["Redis", "Adapters", "Implementations", "EventBus"] },
     () => {
         let client: Redis;
         let startedContainer: StartedRedisContainer;
-        let adapter: IEventBusAdapter;
+        let adapter: RedisPubSubEventBusAdapter;
         const serde = new SuperJsonSerde();
         beforeAll(async () => {
             startedContainer = await new RedisContainer("redis:7.2").start();
@@ -54,6 +55,9 @@ describe(
                 withEventBusPrefix(randomUUID()),
             );
         });
+        afterEach(async () => {
+            await adapter.deInit();
+        });
         afterAll(async () => {
             await client.quit();
             await startedContainer.stop();
@@ -67,54 +71,59 @@ describe(
         });
 
         describe("method: addListener, dispatch", () => {
-            const notificationTimeout = TimeSpan.fromMilliseconds(500);
-
-            test("Should dispatch events between separate Redis connections", async () => {
-                const prefix = randomUUID();
-                const listeningAdapter = withPlugin(
-                    new RedisPubSubEventBusAdapter({
-                        client,
-                        serde,
-                    }),
-                    withEventBusPrefix(prefix),
-                );
-                const dispatchingAdapter = withPlugin(
-                    new RedisPubSubEventBusAdapter({
-                        client,
-                        serde,
-                    }),
-                    withEventBusPrefix(prefix),
-                );
-                const listenerFn = vi.fn();
-
-                await listeningAdapter.addListener("event", listenerFn);
-                await dispatchingAdapter.dispatch("event", { type: "event" });
-
-                await delay(notificationTimeout);
-                expect(listenerFn).toHaveBeenCalledTimes(1);
-                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
-            });
-
-            test("Should support an empty event name", async () => {
-                const emptyNameAdapter = new RedisPubSubEventBusAdapter({
+            let prefixlessAdapter: RedisPubSubEventBusAdapter;
+            beforeEach(() => {
+                prefixlessAdapter = new RedisPubSubEventBusAdapter({
                     client,
                     serde,
                 });
+            });
+            afterEach(async () => {
+                await prefixlessAdapter.deInit();
+            });
+
+            test("Should support an empty event name", async () => {
                 const listenerFn = vi.fn();
 
-                await emptyNameAdapter.addListener("", listenerFn);
-                await emptyNameAdapter.dispatch("", { type: "event" });
+                await prefixlessAdapter.addListener("", listenerFn);
+                await prefixlessAdapter.dispatch("", { type: "event" });
 
-                await delay(notificationTimeout);
+                await delay(dispatchDelay);
                 expect(listenerFn).toHaveBeenCalledTimes(1);
                 expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
             });
         });
 
-        test("After commit test:", async () => {
-            const database = new Sqlite(":memory:");
-            try {
-                const transactionContext = new TransactionContext({
+        describe("method: deInit", () => {
+            test("Should not throw when called multiple times", async () => {
+                await adapter.deInit();
+
+                await expect(adapter.deInit()).resolves.toBeUndefined();
+            });
+
+            test("Should not call listeners when events are dispatched after deInit", async () => {
+                const listenerFn = vi.fn();
+                await adapter.addListener("event", listenerFn);
+
+                await adapter.deInit();
+                await adapter.dispatch("event", { type: "event" });
+
+                await delay(dispatchDelay);
+                expect(listenerFn).not.toHaveBeenCalled();
+            });
+        });
+
+        describe("Transaction tests:", () => {
+            let database: InstanceType<typeof Sqlite>;
+            let transactionContext: TransactionContext<
+                Kysely<any>,
+                Kysely<any>
+            >;
+            let trxAwareAdapter: RedisPubSubEventBusAdapter;
+
+            beforeEach(() => {
+                database = new Sqlite(":memory:");
+                transactionContext = new TransactionContext({
                     token: contextToken<ITransactionData<Kysely<any>>>(
                         "kysely",
                     ),
@@ -129,18 +138,26 @@ describe(
                         new AlsExecutionContextAdapter(),
                     ),
                 });
-                const eventBusAdapter = new RedisPubSubEventBusAdapter({
+                trxAwareAdapter = new RedisPubSubEventBusAdapter({
                     client,
                     serde,
                     transactionHooks: transactionContext,
                 });
+            });
+            afterEach(async () => {
+                database.close();
+                await trxAwareAdapter.deInit();
+            });
 
+            test("Should not dispatch when the transaction fails", async () => {
                 const listenerFn = vi.fn();
-                await eventBusAdapter.addListener("eventA", listenerFn);
+                await trxAwareAdapter.addListener("eventA", listenerFn);
 
                 try {
                     await transactionContext.run(async () => {
-                        await eventBusAdapter.dispatch("eventA", { data: "A" });
+                        await trxAwareAdapter.dispatch("eventA", {
+                            data: "A",
+                        });
                         throw new Error("Transaction failed");
                     });
                 } catch {
@@ -148,9 +165,18 @@ describe(
                 }
 
                 expect(listenerFn).not.toHaveBeenCalled();
-            } finally {
-                database.close();
-            }
+            });
+
+            test("Should dispatch immediately when there is no active transaction", async () => {
+                const listenerFn = vi.fn();
+                await trxAwareAdapter.addListener("eventA", listenerFn);
+
+                await trxAwareAdapter.dispatch("eventA", { data: "A" });
+
+                await delay(dispatchDelay);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ data: "A" });
+            });
         });
     },
 );

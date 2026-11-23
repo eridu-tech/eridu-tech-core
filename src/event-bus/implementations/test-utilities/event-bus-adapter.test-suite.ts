@@ -40,7 +40,7 @@ export function eventBusAdapterTestSuite(
 
     let adapter: IEventBusAdapter;
 
-    const TTL = TimeSpan.fromMilliseconds(20);
+    const dispatchDelay = TimeSpan.fromMilliseconds(20);
 
     describe("IEventBusAdapter tests:", () => {
         beforeEach_(async () => {
@@ -52,7 +52,7 @@ export function eventBusAdapterTestSuite(
 
                 await adapter.addListener("event", handlerFn);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).not.toHaveBeenCalled();
             });
             test("Should be TestEvent when listener added and event is triggered", async () => {
@@ -63,7 +63,7 @@ export function eventBusAdapterTestSuite(
                     type: "event",
                 };
                 await adapter.dispatch("event", event);
-                await delay(TTL);
+                await delay(dispatchDelay);
 
                 expect(handlerFn).toHaveBeenCalledTimes(1);
                 expect(handlerFn).toHaveBeenCalledWith(event);
@@ -79,7 +79,7 @@ export function eventBusAdapterTestSuite(
 
                 await adapter.dispatch("event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).not.toHaveBeenCalled();
             });
             test("Should call the remaining listener when one of multiple listeners is removed", async () => {
@@ -95,7 +95,7 @@ export function eventBusAdapterTestSuite(
 
                 await adapter.dispatch("event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(firstHandlerFn).not.toHaveBeenCalled();
                 expect(secondHandlerFn).toHaveBeenCalledTimes(1);
                 expect(secondHandlerFn).toHaveBeenCalledWith(event);
@@ -114,7 +114,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.addListener("event", secondHandlerFn);
                 await adapter.dispatch("event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(firstHandlerFn).toHaveBeenCalledTimes(1);
                 expect(firstHandlerFn).toHaveBeenCalledWith(event);
                 expect(secondHandlerFn).toHaveBeenCalledTimes(1);
@@ -130,7 +130,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.addListener("event", handlerFn);
                 await adapter.dispatch("event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).toHaveBeenCalledTimes(2);
             });
             test("Should keep a shared listener registered for another event when removed from one event", async () => {
@@ -144,7 +144,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.removeListener("eventA", handlerFn);
                 await adapter.dispatch("eventB", eventB);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).toHaveBeenCalledTimes(1);
                 expect(handlerFn).toHaveBeenCalledWith(eventB);
             });
@@ -161,7 +161,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.addListener("event", firstHandlerFn);
                 await adapter.dispatch("event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(firstHandlerFn).toHaveBeenCalledTimes(1);
                 expect(secondHandlerFn).toHaveBeenCalledTimes(1);
             });
@@ -180,7 +180,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.addListener("event", thirdHandlerFn);
                 await adapter.dispatch("event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(firstHandlerFn).not.toHaveBeenCalled();
                 expect(secondHandlerFn).not.toHaveBeenCalled();
                 expect(thirdHandlerFn).toHaveBeenCalledTimes(1);
@@ -215,7 +215,7 @@ export function eventBusAdapterTestSuite(
                 }
                 await adapter.dispatch("event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 for (const handlerFn of handlerFns) {
                     expect(handlerFn).toHaveBeenCalledTimes(1);
                     expect(handlerFn).toHaveBeenCalledWith(event);
@@ -230,7 +230,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.addListener("eventA", handlerFn);
                 await adapter.dispatch("eventB", { type: "eventB" });
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).not.toHaveBeenCalled();
             });
             test("Should keep delivering another event after a listener is removed from one event", async () => {
@@ -245,7 +245,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.removeListener("eventA", firstHandlerFn);
                 await adapter.dispatch("eventB", eventB);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(firstHandlerFn).not.toHaveBeenCalled();
                 expect(secondHandlerFn).toHaveBeenCalledTimes(1);
                 expect(secondHandlerFn).toHaveBeenCalledWith(eventB);
@@ -265,7 +265,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.dispatch("eventA", eventA);
                 await adapter.dispatch("eventB", eventB);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(firstHandlerFn).toHaveBeenCalledTimes(1);
                 expect(firstHandlerFn).toHaveBeenCalledWith(eventA);
                 expect(secondHandlerFn).toHaveBeenCalledTimes(1);
@@ -292,7 +292,7 @@ export function eventBusAdapterTestSuite(
                     await adapter.dispatch(eventName, { eventName });
                 }
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 for (const { eventName, handlerFn } of handlers) {
                     expect(handlerFn).toHaveBeenCalledTimes(1);
                     expect(handlerFn).toHaveBeenCalledWith({ eventName });
@@ -307,7 +307,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.addListener("", handlerFn);
                 await adapter.dispatch("", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).toHaveBeenCalledTimes(1);
                 expect(handlerFn).toHaveBeenCalledWith(event);
             });
@@ -320,12 +320,12 @@ export function eventBusAdapterTestSuite(
                 await adapter.addListener("Event", handlerFn);
                 await adapter.dispatch("event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).not.toHaveBeenCalled();
 
                 await adapter.dispatch("Event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).toHaveBeenCalledTimes(1);
             });
             test("Should support event names longer than the Postgres channel name limit", async () => {
@@ -338,7 +338,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.addListener(eventName, handlerFn);
                 await adapter.dispatch(eventName, event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).toHaveBeenCalledTimes(1);
                 expect(handlerFn).toHaveBeenCalledWith(event);
             });
@@ -356,7 +356,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.dispatch("event", { type: "event" });
                 await adapter.addListener("event", handlerFn);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).not.toHaveBeenCalled();
             });
             test("Should call a listener once for each dispatch", async () => {
@@ -369,7 +369,7 @@ export function eventBusAdapterTestSuite(
                 await adapter.dispatch("event", event);
                 await adapter.dispatch("event", event);
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).toHaveBeenCalledTimes(2);
             });
             test("Should deliver sequential events in order", async () => {
@@ -381,7 +381,7 @@ export function eventBusAdapterTestSuite(
                     await adapter.dispatch("event", event);
                 }
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).toHaveBeenCalledTimes(events.length);
                 expect(handlerFn.mock.calls.map(([event]) => event)).toEqual(
                     events,
@@ -398,7 +398,7 @@ export function eventBusAdapterTestSuite(
                     events.map((event) => adapter.dispatch("event", event)),
                 );
 
-                await delay(TTL);
+                await delay(dispatchDelay);
                 expect(handlerFn).toHaveBeenCalledTimes(events.length);
                 expect(handlerFn.mock.calls.map(([event]) => event)).toEqual(
                     expect.arrayContaining(events),
@@ -412,15 +412,15 @@ export function eventBusAdapterTestSuite(
 
                 await adapter.addListener("event", handlerFn);
                 await adapter.dispatch("event", event);
-                await delay(TTL);
+                await delay(dispatchDelay);
 
                 await adapter.removeListener("event", handlerFn);
                 await adapter.dispatch("event", event);
-                await delay(TTL);
+                await delay(dispatchDelay);
 
                 await adapter.addListener("event", handlerFn);
                 await adapter.dispatch("event", event);
-                await delay(TTL);
+                await delay(dispatchDelay);
 
                 expect(handlerFn).toHaveBeenCalledTimes(2);
             });

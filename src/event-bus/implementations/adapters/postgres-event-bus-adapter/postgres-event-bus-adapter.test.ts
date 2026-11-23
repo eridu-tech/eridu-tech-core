@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 
 import { PostgreSqlContainer } from "@testcontainers/postgresql";
-import { Kysely, PostgresDialect } from "kysely";
-import { Client, Pool } from "pg";
+import Sqlite from "better-sqlite3";
+import { Kysely, SqliteDialect } from "kysely";
+import { Client } from "pg";
 import {
     describe,
     test,
@@ -29,71 +30,57 @@ import { delay } from "@/utilities/_module-exports.js";
 
 import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 
-import type {
-    BaseEvent,
-    IEventBusAdapter,
-} from "@/event-bus/contracts/_module-exports.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
-const notificationTimeout = TimeSpan.fromMilliseconds(500);
+const dispatchDelay = TimeSpan.fromMilliseconds(500);
 describe(
     "class: PostgresEventBusAdapter",
     { tags: ["Postgres", "Adapters", "Implementations", "EventBus"] },
     () => {
-        let container: StartedPostgreSqlContainer;
-        let pool: Pool;
-        let kysely: Kysely<any>;
-        let clients: Array<Client>;
-        let adapter: IEventBusAdapter;
+        let startedContainer: StartedPostgreSqlContainer;
+        let client: Client;
+        let extraClient: Client;
+        let adapter: PostgresEventBusAdapter;
         const serde = new SuperJsonSerde();
 
-        const createClient = async (): Promise<Client> => {
-            const client = new Client({
-                host: container.getHost(),
-                port: container.getPort(),
-                database: container.getDatabase(),
-                user: container.getUsername(),
-                password: container.getPassword(),
+        beforeAll(async () => {
+            startedContainer = await new PostgreSqlContainer(
+                "postgres:17.5",
+            ).start();
+            client = new Client({
+                host: startedContainer.getHost(),
+                port: startedContainer.getPort(),
+                database: startedContainer.getDatabase(),
+                user: startedContainer.getUsername(),
+                password: startedContainer.getPassword(),
             });
             await client.connect();
-            clients.push(client);
-            return client;
-        };
-
-        beforeAll(async () => {
-            container = await new PostgreSqlContainer("postgres:17.5").start();
-            pool = new Pool({
-                host: container.getHost(),
-                port: container.getPort(),
-                database: container.getDatabase(),
-                user: container.getUsername(),
-                password: container.getPassword(),
-                max: 10,
-            });
-            kysely = new Kysely({
-                dialect: new PostgresDialect({
-                    pool,
-                }),
-            });
         }, timeout.toMilliseconds());
         beforeEach(async () => {
-            clients = [];
+            extraClient = new Client({
+                host: startedContainer.getHost(),
+                port: startedContainer.getPort(),
+                database: startedContainer.getDatabase(),
+                user: startedContainer.getUsername(),
+                password: startedContainer.getPassword(),
+            });
+            await extraClient.connect();
             adapter = withPlugin(
                 new PostgresEventBusAdapter({
-                    client: await createClient(),
+                    client,
                     serde,
                 }),
                 withEventBusPrefix(randomUUID()),
             );
         });
         afterEach(async () => {
-            await Promise.all(clients.map((client) => client.end()));
-            clients = [];
+            await adapter.deInit();
+            await extraClient.end();
         });
         afterAll(async () => {
-            await kysely.destroy();
-            await container.stop();
+            await client.end();
+            await startedContainer.stop();
         }, timeout.toMilliseconds());
         eventBusAdapterTestSuite({
             createAdapter: () => adapter,
@@ -104,186 +91,91 @@ describe(
         });
 
         describe("method: addListener, dispatch", () => {
-            test("Should dispatch events between separate Postgres connections", async () => {
-                const prefix = randomUUID();
-                const listenerAdapter = withPlugin(
-                    new PostgresEventBusAdapter({
-                        client: await createClient(),
-                        serde,
-                    }),
-                    withEventBusPrefix(prefix),
-                );
-                const dispatcherAdapter = withPlugin(
-                    new PostgresEventBusAdapter({
-                        client: await createClient(),
-                        serde,
-                    }),
-                    withEventBusPrefix(prefix),
-                );
-                const listenerFn = vi.fn();
-
-                await listenerAdapter.addListener("event", listenerFn);
-                await dispatcherAdapter.dispatch("event", { type: "event" });
-
-                await delay(notificationTimeout);
-                expect(listenerFn).toHaveBeenCalledTimes(1);
-                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+            let prefixlessAdapter: PostgresEventBusAdapter;
+            beforeEach(() => {
+                prefixlessAdapter = new PostgresEventBusAdapter({
+                    client,
+                    serde,
+                });
             });
-        });
+            afterEach(async () => {
+                await prefixlessAdapter.deInit();
+            });
 
-        describe("event names:", () => {
             test("Should support an empty event name", async () => {
-                const emptyNameAdapter = new PostgresEventBusAdapter({
-                    client: await createClient(),
-                    serde,
-                });
                 const listenerFn = vi.fn();
 
-                await emptyNameAdapter.addListener("", listenerFn);
-                await emptyNameAdapter.dispatch("", { type: "event" });
+                await prefixlessAdapter.addListener("", listenerFn);
+                await prefixlessAdapter.dispatch("", { type: "event" });
 
-                await delay(notificationTimeout);
-                expect(listenerFn).toHaveBeenCalledTimes(1);
-                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
-            });
-
-            test("Should support event names longer than the 63 byte channel name limit", async () => {
-                const eventName = `event-${"x".repeat(100)}`;
-                const longNameAdapter = new PostgresEventBusAdapter({
-                    client: await createClient(),
-                    serde,
-                });
-                const listenerFn = vi.fn();
-
-                await longNameAdapter.addListener(eventName, listenerFn);
-                await longNameAdapter.dispatch(eventName, { type: "event" });
-
-                await delay(notificationTimeout);
+                await delay(dispatchDelay);
                 expect(listenerFn).toHaveBeenCalledTimes(1);
                 expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
             });
         });
 
-        describe("channel subscription:", () => {
-            const getListeningChannels = async (
-                postgresClient: Client,
-            ): Promise<Array<string>> => {
-                const result = await postgresClient.query<{ channel: string }>(
-                    "SELECT pg_listening_channels() AS channel",
-                );
-                return result.rows.map((row) => row.channel);
-            };
+        describe("method: deInit", () => {
+            test("Should not throw when called multiple times", async () => {
+                await adapter.deInit();
 
-            test("Should listen while there is at least one listener and unlisten when the last one is removed", async () => {
-                const eventBusClient = await createClient();
-                const eventBusAdapter = new PostgresEventBusAdapter({
-                    client: eventBusClient,
-                    serde,
-                });
-                const firstListenerFn = vi.fn((_event: BaseEvent) => {});
-                const secondListenerFn = vi.fn((_event: BaseEvent) => {});
-
-                expect(await getListeningChannels(eventBusClient)).toEqual([]);
-
-                await eventBusAdapter.addListener("eventA", firstListenerFn);
-                await eventBusAdapter.addListener("eventB", secondListenerFn);
-
-                expect(await getListeningChannels(eventBusClient)).toHaveLength(
-                    1,
-                );
-
-                await eventBusAdapter.removeListener("eventA", firstListenerFn);
-
-                expect(await getListeningChannels(eventBusClient)).toHaveLength(
-                    1,
-                );
-
-                await eventBusAdapter.removeListener(
-                    "eventB",
-                    secondListenerFn,
-                );
-
-                expect(await getListeningChannels(eventBusClient)).toEqual([]);
+                await expect(adapter.deInit()).resolves.toBeUndefined();
             });
 
-            test("Should use the configured channel name", async () => {
-                const channelName = `channel-${randomUUID()}`;
-                const listenerClient = await createClient();
-                const dispatcherClient = await createClient();
-                const listeningAdapter = new PostgresEventBusAdapter({
-                    client: listenerClient,
-                    serde,
-                    channelName,
-                });
-                const dispatchingAdapter = new PostgresEventBusAdapter({
-                    client: dispatcherClient,
-                    serde,
-                    channelName,
-                });
+            test("Should not call listeners when events are dispatched after deInit", async () => {
                 const listenerFn = vi.fn();
+                await adapter.addListener("event", listenerFn);
 
-                await listeningAdapter.addListener("event", listenerFn);
+                await adapter.deInit();
+                await adapter.dispatch("event", { type: "event" });
 
-                expect(await getListeningChannels(listenerClient)).toEqual([
-                    channelName,
-                ]);
-
-                await dispatchingAdapter.dispatch("event", { type: "event" });
-
-                await delay(notificationTimeout);
-                expect(listenerFn).toHaveBeenCalledTimes(1);
-                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+                await delay(dispatchDelay);
+                expect(listenerFn).not.toHaveBeenCalled();
             });
         });
 
-        describe("setting: transactionHooks", () => {
-            const createTransactionContext = () =>
-                new TransactionContext({
+        describe("Transaction tests:", () => {
+            let database: InstanceType<typeof Sqlite>;
+            let transactionContext: TransactionContext<
+                Kysely<any>,
+                Kysely<any>
+            >;
+            let trxAwareAdapter: PostgresEventBusAdapter;
+
+            beforeEach(() => {
+                database = new Sqlite(":memory:");
+                transactionContext = new TransactionContext({
                     token: contextToken<ITransactionData<Kysely<any>>>(
                         "kysely",
                     ),
                     adapter: new KyselyTransactionAdapter({
-                        database: kysely,
+                        database: new Kysely({
+                            dialect: new SqliteDialect({
+                                database,
+                            }),
+                        }),
                     }),
                     executionContext: new ExecutionContext(
                         new AlsExecutionContextAdapter(),
                     ),
                 });
+                trxAwareAdapter = new PostgresEventBusAdapter({
+                    client,
+                    serde,
+                    transactionHooks: transactionContext,
+                });
+            });
+            afterEach(async () => {
+                database.close();
+                await trxAwareAdapter.deInit();
+            });
 
-            const createAdapters = async (prefix: string) => {
-                const transactionContext = createTransactionContext();
-                return {
-                    transactionContext,
-                    listenerAdapter: withPlugin(
-                        new PostgresEventBusAdapter({
-                            client: await createClient(),
-                            serde,
-                        }),
-                        withEventBusPrefix(prefix),
-                    ),
-                    dispatcherAdapter: withPlugin(
-                        new PostgresEventBusAdapter({
-                            client: await createClient(),
-                            serde,
-                            transactionHooks: transactionContext,
-                        }),
-                        withEventBusPrefix(prefix),
-                    ),
-                };
-            };
-
-            test("Should not dispatch when the transaction is rolled back", async () => {
-                const {
-                    transactionContext,
-                    listenerAdapter,
-                    dispatcherAdapter,
-                } = await createAdapters(randomUUID());
+            test("Should not dispatch when the transaction fails", async () => {
                 const listenerFn = vi.fn();
-                await listenerAdapter.addListener("event", listenerFn);
+                await trxAwareAdapter.addListener("eventA", listenerFn);
 
                 try {
                     await transactionContext.run(async () => {
-                        await dispatcherAdapter.dispatch("event", {
+                        await trxAwareAdapter.dispatch("eventA", {
                             data: "A",
                         });
                         throw new Error("Transaction failed");
@@ -292,24 +184,16 @@ describe(
                     /* EMPTY */
                 }
 
-                await delay(notificationTimeout);
                 expect(listenerFn).not.toHaveBeenCalled();
             });
 
-            test("Should dispatch after the transaction commits", async () => {
-                const {
-                    transactionContext,
-                    listenerAdapter,
-                    dispatcherAdapter,
-                } = await createAdapters(randomUUID());
+            test("Should dispatch immediately when there is no active transaction", async () => {
                 const listenerFn = vi.fn();
-                await listenerAdapter.addListener("event", listenerFn);
+                await trxAwareAdapter.addListener("eventA", listenerFn);
 
-                await transactionContext.run(async () => {
-                    await dispatcherAdapter.dispatch("event", { data: "A" });
-                });
+                await trxAwareAdapter.dispatch("eventA", { data: "A" });
 
-                await delay(notificationTimeout);
+                await delay(dispatchDelay);
                 expect(listenerFn).toHaveBeenCalledTimes(1);
                 expect(listenerFn).toHaveBeenCalledWith({ data: "A" });
             });

@@ -20,6 +20,7 @@ import type {
 } from "@/event-bus/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
 import type { ITransactionHooks } from "@/transaction-context/contracts/_module-exports.js";
+import type { IAsyncDeinitizable } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `PostgresEventBusAdapter`.
@@ -72,13 +73,16 @@ type PostgresEventBusMessage = {
  * IMPORT_PATH: `"eridu-tech/event-bus/postgres-event-bus-adapter"`
  * @group Adapters
  */
-export class PostgresEventBusAdapter implements IEventBusAdapter {
+export class PostgresEventBusAdapter
+    implements IEventBusAdapter, IAsyncDeinitizable
+{
     private readonly serde: ISerde<string>;
     private readonly client: Client;
     private readonly eventEmitter = new EventEmitter();
     private readonly transactionHooks: ITransactionHooks;
     private static readonly DEFAULT_CHANNEL_NAME = "eridu_tech_event_bus";
     private readonly channelName: string;
+    private isDeInitialized = false;
 
     private static isPostgresEventBusMessage(
         value: unknown,
@@ -171,5 +175,25 @@ export class PostgresEventBusAdapter implements IEventBusAdapter {
                 }),
             ]);
         });
+    }
+
+    /**
+     * Removes all internal listeners, detaches the notification handler and
+     * stops listening on the configured channel.
+     */
+    async deInit(): Promise<void> {
+        if (this.isDeInitialized) {
+            return;
+        }
+        this.isDeInitialized = true;
+
+        const isListening = this.totalListenerCount > 0;
+        this.eventEmitter.removeAllListeners();
+        this.client.removeListener("notification", this.postgresListener);
+        if (isListening) {
+            await this.client.query(
+                `UNLISTEN ${this.client.escapeIdentifier(this.channelName)}`,
+            );
+        }
     }
 }
