@@ -1,0 +1,230 @@
+import { randomUUID } from "node:crypto";
+
+import Sqlite from "better-sqlite3";
+import { Kysely, SqliteDialect } from "kysely";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+
+import {
+    BREAKER_POLICIES,
+    CIRCUIT_BREAKER_STATE,
+} from "@/circuit-breaker/contracts/_module-exports.js";
+import { KyselyCircuitBreakerAdapter } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/_module-exports.js";
+import { parseCircuitBreakerData } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/kysely-circuit-breaker-entry-document.js";
+import { countBreakerTestSuite } from "@/circuit-breaker/implementations/test-utilities/_module-exports.js";
+import { AlsExecutionContextAdapter } from "@/execution-context/implementations/adapters/als-execution-context-adapter/_module-exports.js";
+import { ExecutionContext } from "@/execution-context/implementations/derivables/_module-exports.js";
+import { WithKyselyTableName } from "@/test-utilities/functions/_module.js";
+import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/_module-exports.js";
+import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
+
+import type { Database } from "better-sqlite3";
+import type { ColumnMetadata, TableMetadata } from "kysely";
+
+import type { CircuitBreakerStateEnum } from "@/circuit-breaker/contracts/_module-exports.js";
+import type { KyselyCircuitBreakerTables } from "@/circuit-breaker/implementations/adapters/kysely-circuit-breaker-adapter/_module-exports.js";
+import type { ITransactionContext } from "@/transaction-context/contracts/_module-exports.js";
+
+describe(
+    "sqlite count-breaker class: KyselyCircuitBreakerAdapter",
+    { tags: ["Memory", "Adapters", "Implementations", "CircuitBreaker"] },
+    () => {
+        let client: Database;
+        let database: Kysely<KyselyCircuitBreakerTables>;
+        let tableNames: Record<keyof KyselyCircuitBreakerTables, string>;
+        let adapter: KyselyCircuitBreakerAdapter;
+
+        beforeEach(() => {
+            vi.clearAllMocks();
+            vi.resetAllMocks();
+            tableNames = {
+                circuitBreaker: randomUUID(),
+            };
+            client = new Sqlite(":memory:");
+            database = new Kysely<KyselyCircuitBreakerTables>({
+                dialect: new SqliteDialect({
+                    database: client,
+                }),
+                plugins: [new WithKyselyTableName(tableNames)],
+            });
+            adapter = new KyselyCircuitBreakerAdapter({
+                database,
+                backoffPolicy: countBreakerTestSuite.backoffPolicySettings,
+                circuitBreakerPolicy:
+                    countBreakerTestSuite.circuitBreakerPolicySettings,
+            });
+        });
+        afterEach(() => {
+            client.close();
+        });
+
+        async function resolveStoredData(
+            key: string,
+        ): Promise<CircuitBreakerStateEnum> {
+            const row = await database
+                .selectFrom("circuitBreaker")
+                .where("circuitBreaker.key", "=", key)
+                .select(["circuitBreaker.data"])
+                .executeTakeFirst();
+            if (row === undefined) {
+                throw new Error("Expected a stored circuit breaker row");
+            }
+            return parseCircuitBreakerData(row.data);
+        }
+
+        countBreakerTestSuite({
+            createAdapter: async () => {
+                await adapter.init();
+                return adapter;
+            },
+            beforeEach,
+            describe,
+            expect,
+            test,
+        });
+
+        describe("Document tests:", () => {
+            test("Should keep the metrics of the tracked calls", async () => {
+                await adapter.init();
+                const key = "a";
+
+                await adapter.trackFailure(key);
+                await adapter.trackFailure(key);
+                await adapter.trackSuccess(key);
+
+                const data = await resolveStoredData(key);
+
+                expect(data.type).toBe(BREAKER_POLICIES.COUNT);
+                expect(data.state.type).toBe(CIRCUIT_BREAKER_STATE.CLOSED);
+                if (data.state.type !== CIRCUIT_BREAKER_STATE.CLOSED) {
+                    throw new Error("Expected a closed breaker state");
+                }
+                expect(data.state.metrics).toEqual({
+                    samples: [false, false, true],
+                });
+            });
+        });
+
+        describe("method: init", () => {
+            test("Should create circuit breaker table", async () => {
+                await adapter.init();
+
+                const tables = await database.introspection.getTables();
+
+                expect(tables).toContainEqual(
+                    expect.objectContaining<Partial<TableMetadata>>({
+                        name: tableNames.circuitBreaker,
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
+                        columns: expect.arrayContaining<
+                            Partial<ColumnMetadata>
+                        >([
+                            expect.objectContaining<Partial<ColumnMetadata>>({
+                                name: "key",
+                                dataType: "varchar(255)",
+                                isNullable: false,
+                                hasDefaultValue: false,
+                            }),
+                            expect.objectContaining<Partial<ColumnMetadata>>({
+                                name: "data",
+                                dataType: "json",
+                                isNullable: false,
+                                hasDefaultValue: false,
+                            }),
+                            expect.objectContaining<Partial<ColumnMetadata>>({
+                                name: "lastTransitionFrom",
+                                dataType: "varchar(255)",
+                                isNullable: true,
+                                hasDefaultValue: false,
+                            }),
+                        ] as Array<Partial<ColumnMetadata>>),
+                    }),
+                );
+            });
+            test("Should not throw error when called multiple times", async () => {
+                await adapter.init();
+
+                const promise = adapter.init();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+        });
+        describe("method: deInit", () => {
+            test("Should remove circuit breaker table", async () => {
+                await adapter.init();
+                await adapter.deInit();
+
+                const tables = await database.introspection.getTables();
+
+                expect(tables).not.toContainEqual(
+                    expect.objectContaining<Partial<TableMetadata>>({
+                        name: tableNames.circuitBreaker,
+                    }),
+                );
+            });
+            test("Should not throw error when called multiple times", async () => {
+                await adapter.init();
+                await adapter.deInit();
+
+                const promise = adapter.deInit();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+            test("Should not throw error when called before init", async () => {
+                const promise = adapter.deInit();
+
+                await expect(promise).resolves.toBeUndefined();
+            });
+        });
+        describe("Transaction tests:", () => {
+            let trxAdapter: KyselyCircuitBreakerAdapter;
+            let trxCtx: ITransactionContext<Kysely<KyselyCircuitBreakerTables>>;
+            beforeEach(async () => {
+                trxCtx = new TransactionContext({
+                    executionContext: new ExecutionContext(
+                        new AlsExecutionContextAdapter(),
+                    ),
+                    adapter: new KyselyTransactionAdapter({
+                        database,
+                    }),
+                });
+                trxAdapter = new KyselyCircuitBreakerAdapter({
+                    database: trxCtx,
+                    backoffPolicy: countBreakerTestSuite.backoffPolicySettings,
+                    circuitBreakerPolicy:
+                        countBreakerTestSuite.circuitBreakerPolicySettings,
+                });
+                await trxAdapter.init();
+            });
+            test("Should not persist changes when the transaction fails", async () => {
+                try {
+                    await trxCtx.run(async () => {
+                        await trxAdapter.trackFailure("a");
+                        await trxAdapter.updateState("b");
+                        throw new Error("Transaction failure");
+                    });
+                } catch {
+                    /* EMPTY */
+                }
+
+                const rows = await database
+                    .selectFrom("circuitBreaker")
+                    .select("circuitBreaker.key")
+                    .execute();
+
+                expect(rows.length).toBe(0);
+            });
+            test("Should persist changes when the transaction succeeds", async () => {
+                await trxCtx.run(async () => {
+                    await trxAdapter.trackFailure("a");
+                    await trxAdapter.updateState("b");
+                });
+
+                const rows = await database
+                    .selectFrom("circuitBreaker")
+                    .select("circuitBreaker.key")
+                    .execute();
+
+                expect(rows.length).toBe(2);
+            });
+        });
+    },
+);
