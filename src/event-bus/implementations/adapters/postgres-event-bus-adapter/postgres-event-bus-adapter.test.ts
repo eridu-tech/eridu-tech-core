@@ -29,7 +29,10 @@ import { delay } from "@/utilities/_module-exports.js";
 
 import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 
-import type { IEventBusAdapter } from "@/event-bus/contracts/_module-exports.js";
+import type {
+    BaseEvent,
+    IEventBusAdapter,
+} from "@/event-bus/contracts/_module-exports.js";
 import type { ITransactionData } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
 const timeout = TimeSpan.fromMinutes(2);
@@ -121,6 +124,111 @@ describe(
 
                 await listenerAdapter.addListener("event", listenerFn);
                 await dispatcherAdapter.dispatch("event", { type: "event" });
+
+                await delay(notificationTimeout);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+            });
+        });
+
+        describe("event names:", () => {
+            test("Should support an empty event name", async () => {
+                const emptyNameAdapter = new PostgresEventBusAdapter({
+                    client: await createClient(),
+                    serde,
+                });
+                const listenerFn = vi.fn();
+
+                await emptyNameAdapter.addListener("", listenerFn);
+                await emptyNameAdapter.dispatch("", { type: "event" });
+
+                await delay(notificationTimeout);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+            });
+
+            test("Should support event names longer than the 63 byte channel name limit", async () => {
+                const eventName = `event-${"x".repeat(100)}`;
+                const longNameAdapter = new PostgresEventBusAdapter({
+                    client: await createClient(),
+                    serde,
+                });
+                const listenerFn = vi.fn();
+
+                await longNameAdapter.addListener(eventName, listenerFn);
+                await longNameAdapter.dispatch(eventName, { type: "event" });
+
+                await delay(notificationTimeout);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+            });
+        });
+
+        describe("channel subscription:", () => {
+            const getListeningChannels = async (
+                postgresClient: Client,
+            ): Promise<Array<string>> => {
+                const result = await postgresClient.query<{ channel: string }>(
+                    "SELECT pg_listening_channels() AS channel",
+                );
+                return result.rows.map((row) => row.channel);
+            };
+
+            test("Should listen while there is at least one listener and unlisten when the last one is removed", async () => {
+                const eventBusClient = await createClient();
+                const eventBusAdapter = new PostgresEventBusAdapter({
+                    client: eventBusClient,
+                    serde,
+                });
+                const firstListenerFn = vi.fn((_event: BaseEvent) => {});
+                const secondListenerFn = vi.fn((_event: BaseEvent) => {});
+
+                expect(await getListeningChannels(eventBusClient)).toEqual([]);
+
+                await eventBusAdapter.addListener("eventA", firstListenerFn);
+                await eventBusAdapter.addListener("eventB", secondListenerFn);
+
+                expect(await getListeningChannels(eventBusClient)).toHaveLength(
+                    1,
+                );
+
+                await eventBusAdapter.removeListener("eventA", firstListenerFn);
+
+                expect(await getListeningChannels(eventBusClient)).toHaveLength(
+                    1,
+                );
+
+                await eventBusAdapter.removeListener(
+                    "eventB",
+                    secondListenerFn,
+                );
+
+                expect(await getListeningChannels(eventBusClient)).toEqual([]);
+            });
+
+            test("Should use the configured channel name", async () => {
+                const channelName = `channel-${randomUUID()}`;
+                const listenerClient = await createClient();
+                const dispatcherClient = await createClient();
+                const listeningAdapter = new PostgresEventBusAdapter({
+                    client: listenerClient,
+                    serde,
+                    channelName,
+                });
+                const dispatchingAdapter = new PostgresEventBusAdapter({
+                    client: dispatcherClient,
+                    serde,
+                    channelName,
+                });
+                const listenerFn = vi.fn();
+
+                await listeningAdapter.addListener("event", listenerFn);
+
+                expect(await getListeningChannels(listenerClient)).toEqual([
+                    channelName,
+                ]);
+
+                await dispatchingAdapter.dispatch("event", { type: "event" });
 
                 await delay(notificationTimeout);
                 expect(listenerFn).toHaveBeenCalledTimes(1);

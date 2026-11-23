@@ -25,6 +25,7 @@ import { SuperJsonSerde } from "@/serde/implementations/super-json-serde/_module
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import { KyselyTransactionAdapter } from "@/transaction-context/implementations/adapters/kysely-transaction-adapter/kysely-transaction-adapter.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
+import { delay } from "@/utilities/_module-exports.js";
 
 import type { StartedRedisContainer } from "@testcontainers/redis";
 
@@ -63,6 +64,51 @@ describe(
             beforeEach,
             expect,
             describe,
+        });
+
+        describe("method: addListener, dispatch", () => {
+            const notificationTimeout = TimeSpan.fromMilliseconds(500);
+
+            test("Should dispatch events between separate Redis connections", async () => {
+                const prefix = randomUUID();
+                const listeningAdapter = withPlugin(
+                    new RedisPubSubEventBusAdapter({
+                        client,
+                        serde,
+                    }),
+                    withEventBusPrefix(prefix),
+                );
+                const dispatchingAdapter = withPlugin(
+                    new RedisPubSubEventBusAdapter({
+                        client,
+                        serde,
+                    }),
+                    withEventBusPrefix(prefix),
+                );
+                const listenerFn = vi.fn();
+
+                await listeningAdapter.addListener("event", listenerFn);
+                await dispatchingAdapter.dispatch("event", { type: "event" });
+
+                await delay(notificationTimeout);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+            });
+
+            test("Should support an empty event name", async () => {
+                const emptyNameAdapter = new RedisPubSubEventBusAdapter({
+                    client,
+                    serde,
+                });
+                const listenerFn = vi.fn();
+
+                await emptyNameAdapter.addListener("", listenerFn);
+                await emptyNameAdapter.dispatch("", { type: "event" });
+
+                await delay(notificationTimeout);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+            });
         });
 
         test("After commit test:", async () => {

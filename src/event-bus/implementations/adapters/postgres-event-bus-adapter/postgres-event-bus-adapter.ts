@@ -40,6 +40,14 @@ export type PostgresEventBusAdapterSettings = {
     serde: ISerde<string>;
 
     /**
+     * The PostgreSQL channel name used for `LISTEN`/`NOTIFY` messaging.
+     * Must be a non-empty PostgreSQL identifier of at most 63 bytes.
+     *
+     * @default "eridu_tech_event_bus"
+     */
+    channelName?: string;
+
+    /**
      * The {@link ITransactionHooks | `ITransactionHooks`} that dispatches events after the
      * active transaction commits. Without it, events are dispatched immediately.
      *
@@ -49,7 +57,16 @@ export type PostgresEventBusAdapterSettings = {
 };
 
 /**
- * The `PostgresEventBusAdapter` uses PostgreSQL's `LISTEN`/`NOTIFY` mechanism to dispatch events.
+ * @internal
+ */
+type PostgresEventBusMessage = {
+    eventName: string;
+    eventData: BaseEvent;
+};
+
+/**
+ * The `PostgresEventBusAdapter` uses a single PostgreSQL `LISTEN`/`NOTIFY` channel to dispatch events.
+ * The channel is only listened to while the adapter has at least one listener, and every notification carries the event name alongside the event payload.
  * To utilize the `PostgresEventBusAdapter`, you must install the [`"pg"`](https://www.npmjs.com/package/pg) package and supply a {@link ISerde | `ISerde`}, with a {@link SuperJsonSerde | `SuperJsonSerde`}.
  *
  * IMPORT_PATH: `"eridu-tech/event-bus/postgres-event-bus-adapter"`
@@ -60,40 +77,71 @@ export class PostgresEventBusAdapter implements IEventBusAdapter {
     private readonly client: Client;
     private readonly eventEmitter = new EventEmitter();
     private readonly transactionHooks: ITransactionHooks;
+    private static readonly DEFAULT_CHANNEL_NAME = "eridu_tech_event_bus";
+    private readonly channelName: string;
+
+    private static isPostgresEventBusMessage(
+        value: unknown,
+    ): value is PostgresEventBusMessage {
+        if (typeof value !== "object" || value === null) {
+            return false;
+        }
+        const { eventName, eventData } = value as {
+            eventName?: unknown;
+            eventData?: unknown;
+        };
+        return (
+            typeof eventName === "string" &&
+            typeof eventData === "object" &&
+            eventData !== null
+        );
+    }
 
     constructor(settings: PostgresEventBusAdapterSettings) {
         const {
             client,
             serde,
+            channelName = PostgresEventBusAdapter.DEFAULT_CHANNEL_NAME,
             transactionHooks = TransactionContext.noOp(null),
         } = settings;
 
         this.transactionHooks = transactionHooks;
+        this.channelName = channelName;
         this.client = client;
         this.serde = serde;
 
         this.client.on("notification", this.postgresListener);
     }
 
-    private postgresListener = (notification: Notification): void => {
-        if (notification.payload === undefined) {
-            throw UnexpectedError.create(
-                "Received a Postgres notification without a payload.",
-            );
+    private get listenerCount(): number {
+        let count = 0;
+        for (const eventName of this.eventEmitter.eventNames()) {
+            count += this.eventEmitter.listenerCount(eventName);
         }
-        this.eventEmitter.emit(
-            notification.channel,
-            this.serde.deserialize(notification.payload),
-        );
+        return count;
+    }
+
+    private postgresListener = (notification: Notification): void => {
+        if (notification.channel !== this.channelName) {
+            return;
+        }
+        if (notification.payload === undefined) {
+            throw UnexpectedError.create("!!__MESSAGE__!!");
+        }
+        const message = this.serde.deserialize<unknown>(notification.payload);
+        if (!PostgresEventBusAdapter.isPostgresEventBusMessage(message)) {
+            throw UnexpectedError.create("!!__MESSAGE__!!");
+        }
+        this.eventEmitter.emit(message.eventName, message.eventData);
     };
 
     async addListener(
         eventName: string,
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
-        if (this.eventEmitter.listenerCount(eventName) === 0) {
+        if (this.listenerCount === 0) {
             await this.client.query(
-                `LISTEN ${this.client.escapeIdentifier(eventName)}`,
+                `LISTEN ${this.client.escapeIdentifier(this.channelName)}`,
             );
         }
 
@@ -106,9 +154,9 @@ export class PostgresEventBusAdapter implements IEventBusAdapter {
     ): Promise<void> {
         this.eventEmitter.off(eventName, listener);
 
-        if (this.eventEmitter.listenerCount(eventName) === 0) {
+        if (this.listenerCount === 0) {
             await this.client.query(
-                `UNLISTEN ${this.client.escapeIdentifier(eventName)}`,
+                `UNLISTEN ${this.client.escapeIdentifier(this.channelName)}`,
             );
         }
     }
@@ -116,8 +164,11 @@ export class PostgresEventBusAdapter implements IEventBusAdapter {
     dispatch(eventName: string, eventData: BaseEvent): Promise<void> {
         return this.transactionHooks.afterCommit(async () => {
             await this.client.query("SELECT pg_notify($1, $2)", [
-                eventName,
-                this.serde.serialize(eventData),
+                this.channelName,
+                this.serde.serialize({
+                    eventName,
+                    eventData,
+                }),
             ]);
         });
     }
