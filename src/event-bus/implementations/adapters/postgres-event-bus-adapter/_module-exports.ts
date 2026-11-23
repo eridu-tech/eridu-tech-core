@@ -1,1 +1,1 @@
-export * from "@/event-bus/implementations/adapters/redis-pub-sub-event-bus-adapter/redis-pub-sub-event-bus-adapter.js";
+export * from "@/event-bus/implementations/adapters/postgres-event-bus-adapter/postgres-event-bus-adapter.js";

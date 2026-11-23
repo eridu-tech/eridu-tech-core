@@ -251,6 +251,10 @@
             "types": "./dist/event-bus/implementations/adapters/no-op-event-bus-adapter/_module-exports.d.ts",
             "import": "./dist/event-bus/implementations/adapters/no-op-event-bus-adapter/_module-exports.js"
         },
+        "./event-bus/postgres-event-bus-adapter": {
+            "types": "./dist/event-bus/implementations/adapters/postgres-event-bus-adapter/_module-exports.d.ts",
+            "import": "./dist/event-bus/implementations/adapters/postgres-event-bus-adapter/_module-exports.js"
+        },
         "./event-bus/redis-pub-sub-event-bus-adapter": {
             "types": "./dist/event-bus/implementations/adapters/redis-pub-sub-event-bus-adapter/_module-exports.d.ts",
             "import": "./dist/event-bus/implementations/adapters/redis-pub-sub-event-bus-adapter/_module-exports.js"
