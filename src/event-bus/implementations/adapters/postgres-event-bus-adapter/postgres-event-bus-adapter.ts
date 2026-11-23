@@ -113,7 +113,7 @@ export class PostgresEventBusAdapter implements IEventBusAdapter {
         this.client.on("notification", this.postgresListener);
     }
 
-    private get listenerCount(): number {
+    private get totalListenerCount(): number {
         let count = 0;
         for (const eventName of this.eventEmitter.eventNames()) {
             count += this.eventEmitter.listenerCount(eventName);
@@ -139,7 +139,7 @@ export class PostgresEventBusAdapter implements IEventBusAdapter {
         eventName: string,
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
-        if (this.listenerCount === 0) {
+        if (this.totalListenerCount === 0) {
             await this.client.query(
                 `LISTEN ${this.client.escapeIdentifier(this.channelName)}`,
             );
@@ -154,7 +154,7 @@ export class PostgresEventBusAdapter implements IEventBusAdapter {
     ): Promise<void> {
         this.eventEmitter.off(eventName, listener);
 
-        if (this.listenerCount === 0) {
+        if (this.totalListenerCount === 0) {
             await this.client.query(
                 `UNLISTEN ${this.client.escapeIdentifier(this.channelName)}`,
             );
