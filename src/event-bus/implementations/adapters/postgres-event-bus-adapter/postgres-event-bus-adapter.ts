@@ -117,7 +117,7 @@ export class PostgresEventBusAdapter
         this.client.on("notification", this.postgresListener);
     }
 
-    private get totalListenerCount(): number {
+    private totalListenerCount(): number {
         let count = 0;
         for (const eventName of this.eventEmitter.eventNames()) {
             count += this.eventEmitter.listenerCount(eventName);
@@ -143,7 +143,7 @@ export class PostgresEventBusAdapter
         eventName: string,
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
-        if (this.totalListenerCount === 0) {
+        if (this.totalListenerCount() === 0) {
             await this.client.query(
                 `LISTEN ${this.client.escapeIdentifier(this.channelName)}`,
             );
@@ -158,7 +158,7 @@ export class PostgresEventBusAdapter
     ): Promise<void> {
         this.eventEmitter.off(eventName, listener);
 
-        if (this.totalListenerCount === 0) {
+        if (this.totalListenerCount() === 0) {
             await this.client.query(
                 `UNLISTEN ${this.client.escapeIdentifier(this.channelName)}`,
             );
@@ -187,7 +187,7 @@ export class PostgresEventBusAdapter
         }
         this.isDeInitialized = true;
 
-        const isListening = this.totalListenerCount > 0;
+        const isListening = this.totalListenerCount() > 0;
         this.eventEmitter.removeAllListeners();
         this.client.removeListener("notification", this.postgresListener);
         if (isListening) {

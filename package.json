@@ -247,6 +247,10 @@
             "types": "./dist/event-bus/implementations/adapters/memory-event-bus-adapter/_module-exports.d.ts",
             "import": "./dist/event-bus/implementations/adapters/memory-event-bus-adapter/_module-exports.js"
         },
+        "./event-bus/mongodb-event-bus-adapter": {
+            "types": "./dist/event-bus/implementations/adapters/mongodb-event-bus-adapter/_module-exports.d.ts",
+            "import": "./dist/event-bus/implementations/adapters/mongodb-event-bus-adapter/_module-exports.js"
+        },
         "./event-bus/no-op-event-bus-adapter": {
             "types": "./dist/event-bus/implementations/adapters/no-op-event-bus-adapter/_module-exports.d.ts",
             "import": "./dist/event-bus/implementations/adapters/no-op-event-bus-adapter/_module-exports.js"
