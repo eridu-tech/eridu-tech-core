@@ -47,12 +47,13 @@ describe(
         const serde = new SuperJsonSerde();
 
         beforeAll(async () => {
+            await mongodbServer.init();
             client = new MongoClient(mongodbServer.getSettings().url, {
                 directConnection: true,
             });
             await client.connect();
         }, timeout.toMilliseconds());
-        beforeEach(() => {
+        beforeEach(async () => {
             database = client.db(`database_${randomUUID()}`);
             collectionName = randomUUID();
             adapter = withPlugin(
@@ -63,6 +64,7 @@ describe(
                 }),
                 withEventBusPrefix(randomUUID()),
             );
+            await adapter.init();
         });
         afterEach(async () => {
             await adapter.deInit();
@@ -82,12 +84,13 @@ describe(
 
         describe("method: addListener, dispatch", () => {
             let prefixlessAdapter: MongodbEventBusAdapter;
-            beforeEach(() => {
+            beforeEach(async () => {
                 prefixlessAdapter = new MongodbEventBusAdapter({
                     database,
                     serde,
                     collectionName,
                 });
+                await prefixlessAdapter.init();
             });
             afterEach(async () => {
                 await prefixlessAdapter.deInit();
@@ -137,6 +140,7 @@ describe(
                     serde,
                     collectionName,
                 });
+                await publishingAdapter.init();
                 try {
                     const listenerFn = vi.fn();
                     await prefixlessAdapter.addListener("event", listenerFn);
@@ -178,9 +182,9 @@ describe(
         describe("Transaction tests:", () => {
             describe("Transaction aware tests:", () => {
                 let transactionContext: TransactionContext<Db, ClientSession>;
-                let trxDatabaseAdapter: MongodbEventBusAdapter;
+                let trxAdapter: MongodbEventBusAdapter;
 
-                beforeEach(() => {
+                beforeEach(async () => {
                     transactionContext = new TransactionContext<
                         Db,
                         ClientSession
@@ -196,23 +200,24 @@ describe(
                             new AlsExecutionContextAdapter(),
                         ),
                     });
-                    trxDatabaseAdapter = new MongodbEventBusAdapter({
+                    trxAdapter = new MongodbEventBusAdapter({
                         database: transactionContext,
                         serde,
                         collectionName,
                     });
+                    await trxAdapter.init();
                 });
                 afterEach(async () => {
-                    await trxDatabaseAdapter.deInit();
+                    await trxAdapter.deInit();
                 });
 
                 test("Should not insert events when the transaction fails", async () => {
                     const listenerFn = vi.fn();
-                    await trxDatabaseAdapter.addListener("eventA", listenerFn);
+                    await trxAdapter.addListener("eventA", listenerFn);
 
                     try {
                         await transactionContext.run(async () => {
-                            await trxDatabaseAdapter.dispatch("eventA", {
+                            await trxAdapter.dispatch("eventA", {
                                 data: "A",
                             });
                             throw new Error("Transaction failed");
@@ -232,10 +237,10 @@ describe(
 
                 test("Should insert events when the transaction commits", async () => {
                     const listenerFn = vi.fn();
-                    await trxDatabaseAdapter.addListener("eventA", listenerFn);
+                    await trxAdapter.addListener("eventA", listenerFn);
 
                     await transactionContext.run(async () => {
-                        await trxDatabaseAdapter.dispatch("eventA", {
+                        await trxAdapter.dispatch("eventA", {
                             data: "A",
                         });
                     });
@@ -258,7 +263,7 @@ describe(
                 >;
                 let trxAwareAdapter: MongodbEventBusAdapter;
 
-                beforeEach(() => {
+                beforeEach(async () => {
                     sqliteDatabase = new Sqlite(":memory:");
                     transactionContext = new TransactionContext({
                         token: contextToken<ITransactionData<Kysely<any>>>(
@@ -281,6 +286,7 @@ describe(
                         collectionName,
                         transactionHooks: transactionContext,
                     });
+                    await trxAwareAdapter.init();
                 });
                 afterEach(async () => {
                     sqliteDatabase.close();

@@ -39,7 +39,6 @@ import type {
 import type {
     IAsyncDeinitizable,
     IAsyncInitizable,
-    InvocableFn,
 } from "@/utilities/_module-exports.js";
 
 /**
@@ -98,116 +97,6 @@ export type MongodbEventDocument = {
 };
 
 /**
- * @internal
- */
-class MongodbChangeStream implements IAsyncInitizable, IAsyncDeinitizable {
-    private listenerFn: InvocableFn<
-        [document: MongodbEventDocument],
-        void
-    > | null = null;
-    private initPromise: Promise<void> | null = null;
-    private isDeInitialized = false;
-
-    constructor(
-        private readonly changeStream: ChangeStream<MongodbEventDocument>,
-    ) {}
-
-    private static isMongodbEventDocument(
-        value: unknown,
-    ): value is MongodbEventDocument {
-        return (
-            typeof value === "object" &&
-            value !== null &&
-            "_id" in value &&
-            value._id instanceof ObjectId &&
-            "eventName" in value &&
-            typeof value.eventName === "string" &&
-            "eventData" in value &&
-            typeof value.eventData === "string" &&
-            "sendAt" in value &&
-            value.sendAt instanceof Date
-        );
-    }
-
-    private readonly onDocument = (change: ChangeStreamDocument): void => {
-        if (change.operationType !== "insert") {
-            return;
-        }
-        const { fullDocument } = change;
-        if (!MongodbChangeStream.isMongodbEventDocument(fullDocument)) {
-            return;
-        }
-        this.listenerFn?.(fullDocument);
-    };
-
-    private readonly onError: InvocableFn<[], void> = () => {
-        // The driver closes a change stream that fails to resume. Listening to
-        // the event only prevents it from being thrown as an unhandled error.
-    };
-
-    private _init(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            const cleanup = (): void => {
-                this.changeStream.removeListener(
-                    "resumeTokenChanged",
-                    onStarted,
-                );
-                // this.changeStream.removeListener("change", onStarted);
-                this.changeStream.removeListener("error", onFailedToStart);
-                this.changeStream.removeListener("close", onClosed);
-            };
-            const onStarted = (): void => {
-                cleanup();
-                resolve();
-            };
-            const onFailedToStart = (error: unknown): void => {
-                cleanup();
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                reject(error);
-            };
-            const onClosed = (): void => {
-                cleanup();
-                reject(
-                    UnexpectedError.create(
-                        "Mongodb change stream closed before it started",
-                    ),
-                );
-            };
-            this.changeStream.once("resumeTokenChanged", onStarted);
-            this.changeStream.once("change", onStarted);
-            this.changeStream.once("error", onFailedToStart);
-            this.changeStream.once("close", onClosed);
-        });
-    }
-
-    init(): Promise<void> {
-        if (this.initPromise === null) {
-            this.changeStream.on("change", this.onDocument);
-            this.changeStream.on("error", this.onError);
-            this.initPromise = this._init();
-        }
-        return this.initPromise;
-    }
-
-    async deInit(): Promise<void> {
-        if (this.isDeInitialized) {
-            return;
-        }
-        this.isDeInitialized = true;
-
-        this.changeStream.removeListener("change", this.onDocument);
-        this.changeStream.removeListener("error", this.onError);
-        await this.changeStream.close();
-    }
-
-    addOneListener(
-        fn: InvocableFn<[document: MongodbEventDocument], void>,
-    ): void {
-        this.listenerFn = fn;
-    }
-}
-
-/**
  * The `MongodbEventBusAdapter` relies on MongoDB change streams.
  * `dispatch` inserts an event document into a collection and listeners are
  * notified through a change stream watching that collection, so every adapter
@@ -218,7 +107,7 @@ class MongodbChangeStream implements IAsyncInitizable, IAsyncDeinitizable {
  * @group Adapters
  */
 export class MongodbEventBusAdapter
-    implements IEventBusAdapter, IAsyncDeinitizable
+    implements IEventBusAdapter, IAsyncInitizable, IAsyncDeinitizable
 {
     private readonly trxCtx: Pick<
         ITransactionConnection<Db, ClientSession>,
@@ -228,7 +117,9 @@ export class MongodbEventBusAdapter
     private readonly collection: Collection<MongodbEventDocument>;
     private readonly eventEmitter = new EventEmitter();
     private readonly transactionHooks: ITransactionHooks;
-    private readonly changeStream: MongodbChangeStream;
+    private readonly changeStream: ChangeStream<MongodbEventDocument>;
+    private readonly collectionName: string;
+    private readonly collectionSettings: CollectionOptions | undefined;
 
     constructor(settings: MongodbEventBusAdapterSettings) {
         const {
@@ -242,40 +133,85 @@ export class MongodbEventBusAdapter
 
         this.trxCtx = resolveTransactionAware(database);
         this.transactionHooks = transactionHooks;
+        this.collectionName = collectionName;
+        this.collectionSettings = collectionSettings;
         this.collection = this.trxCtx.client.collection(
-            collectionName,
-            collectionSettings,
+            this.collectionName,
+            this.collectionSettings,
         );
         this.serde = serde;
-
-        this.changeStream = new MongodbChangeStream(
-            this.trxCtx.client.watch<MongodbEventDocument>(
-                [
-                    {
-                        $match: {
-                            "ns.coll": collectionName,
-                        },
+        this.changeStream = this.trxCtx.client.watch<MongodbEventDocument>(
+            [
+                {
+                    $match: {
+                        "ns.coll": collectionName,
                     },
-                ],
-                changeStreamSettings,
-            ),
+                },
+            ],
+            changeStreamSettings,
         );
-
-        this.changeStream.addOneListener(this.mongodbListener);
+        this.changeStream.addListener("error", () => {});
     }
 
-    private mongodbListener: InvocableFn<
-        [document: MongodbEventDocument],
-        void
-    > = (document) => {
-        const message = this.serde.deserialize<unknown>(document.eventData);
-        this.eventEmitter.emit(document.eventName, message);
+    async init(): Promise<void> {
+        // Should throw if the index already exists thats why the try catch is used.
+        try {
+            // MongoDB will remove event documents every minute once they're inserted.
+            await this.trxCtx.client.createCollection(
+                this.collectionName,
+                this.collectionSettings,
+            );
+            /* EMPTY */
+        } catch {
+            /* EMPTY */
+        }
+
+        // Should throw if the index already exists thats why the try catch is used.
+        try {
+            // MongoDB will remove event documents every minute once they're inserted.
+            await this.collection.createIndex("sendAt", {
+                expireAfterSeconds: 10,
+            });
+        } catch {
+            /* EMPTY */
+        }
+    }
+
+    async deInit(): Promise<void> {
+        if (this.changeStream.closed) {
+            return;
+        }
+        return this.changeStream.close();
+    }
+
+    private mongodbListener = (
+        document: ChangeStreamDocument<MongodbEventDocument>,
+    ): void => {
+        if (document.operationType !== "insert") {
+            return;
+        }
+        this.eventEmitter.emit(
+            document.fullDocument.eventName,
+            this.serde.deserialize(document.fullDocument.eventData),
+        );
     };
+
+    private totalListenerCount(): number {
+        let count = 0;
+        for (const eventName of this.eventEmitter.eventNames()) {
+            count += this.eventEmitter.listenerCount(eventName);
+        }
+        return count;
+    }
 
     async addListener(
         eventName: string,
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
+        if (this.totalListenerCount() === 0) {
+            this.changeStream.addListener("change", this.mongodbListener);
+        }
+
         this.eventEmitter.on(eventName, listener);
         return Promise.resolve();
     }
@@ -285,6 +221,10 @@ export class MongodbEventBusAdapter
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
         this.eventEmitter.off(eventName, listener);
+
+        if (this.totalListenerCount() === 0) {
+            this.changeStream.removeListener("change", this.mongodbListener);
+        }
         return Promise.resolve();
     }
 
@@ -319,13 +259,5 @@ export class MongodbEventBusAdapter
         return this.transactionHooks.afterCommit(async () => {
             await this._dispatch(eventName, eventData);
         });
-    }
-
-    /**
-     * Removes all internal listeners and closes the change stream.
-     */
-    async deInit(): Promise<void> {
-        this.eventEmitter.removeAllListeners();
-        await this.changeStream.deInit();
     }
 }

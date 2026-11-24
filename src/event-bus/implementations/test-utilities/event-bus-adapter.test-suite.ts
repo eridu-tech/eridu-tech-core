@@ -350,7 +350,7 @@ export function eventBusAdapterTestSuite(
                     adapter.dispatch("event", { type: "event" }),
                 ).resolves.toBeUndefined();
             });
-            test.only("Should not deliver events dispatched before a listener is added", async () => {
+            test("Should not deliver events dispatched before a listener is added", async () => {
                 const handlerFn = vi.fn((_event: BaseEvent) => {
                     console.log("_event:", _event);
                 });
