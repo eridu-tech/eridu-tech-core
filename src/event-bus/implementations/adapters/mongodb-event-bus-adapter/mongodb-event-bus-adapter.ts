@@ -9,11 +9,12 @@ import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     SuperJsonSerde,
 } from "@/serde/implementations/super-json-serde/_module-exports.js";
+import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
 import {
     resolveTransactionAware,
     TransactionContext,
 } from "@/transaction-context/implementations/derivables/_module-exports.js";
-import { UnexpectedError } from "@/utilities/errors.js";
+import { UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type {
     ChangeStream,
@@ -31,6 +32,7 @@ import type {
     IEventBusAdapter,
 } from "@/event-bus/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
+import type { ITimeSpan } from "@/time-span/contracts/_module-exports.js";
 import type {
     ITransactionConnection,
     ITransactionHooks,
@@ -74,7 +76,19 @@ export type MongodbEventBusAdapterSettings = {
      */
     collectionSettings?: CollectionOptions;
 
+    /**
+     * Options for the change stream that watches the collection for inserted
+     * event documents.
+     */
     changeStreamSettings?: ChangeStreamOptions;
+
+    /**
+     * How long event documents are kept before MongoDB deletes them, measured
+     * from `sendAt`. Must be in seconds.
+     *
+     * @default TimeSpan.fromSeconds(0)
+     */
+    expireAfterSeconds?: ITimeSpan;
 
     /**
      * The {@link ITransactionHooks | `ITransactionHooks`} that dispatches events after the
@@ -118,13 +132,13 @@ export class MongodbEventBusAdapter
     private readonly eventEmitter = new EventEmitter();
     private readonly transactionHooks: ITransactionHooks;
     private readonly changeStream: ChangeStream<MongodbEventDocument>;
-    private readonly collectionName: string;
-    private readonly collectionSettings: CollectionOptions | undefined;
+    private readonly expireAfterSeconds: TimeSpan;
 
     constructor(settings: MongodbEventBusAdapterSettings) {
         const {
             database,
             serde,
+            expireAfterSeconds = TimeSpan.fromSeconds(0),
             collectionName = "eventBus",
             collectionSettings,
             changeStreamSettings,
@@ -133,48 +147,49 @@ export class MongodbEventBusAdapter
 
         this.trxCtx = resolveTransactionAware(database);
         this.transactionHooks = transactionHooks;
-        this.collectionName = collectionName;
-        this.collectionSettings = collectionSettings;
         this.collection = this.trxCtx.client.collection(
-            this.collectionName,
-            this.collectionSettings,
+            collectionName,
+            collectionSettings,
         );
         this.serde = serde;
-        this.changeStream = this.trxCtx.client.watch<MongodbEventDocument>(
+        this.expireAfterSeconds = TimeSpan.fromTimeSpan(expireAfterSeconds);
+        this.changeStream = this.collection.watch<MongodbEventDocument>(
             [
                 {
                     $match: {
-                        "ns.coll": collectionName,
+                        operationType: "insert",
                     },
                 },
             ],
             changeStreamSettings,
         );
-        this.changeStream.addListener("error", () => {});
+    }
+
+    private async consume(
+        first: ChangeStreamDocument<MongodbEventDocument> | null,
+    ): Promise<void> {
+        if (first) {
+            this.mongodbListener(first);
+        }
+
+        for await (const change of this.changeStream) {
+            this.mongodbListener(change);
+        }
     }
 
     async init(): Promise<void> {
         // Should throw if the index already exists thats why the try catch is used.
         try {
             // MongoDB will remove event documents every minute once they're inserted.
-            await this.trxCtx.client.createCollection(
-                this.collectionName,
-                this.collectionSettings,
-            );
-            /* EMPTY */
-        } catch {
-            /* EMPTY */
-        }
-
-        // Should throw if the index already exists thats why the try catch is used.
-        try {
-            // MongoDB will remove event documents every minute once they're inserted.
             await this.collection.createIndex("sendAt", {
-                expireAfterSeconds: 10,
+                expireAfterSeconds: this.expireAfterSeconds.toSeconds(),
             });
         } catch {
             /* EMPTY */
         }
+
+        const initialDocument = await this.changeStream.tryNext();
+        this.consume(initialDocument).catch(() => {});
     }
 
     async deInit(): Promise<void> {
@@ -196,22 +211,10 @@ export class MongodbEventBusAdapter
         );
     };
 
-    private totalListenerCount(): number {
-        let count = 0;
-        for (const eventName of this.eventEmitter.eventNames()) {
-            count += this.eventEmitter.listenerCount(eventName);
-        }
-        return count;
-    }
-
     async addListener(
         eventName: string,
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
-        if (this.totalListenerCount() === 0) {
-            this.changeStream.addListener("change", this.mongodbListener);
-        }
-
         this.eventEmitter.on(eventName, listener);
         return Promise.resolve();
     }
@@ -221,10 +224,6 @@ export class MongodbEventBusAdapter
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
         this.eventEmitter.off(eventName, listener);
-
-        if (this.totalListenerCount() === 0) {
-            this.changeStream.removeListener("change", this.mongodbListener);
-        }
         return Promise.resolve();
     }
 
