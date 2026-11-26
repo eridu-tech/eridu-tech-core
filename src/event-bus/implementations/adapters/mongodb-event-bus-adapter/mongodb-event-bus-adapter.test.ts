@@ -67,7 +67,6 @@ describe(
             await adapter.init();
         });
         afterEach(async () => {
-            await adapter.deInit();
             await database.dropDatabase();
         });
         afterAll(async () => {
@@ -91,9 +90,6 @@ describe(
                     collectionName,
                 });
                 await prefixlessAdapter.init();
-            });
-            afterEach(async () => {
-                await prefixlessAdapter.deInit();
             });
 
             test("Should support an empty event name", async () => {
@@ -141,41 +137,16 @@ describe(
                     collectionName,
                 });
                 await publishingAdapter.init();
-                try {
-                    const listenerFn = vi.fn();
-                    await prefixlessAdapter.addListener("event", listenerFn);
-
-                    await publishingAdapter.dispatch("event", {
-                        type: "event",
-                    });
-
-                    await delay(dispatchDelay);
-                    expect(listenerFn).toHaveBeenCalledTimes(1);
-                    expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
-                } finally {
-                    await publishingAdapter.deInit();
-                }
-            });
-        });
-
-        describe("method: deInit", () => {
-            test("Should not throw when called multiple times", async () => {
                 const listenerFn = vi.fn();
-                await adapter.addListener("event", listenerFn);
-                await adapter.deInit();
+                await prefixlessAdapter.addListener("event", listenerFn);
 
-                await expect(adapter.deInit()).resolves.toBeUndefined();
-            });
-
-            test("Should not call listeners when events are dispatched after deInit", async () => {
-                const listenerFn = vi.fn();
-                await adapter.addListener("event", listenerFn);
-
-                await adapter.deInit();
-                await adapter.dispatch("event", { type: "event" });
+                await publishingAdapter.dispatch("event", {
+                    type: "event",
+                });
 
                 await delay(dispatchDelay);
-                expect(listenerFn).not.toHaveBeenCalled();
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
             });
         });
 
@@ -206,9 +177,6 @@ describe(
                         collectionName,
                     });
                     await trxAdapter.init();
-                });
-                afterEach(async () => {
-                    await trxAdapter.deInit();
                 });
 
                 test("Should not insert events when the transaction fails", async () => {
@@ -288,9 +256,8 @@ describe(
                     });
                     await trxAwareAdapter.init();
                 });
-                afterEach(async () => {
+                afterEach(() => {
                     sqliteDatabase.close();
-                    await trxAwareAdapter.deInit();
                 });
 
                 test("Should not dispatch when the transaction fails", async () => {
