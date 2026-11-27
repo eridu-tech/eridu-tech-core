@@ -139,17 +139,27 @@ export class PostgresEventBusAdapter
         this.eventEmitter.emit(message.eventName, message.eventData);
     };
 
+    private async open(): Promise<void> {
+        await this.client.query(
+            `LISTEN ${this.client.escapeIdentifier(this.channelName)}`,
+        );
+    }
+
     async addListener(
         eventName: string,
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
         if (this.totalListenerCount() === 0) {
-            await this.client.query(
-                `LISTEN ${this.client.escapeIdentifier(this.channelName)}`,
-            );
+            await this.open();
         }
 
         this.eventEmitter.on(eventName, listener);
+    }
+
+    private async close(): Promise<void> {
+        await this.client.query(
+            `UNLISTEN ${this.client.escapeIdentifier(this.channelName)}`,
+        );
     }
 
     async removeListener(
@@ -159,9 +169,7 @@ export class PostgresEventBusAdapter
         this.eventEmitter.off(eventName, listener);
 
         if (this.totalListenerCount() === 0) {
-            await this.client.query(
-                `UNLISTEN ${this.client.escapeIdentifier(this.channelName)}`,
-            );
+            await this.close();
         }
     }
 
@@ -191,9 +199,7 @@ export class PostgresEventBusAdapter
         this.eventEmitter.removeAllListeners();
         this.client.removeListener("notification", this.postgresListener);
         if (isListening) {
-            await this.client.query(
-                `UNLISTEN ${this.client.escapeIdentifier(this.channelName)}`,
-            );
+            await this.close();
         }
     }
 }

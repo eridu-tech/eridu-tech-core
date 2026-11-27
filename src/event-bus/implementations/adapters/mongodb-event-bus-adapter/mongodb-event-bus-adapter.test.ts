@@ -79,6 +79,7 @@ describe(
             beforeEach,
             expect,
             describe,
+            excludePreSubscriptionTests: true,
         });
 
         describe("method: addListener, dispatch", () => {

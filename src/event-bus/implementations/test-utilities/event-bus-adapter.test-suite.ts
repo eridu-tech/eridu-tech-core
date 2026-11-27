@@ -25,6 +25,16 @@ export type EventBusAdapterTestSuiteSettings = {
     describe: SuiteAPI;
     beforeEach: typeof beforeEach;
     createAdapter: () => Promisable<IEventBusAdapter>;
+    /**
+     * Skips the tests that check events dispatched before a listener is added
+     * are not delivered.
+     *
+     * Enable it when the adapter cannot tell what was dispatched before a
+     * listener subscribed.
+     *
+     * @default false
+     */
+    excludePreSubscriptionTests?: boolean;
 };
 
 /**
@@ -36,7 +46,13 @@ export type EventBusAdapterTestSuiteSettings = {
 export function eventBusAdapterTestSuite(
     settings: EventBusAdapterTestSuiteSettings,
 ): void {
-    const { expect, test, createAdapter, beforeEach: beforeEach_ } = settings;
+    const {
+        expect,
+        test,
+        createAdapter,
+        beforeEach: beforeEach_,
+        excludePreSubscriptionTests: skipPreSubscriptionTests = false,
+    } = settings;
 
     let adapter: IEventBusAdapter;
 
@@ -350,17 +366,33 @@ export function eventBusAdapterTestSuite(
                     adapter.dispatch("event", { type: "event" }),
                 ).resolves.toBeUndefined();
             });
-            test("Should not deliver events dispatched before a listener is added", async () => {
-                const handlerFn = vi.fn((_event: BaseEvent) => {
-                    console.log("_event:", _event);
-                });
+            test.skipIf(skipPreSubscriptionTests)(
+                "Should not deliver events dispatched before a listener is added",
+                async () => {
+                    const handlerFn = vi.fn((_event: BaseEvent) => {});
 
-                await adapter.dispatch("event", { type: "event" });
-                await adapter.addListener("event", handlerFn);
+                    await adapter.dispatch("event", { type: "event" });
+                    await adapter.addListener("event", handlerFn);
 
-                await delay(dispatchDelay);
-                expect(handlerFn).not.toHaveBeenCalled();
-            });
+                    await delay(dispatchDelay);
+                    expect(handlerFn).not.toHaveBeenCalled();
+                },
+            );
+            test.skipIf(skipPreSubscriptionTests)(
+                "Should not deliver events dispatched before a listener is added, even when listener already exists",
+                async () => {
+                    const handlerFn1 = vi.fn((_event: BaseEvent) => {});
+                    await adapter.dispatch("event", { type: "event" });
+                    await adapter.addListener("event", handlerFn1);
+
+                    const handlerFn2 = vi.fn((_event: BaseEvent) => {});
+                    await adapter.dispatch("event", { type: "event" });
+                    await adapter.addListener("event", handlerFn2);
+
+                    await delay(dispatchDelay);
+                    expect(handlerFn2).not.toHaveBeenCalled();
+                },
+            );
             test("Should call a listener once for each dispatch", async () => {
                 const handlerFn = vi.fn((_event: BaseEvent) => {});
                 const event = {

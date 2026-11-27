@@ -182,7 +182,7 @@ export class MongodbEventBusAdapter
     private async consume(
         first: ChangeStreamDocument<MongodbEventDocument> | null,
     ): Promise<void> {
-        if (first) {
+        if (first !== null) {
             this.mongodbListener(first);
         }
 
@@ -219,9 +219,7 @@ export class MongodbEventBusAdapter
                 this.changeStreamSettings,
             );
             const initialDocument = await this.changeStream.tryNext();
-            this.consumePromise = this.consume(initialDocument ?? null).catch(
-                () => {},
-            );
+            this.consumePromise = this.consume(initialDocument).catch(() => {});
         }
 
         this.eventEmitter.on(eventName, listener);
