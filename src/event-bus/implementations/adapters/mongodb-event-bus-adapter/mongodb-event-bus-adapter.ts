@@ -38,7 +38,10 @@ import type {
     ITransactionHooks,
     TransactionAware,
 } from "@/transaction-context/contracts/_module-exports.js";
-import type { IAsyncInitizable } from "@/utilities/_module-exports.js";
+import type {
+    IAsyncDeinitizable,
+    IAsyncInitizable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `MongodbEventBusAdapter`.
@@ -118,7 +121,7 @@ export type MongodbEventDocument = {
  * @group Adapters
  */
 export class MongodbEventBusAdapter
-    implements IEventBusAdapter, IAsyncInitizable
+    implements IEventBusAdapter, IAsyncInitizable, IAsyncDeinitizable
 {
     private readonly trxCtx: Pick<
         ITransactionConnection<Db, ClientSession>,
@@ -153,6 +156,16 @@ export class MongodbEventBusAdapter
         );
         this.serde = serde;
         this.expireAfterSeconds = TimeSpan.fromTimeSpan(expireAfterSeconds);
+    }
+
+    private async close(): Promise<void> {
+        await this.changeStream?.close();
+        this.consumePromise = null;
+    }
+
+    async deInit(): Promise<void> {
+        await this.close();
+        this.eventEmitter.removeAllListeners();
     }
 
     async init(): Promise<void> {
@@ -203,23 +216,27 @@ export class MongodbEventBusAdapter
         return count;
     }
 
+    private async open(): Promise<void> {
+        this.changeStream = this.collection.watch<MongodbEventDocument>(
+            [
+                {
+                    $match: {
+                        operationType: "insert",
+                    },
+                },
+            ],
+            this.changeStreamSettings,
+        );
+        const initialDocument = await this.changeStream.tryNext();
+        this.consumePromise = this.consume(initialDocument).catch(() => {});
+    }
+
     async addListener(
         eventName: string,
         listener: EventListenerFn<BaseEvent>,
     ): Promise<void> {
         if (this.totalListenerCount() === 0 && this.consumePromise === null) {
-            this.changeStream = this.collection.watch<MongodbEventDocument>(
-                [
-                    {
-                        $match: {
-                            operationType: "insert",
-                        },
-                    },
-                ],
-                this.changeStreamSettings,
-            );
-            const initialDocument = await this.changeStream.tryNext();
-            this.consumePromise = this.consume(initialDocument).catch(() => {});
+            await this.open();
         }
 
         this.eventEmitter.on(eventName, listener);
@@ -236,8 +253,7 @@ export class MongodbEventBusAdapter
             this.changeStream &&
             !this.changeStream.closed
         ) {
-            await this.changeStream.close();
-            this.consumePromise = null;
+            await this.close();
         }
     }
 

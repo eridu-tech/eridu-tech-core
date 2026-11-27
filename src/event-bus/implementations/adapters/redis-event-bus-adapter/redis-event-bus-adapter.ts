@@ -124,8 +124,8 @@ export class RedisEventBusAdapter
         }
         this.isDeInitialized = true;
 
-        this.eventEmitter.removeAllListeners();
         this.listenerClient.removeListener("message", this.redisListener);
+        this.eventEmitter.removeAllListeners();
         try {
             await this.listenerClient.unsubscribe();
         } finally {

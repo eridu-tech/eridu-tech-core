@@ -246,8 +246,8 @@ export class PostgresEventBusAdapter
         this.isDeInitialized = true;
 
         const isListening = this.totalListenerCount() > 0;
-        this.eventEmitter.removeAllListeners();
         this.client.removeListener("notification", this.postgresListener);
+        this.eventEmitter.removeAllListeners();
         if (isListening) {
             await this.close();
         }
