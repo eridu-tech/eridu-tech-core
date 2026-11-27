@@ -9,6 +9,7 @@ import {
     SuperJsonSerde,
 } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
+import { callInvocable } from "@/utilities/_module-exports.js";
 import { UnexpectedError } from "@/utilities/errors.js";
 
 import type { Client, Notification } from "pg";
@@ -20,7 +21,11 @@ import type {
 } from "@/event-bus/contracts/_module-exports.js";
 import type { ISerde } from "@/serde/contracts/_module-exports.js";
 import type { ITransactionHooks } from "@/transaction-context/contracts/_module-exports.js";
-import type { IAsyncDeinitizable } from "@/utilities/_module-exports.js";
+import type {
+    IAsyncDeinitizable,
+    Invocable,
+    Promisable,
+} from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `PostgresEventBusAdapter`.
@@ -41,12 +46,25 @@ export type PostgresEventBusAdapterSettings = {
     serde: ISerde<string>;
 
     /**
-     * The PostgreSQL channel name used for `LISTEN`/`NOTIFY` messaging.
-     * Must be a non-empty PostgreSQL identifier of at most 63 bytes.
+     * The channel name hashed by {@link hash | `hash`} to produce the PostgreSQL
+     * channel used for `LISTEN`/`NOTIFY` messaging.
      *
      * @default "eridu_tech_event_bus"
      */
     channelName?: string;
+
+    /**
+     * Produces the channel name actually used for `LISTEN`/`NOTIFY`.
+     *
+     * Useful for mapping a long or dynamic channel name onto a PostgreSQL
+     * identifier of at most 63 bytes.
+     *
+     * @default
+     * ```ts
+     * (channelName) => channelName
+     * ```
+     */
+    hash?: Invocable<[channelName: string], Promisable<string>>;
 
     /**
      * The {@link ITransactionHooks | `ITransactionHooks`} that dispatches events after the
@@ -81,7 +99,16 @@ export class PostgresEventBusAdapter
     private readonly eventEmitter = new EventEmitter();
     private readonly transactionHooks: ITransactionHooks;
     private static readonly DEFAULT_CHANNEL_NAME = "eridu_tech_event_bus";
-    private readonly channelName: string;
+    private readonly hash: Invocable<[channelName: string], Promisable<string>>;
+    private readonly configuredChannelName: string;
+    /**
+     * Kept in one object because the copies made by `copyObj` share object
+     * references but get their own copy of primitive fields.
+     */
+    private readonly channel = {
+        name: null as string | null,
+        namePromise: null as Promise<string> | null,
+    };
     private isDeInitialized = false;
 
     private static isPostgresEventBusMessage(
@@ -106,15 +133,31 @@ export class PostgresEventBusAdapter
             client,
             serde,
             channelName = PostgresEventBusAdapter.DEFAULT_CHANNEL_NAME,
+            hash = (value) => value,
             transactionHooks = TransactionContext.noOp(null),
         } = settings;
 
         this.transactionHooks = transactionHooks;
-        this.channelName = channelName;
+        this.hash = hash;
+        this.configuredChannelName = channelName;
         this.client = client;
         this.serde = serde;
 
         this.client.on("notification", this.postgresListener);
+    }
+
+    private getChannelName(): Promise<string> {
+        if (this.channel.namePromise === null) {
+            this.channel.namePromise = (async (): Promise<string> => {
+                const channelName = await callInvocable(
+                    this.hash,
+                    this.configuredChannelName,
+                );
+                this.channel.name = channelName;
+                return channelName;
+            })();
+        }
+        return this.channel.namePromise;
     }
 
     private totalListenerCount(): number {
@@ -126,22 +169,27 @@ export class PostgresEventBusAdapter
     }
 
     private postgresListener = (notification: Notification): void => {
-        if (notification.channel !== this.channelName) {
+        if (notification.channel !== this.channel.name) {
             return;
         }
         if (notification.payload === undefined) {
-            throw UnexpectedError.create("!!__MESSAGE__!!");
+            throw UnexpectedError.create(
+                "Postgres notification is missing a payload",
+            );
         }
         const message = this.serde.deserialize<unknown>(notification.payload);
         if (!PostgresEventBusAdapter.isPostgresEventBusMessage(message)) {
-            throw UnexpectedError.create("!!__MESSAGE__!!");
+            throw UnexpectedError.create(
+                "Postgres notification is not a valid event bus message",
+            );
         }
         this.eventEmitter.emit(message.eventName, message.eventData);
     };
 
     private async open(): Promise<void> {
+        const channelName = await this.getChannelName();
         await this.client.query(
-            `LISTEN ${this.client.escapeIdentifier(this.channelName)}`,
+            `LISTEN ${this.client.escapeIdentifier(channelName)}`,
         );
     }
 
@@ -157,8 +205,9 @@ export class PostgresEventBusAdapter
     }
 
     private async close(): Promise<void> {
+        const channelName = await this.getChannelName();
         await this.client.query(
-            `UNLISTEN ${this.client.escapeIdentifier(this.channelName)}`,
+            `UNLISTEN ${this.client.escapeIdentifier(channelName)}`,
         );
     }
 
@@ -175,8 +224,9 @@ export class PostgresEventBusAdapter
 
     dispatch(eventName: string, eventData: BaseEvent): Promise<void> {
         return this.transactionHooks.afterCommit(async () => {
+            const channelName = await this.getChannelName();
             await this.client.query("SELECT pg_notify($1, $2)", [
-                this.channelName,
+                channelName,
                 this.serde.serialize({
                     eventName,
                     eventData,

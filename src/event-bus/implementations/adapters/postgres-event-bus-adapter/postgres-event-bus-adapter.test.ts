@@ -211,6 +211,39 @@ describe(
                     eventData: { type: "event" },
                 });
             });
+
+            test("Should use the hashed channel name", async () => {
+                const hashedChannelName = `hashed_${channelName}`;
+                const hash = vi.fn(() => Promise.resolve(hashedChannelName));
+                channelAdapter = new PostgresEventBusAdapter({
+                    client,
+                    serde,
+                    channelName,
+                    hash,
+                });
+
+                const notifications: Array<string> = [];
+                extraClient.on("notification", (notification) => {
+                    notifications.push(notification.channel);
+                });
+                await extraClient.query(
+                    `LISTEN ${extraClient.escapeIdentifier(hashedChannelName)}`,
+                );
+
+                const listenerFn = vi.fn();
+                await channelAdapter.addListener("event", listenerFn);
+                await channelAdapter.dispatch("event", { type: "event" });
+
+                await delay(dispatchDelay);
+                expect(hash).toHaveBeenCalledTimes(1);
+                expect(hash).toHaveBeenCalledWith(channelName);
+                expect(await getListeningChannels()).toEqual([
+                    hashedChannelName,
+                ]);
+                expect(notifications).toEqual([hashedChannelName]);
+                expect(listenerFn).toHaveBeenCalledTimes(1);
+                expect(listenerFn).toHaveBeenCalledWith({ type: "event" });
+            });
         });
 
         describe("method: addListener, dispatch", () => {
