@@ -419,6 +419,10 @@
             "types": "./dist/lock/implementations/test-utilities/_module-exports.d.ts",
             "import": "./dist/lock/implementations/test-utilities/_module-exports.js"
         },
+        "./lock/to-lock-adapter": {
+            "types": "./dist/lock/implementations/adapters/to-lock-adapter/_module-exports.d.ts",
+            "import": "./dist/lock/implementations/adapters/to-lock-adapter/_module-exports.js"
+        },
         "./log": {
             "types": "./dist/log/implementations/derivables/_module-exports.d.ts",
             "import": "./dist/log/implementations/derivables/_module-exports.js"
@@ -562,6 +566,10 @@
         "./semaphore/test-utilities": {
             "types": "./dist/semaphore/implementations/test-utilities/_module-exports.d.ts",
             "import": "./dist/semaphore/implementations/test-utilities/_module-exports.js"
+        },
+        "./semaphore/to-semaphore-adapter": {
+            "types": "./dist/semaphore/implementations/adapters/to-semaphore-adapter/_module-exports.d.ts",
+            "import": "./dist/semaphore/implementations/adapters/to-semaphore-adapter/_module-exports.js"
         },
         "./serde/contracts": {
             "types": "./dist/serde/contracts/_module-exports.d.ts",
