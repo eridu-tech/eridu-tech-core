@@ -5,12 +5,18 @@ import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
 const serde = new SuperJsonSerde();
 
-const redisClient = new Redis("YOUR_REDIS_CONNECTION");
+const redisClient = new Redis("YOUR_REDIS_CONNECTION", {
+    lazyConnect: true,
+});
+await redisClient.connect();
+
+const redisSemaphoreAdapter = new RedisSemaphoreAdapter(redisClient);
+redisSemaphoreAdapter.init();
 
 const semaphoreFactory = new SemaphoreFactory({
     // You can laso pass in an array of Serde class instances
     serde,
-    adapter: new RedisSemaphoreAdapter(redisClient),
+    adapter: redisSemaphoreAdapter,
 });
 
 const semaphore = semaphoreFactory.create("resource", {

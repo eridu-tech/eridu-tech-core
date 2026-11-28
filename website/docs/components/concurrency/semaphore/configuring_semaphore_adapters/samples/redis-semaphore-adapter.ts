@@ -2,3 +2,4 @@ import { RedisSemaphoreAdapter } from "eridu-tech/semaphore/redis-semaphore-adap
 import { database } from "./redis-semaphore-adapter-setup.js";
 
 const redisSemaphoreAdapter = new RedisSemaphoreAdapter(database);
+redisSemaphoreAdapter.init();
