@@ -44,6 +44,15 @@ export type RedisCircuitBreakerAdapterSettings = {
     database: Redis | Cluster;
 
     /**
+     * Wraps the key in a Redis hash tag, e.g. `lock` becomes `{lock}`, so keys
+     * with the same name land in the same hash slot across clusters. Set it to
+     * `false` to use the key as is, e.g. when it already contains a hash tag.
+     *
+     * @default true
+     */
+    useShardingKey?: boolean;
+
+    /**
      * You can choose between different types of predefined backoff policies.
      * @default
      * ```ts
@@ -104,9 +113,12 @@ export class RedisCircuitBreakerAdapter
 
     private readonly database: Redis | Cluster;
 
+    private readonly useShardingKey: boolean;
+
     constructor(settings: RedisCircuitBreakerAdapterSettings) {
         const {
             database,
+            useShardingKey = true,
             backoffPolicy = {
                 type: BACKOFFS.EXPONENTIAL,
             },
@@ -116,8 +128,16 @@ export class RedisCircuitBreakerAdapter
         } = settings;
 
         this.database = database;
+        this.useShardingKey = useShardingKey;
         this.backoff = resolveBackoffSettingsEnum(backoffPolicy);
         this.policy = resolveCircuitBreakerPolicySettings(circuitBreakerPolicy);
+    }
+
+    private shardingKey(key: string): string {
+        if (this.useShardingKey) {
+            return `{${key}}`;
+        }
+        return key;
     }
 
     private initUpdateStateCommmand(): void {
@@ -200,7 +220,7 @@ export class RedisCircuitBreakerAdapter
     }
 
     async getState(key: string): Promise<CircuitBreakerState> {
-        const value = await this.database.get(key);
+        const value = await this.database.get(this.shardingKey(key));
         if (value === null) {
             return CIRCUIT_BREAKER_STATE.CLOSED;
         }
@@ -210,7 +230,7 @@ export class RedisCircuitBreakerAdapter
 
     async updateState(key: string): Promise<CircuitBreakerStateTransition> {
         const value = await this.database.eridu_circuit_breaker_update_state(
-            key,
+            this.shardingKey(key),
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(
                 serializeCircuitBreakerPolicySettingsEnum(this.policy),
@@ -222,7 +242,7 @@ export class RedisCircuitBreakerAdapter
 
     async isolate(key: string): Promise<void> {
         await this.database.set(
-            key,
+            this.shardingKey(key),
             JSON.stringify({
                 type: CIRCUIT_BREAKER_STATE.ISOLATED,
             }),
@@ -231,7 +251,7 @@ export class RedisCircuitBreakerAdapter
 
     async trackFailure(key: string): Promise<void> {
         await this.database.eridu_circuit_breaker_track_failure(
-            key,
+            this.shardingKey(key),
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(
                 serializeCircuitBreakerPolicySettingsEnum(this.policy),
@@ -242,7 +262,7 @@ export class RedisCircuitBreakerAdapter
 
     async trackSuccess(key: string): Promise<void> {
         await this.database.eridu_circuit_breaker_track_success(
-            key,
+            this.shardingKey(key),
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(
                 serializeCircuitBreakerPolicySettingsEnum(this.policy),
@@ -252,6 +272,6 @@ export class RedisCircuitBreakerAdapter
     }
 
     async reset(key: string): Promise<void> {
-        await this.database.del(key);
+        await this.database.del(this.shardingKey(key));
     }
 }
