@@ -1,6 +1,6 @@
 import { circuitBreakerFactoryResolver } from "./circuit-breaker-factory-resolver-initial-config.js";
 
-// Will apply circuit-breaker logic the default adapter which is MemoryCircuitBreakerStorageAdapter
+// Will apply circuit-breaker logic the default adapter which is MemoryCircuitBreakerAdapter
 await circuitBreakerFactoryResolver
     .use()
     .create("a")

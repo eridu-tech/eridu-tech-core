@@ -2,7 +2,7 @@ import { Redis } from "ioredis";
 import { RedisSemaphoreAdapter } from "eridu-tech/semaphore/redis-semaphore-adapter";
 import type { ISemaphore } from "eridu-tech/semaphore/contracts";
 import { SemaphoreFactory } from "eridu-tech/semaphore";
-import { RedisPubSubEventBusAdapter } from "eridu-tech/event-bus/redis-pub-sub-event-bus-adapter";
+import { RedisEventBusAdapter } from "eridu-tech/event-bus/redis-event-bus-adapter";
 import { EventBus } from "eridu-tech/event-bus";
 import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
@@ -15,7 +15,7 @@ type EventMap = {
     };
 };
 const eventBus = new EventBus<EventMap>({
-    adapter: new RedisPubSubEventBusAdapter({
+    adapter: new RedisEventBusAdapter({
         client: redis,
         serde,
     }),

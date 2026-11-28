@@ -54,5 +54,29 @@ describe(
             expect,
             describe,
         });
+
+        describe("method: removeByPrefix", () => {
+            test("Should treat a glob wildcard in the prefix as a literal character", async () => {
+                await adapter.add("cache?b", 1, null);
+                await adapter.add("cachea", 2, null);
+                await adapter.add("cache/b", 3, null);
+
+                await adapter.removeByPrefix("cache?");
+
+                expect(await adapter.get("cache?b")).toBe(null);
+                expect(await adapter.get("cachea")).toBe(2);
+                expect(await adapter.get("cache/b")).toBe(3);
+            });
+
+            test("Should treat a backslash in the prefix as a literal character", async () => {
+                await adapter.add("cache\\a", 1, null);
+                await adapter.add("cachea", 2, null);
+
+                await adapter.removeByPrefix("cache\\");
+
+                expect(await adapter.get("cache\\a")).toBe(null);
+                expect(await adapter.get("cachea")).toBe(2);
+            });
+        });
     },
 );

@@ -171,13 +171,17 @@ You can build the pool yourself, for example to change the pool size or to share
 ```
 
 :::info
-Set `secure` to `true` for explicit FTPS over TLS, or to `"implicit"` for legacy implicit FTPS. `FtpFactory` opens and logs in a `Client` in `create`, checks idle connections with `pwd()` in `validate`, and closes them in `destroy`. Any `IGenericPoolBase<Client>` can be passed as the `pool` setting.
+Set `secure` to `true` for explicit FTPS over TLS, or to `"implicit"` for legacy implicit FTPS. `FtpFactory` opens and logs in a `Client` in `create`, checks idle connections with `pwd()` in `validate`, and closes them in `destroy`, which resolves only after the control socket has emitted `close`, so a connection is fully shut down before the pool reuses its slot. Any `IGenericPoolBase<Client>` can be passed as the `pool` setting.
 :::
 
 :::warning
 This adapter does not support signed upload, signed download and public urls.
 It also doesn't support explicitly setting the content-type and will instead infer the content-type from the file name.
 :::
+
+### Reading files
+
+`getStream` resolves as soon as the existence check completes and does not wait for the download to finish. Stopping early, for example with `break`, is a normal end of the read and leaves no unhandled rejection behind, a failed download throws from `for await` instead of handing back a truncated file, and the pooled client is returned exactly once after the stream ends.
 
 ## WebdavFileStorageAdapter
 

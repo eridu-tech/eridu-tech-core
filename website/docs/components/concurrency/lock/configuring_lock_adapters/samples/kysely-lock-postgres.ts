@@ -19,7 +19,7 @@ const kysely = new Kysely<any>({
 });
 const transactionContext = createTransactionContext(kysely);
 const kyselyLockAdapter = new KyselyLockAdapter({
-    transactionContext,
+    database: transactionContext,
 });
 
 // You need initialize the adapter once before using it.

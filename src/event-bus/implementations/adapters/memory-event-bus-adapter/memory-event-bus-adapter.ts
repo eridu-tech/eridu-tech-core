@@ -2,7 +2,7 @@
  * @module EventBus
  */
 
-import { EventEmitter } from "node:events";
+import { EventEmitter } from "eventemitter3";
 
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
@@ -14,6 +14,7 @@ import type {
     IEventBus,
 } from "@/event-bus/contracts/_module-exports.js";
 import type { ITransactionHooks } from "@/transaction-context/contracts/_module-exports.js";
+import type { IDeinitizable } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for the `MemoryEventBusAdapter`.
@@ -44,7 +45,7 @@ export type MemoryEventBusAdapterSettings = {
  * IMPORT_PATH: `"eridu-tech/event-bus/memory-event-bus"`
  * @group Adapters
  */
-export class MemoryEventBusAdapter implements IEventBusAdapter {
+export class MemoryEventBusAdapter implements IEventBusAdapter, IDeinitizable {
     private readonly eventEmitter: EventEmitter;
     private readonly transactionHooks: ITransactionHooks;
 
@@ -59,6 +60,10 @@ export class MemoryEventBusAdapter implements IEventBusAdapter {
 
         this.transactionHooks = transactionHooks;
         this.eventEmitter = eventEmitter;
+    }
+
+    deInit(): void {
+        this.eventEmitter.removeAllListeners();
     }
 
     addListener(

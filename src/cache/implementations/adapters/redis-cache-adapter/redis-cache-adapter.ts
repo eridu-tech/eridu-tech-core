@@ -5,7 +5,7 @@
 import { ReplyError } from "ioredis";
 
 import { RedisCacheAdapterSerde } from "@/cache/implementations/adapters/redis-cache-adapter/redis-cache-adapter-serde.js";
-import { ClearIterable } from "@/cache/implementations/adapters/redis-cache-adapter/utilities.js";
+import { UnexpectedError } from "@/utilities/_module-exports.js";
 
 import type { Redis, Result } from "ioredis";
 
@@ -68,6 +68,14 @@ export class RedisCacheAdapter<
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             value.message.includes("ERR value is not a valid float")
         );
+    }
+
+    /**
+     * Escapes the characters that are special in a Redis glob pattern, plus the
+     * escape character itself, so a prefix is matched literally.
+     */
+    private static escapeRedisChars(value: string): string {
+        return value.replace(/[\\*?[\]]/g, (char) => `\\${char}`);
     }
 
     private readonly serde: ISerde<string>;
@@ -229,8 +237,27 @@ export class RedisCacheAdapter<
             await this.removeAll();
             return;
         }
-        for await (const _ of new ClearIterable(this.database, prefix)) {
-            /* Empty */
+        for await (const elements of this.database.scanStream({
+            match: `${RedisCacheAdapter.escapeRedisChars(prefix)}*`,
+        })) {
+            if (!Array.isArray(elements)) {
+                throw UnexpectedError.create(
+                    "Redis scan stream yielded a batch that is not an array",
+                );
+            }
+            const strElements = elements.map((element) => {
+                if (typeof element !== "string") {
+                    throw UnexpectedError.create(
+                        "Redis scan stream yielded a key that is not a string",
+                    );
+                }
+                return element;
+            });
+            if (strElements.length === 0) {
+                continue;
+            }
+
+            await this.database.del(strElements);
         }
     }
 }

@@ -11,7 +11,6 @@ tags:
     - Kysely
     - Sqlite
     - Postgres
-    - Sqlite
     - NoOp
 keywords:
     - CircuitBreaker
@@ -22,7 +21,6 @@ keywords:
     - Kysely
     - Sqlite
     - Postgres
-    - Sqlite
     - NoOp
 ---
 
@@ -70,37 +68,89 @@ The `type` field is the only required field. All other fields are optional.
 
 The settings are the same as [circuit-breaker policies](/docs/components/reliability/circuit_breaker/configuring_circuit_breaker_policies) settings.
 
-## DatabaseCircuitBreakerAdapter {#database_circuit_breaker_adapter}
+## MemoryCircuitBreakerAdapter {#memory_circuit_breaker_adapter}
 
-To use the `DatabaseCircuitBreakerAdapter`, you'll need to use `ICircuitBreakerStorageAdapter`:
+The `MemoryCircuitBreakerAdapter` owns its storage, so it needs no external dependency:
 
-1. Creating `ICircuitBreakerStorageAdapter`:
-
-```ts file=./samples/circuit-breaker-storage-adapter.ts
+```ts file=./samples/memory-circuit-breaker-adapter.ts
 
 ```
 
-2. Creating `DatabaseCircuitBreakerAdapter`:
+:::info
+`MemoryCircuitBreakerAdapter` lets you test your app without external dependencies like `Redis`, ideal for local development, unit tests, integration tests and fast E2E test for the backend application.
+:::
 
-```ts file=./samples/database-circuit-breaker-adapter.ts
+The adapter implements `IDeinitizable`: call `deInit()` to clear the stored state. State lives in the current process, so it is shared neither between processes nor across restarts.
 
-```
+### Configuring policies
 
-### Configuring backoff policy
-
-You can use any of defined [backoff policies](/docs/components/utilities/backoff_policies).
-
-```ts file=./samples/database-circuit-breaker-backoff-policy.ts
+```ts file=./samples/memory-circuit-breaker-policy.ts
 
 ```
 
-### Configuring CircuitBreaker policy
+## MongodbCircuitBreakerAdapter {#mongodb_circuit_breaker_adapter}
 
-You can use any of defined [circuit-breaker policies](/docs/components/reliability/circuit_breaker/configuring_circuit_breaker_policies) or [create your own](/docs/components/reliability/circuit_breaker/creating_circuit_breaker_policies).
+To use the `MongodbCircuitBreakerAdapter`, you'll need to:
 
-```ts file=./samples/database-circuit-breaker-policy.ts
+1. Use a database provider that has support for transactions.
+2. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package.
+
+### Setup
+
+Connect to MongoDB and wrap the `Db` instance in a [`TransactionContext`](/docs/components/foundation/transaction_context/transaction_context_usage) using a [`MongodbTransactionAdapter`](/docs/components/foundation/transaction_context/configuring_transaction_context_adapters/#mongodb_transaction_adapter):
+
+```ts file=./samples/mongodb-circuit-breaker-adapter-setup.ts
 
 ```
+
+:::info
+The `database` setting makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
+:::
+
+### Usage
+
+```ts file=./samples/mongodb-circuit-breaker-adapter.ts
+
+```
+
+The adapter stores its state in the `circuitBreaker` collection, change it with `collectionName`. Every operation is a single MongoDB call, and the adapter joins the ambient transaction of the given `database` instead of starting one.
+
+## KyselyCircuitBreakerAdapter {#kysely_circuit_breaker_adapter}
+
+To use the `KyselyCircuitBreakerAdapter`, you'll need to:
+
+1. Use a database provider that has support for transactions.
+2. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package.
+
+### Setup
+
+```ts file=./samples/kysely-circuit-breaker-adapter-setup.ts
+
+```
+
+:::info
+The `database` setting takes either a `Kysely` instance or an `ITransactionContext`. A plain `Kysely` instance is wrapped in a no-op transaction context, and passing a `TransactionContext` makes the adapter join its active transaction.
+:::
+
+The adapter implements `IAsyncInitizable` and `IAsyncDeinitizable`: call `init()` once to create the `circuitBreaker` table, and `deInit()` to remove it.
+
+### With Sqlite
+
+You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3) package:
+
+```ts file=./samples/kysely-circuit-breaker-adapter-sqlite.ts
+
+```
+
+### With Postgres
+
+You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
+
+```ts file=./samples/kysely-circuit-breaker-adapter-postgres.ts
+
+```
+
+Type the database with `KyselyCircuitBreakerTables` from `eridu-tech/circuit-breaker/kysely-circuit-breaker-adapter` to get full type safety on the `circuitBreaker` table.
 
 ## NoOpCircuitBreakerAdapter
 
@@ -111,101 +161,7 @@ The `NoOpCircuitBreakerAdapter` is a no-operation implementation, it performs no
 ```
 
 :::info
-The `NoOpCircuitBreakerAdapter` is useful when you want to mock out or disable your [`CircuitBreakerProvider`](https://eridu-tech.github.io/eridu-tech-core/classes/CircuitBreaker.CircuitBreakerProvider.html) instance.
-:::
-
-## KyselyCircuitBreakerStorageAdapter
-
-To use the `KyselyCircuitBreakerStorageAdapter`, you'll need to:
-
-1. Use database provider that has support for transactions.
-2. Install the required dependency: [`kysely`](https://www.npmjs.com/package/kysely) package.
-3. Provide a string serializer ([`ISerde`](/docs/components/foundation/serde)). We recommend using `SuperJsonSerdeAdapter` for this purpose.
-
-### Setup
-
-Create the string serializer ([`ISerde`](/docs/components/foundation/serde)) and a function that creates the [`TransactionContext`](/docs/components/foundation/transaction_context/transaction_context_usage) by wrapping a `Kysely` instance in a [`KyselyTransactionAdapter`](/docs/components/foundation/transaction_context/configuring_transaction_context_adapters/#kysely_transaction_adapter):
-
-```ts file=./samples/kysely-circuit-breaker-storage-adapter-setup.ts
-
-```
-
-:::info
-The `transactionContext` setting makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
-:::
-
-### With Sqlite
-
-You will need to install [`better-sqlite3`](https://www.npmjs.com/package/better-sqlite3) package:
-
-```ts file=./samples/kysely-storage-sqlite.ts
-
-```
-
-### With Postgres
-
-You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
-
-```ts file=./samples/kysely-storage-postgres.ts
-
-```
-
-## MemoryCircuitBreakerStorageAdapter
-
-To use the `MemoryCircuitBreakerStorageAdapter` you only need to create instance of it:
-
-```ts file=./samples/memory-circuit-breaker-storage-adapter.ts
-
-```
-
-You can also provide an `Map` that will be used for storing the data in memory:
-
-```ts file=./samples/memory-circuit-breaker-storage-with-map.ts
-
-```
-
-:::info
-`MemoryCircuitBreakerStorageAdapter` lets you test your app without external dependencies like `Redis`, ideal for local development, unit tests, integration tests and fast E2E test for the backend application.
-:::
-
-## MongodbCircuitBreakerStorageAdapter
-
-To use the `MongodbCircuitBreakerStorageAdapter`, you'll need to:
-
-1. Use database provider that has support for transactions.
-2. Install the required dependency: [`mongodb`](https://www.npmjs.com/package/mongodb) package.
-3. Provide a string serializer ([`ISerde`](/docs/components/foundation/serde)). We recommend using `SuperJsonSerdeAdapter` for this purpose.
-
-### Setup
-
-Connect to MongoDB, create the string serializer ([`ISerde`](/docs/components/foundation/serde)) and the [`TransactionContext`](/docs/components/foundation/transaction_context/transaction_context_usage), which wraps the `Db` instance in a [`MongodbTransactionAdapter`](/docs/components/foundation/transaction_context/configuring_transaction_context_adapters/#mongodb_transaction_adapter):
-
-```ts file=./samples/mongodb-circuit-breaker-storage-adapter-setup.ts
-
-```
-
-:::info
-The `transactionContext` setting makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
-:::
-
-### Usage
-
-Create the adapter:
-
-```ts file=./samples/mongodb-circuit-breaker-storage-adapter.ts
-
-```
-
-## NoOpCircuitBreakerStorageAdapter
-
-The `NoOpCircuitBreakerStorageAdapter` is a no-operation implementation, it performs no actions when called:
-
-```ts file=./samples/no-op-circuit-breaker-storage-adapter.ts
-
-```
-
-:::info
-The `NoOpCircuitBreakerStorageAdapter` is useful when you want to mock out or disable your [`DatabaseCircuitBreakerAdapter`](https://eridu-tech.github.io/eridu-tech-core/classes/CircuitBreaker.DatabaseCircuitBreakerAdapter.html) instance.
+The `NoOpCircuitBreakerAdapter` is useful when you want to mock out or disable your [`CircuitBreakerFactory`](https://eridu-tech.github.io/eridu-tech-core/classes/CircuitBreaker.CircuitBreakerFactory.html) instance.
 :::
 
 ## Further information

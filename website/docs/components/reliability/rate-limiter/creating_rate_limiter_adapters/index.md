@@ -5,11 +5,9 @@ pagination_label: Creating RateLimiter adapters
 tags:
     - RateLimiter
     - Creating adapters
-    - Creating database adapters
 keywords:
     - RateLimiter
     - Creating adapters
-    - Creating database adapters
 ---
 
 # Creating RateLimiter adapters
@@ -18,26 +16,15 @@ keywords:
 
 In order to create an adapter you need to implement the [`IRateLimiterAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.IRateLimiterAdapter.html) contract.
 
-## Implementing your custom IRateLimiterStorageAdapter
+Every adapter owns its own persistence. There is no storage-adapter plug-in point: an adapter that needs external storage creates its schema in `init()` and removes it in `deInit()`, and applies the `backoffPolicy` and `rateLimiterPolicy` settings internally.
 
-We provide an additional contract [`IRateLimiterStorageAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.IRateLimiterStorageAdapter.html) for building custom rate-limiter storage adapters tailored to [`DatabaseRateLimiterAdapter`](/docs/components/reliability/rate-limiter/configuring_rate_limiter_adapters/#database_rate_limiter_adapter) and [`DatabaseRateLimiterProviderFactory`](/docs/components/reliability/rate-limiter/rate_limiter_factory_resolver/#database_rate_limiter_factory_resolver).
-
-## Testing your custom IRateLimiterStorageAdapter
-
-We provide a complete test suite to test your rate-limiter storage adapter implementation. Simply use the [`rateLimiterBreakerStorageTestSuite`](https://eridu-tech.github.io/eridu-tech-core/functions/RateLimiter.rateLimiterBreakerStorageTestSuite.html) function:
-
-- Preconfigured Vitest test cases
-- Common edge case coverage
-
-Usage example:
-
-```ts file=./samples/rate-limiter-storage-test-suite.ts
+```ts file=./samples/custom-rate-limiter-adapter.ts
 
 ```
 
-## Implementing your custom IRateLimiterProvider class
+## Implementing your custom rate-limiter factory class
 
-In some cases, you may need to implement a custom [`RateLimiterProvider`](https://eridu-tech.github.io/eridu-tech-core/classes/RateLimiter.RateLimiterProvider.html) class to optimize performance for your specific technology stack. You can then directly implement the [`IRateLimiterProvider`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.IRateLimiterProvider.html) contract.
+In some cases, you may need to implement a custom [`RateLimiterFactory`](https://eridu-tech.github.io/eridu-tech-core/classes/RateLimiter.RateLimiterFactory.html) class to optimize performance for your specific technology stack. You can then directly implement the [`IRateLimiterFactory`](https://eridu-tech.github.io/eridu-tech-core/types/RateLimiter.IRateLimiterFactory.html) contract.
 
 ## Further information
 
