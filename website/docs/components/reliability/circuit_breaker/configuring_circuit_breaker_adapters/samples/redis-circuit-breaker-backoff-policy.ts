@@ -3,7 +3,11 @@ import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-cir
 import { Redis } from "ioredis";
 import { TimeSpan } from "eridu-tech/time-span";
 
-const database = new Redis("YOUR_REDIS_CONNECTION_STRING");
+const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
+    lazyConnect: true,
+});
+await database.connect();
+
 const redisCircuitBreakerAdapter = new RedisCircuitBreakerAdapter({
     database,
     backoffPolicy: {
@@ -12,3 +16,4 @@ const redisCircuitBreakerAdapter = new RedisCircuitBreakerAdapter({
         jitter: 0.5,
     },
 });
+redisCircuitBreakerAdapter.init();

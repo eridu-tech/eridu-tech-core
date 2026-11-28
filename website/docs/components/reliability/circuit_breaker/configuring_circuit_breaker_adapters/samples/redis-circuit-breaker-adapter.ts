@@ -4,3 +4,4 @@ import { database } from "./redis-circuit-breaker-adapter-setup.js";
 const redisCircuitBreakerAdapter = new RedisCircuitBreakerAdapter({
     database,
 });
+redisCircuitBreakerAdapter.init();

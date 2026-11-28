@@ -7,7 +7,10 @@ import { EventBus } from "eridu-tech/event-bus";
 import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
 const serde = new SuperJsonSerde();
-const redis = new Redis("YOUR_REDIS_CONNECTION");
+const redis = new Redis("YOUR_REDIS_CONNECTION", {
+    lazyConnect: true,
+});
+await redis.connect();
 
 type EventMap = {
     "sending-circuit-breaker-over-network": {
@@ -21,9 +24,14 @@ const eventBus = new EventBus<EventMap>({
     }),
 });
 
+const redisCircuitBreakerAdapter = new RedisCircuitBreakerAdapter({
+    database: redis,
+});
+redisCircuitBreakerAdapter.init();
+
 const circuitBreakerFactory = new CircuitBreakerFactory({
     serde,
-    adapter: new RedisCircuitBreakerAdapter({ database: redis }),
+    adapter: redisCircuitBreakerAdapter,
 });
 const circuitBreaker = circuitBreakerFactory.create("resource");
 
