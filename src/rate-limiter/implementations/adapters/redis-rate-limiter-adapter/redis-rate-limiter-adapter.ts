@@ -22,6 +22,7 @@ import type {
     IRateLimiterAdapterState,
     RateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/contracts/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -96,7 +97,9 @@ export type RedisRateLimiterAdapterSettings = {
  * IMPORT_PATH: `"eridu-tech/rate-limiter/redis-rate-limiter-adapter"`
  * @group Adapters
  */
-export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
+export class RedisRateLimiterAdapter
+    implements IRateLimiterAdapter, IInitizable
+{
     private readonly backoff: Required<BackoffSettingsEnum>;
 
     private readonly policy: Required<RateLimiterPolicySettingsEnum>;
@@ -117,8 +120,6 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
         this.database = database;
         this.backoff = resolveBackoffSettingsEnum(backoffPolicy);
         this.policy = resolveRateLimiterPolicySettings(rateLimiterPolicy);
-        this.initGetStateCommand();
-        this.initUpdateStateCommmand();
     }
 
     private initGetStateCommand(): void {
@@ -175,6 +176,11 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
             return cjson.encode(state)
             `,
         });
+    }
+
+    init(): void {
+        this.initGetStateCommand();
+        this.initUpdateStateCommmand();
     }
 
     async getState(key: string): Promise<IRateLimiterAdapterState | null> {
