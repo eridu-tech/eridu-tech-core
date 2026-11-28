@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { RedisContainer } from "@testcontainers/redis";
-import { Redis } from "ioredis";
+import { Cluster } from "ioredis";
 import {
     afterAll,
     beforeAll,
@@ -15,29 +14,26 @@ import { withPlugin } from "@/middleware/implementations/_module-exports.js";
 import { RedisSharedLockAdapter } from "@/shared-lock/implementations/adapters/redis-shared-lock-adapter/_module-exports.js";
 import { withSharedLockPrefix } from "@/shared-lock/implementations/plugins/_module-exports.js";
 import { sharedLockAdapterTestSuite } from "@/shared-lock/implementations/test-utilities/_module-exports.js";
+import { RedisClusterServer } from "@/test-utilities/servers/redis-cluster-server/_module.js";
 import { TimeSpan } from "@/time-span/implementations/_module-exports.js";
-
-import type { StartedRedisContainer } from "@testcontainers/redis";
 
 import type { ISharedLockAdapter } from "@/shared-lock/contracts/_module-exports.js";
 
-const timeout = TimeSpan.fromMinutes(2);
+const timeout = TimeSpan.fromMinutes(3);
 describe(
     "class: RedisSharedLockAdapter",
     { tags: ["Redis", "Adapters", "Implementations", "SharedLock"] },
     () => {
-        let client: Redis;
-        let startedContainer: StartedRedisContainer;
+        let cluster: Cluster;
         let adapter: ISharedLockAdapter;
+        const clusterServer = new RedisClusterServer();
         beforeAll(async () => {
-            startedContainer = await new RedisContainer("redis:7.4.2").start();
-            client = new Redis(startedContainer.getConnectionUrl(), {
-                lazyConnect: true,
-            });
-            await client.connect();
+            await clusterServer.init();
+            const { nodes, natMap } = clusterServer.getSettings();
+            cluster = new Cluster(nodes, { natMap });
         }, timeout.toMilliseconds());
         beforeEach(() => {
-            const redisAdapter = new RedisSharedLockAdapter(client);
+            const redisAdapter = new RedisSharedLockAdapter(cluster);
             redisAdapter.init();
             adapter = withPlugin(
                 redisAdapter,
@@ -45,8 +41,8 @@ describe(
             );
         });
         afterAll(async () => {
-            await client.quit();
-            await startedContainer.stop();
+            await cluster.quit();
+            await clusterServer.deInit();
         }, timeout.toMilliseconds());
         sharedLockAdapterTestSuite({
             createAdapter: () => adapter,
