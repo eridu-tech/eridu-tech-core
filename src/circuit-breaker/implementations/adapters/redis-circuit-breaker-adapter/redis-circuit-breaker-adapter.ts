@@ -27,6 +27,7 @@ import type {
     ICircuitBreakerAdapter,
     AllCircuitBreakerState,
 } from "@/circuit-breaker/contracts/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `RedisCircuitBreakerAdapter`.
@@ -93,7 +94,9 @@ declare module "ioredis" {
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/redis-circuit-breaker-adapter"`
  * @group Adapters
  */
-export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
+export class RedisCircuitBreakerAdapter
+    implements ICircuitBreakerAdapter, IInitizable
+{
     private readonly backoff: Required<BackoffSettingsEnum>;
 
     private readonly policy: Required<CircuitBreakerPolicySettingsEnum>;
@@ -114,10 +117,6 @@ export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
         this.database = database;
         this.backoff = resolveBackoffSettingsEnum(backoffPolicy);
         this.policy = resolveCircuitBreakerPolicySettings(circuitBreakerPolicy);
-
-        this.initUpdateStateCommmand();
-        this.initTrackFailureCommmand();
-        this.initTrackSuccessCommmand();
     }
 
     private initUpdateStateCommmand(): void {
@@ -191,6 +190,12 @@ export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
             circuitBreaker.trackSuccess(key)
             `,
         });
+    }
+
+    init(): void {
+        this.initUpdateStateCommmand();
+        this.initTrackFailureCommmand();
+        this.initTrackSuccessCommmand();
     }
 
     async getState(key: string): Promise<CircuitBreakerState> {
