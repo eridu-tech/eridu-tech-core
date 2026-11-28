@@ -2,18 +2,25 @@
  * @module Lock
  */
 
+import { lockFactoryLua } from "@/lock/implementations/adapters/redis-lock-adapter/lua/_module.js";
+
 import type { Result, Redis } from "ioredis";
 
 import type {
     ILockAdapter,
     ILockAdapterState,
 } from "@/lock/contracts/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * @internal
  */
 type IRedisJsonLockState = {
     owner: string;
+
+    /**
+     * As unix timestamp in milliseconds. `0` means the lock never expires.
+     */
     expiration: number;
 };
 
@@ -21,39 +28,65 @@ declare module "ioredis" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     interface RedisCommander<Context> {
         /**
-         *
          * @param key
          * @param lockId
-         * @param expiration As unix timestamp in miliseconds
+         * @param expiration As unix timestamp in miliseconds, or `null` for an unexpireable lock
+         * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_lock_acquire(
             key: string,
             lockId: string,
             expiration: number | null,
+            currentDate: number,
         ): Result<1 | 0, Context>;
 
+        /**
+         * @param key
+         * @param lockId
+         * @param currentDate As unix timestamp in miliseconds
+         */
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        eridu_lock_release(key: string, lockId: string): Result<1 | 0, Context>;
+        eridu_lock_release(
+            key: string,
+            lockId: string,
+            currentDate: number,
+        ): Result<1 | 0, Context>;
 
         /**
-         *
+         * @param key
+         * @param currentDate As unix timestamp in miliseconds
+         */
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        eridu_lock_force_release(
+            key: string,
+            currentDate: number,
+        ): Result<1 | 0, Context>;
+
+        /**
          * @param key
          * @param lockId
          * @param expiration As unix timestamp in miliseconds
+         * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_lock_refresh(
             key: string,
             lockId: string,
             expiration: number,
+            currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param key
+         * @param currentDate As unix timestamp in miliseconds
          * @returns {string} {@link IRedisJsonLockState | `IRedisJsonLockState`} or `null` as json string.
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        eridu_lock_get_state(key: string): Result<string, Context>;
+        eridu_lock_get_state(
+            key: string,
+            currentDate: number,
+        ): Result<string, Context>;
     }
 }
 
@@ -65,38 +98,26 @@ declare module "ioredis" {
  * IMPORT_PATH: `"eridu-tech/lock/redis-lock-adapter"`
  * @group Adapters
  */
-export class RedisLockAdapter implements ILockAdapter {
-    constructor(private readonly database: Redis) {
-        this.initAcquireCommand();
-        this.initReleaseCommand();
-        this.initRefreshComand();
-        this.initGetStateComand();
-    }
+export class RedisLockAdapter implements ILockAdapter, IInitizable {
+    constructor(private readonly database: Redis) {}
 
     private initAcquireCommand(): void {
         if (typeof this.database.eridu_lock_acquire === "function") {
             return;
         }
+
         this.database.defineCommand("eridu_lock_acquire", {
             numberOfKeys: 1,
             lua: `
+                ${lockFactoryLua}
+
                 local key = KEYS[1];
                 local lockId = ARGV[1];
-
-                -- Expiration time as unix timestamp in ms
                 local expiration = tonumber(ARGV[2]);
+                local currentDate = tonumber(ARGV[3]);
 
-                if redis.call("exists", key) == 1 then
-                    return redis.call("get", key) == lockId;
-                end
-                
-                if expiration == nil then
-                    redis.call("set", key, lockId, "nx");
-                else
-                    redis.call("set", key, lockId, "pxat", expiration, "nx");
-                end
-                
-                return 1;
+                local lock = lockFactory(currentDate)
+                return lock.acquire(key, lockId, expiration)
             `,
         });
     }
@@ -109,26 +130,38 @@ export class RedisLockAdapter implements ILockAdapter {
         this.database.defineCommand("eridu_lock_release", {
             numberOfKeys: 1,
             lua: `
+                ${lockFactoryLua}
+
                 local key = KEYS[1];
                 local lockId = ARGV[1];
+                local currentDate = tonumber(ARGV[2]);
 
-                if redis.call("exists", key) == 0 then
-                    return 0
-                end
-
-                local isNotCurrentOwner = redis.call("get", key) ~= lockId
-                if isNotCurrentOwner then
-                    return 0
-                end
-
-                redis.call("del", key)
-                
-                return 1
+                local lock = lockFactory(currentDate)
+                return lock.release(key, lockId)
             `,
         });
     }
 
-    private initRefreshComand(): void {
+    private initForceReleaseCommand(): void {
+        if (typeof this.database.eridu_lock_force_release === "function") {
+            return;
+        }
+
+        this.database.defineCommand("eridu_lock_force_release", {
+            numberOfKeys: 1,
+            lua: `
+                ${lockFactoryLua}
+
+                local key = KEYS[1];
+                local currentDate = tonumber(ARGV[1]);
+
+                local lock = lockFactory(currentDate)
+                return lock.forceRelease(key)
+            `,
+        });
+    }
+
+    private initRefreshCommand(): void {
         if (typeof this.database.eridu_lock_refresh === "function") {
             return;
         }
@@ -136,35 +169,20 @@ export class RedisLockAdapter implements ILockAdapter {
         this.database.defineCommand("eridu_lock_refresh", {
             numberOfKeys: 1,
             lua: `
-                -- Arguments
+                ${lockFactoryLua}
+
                 local key = KEYS[1];
                 local lockId = ARGV[1];
-
-                -- Expiration time as unix timestamp in ms
                 local expiration = tonumber(ARGV[2]);
+                local currentDate = tonumber(ARGV[3]);
 
-                if redis.call("exists", key) == 0 then
-                    return 0
-                end
-                
-                local isNotCurrentOwner = redis.call("get", key) ~= lockId
-                if redis.call("get", key) ~= lockId then
-                    return 0
-                end
-
-                local currentExpiration = redis.call("pttl", key)
-                local isUnexpireable = currentExpiration == -1
-                if isUnexpireable then
-                    return 0
-                end
-
-                redis.call("pexpireat", key, expiration)
-                return 1
+                local lock = lockFactory(currentDate)
+                return lock.refresh(key, lockId, expiration)
             `,
         });
     }
 
-    private initGetStateComand(): void {
+    private initGetStateCommand(): void {
         if (typeof this.database.eridu_lock_get_state === "function") {
             return;
         }
@@ -172,21 +190,24 @@ export class RedisLockAdapter implements ILockAdapter {
         this.database.defineCommand("eridu_lock_get_state", {
             numberOfKeys: 1,
             lua: `
-                -- Arguments
+                ${lockFactoryLua}
+
                 local key = KEYS[1];
+                local currentDate = tonumber(ARGV[1]);
 
-                if tonumber(redis.call("exists", key)) == 0 then
-                    return cjson.encode(nil);
-                end
-
-                local state = {
-                    owner = redis.call("get", key),
-                    expiration = tonumber(redis.call("pexpiretime", key))
-                };
-
-                return cjson.encode(state); 
+                local lock = lockFactory(currentDate)
+                local state = lock.getState(key)
+                return cjson.encode(state)
             `,
         });
+    }
+
+    init(): void {
+        this.initAcquireCommand();
+        this.initReleaseCommand();
+        this.initForceReleaseCommand();
+        this.initRefreshCommand();
+        this.initGetStateCommand();
     }
 
     async acquire(
@@ -198,18 +219,26 @@ export class RedisLockAdapter implements ILockAdapter {
             key,
             lockId,
             ttl?.getTime() ?? null,
+            Date.now(),
         );
         return result === 1;
     }
 
     async release(key: string, lockId: string): Promise<boolean> {
-        const result = await this.database.eridu_lock_release(key, lockId);
+        const result = await this.database.eridu_lock_release(
+            key,
+            lockId,
+            Date.now(),
+        );
         return result === 1;
     }
 
     async forceRelease(key: string): Promise<boolean> {
-        const result = await this.database.del(key);
-        return result > 0;
+        const result = await this.database.eridu_lock_force_release(
+            key,
+            Date.now(),
+        );
+        return result === 1;
     }
 
     async refresh(key: string, lockId: string, ttl: Date): Promise<boolean> {
@@ -217,13 +246,14 @@ export class RedisLockAdapter implements ILockAdapter {
             key,
             lockId,
             ttl.getTime(),
+            Date.now(),
         );
         return result === 1;
     }
 
     async getState(key: string): Promise<ILockAdapterState | null> {
         const json = JSON.parse(
-            await this.database.eridu_lock_get_state(key),
+            await this.database.eridu_lock_get_state(key, Date.now()),
         ) as IRedisJsonLockState | null;
         if (json === null) {
             return null;
@@ -231,7 +261,7 @@ export class RedisLockAdapter implements ILockAdapter {
         return {
             owner: json.owner,
             expiration:
-                json.expiration === -1 ? null : new Date(json.expiration),
+                json.expiration === 0 ? null : new Date(json.expiration),
         };
     }
 }
