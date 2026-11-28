@@ -31,17 +31,22 @@ describe(
         let adapter: IRateLimiterAdapter;
         beforeAll(async () => {
             startedContainer = await new RedisContainer("redis:7.4.2").start();
-            client = new Redis(startedContainer.getConnectionUrl());
+            client = new Redis(startedContainer.getConnectionUrl(), {
+                lazyConnect: true,
+            });
+            await client.connect();
         }, timeout.toMilliseconds());
         beforeEach(() => {
+            const redisAdapter = new RedisRateLimiterAdapter({
+                database: client,
+                backoffPolicy:
+                    fixedWindowLimiterTestSuite.backoffPolicySettings,
+                rateLimiterPolicy:
+                    fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
+            });
+            redisAdapter.init();
             adapter = withPlugin(
-                new RedisRateLimiterAdapter({
-                    database: client,
-                    backoffPolicy:
-                        fixedWindowLimiterTestSuite.backoffPolicySettings,
-                    rateLimiterPolicy:
-                        fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
-                }),
+                redisAdapter,
                 withRateLimiterPrefix(randomUUID()),
             );
         });
