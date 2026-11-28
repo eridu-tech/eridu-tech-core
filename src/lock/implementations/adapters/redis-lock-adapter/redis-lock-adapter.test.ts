@@ -31,13 +31,15 @@ describe(
         let adapter: ILockAdapter;
         beforeAll(async () => {
             startedContainer = await new RedisContainer("redis:7.4.2").start();
-            client = new Redis(startedContainer.getConnectionUrl());
+            client = new Redis(startedContainer.getConnectionUrl(), {
+                lazyConnect: true,
+            });
+            await client.connect();
         }, timeout.toMilliseconds());
         beforeEach(() => {
-            adapter = withPlugin(
-                new RedisLockAdapter(client),
-                withLockPrefix(randomUUID()),
-            );
+            const redisAdapter = new RedisLockAdapter(client);
+            redisAdapter.init();
+            adapter = withPlugin(redisAdapter, withLockPrefix(randomUUID()));
         });
         afterAll(async () => {
             await client.quit();
