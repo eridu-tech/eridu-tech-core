@@ -17,7 +17,7 @@ import {
 } from "@/circuit-breaker/implementations/adapters/_shared/_module.js";
 import { circuitBreakerFactoryLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/_module.js";
 
-import type { Redis, Result } from "ioredis";
+import type { Cluster, Redis, Result } from "ioredis";
 
 import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module-exports.js";
 import type {
@@ -39,8 +39,9 @@ import type { IInitizable } from "@/utilities/_module-exports.js";
 export type RedisCircuitBreakerAdapterSettings = {
     /**
      * The Redis client instance for circuit-breaker state operations.
+     * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
      */
-    database: Redis;
+    database: Redis | Cluster;
 
     /**
      * You can choose between different types of predefined backoff policies.
@@ -101,7 +102,7 @@ export class RedisCircuitBreakerAdapter
 
     private readonly policy: Required<CircuitBreakerPolicySettingsEnum>;
 
-    private readonly database: Redis;
+    private readonly database: Redis | Cluster;
 
     constructor(settings: RedisCircuitBreakerAdapterSettings) {
         const {

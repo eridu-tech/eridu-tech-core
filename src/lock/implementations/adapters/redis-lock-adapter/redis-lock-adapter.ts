@@ -4,7 +4,7 @@
 
 import { lockFactoryLua } from "@/lock/implementations/adapters/redis-lock-adapter/lua/_module.js";
 
-import type { Result, Redis } from "ioredis";
+import type { Cluster, Result, Redis } from "ioredis";
 
 import type {
     ILockAdapter,
@@ -95,11 +95,13 @@ declare module "ioredis" {
  *
  * Note in order to use `RedisLockAdapter` correctly, ensure you use a single, consistent database across all server instances.
  *
+ * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
+ *
  * IMPORT_PATH: `"eridu-tech/lock/redis-lock-adapter"`
  * @group Adapters
  */
 export class RedisLockAdapter implements ILockAdapter, IInitizable {
-    constructor(private readonly database: Redis) {}
+    constructor(private readonly database: Redis | Cluster) {}
 
     private initAcquireCommand(): void {
         if (typeof this.database.eridu_lock_acquire === "function") {

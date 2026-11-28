@@ -10,7 +10,7 @@ import {
 } from "@/serde/implementations/super-json-serde/_module-exports.js";
 import { TransactionContext } from "@/transaction-context/implementations/derivables/_module-exports.js";
 
-import type { Redis } from "ioredis";
+import type { Cluster, Redis } from "ioredis";
 
 import type {
     BaseEvent,
@@ -31,8 +31,9 @@ import type { IAsyncDeinitizable } from "@/utilities/_module-exports.js";
 export type RedisEventBusAdapterSettings = {
     /**
      * The Redis client instance used for pub/sub messaging.
+     * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
      */
-    client: Redis;
+    client: Redis | Cluster;
 
     /**
      * Serde instance for serializing and deserializing event payloads to and from strings.
@@ -58,11 +59,23 @@ export class RedisEventBusAdapter
     implements IEventBusAdapter, IAsyncDeinitizable
 {
     private readonly serde: ISerde<string>;
-    private readonly dispatcherClient: Redis;
-    private readonly listenerClient: Redis;
+    private readonly dispatcherClient: Redis | Cluster;
+    private readonly listenerClient: Redis | Cluster;
     private readonly eventEmitter = new EventEmitter();
     private readonly transactionHooks: ITransactionHooks;
     private isDeInitialized = false;
+
+    /**
+     * A subscribed connection cannot run commands, so the listener gets its own
+     * connection. `duplicate` cannot be called on the union type, so the client
+     * is narrowed first.
+     */
+    private static duplicateClient(client: Redis | Cluster): Redis | Cluster {
+        if ("nodes" in client) {
+            return client.duplicate();
+        }
+        return client.duplicate();
+    }
 
     constructor(settings: RedisEventBusAdapterSettings) {
         const {
@@ -73,7 +86,7 @@ export class RedisEventBusAdapter
 
         this.transactionHooks = transactionHooks;
         this.dispatcherClient = client;
-        this.listenerClient = client.duplicate();
+        this.listenerClient = RedisEventBusAdapter.duplicateClient(client);
         this.serde = serde;
 
         this.listenerClient.on("message", this.redisListener);

@@ -14,7 +14,7 @@ import {
 } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import { rateLimiterFactoryLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/_module.js";
 
-import type { Redis, Result } from "ioredis";
+import type { Cluster, Redis, Result } from "ioredis";
 
 import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module-exports.js";
 import type {
@@ -71,8 +71,9 @@ declare module "ioredis" {
 export type RedisRateLimiterAdapterSettings = {
     /**
      * The Redis client instance for rate-limiter state operations.
+     * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
      */
-    database: Redis;
+    database: Redis | Cluster;
 
     /**
      * You can choose between different types of predefined backoff policies.
@@ -104,7 +105,7 @@ export class RedisRateLimiterAdapter
 
     private readonly policy: Required<RateLimiterPolicySettingsEnum>;
 
-    private readonly database: Redis;
+    private readonly database: Redis | Cluster;
 
     constructor(settings: RedisRateLimiterAdapterSettings) {
         const {
