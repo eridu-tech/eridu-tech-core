@@ -1,5 +1,273 @@
 # @daiso-tech/core
 
+## 0.76.0
+
+### Minor Changes
+
+- fd35dbb: Add `runStream` to the generic pool so a stream can borrow a client for its whole lifetime.
+
+    - `IGenericPoolBase.runStream(stream, client)` binds an `AsyncIterable` to an already acquired client and releases that client exactly once when iteration ends: after the stream is drained, when the consumer stops early (`break` or `iterator.return()`), and when the iterable throws. The release is awaited after the wrapped stream has closed, so the client is never handed back midway through teardown.
+    - `runStream` is synchronous and returns the bound `AsyncIterable` directly. It does not acquire a client, so the caller passes one obtained with `acquireOrFail`.
+    - A stream that is never iterated does not release its client. Call `release` in your own `finally` block when you bind a stream and never consume it.
+    - `QueuePool` and `NoOpPool` implement the new member, and `runStream` is part of `IGenericPoolBase` exported from `eridu-tech/generic-pool/contracts`.
+
+- cbeb345: Add `runStream` to the lock, semaphore and shared lock so a stream can run while holding the lock or slot for its whole lifetime.
+
+    - `ILock.runStream(stream)` wraps an `AsyncIterable` so the lock is acquired when iteration starts and released exactly once when it ends: after the stream is drained, when the consumer stops early (`break` or `iterator.return()`), and when the iterable throws. Nothing is acquired until the first value is requested, so building the stream is free.
+    - `ISemaphore.runStream(stream)` does the same for a semaphore slot: a slot is acquired before the first value is yielded and released exactly once afterwards.
+    - `ISharedLock.runReaderStream(stream)` and `ISharedLock.runWriterStream(stream)` add the reader and writer variants: a reader slot or the writer lock is acquired before the first value and released exactly once afterwards.
+    - When acquiring fails, iteration throws before any value is yielded (`FailedAcquireLockError`, `LimitReachedSemaphoreError`, `FailedAcquireWriterLockError`, `LimitReachedReaderSemaphoreError`, ...) and no release is attempted, because nothing was acquired.
+    - The release is awaited, so the held lock or slot is never given back midway through teardown.
+    - `ProxyLock`, `ProxySemaphore` and `ProxySharedLock` implement the new members, and the lock, semaphore and shared-lock factory test suites now cover them.
+
+- 94dc22a: Add the Kysely circuit breaker adapter at `eridu-tech/circuit-breaker/kysely-circuit-breaker-adapter`.
+
+    - `KyselyCircuitBreakerAdapter` stores the consecutive, count or sampling breaker state in a `circuitBreaker` table (`KyselyCircuitBreakerAdapterSettings` takes a transaction-aware `Kysely` instance and applies the configured `backoffPolicy` and `circuitBreakerPolicy`). Export `KyselyCircuitBreakerTables` from the same subpath to type the table.
+    - The adapter implements `IAsyncInitizable` and `IAsyncDeinitizable`: call `init()` once to create the table, and `deInit()` to remove it.
+    - Every operation is a single `insert ... on conflict ... returning` statement and never starts a transaction of its own; it joins the ambient transaction of the given `database`. The adapter has been tested with `sqlite` and `postgres`.
+
+- 2a94839: Add `MemoryCircuitBreakerAdapter` at `eridu-tech/circuit-breaker/memory-circuit-breaker-adapter`.
+
+    - `MemoryCircuitBreakerAdapter` owns its storage and applies the configured `CONSECUTIVE`, `COUNT` or `SAMPLING` policy. `MemoryCircuitBreakerAdapterSettings` only takes `backoffPolicy` and `circuitBreakerPolicy`, so no storage wiring is needed.
+    - The adapter implements `IDeinitizable` (`deInit()`, which is synchronous).
+    - State is process-local, so it is shared neither between processes nor across restarts.
+
+- a971300: Add the MongoDB circuit breaker adapter at `eridu-tech/circuit-breaker/mongodb-circuit-breaker-adapter`.
+
+    - `MongodbCircuitBreakerAdapter` stores the consecutive, count or sampling breaker state in a MongoDB collection (`MongodbCircuitBreakerAdapterSettings` takes a transaction-aware `database`, an optional `collectionName` and optional `collectionSettings`) and applies the configured `backoffPolicy` and `circuitBreakerPolicy`.
+    - The adapter implements `IAsyncInitizable` and `IAsyncDeinitizable`: call `init()` once to create the unique `key` index, and `deInit()` to remove the collection.
+    - Every operation is a single MongoDB call and never starts a transaction of its own; it joins the ambient transaction of the given `database`.
+
+- 925d9ed: Consolidate the circuit breaker policy API in `eridu-tech/circuit-breaker/contracts` and remove the `eridu-tech/circuit-breaker/policies` module.
+
+    - `BREAKER_POLICIES`, `ConsecutiveBreakerSettings`, `CountBreakerSettings`, `SamplingBreakerSettings`, their `*SettingsEnum` variants and `CircuitBreakerPolicySettingsEnum` now live in `eridu-tech/circuit-breaker/contracts`. Import them from there instead of `eridu-tech/circuit-breaker/policies`.
+    - The public `ConsecutiveBreaker`, `CountBreaker` and `SamplingBreaker` policy classes, their `resolve*Settings` helpers, the `Serialized*` settings types, `ICircuitBreakerPolicy`, `CircuitBreakerTrackState`, `CircuitBreakerTrackSettings`, `CLOSED_TRANSITIONS`, `HALF_OPEN_TRANSITIONS`, `ClosedTransitions` and `HalfOpenTransitions` are no longer exported; the adapters apply the policy internally.
+    - Per-policy metrics and state types are exported from `eridu-tech/circuit-breaker/contracts` as `ConsecutiveBreakerMetrics`, `CountBreakerMetrics`, `Sample`, `SamplingBreakerMetrics`, `ClosedState`, `HalfOpenState`, `OpenState`, `IsolatedState` and `AllCircuitBreakerState`. `CircuitBreakerClosedState` and `CircuitBreakerHalfOpenState` are renamed to `ClosedState` and `HalfOpenState`.
+    - `ConsecutiveBreakerStateEnum`, `CountBreakerStateEnum`, `SamplingBreakerStateEnum` and `CircuitBreakerStateEnum` describe the stored policy state and are exported from `eridu-tech/circuit-breaker/contracts`.
+
+- 59d8297: Remove the standalone circuit breaker storage adapters and the `ICircuitBreakerStorageAdapter` contract.
+
+    - `ICircuitBreakerStorageAdapter` is gone from `eridu-tech/circuit-breaker/contracts`, and `circuitBreakerStorageAdapterTestSuite` is gone from `eridu-tech/circuit-breaker/test-utilities`. No public contract exposes the storage layer anymore.
+    - `DatabaseCircuitBreakerAdapter` and `DatabaseCircuitBreakerAdapterSettings` are removed, together with the `eridu-tech/circuit-breaker/database-circuit-breaker-adapter` subpath. Use `MemoryCircuitBreakerAdapter`, `MongodbCircuitBreakerAdapter` or `KyselyCircuitBreakerAdapter` instead.
+    - `MongodbCircuitBreakerStorageAdapter`, `KyselyCircuitBreakerStorageAdapter` (including its Postgres and SQLite backends), `MemoryCircuitBreakerStorageAdapter` and `NoOpCircuitBreakerStorageAdapter` and their settings types are removed, together with their package subpaths. There is no storage-adapter plug-in point left; every adapter owns its own persistence.
+
+- fd35dbb: `FtpFactory.destroy` now waits for the client connection to close.
+
+    - `destroy(client)` returns `Promise<void>` and resolves only after the FTP control socket has emitted `close`, so a destroyed client is fully shut down before the pool frees the resource slot and creates or hands out another one.
+    - `Client.close()` from `basic-ftp` is synchronous and only starts the teardown, so the previous `void` implementation released the slot while the socket was still closing.
+    - `IResourceFactory.destroy` already accepts `Promisable<void>`, so the resource factory contract is unchanged. Only direct callers of `FtpFactory.destroy` are affected: they must `await` the returned promise if they relied on the connection being gone afterwards.
+
+- fd06350: `KyselyLockAdapterSettings` takes a transaction-aware `database` instead of a `transactionContext`.
+
+    - `new KyselyLockAdapter({ database })` accepts either a `Kysely<KyselyLockTables>` instance or an `ITransactionContext<Kysely<KyselyLockTables>>`. A plain `Kysely` instance is wrapped in a no-op transaction context, so a single-database setup no longer has to build a `TransactionContext`. Passing a `TransactionContext` behaves as before: the adapter's operations join the context's active transaction.
+    - The `transactionContext` setting is gone. Rename it to `database` and pass either the context or its underlying `Kysely` instance.
+
+- ccd94e2: `KyselySemaphoreAdapterSettings` takes a transaction-aware `database` instead of a `transactionContext`, and the adapter stores its slots as JSON.
+
+    - `new KyselySemaphoreAdapter({ database })` accepts either a `Kysely<KyselySemaphoreTables>` instance or an `ITransactionContext<Kysely<KyselySemaphoreTables>>`. A plain `Kysely` instance is wrapped in a no-op transaction context, so a single-database setup no longer has to build a `TransactionContext`. Passing a `TransactionContext` behaves as before: the adapter's operations join the context's active transaction.
+    - The `transactionContext` setting is gone. Rename it to `database` and pass either the context or its underlying `Kysely` instance.
+    - The `semaphoreSlot` table is gone. `init()` now creates a single `semaphore` table with four columns: `key`, `limit`, a JSON `slots` column (`{ id, expiration }[]`) and an `expiration` column (`double precision` on postgres, `real` on sqlite, or null), and the `KyselySemaphoreTables` type only has the `semaphore` key. Existing deployments must recreate the tables (or migrate their rows) before using the new schema.
+    - Every adapter operation is now a single SQL statement. `acquire`, `release` and `refresh` use one atomic `INSERT ... ON CONFLICT DO UPDATE`/`UPDATE ... RETURNING` that reads and writes the JSON slots in place, so no transaction or read-modify-write round trip is needed.
+    - The `expiration` column mirrors the MongoDB adapter's `expiration` field. It holds the latest acquired slot expiration while at least one slot is held, a past timestamp when no slot is held anymore and `null` when one of the slots never expires.
+    - `removeAllExpired` deletes the semaphores whose `expiration` is in the past, so it relies on the `semaphore_expiration` index instead of inspecting the JSON slots. Call it periodically (for example, using a cron job).
+
+- 8b1ccae: `KyselySharedLockAdapterSettings` takes a transaction-aware `database` instead of a `transactionContext`, and the adapter stores the whole shared-lock state in a single table.
+
+    - `new KyselySharedLockAdapter({ database })` accepts either a `Kysely<KyselySharedLockTables>` instance or an `ITransactionContext<Kysely<KyselySharedLockTables>>`. A plain `Kysely` instance is wrapped in a no-op transaction context, so a single-database setup no longer has to build a `TransactionContext`.
+    - The `transactionContext` setting is gone. Rename it to `database` and pass either the context or its underlying `Kysely` instance.
+    - The `writerLock` and `readerSemaphore` tables are gone. `init()` now creates a single `sharedLock` table with four columns: `key`, a JSON `writerLock` column (`{ owner, expiration }` or null), a JSON `readerSemaphore` column (`{ limit, slots }` or null) and an `expiration` column (`double precision` on postgres, `real` on sqlite, or null). `KyselySharedLockTables` only has the `sharedLock` key, and `KyselyWriterLockTable`, `KyselyReaderSemaphoreTable` and `KyselyReaderSemaphoreSlotTable` are replaced by `KyselyWriterLockEntry`, `KyselyReaderSemaphoreEntry` and `KyselyReaderSemaphoreSlotEntry`. Existing deployments must recreate the tables (or migrate their rows) before using the new schema.
+    - Every adapter operation is now a single SQL statement that reads and writes both JSON columns in place, so writer and reader acquisitions serialize on the same row and no transaction or read-modify-write round trip is needed.
+    - The `expiration` column mirrors the MongoDB adapter's `expiration` field. It holds the writer expiration while a writer holds the lock, the latest unexpired reader slot expiration while readers hold it, a past timestamp when no slot is held anymore and `null` when the state never expires. Releasing a writer or forcing a release deletes the row.
+    - `removeAllExpired` deletes the rows whose `expiration` is in the past, so it relies on the `sharedLock_expiration` index instead of inspecting the JSON columns. Call it periodically (for example, using a cron job).
+
+- b1ad2f9: Add the MongoDB event bus adapter.
+
+    ## Features
+    - `MongodbEventBusAdapter` dispatches events by inserting documents into a MongoDB collection and listens to them through a change stream, so multiple processes connected to the same database and collection receive every event.
+    - The adapter accepts `collectionName`, `collectionSettings` and `transactionHooks` settings, and implements `deInit` for cleanup.
+    - The `database` setting is transaction aware, so a `TransactionContext` can be supplied to insert dispatched events within the active transaction.
+    - Import it from `eridu-tech/event-bus/mongodb-event-bus-adapter`.
+
+- 9d9840e: Add the PostgreSQL event bus adapter at `eridu-tech/event-bus/postgres-event-bus-adapter`.
+
+    - `PostgresEventBusAdapter` uses a single `LISTEN`/`NOTIFY` channel (configurable through `channelName`, default `eridu_tech_event_bus`) instead of one channel per event name. The channel identifier is escaped before it is interpolated into the `LISTEN`/`UNLISTEN` statements, so names with spaces, quotes, dots or mixed case are valid.
+    - The adapter starts listening when the first listener is added and stops when the last one is removed. Removing one of several listeners keeps the channel subscribed for the remaining listeners.
+    - Every notification carries the event name next to the event payload. Payloads are serialized with the provided `serde` and published through the parameterized `pg_notify($1, $2)` call, so any UTF-8 event name — including empty or very long names — can be used without hashing or truncation.
+    - `PostgresEventBusAdapterSettings` takes a `pg` `Client`, a `serde`, an optional `channelName` and optional `transactionHooks` that defer dispatching until the active transaction commits.
+    - Requires the `pg` package to be installed alongside `eridu-tech`.
+
+- a4ee50f: Add the Kysely rate limiter adapter at `eridu-tech/rate-limiter/kysely-rate-limiter-adapter` for SQLite and Postgres.
+
+    - `KyselyRateLimiterAdapter` stores the fixed-window or sliding-window state in one `rateLimiter` table whose `data` column is JSON (`jsonb` on Postgres, `json` on SQLite). `KyselyRateLimiterAdapterSettings` takes a transaction-aware `database` plus the optional `backoffPolicy` and `rateLimiterPolicy`.
+    - `KyselyRateLimiterTables` and `KyselyRateLimiterEntryTable` are exported so the database can be typed with `new Kysely<KyselyRateLimiterTables>()`.
+    - The adapter implements `IAsyncInitizable`, `IAsyncDeinitizable` and `IAsyncPrunable`: call `init()` once to create the table and its expiration index, `deInit()` to drop them, and `removeAllExpired()` to delete expired entries.
+    - The adapter is transaction aware: it reads and writes through the ambient transaction of the given `database` and never starts a transaction of its own.
+
+- a4ee50f: Add `MemoryRateLimiterAdapter` at `eridu-tech/rate-limiter/memory-rate-limiter-adapter`.
+
+    - `MemoryRateLimiterAdapter` owns its storage and applies the configured `FIXED_WINDOW` or `SLIDING_WINDOW` policy. `MemoryRateLimiterAdapterSettings` only takes `backoffPolicy` and `rateLimiterPolicy`, so no storage wiring is needed.
+    - The adapter implements `IDeinitizable` (`deInit()`) and `IPrunable` (`removeAllExpired()`). Both are synchronous.
+    - State is process-local, so it is shared neither between processes nor across restarts.
+
+- a4ee50f: Add the MongoDB rate limiter adapter at `eridu-tech/rate-limiter/mongodb-rate-limiter-adapter`.
+
+    - `MongdobRateLimiter` stores the fixed-window or sliding-window state in a MongoDB collection (`MongodbRateLimiterSettings` takes a transaction-aware `database`, an optional `collectionName` and optional `collectionSettings`) and applies the configured `backoffPolicy` and `rateLimiterPolicy`.
+    - The adapter implements `IAsyncInitizable` and `IAsyncDeinitizable`: call `init()` once to create the `key` and `expiration` indexes, and `deInit()` to remove the collection.
+    - Every operation is a single MongoDB call and never starts a transaction of its own; it joins the ambient transaction of the given `database`.
+
+- a4ee50f: Consolidate the rate limiter policy API in `eridu-tech/rate-limiter/contracts` and remove the `eridu-tech/rate-limiter/policies` module.
+
+    - `LIMITER_POLICIES`, `FixedWindowLimiterSettings`, `SlidingWindowLimiterSettings`, `FixedWindowLimiterSettingsEnum`, `SlidingWindowLimiterSettingsEnum` and `RateLimiterPolicySettingsEnum` now live in `eridu-tech/rate-limiter/contracts`. Import them from there instead of `eridu-tech/rate-limiter/policies`.
+    - The public `FixedWindowLimiter` and `SlidingWindowLimiter` policy classes, their `resolve*Settings`/`serialize*Settings` helpers, the `Serialized*` settings types and the `IRateLimiterPolicy` contract are no longer exported; the adapters apply the policy internally.
+    - Per-policy metrics and state types are exported from `eridu-tech/rate-limiter/contracts` as `FixedWindowLimiterMetrics`, `SlidingWindowLimiterMetrics`, `AllowedState`, `BlockedState` and `AllRateLimiterState`. `FixedWindowLimiterState` and `SlidingWindowLimiterState` are renamed to `FixedWindowLimiterMetrics` and `SlidingWindowLimiterMetrics`.
+    - `FixedWindowLimiterStateEnum`, `SlidingWindowLimiterStateEnum` and `RateLimiterStateEnum` describe the stored policy state and are exported from `eridu-tech/rate-limiter/contracts`.
+
+- a4ee50f: Remove the standalone rate limiter storage adapters and the `IRateLimiterStorageAdapter` contract.
+
+    - `IRateLimiterStorageAdapter` and `IRateLimiterStorageAdapterTransaction` are gone from `eridu-tech/rate-limiter/contracts`, and `rateLimiterStorageAdapterTestSuite` is gone from `eridu-tech/rate-limiter/test-utilities`. No public contract exposes the storage layer anymore.
+    - `DatabaseRateLimiterAdapter` and `DatabaseRateLimiterAdapterSettings` are removed, together with the `eridu-tech/rate-limiter/database-rate-limiter-adapter` subpath. Use `MemoryRateLimiterAdapter`, `MongdobRateLimiter` or `KyselyRateLimiterAdapter` instead.
+    - `MongodbRateLimiterStorageAdapter`, `KyselyRateLimiterStorageAdapter` (including its Postgres and SQLite backends), `MemoryRateLimiterStorageAdapter` and `NoOpRateLimiterStorageAdapter` and their settings types are removed, together with their package subpaths. There is no storage-adapter plug-in point left; every adapter owns its own persistence.
+    - `IRateLimiterData` is no longer exported from `eridu-tech/rate-limiter/contracts`.
+
+- 675742a: Update `RedisCircuitBreakerAdapter` to work with Redis Cluster and fix its backoff delays.
+
+    ## Breaking changes
+    - The adapter implements `IInitizable`: call `init()` once before the first operation. Calling `init()` more than once is a no-op.
+    - Keys are wrapped in a Redis hash tag by default, so state written by older versions lives under the old key name. See **Redis Cluster support** below.
+
+    ## Redis Cluster support
+    - Accepts either a standalone ioredis `Redis` client or an ioredis `Cluster` client.
+    - Uses Redis Cluster shard keys (hash tags) by default: `user` is stored as `{user}`, so keys with the same name share one hash slot. Pass `useShardingKey: false` to keep the plain key; keys that already contain a hash tag are not wrapped twice.
+
+    ## Bug fixes and improvements
+    - The exponential, linear and polynomial backoff delays evaluated in Redis now match their in-process counterparts. The exponential delay was computed as `min(maxDelay, minDelay, multiplier^attempt)` instead of `min(maxDelay, minDelay * multiplier^attempt)`, which produced delays far below the configured minimum.
+
+- fa52374: Rename the Redis event bus adapter and fix listener removal.
+
+    ## Breaking changes
+    - `RedisPubSubEventBusAdapter` is now `RedisEventBusAdapter`, and `RedisPubSubEventBusAdapterSettings` is now `RedisEventBusAdapterSettings`.
+    - The package subpath `eridu-tech/event-bus/redis-pub-sub-event-bus-adapter` is now `eridu-tech/event-bus/redis-event-bus-adapter`.
+    - Channel names are wrapped in a Redis hash tag by default, so publishers outside this adapter must publish to the hashed channel name, e.g. `{event}`. See **Redis Cluster support** below.
+
+    ## Bug fixes
+    - **Removing one listener no longer disables the others.** `removeListener` used to call `unsubscribe(eventName)` on every removal, which unsubscribes the whole Redis channel. It now unsubscribes only when the last listener for that event is removed.
+    - **A single Redis message no longer invokes listeners multiple times.** The `"message"` handler used to be registered again on every `addListener` call, so each message ran through every registered copy of the handler. It is now registered once, and `addListener` subscribes only when the first listener for an event is added.
+
+    ## Tests
+    - The adapter test suite now covers two listeners on one event, removing one, and the remaining listener still receiving the event.
+
+    ## Redis Cluster support
+    - Accepts either a standalone ioredis `Redis` client or an ioredis `Cluster` client.
+    - Uses Redis Cluster shard keys (hash tags) by default: `event` becomes `{event}`, and the adapter publishes and subscribes with `SPUBLISH`/`SSUBSCRIBE`, so sharded pub/sub works on Redis Cluster. Pass `useShardingKey: false` to keep the plain channel name; channel names that already contain a hash tag are not wrapped twice.
+    - Tests cover the hashed channel names and event delivery through a cluster client.
+
+- 675742a: Update `RedisLockAdapter` to mirror `MemoryLockAdapter` and to work with Redis Cluster.
+
+    ## Breaking changes
+    - The adapter now takes `RedisLockAdapterSettings`, so the Redis client is passed as `database`:
+
+        ```ts
+        const adapter = new RedisLockAdapter({ database: redis });
+        adapter.init();
+        ```
+
+    - The adapter implements `IInitizable`: call `init()` once before the first operation. Calling `init()` more than once is a no-op.
+    - The lock key stores `{ owner, expiration }` as JSON instead of the bare owner id, so state written by older versions is not readable. Drain in-flight locks before upgrading.
+    - Keys are wrapped in a Redis hash tag by default, so state written by older versions lives under the old key name. See **Redis Cluster support** below.
+
+    ## Redis Cluster support
+    - Accepts either a standalone ioredis `Redis` client or an ioredis `Cluster` client.
+    - Uses Redis Cluster shard keys (hash tags) by default: `lock` is stored as `{lock}`, so keys with the same name share one hash slot. Pass `useShardingKey: false` to keep the plain key; keys that already contain a hash tag are not wrapped twice.
+
+    ## Bug fixes and improvements
+    - Expirations are unix timestamps in milliseconds and the key TTL is relative, so clock drift between the application and the Redis server no longer expires the lock early.
+    - Re-acquiring a lock you already own updates its stored expiration, and `getState` reads the expiration from the stored state instead of `PEXPIRETIME`.
+
+- 675742a: Update `RedisRateLimiterAdapter` to work with Redis Cluster and fix its expiry and backoff handling.
+
+    ## Breaking changes
+    - The adapter implements `IInitizable`: call `init()` once before the first operation. Calling `init()` more than once is a no-op.
+    - Keys are wrapped in a Redis hash tag by default, so state written by older versions lives under the old key name. See **Redis Cluster support** below.
+
+    ## Redis Cluster support
+    - Accepts either a standalone ioredis `Redis` client or an ioredis `Cluster` client.
+    - Uses Redis Cluster shard keys (hash tags) by default: `user` is stored as `{user}`, so keys with the same name share one hash slot. Pass `useShardingKey: false` to keep the plain key; keys that already contain a hash tag are not wrapped twice.
+
+    ## Bug fixes and improvements
+    - The adapter no longer drops stored attempts when the Redis server clock runs ahead of the application clock. Entries were written with an absolute expiry taken from the application clock, so with enough clock drift the key expired the moment it was written and the limiter silently reset on every call. Expiry is now relative.
+    - The exponential, linear and polynomial backoff delays evaluated in Redis now match their in-process counterparts. The exponential delay was computed as `min(maxDelay, minDelay, multiplier^attempt)` instead of `min(maxDelay, minDelay * multiplier^attempt)`, which produced delays far below the configured minimum.
+
+- 675742a: Update `RedisSemaphoreAdapter` to mirror `MemorySemaphoreAdapter` and to work with Redis Cluster.
+
+    ## Breaking changes
+    - The adapter now takes `RedisSemaphoreAdapterSettings`, so the Redis client is passed as `database`:
+
+        ```ts
+        const adapter = new RedisSemaphoreAdapter({ database: redis });
+        adapter.init();
+        ```
+
+    - The adapter implements `IInitizable`: call `init()` once before the first operation. Calling `init()` more than once is a no-op.
+    - Keys are wrapped in a Redis hash tag by default, so state written by older versions lives under the old key names. See **Redis Cluster support** below.
+
+    ## Redis Cluster support
+    - Accepts either a standalone ioredis `Redis` client or an ioredis `Cluster` client.
+    - Uses Redis Cluster shard keys (hash tags) by default: the semaphore stores its state under `{key}` and `{key}__limit`, so both keys share one hash slot. Pass `useShardingKey: false` to keep the plain keys; keys that already contain a hash tag are not wrapped twice.
+
+    ## Bug fixes and improvements
+    - Expirations are unix timestamps in milliseconds and the key TTLs are relative, so clock drift between the application and the Redis server no longer expires state early.
+    - The semaphore keys now actually receive a TTL: the previous max-expiration lookup read the score-0 range, so keys with only expirable slots never expired.
+    - The limit is reset by the next acquire once every slot has been released or has expired, matching `MemorySemaphoreAdapter`.
+
+- 675742a: Update `RedisSharedLockAdapter` to mirror `MemorySharedLockAdapter` and to work with Redis Cluster.
+
+    ## Breaking changes
+    - The adapter now takes `RedisSharedLockAdapterSettings`, so the Redis client is passed as `database`:
+
+        ```ts
+        const adapter = new RedisSharedLockAdapter({ database: redis });
+        adapter.init();
+        ```
+
+    - The adapter implements `IInitizable`: call `init()` once before the first operation. Calling `init()` more than once is a no-op.
+    - The writer lock stores `{ owner, expiration }` as JSON instead of the bare owner id, so state written by older versions is not readable. Drain in-flight locks before upgrading.
+    - Keys are wrapped in a Redis hash tag by default, so state written by older versions lives under the old key names. See **Redis Cluster support** below.
+
+    ## Redis Cluster support
+    - Accepts either a standalone ioredis `Redis` client or an ioredis `Cluster` client.
+    - Uses Redis Cluster shard keys (hash tags) by default: the shared lock stores its state under `{key}__writer`, `{key}__reader` and `{key}__reader__limit`, so all keys share one hash slot. Pass `useShardingKey: false` to keep the plain keys; keys that already contain a hash tag are not wrapped twice.
+
+    ## Bug fixes and improvements
+    - Expirations are unix timestamps in milliseconds and the key TTLs are relative, so clock drift between the application and the Redis server no longer expires state early. The reader semaphore keys now actually receive a TTL: the previous max-expiration lookup read the score-0 range, so keys with only expirable slots never expired.
+    - An expired writer lock no longer blocks readers, and expired-only reader slots no longer block writers, matching `MemorySharedLockAdapter`.
+
+- 1e4f561: Add `ToLockAdapter`, which exposes a shared lock adapter as a lock adapter.
+
+    - `ToLockAdapter` implements `ILockAdapter` using the writer side of an `ISharedLockAdapter`: `acquire`, `release` and `refresh` map to `acquireWriter`, `releaseWriter` and `refreshWriter`, while `forceRelease` releases the entire shared lock.
+    - `getState` reports the writer lock, so a shared lock held only by readers has no owner and is reported as `null`.
+    - Import it from `eridu-tech/lock/to-lock-adapter`.
+
+- 1e4f561: Add `ToSemaphoreAdapter`, which exposes a shared lock adapter as a semaphore adapter.
+
+    - `ToSemaphoreAdapter` implements `ISemaphoreAdapter` using the reader side of an `ISharedLockAdapter`: the semaphore `slotId` becomes the reader `lockId`, `limit` is forwarded to the shared lock, and `forceReleaseAll` releases the entire shared lock.
+    - `getState` reports the reader semaphore, so a shared lock held by a writer is reported as `null`.
+    - Import it from `eridu-tech/semaphore/to-semaphore-adapter`.
+
+- a4ee50f: Rename the asynchronous pruning contract and add a synchronous variant in `eridu-tech/utilities/contracts`.
+
+    - The `IPrunable` contract whose `removeAllExpired()` returned a `Promise` is renamed to `IAsyncPrunable`.
+    - `IPrunable` now describes synchronous pruning with `removeAllExpired(): void`.
+    - `MongodbLockAdapter`, `MongodbSemaphoreAdapter`, `MongodbSharedLockAdapter`, `MongodbCircuitBreakerStorageAdapter`, `MemoryLockAdapter`, `MemorySemaphoreAdapter`, `MemorySharedLockAdapter`, `MemoryCacheAdapter`, `KyselyLockAdapter`, `KyselySemaphoreAdapter`, `KyselySharedLockAdapter` and `KyselyCacheAdapter` now implement `IAsyncPrunable`, so annotations using `IPrunable` for them must be updated.
+
+### Patch Changes
+
+- fd35dbb: `FtpFileStorageAdapter.getStream` no longer produces unhandled rejections when a download is aborted, and a failed download now fails the read instead of quietly ending it.
+
+    - Stopping a download early is now a normal end of the read: it no longer leaves an unhandled rejection behind, so it can no longer crash the server.
+    - When a download fails for any other reason, the consumer's `for await` throws instead of handing back a truncated file.
+    - The pooled client is returned exactly once when the stream ends, and the return completes before the read is reported as finished.
+    - `getStream` still resolves as soon as the existence check completes; it does not wait for the download to finish.
+
 ## 0.75.1
 
 ### Patch Changes
