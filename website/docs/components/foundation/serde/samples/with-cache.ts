@@ -8,9 +8,14 @@ import { Redis } from "ioredis";
 const serde = new SuperJsonSerde();
 serde.registerCustom(ListCollection.serdeTransformer);
 
+const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
+    lazyConnect: true,
+});
+await database.connect();
+
 const cache = new Cache<ICollection<string>>({
     adapter: new RedisCacheAdapter({
-        database: new Redis("YOUR_REDIS_CONNECTION_STRING"),
+        database,
         serde,
     }),
 });

@@ -7,7 +7,10 @@ import { EventBus } from "eridu-tech/event-bus";
 import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
 const serde = new SuperJsonSerde();
-const redis = new Redis("YOUR_REDIS_CONNECTION");
+const redis = new Redis("YOUR_REDIS_CONNECTION", {
+    lazyConnect: true,
+});
+await redis.connect();
 
 type EventMap = {
     "sending-rate-limiter-over-network": {
@@ -21,9 +24,14 @@ const eventBus = new EventBus<EventMap>({
     }),
 });
 
+const redisRateLimiterAdapter = new RedisRateLimiterAdapter({
+    database: redis,
+});
+redisRateLimiterAdapter.init();
+
 const rateLimiterFactory = new RateLimiterFactory({
     serde,
-    adapter: new RedisRateLimiterAdapter({ database: redis }),
+    adapter: redisRateLimiterAdapter,
 });
 const rateLimiter = rateLimiterFactory.create("resource", {
     limit: 10,

@@ -63,6 +63,8 @@ To use the `RedisEventBusAdapter`, you'll need to:
 
 ```
 
+The adapter accepts either a standalone ioredis `Redis` client or an ioredis `Cluster` client. Channel names are wrapped in a Redis hash tag by default, so `event` is published and subscribed as `{event}`, and a cluster client uses sharded pub/sub (`SPUBLISH`/`SSUBSCRIBE`) on those channels. Pass `useShardingKey: false` to use the plain channel name; a channel name that already contains a hash tag is not wrapped again.
+
 Pass any [`ITransactionHooks`](https://eridu-tech.github.io/eridu-tech-core/types/TransactionContext.ITransactionHooks.html) (like a [`TransactionContext`](/docs/components/foundation/transaction_context/transaction_context_usage), [`MultiTransactionHooks`](/docs/components/foundation/transaction_context/transaction_context_usage)) as the `transactionHooks` setting to make the adapter transaction aware. Events dispatch immediately outside a transaction, and inside transaction events dispatch after commit:
 
 ```ts file=./samples/redis-event-bus-adapter-transaction-aware.ts

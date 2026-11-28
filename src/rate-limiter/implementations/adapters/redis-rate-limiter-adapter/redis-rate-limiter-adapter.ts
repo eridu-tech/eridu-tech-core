@@ -13,8 +13,9 @@ import {
     serializeRateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import { rateLimiterFactoryLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/_module.js";
+import { containsRedisClusterHashTag } from "@/utilities/_module-exports.js";
 
-import type { Redis, Result } from "ioredis";
+import type { Cluster, Redis, Result } from "ioredis";
 
 import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module-exports.js";
 import type {
@@ -22,6 +23,7 @@ import type {
     IRateLimiterAdapterState,
     RateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/contracts/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * @internal
@@ -70,8 +72,18 @@ declare module "ioredis" {
 export type RedisRateLimiterAdapterSettings = {
     /**
      * The Redis client instance for rate-limiter state operations.
+     * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
      */
-    database: Redis;
+    database: Redis | Cluster;
+
+    /**
+     * Wraps the key in a Redis hash tag, e.g. `lock` becomes `{lock}`, so keys
+     * with the same name land in the same hash slot across clusters. Set it to
+     * `false` to use the key as is, e.g. when it already contains a hash tag.
+     *
+     * @default true
+     */
+    useShardingKey?: boolean;
 
     /**
      * You can choose between different types of predefined backoff policies.
@@ -96,16 +108,21 @@ export type RedisRateLimiterAdapterSettings = {
  * IMPORT_PATH: `"eridu-tech/rate-limiter/redis-rate-limiter-adapter"`
  * @group Adapters
  */
-export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
+export class RedisRateLimiterAdapter
+    implements IRateLimiterAdapter, IInitizable
+{
     private readonly backoff: Required<BackoffSettingsEnum>;
 
     private readonly policy: Required<RateLimiterPolicySettingsEnum>;
 
-    private readonly database: Redis;
+    private readonly database: Redis | Cluster;
+
+    private readonly useShardingKey: boolean;
 
     constructor(settings: RedisRateLimiterAdapterSettings) {
         const {
             database,
+            useShardingKey = true,
             backoffPolicy = {
                 type: BACKOFFS.EXPONENTIAL,
             },
@@ -115,10 +132,16 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
         } = settings;
 
         this.database = database;
+        this.useShardingKey = useShardingKey;
         this.backoff = resolveBackoffSettingsEnum(backoffPolicy);
         this.policy = resolveRateLimiterPolicySettings(rateLimiterPolicy);
-        this.initGetStateCommand();
-        this.initUpdateStateCommmand();
+    }
+
+    private shardingKey(key: string): string {
+        if (this.useShardingKey && !containsRedisClusterHashTag(key)) {
+            return `{${key}}`;
+        }
+        return key;
     }
 
     private initGetStateCommand(): void {
@@ -177,9 +200,14 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
         });
     }
 
+    init(): void {
+        this.initGetStateCommand();
+        this.initUpdateStateCommmand();
+    }
+
     async getState(key: string): Promise<IRateLimiterAdapterState | null> {
         const json = await this.database.eridu_rate_limiter_get_state(
-            key,
+            this.shardingKey(key),
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(serializeRateLimiterPolicySettingsEnum(this.policy)),
             Date.now(),
@@ -200,7 +228,7 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
         limit: number,
     ): Promise<IRateLimiterAdapterState> {
         const json = await this.database.eridu_rate_limiter_update_state(
-            key,
+            this.shardingKey(key),
             limit,
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(serializeRateLimiterPolicySettingsEnum(this.policy)),
@@ -215,6 +243,6 @@ export class RedisRateLimiterAdapter implements IRateLimiterAdapter {
     }
 
     async reset(key: string): Promise<void> {
-        await this.database.del(key);
+        await this.database.del(this.shardingKey(key));
     }
 }

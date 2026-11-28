@@ -10,11 +10,17 @@ type User = {
 };
 
 const serde = new SuperJsonSerde();
+
+const database = new Redis("YOUR_REDIS_CONNECTION", {
+    lazyConnect: true,
+});
+await database.connect();
+
 export const cacheResolver = new CacheResolver<"memory" | "redis", User>({
     adapters: {
         memory: new MemoryCacheAdapter(),
         redis: new RedisCacheAdapter({
-            database: new Redis("YOUR_REDIS_CONNECTION"),
+            database,
             serde,
         }),
     },

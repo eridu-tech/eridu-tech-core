@@ -17,6 +17,12 @@ type EventMap = {
 };
 
 const serde = new SuperJsonSerde();
+
+const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
+    lazyConnect: true,
+});
+await database.connect();
+
 export const eventBusResolver = new EventBusResolver<
     "memory" | "redis",
     EventMap
@@ -34,7 +40,7 @@ export const eventBusResolver = new EventBusResolver<
     adapters: {
         memory: new MemoryEventBusAdapter(),
         redis: new RedisEventBusAdapter({
-            client: new Redis("YOUR_REDIS_CONNECTION_STRING"),
+            client: database,
             serde,
         }),
     },

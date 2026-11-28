@@ -48,6 +48,10 @@ Create the adapter:
 
 ```
 
+The adapter implements `IInitizable`: call `init()` once to register its Redis commands before the first operation.
+
+The adapter accepts either a standalone ioredis `Redis` client or an ioredis `Cluster` client. Keys are wrapped in a Redis hash tag by default, so `user` is stored as `{user}` and keys with the same name share one hash slot in a cluster. Pass `useShardingKey: false` to store the plain key; a key that already contains a hash tag is not wrapped again.
+
 ### Configuring backoff policy
 
 The `type` field is the only required field. All other fields are optional.

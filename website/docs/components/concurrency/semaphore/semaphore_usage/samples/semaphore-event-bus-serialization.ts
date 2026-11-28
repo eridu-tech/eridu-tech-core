@@ -7,7 +7,10 @@ import { EventBus } from "eridu-tech/event-bus";
 import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
 const serde = new SuperJsonSerde();
-const redis = new Redis("YOUR_REDIS_CONNECTION");
+const redis = new Redis("YOUR_REDIS_CONNECTION", {
+    lazyConnect: true,
+});
+await redis.connect();
 
 type EventMap = {
     "sending-semaphore-over-network": {
@@ -21,9 +24,12 @@ const eventBus = new EventBus<EventMap>({
     }),
 });
 
+const redisSemaphoreAdapter = new RedisSemaphoreAdapter({ database: redis });
+redisSemaphoreAdapter.init();
+
 const semaphoreFactory = new SemaphoreFactory({
     serde,
-    adapter: new RedisSemaphoreAdapter(redis),
+    adapter: redisSemaphoreAdapter,
 });
 const semaphore = semaphoreFactory.create("resource", {
     limit: 2,

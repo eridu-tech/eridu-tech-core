@@ -31,13 +31,15 @@ describe(
         let adapter: ILockAdapter;
         beforeAll(async () => {
             startedContainer = await new RedisContainer("redis:7.4.2").start();
-            client = new Redis(startedContainer.getConnectionUrl());
+            client = new Redis(startedContainer.getConnectionUrl(), {
+                lazyConnect: true,
+            });
+            await client.connect();
         }, timeout.toMilliseconds());
         beforeEach(() => {
-            adapter = withPlugin(
-                new RedisLockAdapter(client),
-                withLockPrefix(randomUUID()),
-            );
+            const redisAdapter = new RedisLockAdapter({ database: client });
+            redisAdapter.init();
+            adapter = withPlugin(redisAdapter, withLockPrefix(randomUUID()));
         });
         afterAll(async () => {
             await client.quit();
@@ -49,6 +51,47 @@ describe(
             beforeEach,
             expect,
             describe,
+        });
+
+        describe("setting: useShardingKey", () => {
+            test("Should wrap the key in a hash tag by default", async () => {
+                const redisAdapter = new RedisLockAdapter({
+                    database: client,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.acquire("plain-lock", randomUUID(), null);
+
+                expect(await client.exists("{plain-lock}")).toBe(1);
+            });
+
+            test("Should not wrap a key that already contains a hash tag", async () => {
+                const redisAdapter = new RedisLockAdapter({
+                    database: client,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.acquire(
+                    "prefix{tagged-lock}",
+                    randomUUID(),
+                    null,
+                );
+
+                expect(await client.exists("prefix{tagged-lock}")).toBe(1);
+                expect(await client.exists("{prefix{tagged-lock}}")).toBe(0);
+            });
+
+            test("Should not wrap the key when it is disabled", async () => {
+                const redisAdapter = new RedisLockAdapter({
+                    database: client,
+                    useShardingKey: false,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.acquire("plain-lock-2", randomUUID(), null);
+
+                expect(await client.exists("plain-lock-2")).toBe(1);
+            });
         });
     },
 );

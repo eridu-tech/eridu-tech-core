@@ -4,3 +4,4 @@ import { database } from "./redis-rate-limiter-adapter-setup.js";
 const redisRateLimiterAdapter = new RedisRateLimiterAdapter({
     database,
 });
+redisRateLimiterAdapter.init();

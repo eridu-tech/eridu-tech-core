@@ -3,12 +3,18 @@ import { MemorySharedLockAdapter } from "eridu-tech/shared-lock/memory-shared-lo
 import { RedisSharedLockAdapter } from "eridu-tech/shared-lock/redis-shared-lock-adapter";
 import { Redis } from "ioredis";
 
+const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
+    lazyConnect: true,
+});
+await database.connect();
+
+const redisSharedLockAdapter = new RedisSharedLockAdapter({ database });
+redisSharedLockAdapter.init();
+
 export const sharedLockFactoryResolver = new SharedLockFactoryResolver({
     adapters: {
         memory: new MemorySharedLockAdapter(),
-        redis: new RedisSharedLockAdapter(
-            new Redis("YOUR_REDIS_CONNECTION_STRING"),
-        ),
+        redis: redisSharedLockAdapter,
     },
     defaultAdapter: "memory",
 });

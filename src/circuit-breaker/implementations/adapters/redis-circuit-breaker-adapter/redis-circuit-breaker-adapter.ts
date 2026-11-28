@@ -16,8 +16,9 @@ import {
     serializeCircuitBreakerPolicySettingsEnum,
 } from "@/circuit-breaker/implementations/adapters/_shared/_module.js";
 import { circuitBreakerFactoryLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/_module.js";
+import { containsRedisClusterHashTag } from "@/utilities/_module-exports.js";
 
-import type { Redis, Result } from "ioredis";
+import type { Cluster, Redis, Result } from "ioredis";
 
 import type { BackoffSettingsEnum } from "@/backoff-policies/implementations/_module-exports.js";
 import type {
@@ -27,6 +28,7 @@ import type {
     ICircuitBreakerAdapter,
     AllCircuitBreakerState,
 } from "@/circuit-breaker/contracts/_module-exports.js";
+import type { IInitizable } from "@/utilities/_module-exports.js";
 
 /**
  * Configuration for `RedisCircuitBreakerAdapter`.
@@ -38,8 +40,18 @@ import type {
 export type RedisCircuitBreakerAdapterSettings = {
     /**
      * The Redis client instance for circuit-breaker state operations.
+     * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
      */
-    database: Redis;
+    database: Redis | Cluster;
+
+    /**
+     * Wraps the key in a Redis hash tag, e.g. `lock` becomes `{lock}`, so keys
+     * with the same name land in the same hash slot across clusters. Set it to
+     * `false` to use the key as is, e.g. when it already contains a hash tag.
+     *
+     * @default true
+     */
+    useShardingKey?: boolean;
 
     /**
      * You can choose between different types of predefined backoff policies.
@@ -93,16 +105,21 @@ declare module "ioredis" {
  * IMPORT_PATH: `"eridu-tech/circuit-breaker/redis-circuit-breaker-adapter"`
  * @group Adapters
  */
-export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
+export class RedisCircuitBreakerAdapter
+    implements ICircuitBreakerAdapter, IInitizable
+{
     private readonly backoff: Required<BackoffSettingsEnum>;
 
     private readonly policy: Required<CircuitBreakerPolicySettingsEnum>;
 
-    private readonly database: Redis;
+    private readonly database: Redis | Cluster;
+
+    private readonly useShardingKey: boolean;
 
     constructor(settings: RedisCircuitBreakerAdapterSettings) {
         const {
             database,
+            useShardingKey = true,
             backoffPolicy = {
                 type: BACKOFFS.EXPONENTIAL,
             },
@@ -112,12 +129,16 @@ export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
         } = settings;
 
         this.database = database;
+        this.useShardingKey = useShardingKey;
         this.backoff = resolveBackoffSettingsEnum(backoffPolicy);
         this.policy = resolveCircuitBreakerPolicySettings(circuitBreakerPolicy);
+    }
 
-        this.initUpdateStateCommmand();
-        this.initTrackFailureCommmand();
-        this.initTrackSuccessCommmand();
+    private shardingKey(key: string): string {
+        if (this.useShardingKey && !containsRedisClusterHashTag(key)) {
+            return `{${key}}`;
+        }
+        return key;
     }
 
     private initUpdateStateCommmand(): void {
@@ -193,8 +214,14 @@ export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
         });
     }
 
+    init(): void {
+        this.initUpdateStateCommmand();
+        this.initTrackFailureCommmand();
+        this.initTrackSuccessCommmand();
+    }
+
     async getState(key: string): Promise<CircuitBreakerState> {
-        const value = await this.database.get(key);
+        const value = await this.database.get(this.shardingKey(key));
         if (value === null) {
             return CIRCUIT_BREAKER_STATE.CLOSED;
         }
@@ -204,7 +231,7 @@ export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
 
     async updateState(key: string): Promise<CircuitBreakerStateTransition> {
         const value = await this.database.eridu_circuit_breaker_update_state(
-            key,
+            this.shardingKey(key),
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(
                 serializeCircuitBreakerPolicySettingsEnum(this.policy),
@@ -216,7 +243,7 @@ export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
 
     async isolate(key: string): Promise<void> {
         await this.database.set(
-            key,
+            this.shardingKey(key),
             JSON.stringify({
                 type: CIRCUIT_BREAKER_STATE.ISOLATED,
             }),
@@ -225,7 +252,7 @@ export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
 
     async trackFailure(key: string): Promise<void> {
         await this.database.eridu_circuit_breaker_track_failure(
-            key,
+            this.shardingKey(key),
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(
                 serializeCircuitBreakerPolicySettingsEnum(this.policy),
@@ -236,7 +263,7 @@ export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
 
     async trackSuccess(key: string): Promise<void> {
         await this.database.eridu_circuit_breaker_track_success(
-            key,
+            this.shardingKey(key),
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(
                 serializeCircuitBreakerPolicySettingsEnum(this.policy),
@@ -246,6 +273,6 @@ export class RedisCircuitBreakerAdapter implements ICircuitBreakerAdapter {
     }
 
     async reset(key: string): Promise<void> {
-        await this.database.del(key);
+        await this.database.del(this.shardingKey(key));
     }
 }

@@ -6,11 +6,19 @@ import { Redis } from "ioredis";
 
 const serde = new SuperJsonSerde();
 
+const database = new Redis("YOUR_REDIS_CONNECTION", {
+    lazyConnect: true,
+});
+await database.connect();
+
+const redisSemaphoreAdapter = new RedisSemaphoreAdapter({ database });
+redisSemaphoreAdapter.init();
+
 export const semaphoreFactoryResolver = new SemaphoreFactoryResolver({
     serde,
     adapters: {
         memory: new MemorySemaphoreAdapter(),
-        redis: new RedisSemaphoreAdapter(new Redis("YOUR_REDIS_CONNECTION")),
+        redis: redisSemaphoreAdapter,
     },
     // You can set an optional default adapter
     defaultAdapter: "memory",

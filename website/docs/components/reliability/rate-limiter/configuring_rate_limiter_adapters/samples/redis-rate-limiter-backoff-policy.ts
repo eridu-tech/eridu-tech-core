@@ -3,7 +3,11 @@ import { RedisRateLimiterAdapter } from "eridu-tech/rate-limiter/redis-rate-limi
 import { Redis } from "ioredis";
 import { TimeSpan } from "eridu-tech/time-span";
 
-const database = new Redis("YOUR_REDIS_CONNECTION_STRING");
+const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
+    lazyConnect: true,
+});
+await database.connect();
+
 const redisRateLimiterAdapter = new RedisRateLimiterAdapter({
     database,
     backoffPolicy: {
@@ -12,3 +16,4 @@ const redisRateLimiterAdapter = new RedisRateLimiterAdapter({
         jitter: 0.5,
     },
 });
+redisRateLimiterAdapter.init();

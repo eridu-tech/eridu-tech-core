@@ -31,17 +31,22 @@ describe(
         let adapter: IRateLimiterAdapter;
         beforeAll(async () => {
             startedContainer = await new RedisContainer("redis:7.4.2").start();
-            client = new Redis(startedContainer.getConnectionUrl());
+            client = new Redis(startedContainer.getConnectionUrl(), {
+                lazyConnect: true,
+            });
+            await client.connect();
         }, timeout.toMilliseconds());
         beforeEach(() => {
+            const redisAdapter = new RedisRateLimiterAdapter({
+                database: client,
+                backoffPolicy:
+                    fixedWindowLimiterTestSuite.backoffPolicySettings,
+                rateLimiterPolicy:
+                    fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
+            });
+            redisAdapter.init();
             adapter = withPlugin(
-                new RedisRateLimiterAdapter({
-                    database: client,
-                    backoffPolicy:
-                        fixedWindowLimiterTestSuite.backoffPolicySettings,
-                    rateLimiterPolicy:
-                        fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
-                }),
+                redisAdapter,
                 withRateLimiterPrefix(randomUUID()),
             );
         });
@@ -56,6 +61,56 @@ describe(
             describe,
             expect,
             test,
+        });
+
+        describe("setting: useShardingKey", () => {
+            test("Should wrap the key in a hash tag by default", async () => {
+                const redisAdapter = new RedisRateLimiterAdapter({
+                    database: client,
+                    backoffPolicy:
+                        fixedWindowLimiterTestSuite.backoffPolicySettings,
+                    rateLimiterPolicy:
+                        fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.updateState("plain-limiter", 1);
+
+                expect(await client.exists("{plain-limiter}")).toBe(1);
+                expect(await client.exists("plain-limiter")).toBe(0);
+            });
+
+            test("Should not wrap a key that already contains a hash tag", async () => {
+                const redisAdapter = new RedisRateLimiterAdapter({
+                    database: client,
+                    backoffPolicy:
+                        fixedWindowLimiterTestSuite.backoffPolicySettings,
+                    rateLimiterPolicy:
+                        fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.updateState("prefix{tagged-limiter}", 1);
+
+                expect(await client.exists("prefix{tagged-limiter}")).toBe(1);
+                expect(await client.exists("{prefix{tagged-limiter}}")).toBe(0);
+            });
+
+            test("Should not wrap the key when it is disabled", async () => {
+                const redisAdapter = new RedisRateLimiterAdapter({
+                    database: client,
+                    useShardingKey: false,
+                    backoffPolicy:
+                        fixedWindowLimiterTestSuite.backoffPolicySettings,
+                    rateLimiterPolicy:
+                        fixedWindowLimiterTestSuite.rateLimiterPolicySettings,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.updateState("plain-limiter-2", 1);
+
+                expect(await client.exists("plain-limiter-2")).toBe(1);
+            });
         });
     },
 );
