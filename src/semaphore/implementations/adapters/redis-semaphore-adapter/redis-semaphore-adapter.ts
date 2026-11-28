@@ -21,9 +21,9 @@ type IRedisJsonSemaphoreState = {
 
     /**
      * Slot id mapped to its expiration as unix timestamp in milliseconds.
-     * `0` means the slot never expires.
+     * `null` means the slot never expires.
      */
-    acquiredSlots: Record<string, number>;
+    acquiredSlots: Record<string, number | null>;
 };
 
 declare module "ioredis" {
@@ -261,7 +261,7 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
             limit: json.limit,
             acquiredSlots: new Map(
                 Object.entries(json.acquiredSlots).map(([key_, expiration]) => {
-                    if (expiration === 0) {
+                    if (expiration === null) {
                         return [key_, null] as const;
                     }
                     return [key_, new Date(expiration)];

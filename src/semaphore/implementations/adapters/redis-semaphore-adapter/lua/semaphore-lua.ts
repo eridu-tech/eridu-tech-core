@@ -92,7 +92,7 @@ local function Semaphore(semaphoreStorage)
                 return 0
             end
 
-            local isUnexpireable = expiration == 0
+            local isUnexpireable = expiration == math.huge
             if isUnexpireable then
                 return 0
             end
