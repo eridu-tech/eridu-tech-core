@@ -3,6 +3,7 @@
  */
 
 import { lockFactoryLua } from "@/lock/implementations/adapters/redis-lock-adapter/lua/_module.js";
+import { containsRedisClusterHashTag } from "@/utilities/_module-exports.js";
 
 import type { Cluster, Result, Redis } from "ioredis";
 
@@ -242,7 +243,7 @@ export class RedisLockAdapter implements ILockAdapter, IInitizable {
     }
 
     private shardingKey(key: string): string {
-        if (this.useShardingKey) {
+        if (this.useShardingKey && !containsRedisClusterHashTag(key)) {
             return `{${key}}`;
         }
         return key;
