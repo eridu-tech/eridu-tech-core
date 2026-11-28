@@ -139,6 +139,8 @@ Create the adapter:
 
 The adapter implements `IInitizable`: call `init()` once to register its Redis commands before the first operation.
 
+The adapter accepts either a standalone ioredis `Redis` client or an ioredis `Cluster` client. Keys are wrapped in a Redis hash tag by default, so the state is stored in `{key}__writer`, `{key}__reader` and `{key}__reader__limit` and all keys share one hash slot in a cluster. Pass `useShardingKey: false` to store the plain keys; a key that already contains a hash tag is not wrapped again.
+
 :::danger
 Note in order to use `RedisSharedLockAdapter` correctly, ensure you use a single, consistent database across all server instances or processes.
 :::
