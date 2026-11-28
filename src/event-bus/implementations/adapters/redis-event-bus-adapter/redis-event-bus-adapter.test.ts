@@ -44,7 +44,10 @@ describe(
         const serde = new SuperJsonSerde();
         beforeAll(async () => {
             startedContainer = await new RedisContainer("redis:7.2").start();
-            client = new Redis(startedContainer.getConnectionUrl());
+            client = new Redis(startedContainer.getConnectionUrl(), {
+                lazyConnect: true,
+            });
+            await client.connect();
         }, timeout.toMilliseconds());
         beforeEach(() => {
             adapter = withPlugin(
