@@ -5,12 +5,18 @@ import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
 const serde = new SuperJsonSerde();
 
-const redisClient = new Redis("YOUR_REDIS_CONNECTION");
+const redisClient = new Redis("YOUR_REDIS_CONNECTION", {
+    lazyConnect: true,
+});
+await redisClient.connect();
+
+const redisSharedLockAdapter = new RedisSharedLockAdapter(redisClient);
+redisSharedLockAdapter.init();
 
 const sharedLockFactory = new SharedLockFactory({
     // You can laso pass in an array of Serde class instances
     serde,
-    adapter: new RedisSharedLockAdapter(redisClient),
+    adapter: redisSharedLockAdapter,
 });
 
 const sharedLock = sharedLockFactory.create("resource", {
