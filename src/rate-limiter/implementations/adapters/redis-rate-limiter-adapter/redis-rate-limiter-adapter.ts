@@ -76,6 +76,15 @@ export type RedisRateLimiterAdapterSettings = {
     database: Redis | Cluster;
 
     /**
+     * Wraps the key in a Redis hash tag, e.g. `lock` becomes `{lock}`, so keys
+     * with the same name land in the same hash slot across clusters. Set it to
+     * `false` to use the key as is, e.g. when it already contains a hash tag.
+     *
+     * @default true
+     */
+    useShardingKey?: boolean;
+
+    /**
      * You can choose between different types of predefined backoff policies.
      * @default
      * ```ts
@@ -107,9 +116,12 @@ export class RedisRateLimiterAdapter
 
     private readonly database: Redis | Cluster;
 
+    private readonly useShardingKey: boolean;
+
     constructor(settings: RedisRateLimiterAdapterSettings) {
         const {
             database,
+            useShardingKey = true,
             backoffPolicy = {
                 type: BACKOFFS.EXPONENTIAL,
             },
@@ -119,8 +131,16 @@ export class RedisRateLimiterAdapter
         } = settings;
 
         this.database = database;
+        this.useShardingKey = useShardingKey;
         this.backoff = resolveBackoffSettingsEnum(backoffPolicy);
         this.policy = resolveRateLimiterPolicySettings(rateLimiterPolicy);
+    }
+
+    private shardingKey(key: string): string {
+        if (this.useShardingKey) {
+            return `{${key}}`;
+        }
+        return key;
     }
 
     private initGetStateCommand(): void {
@@ -186,7 +206,7 @@ export class RedisRateLimiterAdapter
 
     async getState(key: string): Promise<IRateLimiterAdapterState | null> {
         const json = await this.database.eridu_rate_limiter_get_state(
-            key,
+            this.shardingKey(key),
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(serializeRateLimiterPolicySettingsEnum(this.policy)),
             Date.now(),
@@ -207,7 +227,7 @@ export class RedisRateLimiterAdapter
         limit: number,
     ): Promise<IRateLimiterAdapterState> {
         const json = await this.database.eridu_rate_limiter_update_state(
-            key,
+            this.shardingKey(key),
             limit,
             JSON.stringify(serializeBackoffSettingsEnum(this.backoff)),
             JSON.stringify(serializeRateLimiterPolicySettingsEnum(this.policy)),
@@ -222,6 +242,6 @@ export class RedisRateLimiterAdapter
     }
 
     async reset(key: string): Promise<void> {
-        await this.database.del(key);
+        await this.database.del(this.shardingKey(key));
     }
 }
