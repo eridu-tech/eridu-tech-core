@@ -24,7 +24,7 @@ const eventBus = new EventBus<EventMap>({
     }),
 });
 
-const redisLockAdapter = new RedisLockAdapter(redis);
+const redisLockAdapter = new RedisLockAdapter({ database: redis });
 redisLockAdapter.init();
 
 const lockFactory = new LockFactory({

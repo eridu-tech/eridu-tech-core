@@ -8,7 +8,7 @@ const database = new Redis("YOUR_REDIS_CONNECTION", {
 });
 await database.connect();
 
-const redisLockAdapter = new RedisLockAdapter(database);
+const redisLockAdapter = new RedisLockAdapter({ database });
 redisLockAdapter.init();
 
 export const lockFactoryResolver = new LockFactoryResolver({

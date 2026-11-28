@@ -37,7 +37,7 @@ describe(
             await client.connect();
         }, timeout.toMilliseconds());
         beforeEach(() => {
-            const redisAdapter = new RedisLockAdapter(client);
+            const redisAdapter = new RedisLockAdapter({ database: client });
             redisAdapter.init();
             adapter = withPlugin(redisAdapter, withLockPrefix(randomUUID()));
         });

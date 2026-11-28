@@ -10,7 +10,7 @@ const redisClient = new Redis("YOUR_REDIS_CONNECTION", {
 });
 await redisClient.connect();
 
-const redisLockAdapter = new RedisLockAdapter(redisClient);
+const redisLockAdapter = new RedisLockAdapter({ database: redisClient });
 redisLockAdapter.init();
 
 const lockFactory = new LockFactory({

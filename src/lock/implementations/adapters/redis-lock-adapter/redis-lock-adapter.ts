@@ -91,9 +91,31 @@ declare module "ioredis" {
 }
 
 /**
- * To utilize the `RedisLockAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package.
+ * Configuration for `RedisLockAdapter`.
+ * Requires a Redis client.
  *
- * Note in order to use `RedisLockAdapter` correctly, ensure you use a single, consistent database across all server instances.
+ * IMPORT_PATH: `"eridu-tech/lock/redis-lock-adapter"`
+ * @group Adapters
+ */
+export type RedisLockAdapterSettings = {
+    /**
+     * The Redis client instance for lock state operations.
+     * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
+     */
+    database: Redis | Cluster;
+
+    /**
+     * Wraps the key in a Redis hash tag, e.g. `lock` becomes `{lock}`, so keys
+     * with the same name land in the same hash slot across clusters. Set it to
+     * `false` to use the key as is, e.g. when it already contains a hash tag.
+     *
+     * @default true
+     */
+    useShardingKey?: boolean;
+};
+
+/**
+ * To utilize the `RedisLockAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package.
  *
  * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
  *
@@ -101,7 +123,14 @@ declare module "ioredis" {
  * @group Adapters
  */
 export class RedisLockAdapter implements ILockAdapter, IInitizable {
-    constructor(private readonly database: Redis | Cluster) {}
+    private readonly database: Redis | Cluster;
+    private readonly useShardingKey: boolean;
+
+    constructor(settings: RedisLockAdapterSettings) {
+        const { database, useShardingKey = true } = settings;
+        this.database = database;
+        this.useShardingKey = useShardingKey;
+    }
 
     private initAcquireCommand(): void {
         if (typeof this.database.eridu_lock_acquire === "function") {
@@ -212,13 +241,20 @@ export class RedisLockAdapter implements ILockAdapter, IInitizable {
         this.initGetStateCommand();
     }
 
+    private shardingKey(key: string): string {
+        if (this.useShardingKey) {
+            return `{${key}}`;
+        }
+        return key;
+    }
+
     async acquire(
         key: string,
         lockId: string,
         ttl: Date | null,
     ): Promise<boolean> {
         const result = await this.database.eridu_lock_acquire(
-            key,
+            this.shardingKey(key),
             lockId,
             ttl?.getTime() ?? null,
             Date.now(),
@@ -228,7 +264,7 @@ export class RedisLockAdapter implements ILockAdapter, IInitizable {
 
     async release(key: string, lockId: string): Promise<boolean> {
         const result = await this.database.eridu_lock_release(
-            key,
+            this.shardingKey(key),
             lockId,
             Date.now(),
         );
@@ -237,7 +273,7 @@ export class RedisLockAdapter implements ILockAdapter, IInitizable {
 
     async forceRelease(key: string): Promise<boolean> {
         const result = await this.database.eridu_lock_force_release(
-            key,
+            this.shardingKey(key),
             Date.now(),
         );
         return result === 1;
@@ -245,7 +281,7 @@ export class RedisLockAdapter implements ILockAdapter, IInitizable {
 
     async refresh(key: string, lockId: string, ttl: Date): Promise<boolean> {
         const result = await this.database.eridu_lock_refresh(
-            key,
+            this.shardingKey(key),
             lockId,
             ttl.getTime(),
             Date.now(),
@@ -255,7 +291,10 @@ export class RedisLockAdapter implements ILockAdapter, IInitizable {
 
     async getState(key: string): Promise<ILockAdapterState | null> {
         const json = JSON.parse(
-            await this.database.eridu_lock_get_state(key, Date.now()),
+            await this.database.eridu_lock_get_state(
+                this.shardingKey(key),
+                Date.now(),
+            ),
         ) as IRedisJsonLockState | null;
         if (json === null) {
             return null;

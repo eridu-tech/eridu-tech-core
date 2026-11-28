@@ -6,5 +6,5 @@ const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
 });
 await database.connect();
 
-export const redisLockAdapter = new RedisLockAdapter(database);
+export const redisLockAdapter = new RedisLockAdapter({ database });
 redisLockAdapter.init();
