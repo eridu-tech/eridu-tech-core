@@ -222,6 +222,22 @@ The `NoOpSemaphoreAdapter` is a no-operation implementation, it performs no acti
 The `NoOpSemaphoreAdapter` is useful when you want to mock out or disable your [`SemaphoreFactory`](https://eridu-tech.github.io/eridu-tech-core/classes/Semaphore.SemaphoreFactory.html) instance.
 :::
 
+## ToSemaphoreAdapter
+
+The `ToSemaphoreAdapter` exposes a shared lock adapter as a semaphore adapter by using the reader side of the shared lock:
+
+```ts file=./samples/to-semaphore-adapter.ts
+
+```
+
+- The semaphore `slotId` is used as the reader `lockId`, and `limit` is forwarded to the wrapped [`ISharedLockAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/SharedLock.ISharedLockAdapter.html).
+- `forceReleaseAll` releases the entire shared lock.
+- `getState` reports the reader semaphore, so a shared lock held by a writer is reported as `null`.
+
+:::info
+Use the `ToSemaphoreAdapter` when you want to reuse an existing [`ISharedLockAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/SharedLock.ISharedLockAdapter.html) where an [`ISemaphoreAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/Semaphore.ISemaphoreAdapter.html) is expected.
+:::
+
 ## Further information
 
 For further information refer to [`eridu-tech/semaphore`](https://eridu-tech.github.io/eridu-tech-core/modules/Semaphore.html) API docs.

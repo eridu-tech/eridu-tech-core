@@ -220,6 +220,22 @@ The `NoOpLockAdapter` is a no-operation implementation, it performs no actions w
 The `NoOpLockAdapter` is useful when you want to mock out or disable your [`LockFactory`](https://eridu-tech.github.io/eridu-tech-core/classes/Lock.LockFactory.html) instance.
 :::
 
+## ToLockAdapter
+
+The `ToLockAdapter` exposes a shared lock adapter as a lock adapter by using the writer side of the shared lock:
+
+```ts file=./samples/to-lock-adapter.ts
+
+```
+
+- `acquire`, `release` and `refresh` map to `acquireWriter`, `releaseWriter` and `refreshWriter` of the wrapped [`ISharedLockAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/SharedLock.ISharedLockAdapter.html).
+- `forceRelease` releases the entire shared lock.
+- `getState` reports the writer lock, so a shared lock held only by readers is reported as `null`.
+
+:::info
+Use the `ToLockAdapter` when you want to reuse an existing [`ISharedLockAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/SharedLock.ISharedLockAdapter.html) where an [`ILockAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/Lock.ILockAdapter.html) is expected.
+:::
+
 ## Further information
 
 For further information refer to [`eridu-tech/lock`](https://eridu-tech.github.io/eridu-tech-core/modules/Lock.html) API docs.
