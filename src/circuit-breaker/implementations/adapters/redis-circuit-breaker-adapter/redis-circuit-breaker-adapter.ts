@@ -16,6 +16,7 @@ import {
     serializeCircuitBreakerPolicySettingsEnum,
 } from "@/circuit-breaker/implementations/adapters/_shared/_module.js";
 import { circuitBreakerFactoryLua } from "@/circuit-breaker/implementations/adapters/redis-circuit-breaker-adapter/lua/_module.js";
+import { containsRedisClusterHashTag } from "@/utilities/_module-exports.js";
 
 import type { Cluster, Redis, Result } from "ioredis";
 
@@ -134,7 +135,7 @@ export class RedisCircuitBreakerAdapter
     }
 
     private shardingKey(key: string): string {
-        if (this.useShardingKey) {
+        if (this.useShardingKey && !containsRedisClusterHashTag(key)) {
             return `{${key}}`;
         }
         return key;

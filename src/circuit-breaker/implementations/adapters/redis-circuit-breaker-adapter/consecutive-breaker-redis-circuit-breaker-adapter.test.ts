@@ -62,5 +62,55 @@ describe(
             expect,
             test,
         });
+
+        describe("setting: useShardingKey", () => {
+            test("Should wrap the key in a hash tag by default", async () => {
+                const redisAdapter = new RedisCircuitBreakerAdapter({
+                    database: client,
+                    backoffPolicy:
+                        consecutiveBreakerTestSuite.backoffPolicySettings,
+                    circuitBreakerPolicy:
+                        consecutiveBreakerTestSuite.circuitBreakerPolicySettings,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.isolate("plain-breaker");
+
+                expect(await client.exists("{plain-breaker}")).toBe(1);
+                expect(await client.exists("plain-breaker")).toBe(0);
+            });
+
+            test("Should not wrap a key that already contains a hash tag", async () => {
+                const redisAdapter = new RedisCircuitBreakerAdapter({
+                    database: client,
+                    backoffPolicy:
+                        consecutiveBreakerTestSuite.backoffPolicySettings,
+                    circuitBreakerPolicy:
+                        consecutiveBreakerTestSuite.circuitBreakerPolicySettings,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.isolate("prefix{tagged-breaker}");
+
+                expect(await client.exists("prefix{tagged-breaker}")).toBe(1);
+                expect(await client.exists("{prefix{tagged-breaker}}")).toBe(0);
+            });
+
+            test("Should not wrap the key when it is disabled", async () => {
+                const redisAdapter = new RedisCircuitBreakerAdapter({
+                    database: client,
+                    useShardingKey: false,
+                    backoffPolicy:
+                        consecutiveBreakerTestSuite.backoffPolicySettings,
+                    circuitBreakerPolicy:
+                        consecutiveBreakerTestSuite.circuitBreakerPolicySettings,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.isolate("plain-breaker-2");
+
+                expect(await client.exists("plain-breaker-2")).toBe(1);
+            });
+        });
     },
 );
