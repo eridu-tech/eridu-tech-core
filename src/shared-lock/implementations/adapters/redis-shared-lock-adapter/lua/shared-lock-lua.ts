@@ -43,7 +43,7 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
 
             writerLockStorage.save(key, {
                 owner = lockId,
-                expiration = expiration or 0,
+                expiration = expiration,
             })
 
             return 1
@@ -90,7 +90,7 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
             end
 
             local currentExpiration = currentWriter.expiration
-            local isUnexpireable = currentExpiration == nil or currentExpiration == 0
+            local isUnexpireable = currentExpiration == nil
             if isUnexpireable then
                 return 0
             end
@@ -181,7 +181,7 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
                 return 0
             end
 
-            local isUnexpireable = expiration == 0
+            local isUnexpireable = expiration == math.huge
             if isUnexpireable then
                 return 0
             end

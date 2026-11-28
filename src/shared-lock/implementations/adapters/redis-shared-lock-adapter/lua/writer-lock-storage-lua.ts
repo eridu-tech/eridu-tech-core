@@ -4,10 +4,10 @@
 
 /**
  * Mirrors the writer lock part of the `MemorySharedLockAdapter`: the state is
- * stored together with its expiration as a unix timestamp in milliseconds
- * (`0` means the writer lock never expires), expired entries are treated as
- * missing and the key TTL is relative so it never depends on the Redis server
- * clock.
+ * stored together with its expiration as a unix timestamp in milliseconds,
+ * expired entries are treated as missing and the key TTL is relative so it
+ * never depends on the Redis server clock. Writer locks without an expiration
+ * omit the field and never get a key TTL.
  *
  * @internal
  */
@@ -29,8 +29,7 @@ local function WriterLockStorage(currentDate)
         end
 
         local state = cjson.decode(value)
-        local isExpirable = state.expiration ~= nil and state.expiration ~= 0
-        if isExpirable and state.expiration <= currentDate then
+        if state.expiration ~= nil and state.expiration <= currentDate then
             return nil
         end
 
@@ -42,7 +41,7 @@ local function WriterLockStorage(currentDate)
     -- @return void
     local function save(key, state)
         local expiration = state.expiration
-        if expiration == nil or expiration == 0 then
+        if expiration == nil then
             redis.call("set", getKey(key), cjson.encode(state))
             return
         end

@@ -21,9 +21,9 @@ type IRedisJsonWriterLockState = {
     owner: string;
 
     /**
-     * As unix timestamp in milliseconds. `0` means the writer lock never expires.
+     * As unix timestamp in milliseconds. Omitted when the writer lock never expires.
      */
-    expiration: number;
+    expiration?: number;
 };
 
 /**
@@ -34,9 +34,9 @@ type IRedisJsonReaderSemaphore = {
 
     /**
      * Slot id mapped to its expiration as unix timestamp in milliseconds.
-     * `0` means the slot never expires.
+     * `null` means the slot never expires.
      */
-    acquiredSlots: Record<string, number>;
+    acquiredSlots: Record<string, number | null>;
 };
 
 /**
@@ -434,7 +434,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
                 writer: {
                     owner: json.writer.owner,
                     expiration:
-                        json.writer.expiration === 0
+                        json.writer.expiration === undefined
                             ? null
                             : new Date(json.writer.expiration),
                 },
@@ -449,7 +449,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
                     acquiredSlots: new Map(
                         Object.entries(json.reader.acquiredSlots).map(
                             ([key_, expiration]) => {
-                                if (expiration === 0) {
+                                if (expiration === null) {
                                     return [key_, null] as const;
                                 }
                                 return [key_, new Date(expiration)];

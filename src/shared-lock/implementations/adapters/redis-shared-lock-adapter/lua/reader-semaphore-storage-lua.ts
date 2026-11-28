@@ -4,9 +4,9 @@
 
 /**
  * Mirrors the reader semaphore part of the `MemorySharedLockAdapter`: slot
- * expirations are stored as unix timestamps in milliseconds (`0` means the slot
- * never expires), expired slots are treated as missing and the TTL of the keys
- * is relative so it never depends on the Redis server clock.
+ * expirations are stored as unix timestamps in milliseconds (`+inf` means the
+ * slot never expires), expired slots are treated as missing and the TTL of the
+ * keys is relative so it never depends on the Redis server clock.
  *
  * @internal
  */
@@ -49,16 +49,16 @@ local function ReaderSemaphoreStorage(currentDate)
         local readerKey = getReaderKey(key)
         local limitKey = getLimitKey(key)
 
-        local hasUnexpireableSlot = tonumber(redis.call("zcount", readerKey, 0, 0)) > 0
-        if hasUnexpireableSlot then
-            redis.call("persist", readerKey)
-            redis.call("persist", limitKey)
+        local highestScore = redis.call("zrange", readerKey, -1, -1, "WITHSCORES")[2]
+        if highestScore == nil then
             return
         end
 
-        local longestExpiration = tonumber(redis.call("zrange", readerKey, -1, -1, "WITHSCORES")[2])
-        local hasExpireableSlot = longestExpiration ~= nil and longestExpiration > 0
-        if not hasExpireableSlot then
+        local longestExpiration = tonumber(highestScore)
+        local hasUnexpireableSlot = longestExpiration == math.huge
+        if hasUnexpireableSlot then
+            redis.call("persist", readerKey)
+            redis.call("persist", limitKey)
             return
         end
 
@@ -110,17 +110,27 @@ local function ReaderSemaphoreStorage(currentDate)
         -- @param slotId string
         -- @return number | nil
         findSlot = function(key, slotId)
-            return tonumber(redis.call("zscore", getReaderKey(key), slotId))
+            local score = redis.call("zscore", getReaderKey(key), slotId)
+            if score == false or score == nil then
+                return nil
+            end
+
+            return tonumber(score)
         end,
 
         -- @param key string
-        -- @return table<string, number>
+        -- @return table<string, number | null>
         findSlots = function(key)
             local slots = {}
 
             local slotsArray = redis.call("zrange", getReaderKey(key), 0, -1, "WITHSCORES")
             for i = 1, #slotsArray, 2 do
-                slots[slotsArray[i]] = tonumber(slotsArray[i + 1])
+                local expiration = tonumber(slotsArray[i + 1])
+                if expiration == math.huge then
+                    slots[slotsArray[i]] = cjson.null
+                else
+                    slots[slotsArray[i]] = expiration
+                end
             end
 
             return slots
@@ -131,7 +141,7 @@ local function ReaderSemaphoreStorage(currentDate)
         -- @param expiration number | nil
         -- @return void
         addSlot = function(key, slotId, expiration)
-            redis.call("zadd", getReaderKey(key), expiration or 0, slotId)
+            redis.call("zadd", getReaderKey(key), expiration or "+inf", slotId)
         end,
 
         -- @param key string
