@@ -5,11 +5,9 @@ pagination_label: Creating CircuitBreaker adapters
 tags:
     - CircuitBreaker
     - Creating adapters
-    - Creating database adapters
 keywords:
     - CircuitBreaker
     - Creating adapters
-    - Creating database adapters
 ---
 
 # Creating CircuitBreaker adapters
@@ -18,26 +16,15 @@ keywords:
 
 In order to create an adapter you need to implement the [`ICircuitBreakerAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerAdapter.html) contract.
 
-## Implementing your custom ICircuitBreakerStorageAdapter
+Every adapter owns its own persistence. There is no storage-adapter plug-in point: an adapter that needs external storage creates its schema in `init()` and removes it in `deInit()`, and applies the `backoffPolicy` and `circuitBreakerPolicy` settings internally.
 
-We provide an additional contract [`ICircuitBreakerStorageAdapter`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerStorageAdapter.html) for building custom circuit-breaker storage adapters tailored to [`DatabaseCircuitBreakerAdapter`](/docs/components/reliability/circuit_breaker/configuring_circuit_breaker_adapters/#database_circuit_breaker_adapter) and [`DatabaseCircuitBreakerProviderFactory`](/docs/components/reliability/circuit_breaker/circuit_breaker_factory_resolver/#database_circuit_breaker_factory_resolver).
-
-## Testing your custom ICircuitBreakerStorageAdapter
-
-We provide a complete test suite to test your circuit-breaker storage adapter implementation. Simply use the [`circuitBreakerStorageTestSuite`](https://eridu-tech.github.io/eridu-tech-core/functions/CircuitBreaker.circuitBreakerStorageTestSuite.html) function:
-
-- Preconfigured Vitest test cases
-- Common edge case coverage
-
-Usage example:
-
-```ts file=./samples/circuit-breaker-storage-test-suite.ts
+```ts file=./samples/custom-circuit-breaker-adapter.ts
 
 ```
 
-## Implementing your custom ICircuitBreakerProvider class
+## Implementing your custom circuit-breaker factory class
 
-In some cases, you may need to implement a custom [`CircuitBreakerProvider`](https://eridu-tech.github.io/eridu-tech-core/classes/CircuitBreaker.CircuitBreakerProvider.html) class to optimize performance for your specific technology stack. You can then directly implement the [`ICircuitBreakerProvider`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerProvider.html) contract.
+In some cases, you may need to implement a custom [`CircuitBreakerFactory`](https://eridu-tech.github.io/eridu-tech-core/classes/CircuitBreaker.CircuitBreakerFactory.html) class to optimize performance for your specific technology stack. You can then directly implement the [`ICircuitBreakerFactory`](https://eridu-tech.github.io/eridu-tech-core/types/CircuitBreaker.ICircuitBreakerFactory.html) contract.
 
 ## Further information
 

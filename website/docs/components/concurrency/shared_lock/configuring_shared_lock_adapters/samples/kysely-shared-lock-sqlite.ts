@@ -11,7 +11,7 @@ const kysely = new Kysely<any>({
 });
 const transactionContext = createTransactionContext(kysely);
 export const kyselySharedLockAdapter = new KyselySharedLockAdapter({
-    transactionContext,
+    database: transactionContext,
 });
 
 // You need initialize the adapter once before using it.

@@ -19,7 +19,7 @@ const kysely = new Kysely<any>({
 });
 const transactionContext = createTransactionContext(kysely);
 const kyselySemaphoreAdapter = new KyselySemaphoreAdapter({
-    transactionContext,
+    database: transactionContext,
 });
 
 // You need initialize the adapter once before using it.

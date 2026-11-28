@@ -1,4 +1,4 @@
-import { BREAKER_POLICIES } from "eridu-tech/circuit-breaker/policies";
+import { BREAKER_POLICIES } from "eridu-tech/circuit-breaker/contracts";
 import { RedisCircuitBreakerAdapter } from "eridu-tech/circuit-breaker/redis-circuit-breaker-adapter";
 import { Redis } from "ioredis";
 

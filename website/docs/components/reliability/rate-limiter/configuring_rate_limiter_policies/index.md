@@ -6,19 +6,27 @@ pagination_label: Configuring RateLimiter policies
 
 # Configuring RateLimiter policies
 
-## SlidingWindowLimiter
+Every adapter takes a `rateLimiterPolicy` setting. The `type` field selects the policy and the remaining fields configure it. Import `LIMITER_POLICIES` from `eridu-tech/rate-limiter/contracts`.
 
-<!-- The `SlidingWindowLimiter` breaks after n requests in a row fail. -->
+The limit itself is passed per call when you create a rate limiter:
 
-```ts file=./samples/sliding-window-limiter.ts
-
+```ts
+rateLimiter.create("key", { limit: 5 });
 ```
 
 ## FixedWindowLimiter
 
-<!-- The `FixedWindowLimiter` breaks after a proportion of requests in a count based sliding window fail. -->
+The fixed-window policy counts attempts within a single fixed-length window.
 
 ```ts file=./samples/fixed-window-limiter.ts
+
+```
+
+## SlidingWindowLimiter
+
+The sliding-window policy counts attempts per window and weights the previous one.
+
+```ts file=./samples/sliding-window-limiter.ts
 
 ```
 

@@ -1,6 +1,6 @@
-import { MemoryRateLimiterStorageAdapter } from "eridu-tech/rate-limiter/memory-rate-limiter-storage-adapter";
+import { MemoryRateLimiterAdapter } from "eridu-tech/rate-limiter/memory-rate-limiter-adapter";
 
-const memoryRateLimiterStorageAdapter = new MemoryRateLimiterStorageAdapter();
+const memoryRateLimiterAdapter = new MemoryRateLimiterAdapter();
 
 // Remove all expired rate-limiter records manually.
-await memoryRateLimiterStorageAdapter.removeAllExpired();
+memoryRateLimiterAdapter.removeAllExpired();

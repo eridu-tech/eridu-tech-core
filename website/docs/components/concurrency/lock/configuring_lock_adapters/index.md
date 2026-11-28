@@ -160,7 +160,7 @@ Create a function that creates the [`TransactionContext`](/docs/components/found
 ```
 
 :::info
-The `transactionContext` setting makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
+The `database` setting takes either a `Kysely` instance or an `ITransactionContext`. A plain `Kysely` instance is wrapped in a no-op transaction context, and passing a `TransactionContext` makes the adapter join its active transaction.
 :::
 
 ### With Sqlite

@@ -1,4 +1,4 @@
-import { LIMITER_POLICIES } from "eridu-tech/rate-limiter/policies";
+import { LIMITER_POLICIES } from "eridu-tech/rate-limiter/contracts";
 import { RedisRateLimiterAdapter } from "eridu-tech/rate-limiter/redis-rate-limiter-adapter";
 import { Redis } from "ioredis";
 

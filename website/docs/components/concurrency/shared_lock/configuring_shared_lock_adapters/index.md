@@ -157,7 +157,7 @@ Create a function that creates the [`TransactionContext`](/docs/components/found
 ```
 
 :::info
-The `transactionContext` setting makes the adapter transaction aware. Adapters given the same instance share the same transaction when available.
+The `database` setting takes either a `Kysely` instance or an `ITransactionContext`. A plain `Kysely` instance is wrapped in a no-op transaction context, and passing a `TransactionContext` makes the adapter join its active transaction.
 :::
 
 ### With Sqlite
@@ -179,6 +179,8 @@ You will need to install [`pg`](https://www.npmjs.com/package/pg) package:
 ```ts file=./samples/kysely-shared-lock-postgres.ts
 
 ```
+
+`init()` creates a single `sharedLock` table: `key`, a JSON `writerLock` column (`{ owner, expiration }` or null), a JSON `readerSemaphore` column (`{ limit, slots }` or null) and an `expiration` column that lets `removeAllExpired` work from an index instead of inspecting the JSON columns. Writer and reader acquisitions serialize on the same row, so every operation is a single SQL statement.
 
 :::danger
 Note in order to use `KyselySharedLockAdapter` with `postgres` correctly, ensure you use a single, consistent database across all server instances. This means you can't use replication.
