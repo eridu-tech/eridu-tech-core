@@ -4,7 +4,7 @@
 
 import { semaphoreFactoryLua } from "@/semaphore/implementations/adapters/redis-semaphore-adapter/lua/_module.js";
 
-import type { Redis, Result } from "ioredis";
+import type { Cluster, Redis, Result } from "ioredis";
 
 import type {
     ISemaphoreAdapter,
@@ -30,12 +30,14 @@ declare module "ioredis" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     interface RedisCommander<Context> {
         /**
+         * @param limitKey Key of the semaphore limit
          * @param expiration As unix timestamp in miliseconds, or `null` for an unexpireable slot
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_semaphore_acquire(
             key: string,
+            limitKey: string,
             slotId: string,
             limit: number,
             expiration: number | null,
@@ -43,43 +45,51 @@ declare module "ioredis" {
         ): Result<1 | 0, Context>;
 
         /**
+         * @param limitKey Key of the semaphore limit
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_semaphore_release(
             key: string,
+            limitKey: string,
             slotId: string,
             currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param limitKey Key of the semaphore limit
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_semaphore_force_release_all(
             key: string,
+            limitKey: string,
             currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param limitKey Key of the semaphore limit
          * @param newExpiration As unix timestamp in miliseconds
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_semaphore_refresh(
             key: string,
+            limitKey: string,
             slotId: string,
             newExpiration: number,
             currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param limitKey Key of the semaphore limit
          * @param currentDate As unix timestamp in miliseconds
          * @returns {@link IRedisJsonSemaphoreState | `IRedisJsonSemaphoreState`} or `null` as json string.
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_semaphore_get_state(
             key: string,
+            limitKey: string,
             currentDate: number,
         ): Result<string, Context>;
     }
@@ -92,11 +102,28 @@ declare module "ioredis" {
  *
  * Note in order to use `RedisSemaphoreAdapter` correctly, ensure you use a single, consistent database across all server instances.
  *
+ * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
+ *
  * IMPORT_PATH: `"eridu-tech/semaphore/redis-semaphore-adapter"`
  * @group Adapters
  */
 export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
-    constructor(private readonly database: Redis) {}
+    constructor(private readonly database: Redis | Cluster) {}
+
+    /**
+     * The keys share a hash tag so a cluster client routes all of them to the
+     * same hash slot.
+     */
+    private static toRedisKeys(key: string): {
+        slotKey: string;
+        limitKey: string;
+    } {
+        const slotKey = `{${key}}`;
+        return {
+            slotKey,
+            limitKey: `${slotKey}__limit`,
+        };
+    }
 
     private initAcquireCommand(): void {
         if (typeof this.database.eridu_semaphore_acquire === "function") {
@@ -104,18 +131,19 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_semaphore_acquire", {
-            numberOfKeys: 1,
+            numberOfKeys: 2,
             lua: `
                 ${semaphoreFactoryLua}
 
                 local key = KEYS[1];
+                local limitKey = KEYS[2];
                 local slotId = ARGV[1];
                 local limit = tonumber(ARGV[2]);
                 local expiration = tonumber(ARGV[3]);
                 local currentDate = tonumber(ARGV[4]);
 
                 local semaphore = semaphoreFactory(currentDate)
-                return semaphore.acquire(key, slotId, limit, expiration)
+                return semaphore.acquire(key, limitKey, slotId, limit, expiration)
             `,
         });
     }
@@ -125,16 +153,17 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
             return;
         }
         this.database.defineCommand("eridu_semaphore_release", {
-            numberOfKeys: 1,
+            numberOfKeys: 2,
             lua: `
                 ${semaphoreFactoryLua}
 
                 local key = KEYS[1];
+                local limitKey = KEYS[2];
                 local slotId = ARGV[1];
                 local currentDate = tonumber(ARGV[2]);
 
                 local semaphore = semaphoreFactory(currentDate)
-                return semaphore.release(key, slotId)
+                return semaphore.release(key, limitKey, slotId)
             `,
         });
     }
@@ -148,15 +177,16 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_semaphore_force_release_all", {
-            numberOfKeys: 1,
+            numberOfKeys: 2,
             lua: `
                 ${semaphoreFactoryLua}
 
                 local key = KEYS[1];
+                local limitKey = KEYS[2];
                 local currentDate = tonumber(ARGV[1]);
 
                 local semaphore = semaphoreFactory(currentDate)
-                return semaphore.forceReleaseAll(key)
+                return semaphore.forceReleaseAll(key, limitKey)
             `,
         });
     }
@@ -167,17 +197,18 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_semaphore_refresh", {
-            numberOfKeys: 1,
+            numberOfKeys: 2,
             lua: `
                 ${semaphoreFactoryLua}
 
                 local key = KEYS[1];
+                local limitKey = KEYS[2];
                 local slotId = ARGV[1];
                 local newExpiration = tonumber(ARGV[2]);
                 local currentDate = tonumber(ARGV[3]);
 
                 local semaphore = semaphoreFactory(currentDate)
-                return semaphore.refresh(key, slotId, newExpiration)
+                return semaphore.refresh(key, limitKey, slotId, newExpiration)
             `,
         });
     }
@@ -188,15 +219,16 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_semaphore_get_state", {
-            numberOfKeys: 1,
+            numberOfKeys: 2,
             lua: `
                 ${semaphoreFactoryLua}
 
                 local key = KEYS[1];
+                local limitKey = KEYS[2];
                 local currentDate = tonumber(ARGV[1]);
 
                 local semaphore = semaphoreFactory(currentDate)
-                local state = semaphore.getState(key)
+                local state = semaphore.getState(key, limitKey)
                 return cjson.encode(state)
             `,
         });
@@ -212,8 +244,10 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
 
     async acquire(settings: SemaphoreAcquireSettings): Promise<boolean> {
         const { key, slotId, limit, ttl } = settings;
+        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
         const result = await this.database.eridu_semaphore_acquire(
-            key,
+            slotKey,
+            limitKey,
             slotId,
             limit,
             ttl?.getTime() ?? null,
@@ -223,8 +257,10 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
     }
 
     async release(key: string, slotId: string): Promise<boolean> {
+        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
         const result = await this.database.eridu_semaphore_release(
-            key,
+            slotKey,
+            limitKey,
             slotId,
             Date.now(),
         );
@@ -232,17 +268,21 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
     }
 
     async forceReleaseAll(key: string): Promise<boolean> {
+        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
         const hasDeleted =
             await this.database.eridu_semaphore_force_release_all(
-                key,
+                slotKey,
+                limitKey,
                 Date.now(),
             );
         return hasDeleted === 1;
     }
 
     async refresh(key: string, slotId: string, ttl: Date): Promise<boolean> {
+        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
         const result = await this.database.eridu_semaphore_refresh(
-            key,
+            slotKey,
+            limitKey,
             slotId,
             ttl.getTime(),
             Date.now(),
@@ -251,8 +291,13 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
     }
 
     async getState(key: string): Promise<ISemaphoreAdapterState | null> {
+        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
         const json = JSON.parse(
-            await this.database.eridu_semaphore_get_state(key, Date.now()),
+            await this.database.eridu_semaphore_get_state(
+                slotKey,
+                limitKey,
+                Date.now(),
+            ),
         ) as IRedisJsonSemaphoreState | null;
         if (json === null) {
             return null;

@@ -14,21 +14,15 @@ export const semaphoreStorageLua = `
 -- @param currentDate number
 local function SemaphoreStorage(currentDate)
     -- @param key string
-    -- @return string
-    local function getLimitKey(key)
-        return key .. "__limit"
-    end
-
-    -- @param key string
     -- @return void
     local function removeExpiredSlots(key)
         redis.call("zremrangebyscore", key, 1, currentDate)
     end
 
-    -- @param key string
+    -- @param limitKey string
     -- @return number | nil
-    local function findLimit(key)
-        return tonumber(redis.call("get", getLimitKey(key)))
+    local function findLimit(limitKey)
+        return tonumber(redis.call("get", limitKey))
     end
 
     -- @param key string
@@ -38,10 +32,9 @@ local function SemaphoreStorage(currentDate)
     end
 
     -- @param key string
+    -- @param limitKey string
     -- @return void
-    local function updateExpiration(key)
-        local limitKey = getLimitKey(key)
-
+    local function updateExpiration(key, limitKey)
         local highestScore = redis.call("zrange", key, -1, -1, "WITHSCORES")[2]
         if highestScore == nil then
             return
@@ -68,8 +61,9 @@ local function SemaphoreStorage(currentDate)
 
     return {
         -- @param key string
+        -- @param limitKey string
         -- @return { limit number, slotCount number } | nil
-        find = function(key)
+        find = function(key, limitKey)
             removeExpiredSlots(key)
 
             local slotCount = countSlots(key)
@@ -77,7 +71,7 @@ local function SemaphoreStorage(currentDate)
                 return nil
             end
 
-            local limit = findLimit(key)
+            local limit = findLimit(limitKey)
             if limit == nil then
                 return nil
             end
@@ -88,11 +82,11 @@ local function SemaphoreStorage(currentDate)
             }
         end,
 
-        -- @param key string
+        -- @param limitKey string
         -- @param limit number
         -- @return void
-        create = function(key, limit)
-            redis.call("set", getLimitKey(key), limit)
+        create = function(limitKey, limit)
+            redis.call("set", limitKey, limit)
         end,
 
         -- @param key string
@@ -146,25 +140,28 @@ local function SemaphoreStorage(currentDate)
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @return void
-        removeIfEmpty = function(key)
+        removeIfEmpty = function(key, limitKey)
             local slotCount = countSlots(key)
             if slotCount > 0 then
                 return
             end
 
             redis.call("del", key)
-            redis.call("del", getLimitKey(key))
+            redis.call("del", limitKey)
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @return void
-        remove = function(key)
+        remove = function(key, limitKey)
             redis.call("del", key)
-            redis.call("del", getLimitKey(key))
+            redis.call("del", limitKey)
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @return void
         updateExpiration = updateExpiration,
     }

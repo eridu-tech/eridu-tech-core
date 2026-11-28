@@ -14,14 +14,15 @@ export const semaphoreLua = `
 local function Semaphore(semaphoreStorage)
     return {
         -- @param key string
+        -- @param limitKey string
         -- @param slotId string
         -- @param limit number
         -- @param expiration number | nil
         -- @return 1 | 0
-        acquire = function(key, slotId, limit, expiration)
-            local currentState = semaphoreStorage.find(key)
+        acquire = function(key, limitKey, slotId, limit, expiration)
+            local currentState = semaphoreStorage.find(key, limitKey)
             if currentState == nil then
-                semaphoreStorage.create(key, limit)
+                semaphoreStorage.create(limitKey, limit)
                 currentState = {
                     limit = limit,
                     slotCount = semaphoreStorage.countSlots(key),
@@ -39,16 +40,17 @@ local function Semaphore(semaphoreStorage)
             end
 
             semaphoreStorage.addSlot(key, slotId, expiration)
-            semaphoreStorage.updateExpiration(key)
+            semaphoreStorage.updateExpiration(key, limitKey)
 
             return 1
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @param slotId string
         -- @return 1 | 0
-        release = function(key, slotId)
-            local currentState = semaphoreStorage.find(key)
+        release = function(key, limitKey, slotId)
+            local currentState = semaphoreStorage.find(key, limitKey)
             if currentState == nil then
                 return 0
             end
@@ -58,31 +60,33 @@ local function Semaphore(semaphoreStorage)
                 return 0
             end
 
-            semaphoreStorage.removeIfEmpty(key)
-            semaphoreStorage.updateExpiration(key)
+            semaphoreStorage.removeIfEmpty(key, limitKey)
+            semaphoreStorage.updateExpiration(key, limitKey)
 
             return 1
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @return 1 | 0
-        forceReleaseAll = function(key)
-            local currentState = semaphoreStorage.find(key)
+        forceReleaseAll = function(key, limitKey)
+            local currentState = semaphoreStorage.find(key, limitKey)
             if currentState == nil then
                 return 0
             end
 
-            semaphoreStorage.remove(key)
+            semaphoreStorage.remove(key, limitKey)
 
             return 1
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @param slotId string
         -- @param newExpiration number
         -- @return 1 | 0
-        refresh = function(key, slotId, newExpiration)
-            local currentState = semaphoreStorage.find(key)
+        refresh = function(key, limitKey, slotId, newExpiration)
+            local currentState = semaphoreStorage.find(key, limitKey)
             if currentState == nil then
                 return 0
             end
@@ -98,15 +102,16 @@ local function Semaphore(semaphoreStorage)
             end
 
             semaphoreStorage.addSlot(key, slotId, newExpiration)
-            semaphoreStorage.updateExpiration(key)
+            semaphoreStorage.updateExpiration(key, limitKey)
 
             return 1
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @return IRedisJsonSemaphoreState | nil
-        getState = function(key)
-            local currentState = semaphoreStorage.find(key)
+        getState = function(key, limitKey)
+            local currentState = semaphoreStorage.find(key, limitKey)
             if currentState == nil then
                 return nil
             end
