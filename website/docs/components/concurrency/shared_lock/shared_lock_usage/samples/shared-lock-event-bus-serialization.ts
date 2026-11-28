@@ -24,7 +24,7 @@ const eventBus = new EventBus<EventMap>({
     }),
 });
 
-const redisSharedLockAdapter = new RedisSharedLockAdapter(redis);
+const redisSharedLockAdapter = new RedisSharedLockAdapter({ database: redis });
 redisSharedLockAdapter.init();
 
 const sharedLockFactory = new SharedLockFactory({

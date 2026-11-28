@@ -8,7 +8,7 @@ const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
 });
 await database.connect();
 
-const redisSharedLockAdapter = new RedisSharedLockAdapter(database);
+const redisSharedLockAdapter = new RedisSharedLockAdapter({ database });
 redisSharedLockAdapter.init();
 
 export const sharedLockFactoryResolver = new SharedLockFactoryResolver({

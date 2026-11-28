@@ -33,7 +33,9 @@ describe(
             cluster = new Cluster(nodes, { natMap });
         }, timeout.toMilliseconds());
         beforeEach(() => {
-            const redisAdapter = new RedisSharedLockAdapter(cluster);
+            const redisAdapter = new RedisSharedLockAdapter({
+                database: cluster,
+            });
             redisAdapter.init();
             adapter = withPlugin(
                 redisAdapter,

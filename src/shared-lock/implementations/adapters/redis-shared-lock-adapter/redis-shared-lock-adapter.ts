@@ -181,9 +181,31 @@ declare module "ioredis" {
 }
 
 /**
- * To utilize the `RedisSharedLockAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package.
+ * Configuration for `RedisSharedLockAdapter`.
+ * Requires a Redis client.
  *
- * Note in order to use `RedisSharedLockAdapter` correctly, ensure you use a single, consistent database across all server instances.
+ * IMPORT_PATH: `"eridu-tech/shared-lock/redis-shared-lock-adapter"`
+ * @group Adapters
+ */
+export type RedisSharedLockAdapterSettings = {
+    /**
+     * The Redis client instance for shared lock state operations.
+     * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
+     */
+    database: Redis | Cluster;
+
+    /**
+     * Wraps the key in a Redis hash tag, e.g. `lock` becomes `{lock}`, so keys
+     * with the same name land in the same hash slot across clusters. Set it to
+     * `false` to use the key as is, e.g. when it already contains a hash tag.
+     *
+     * @default true
+     */
+    useShardingKey?: boolean;
+};
+
+/**
+ * To utilize the `RedisSharedLockAdapter`, you must install the [`"ioredis"`](https://www.npmjs.com/package/ioredis) package.
  *
  * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
  *
@@ -191,23 +213,13 @@ declare module "ioredis" {
  * @group Adapters
  */
 export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
-    constructor(private readonly database: Redis | Cluster) {}
+    private readonly database: Redis | Cluster;
+    private readonly useShardingKey: boolean;
 
-    /**
-     * The keys share a hash tag so a cluster client routes all of them to the
-     * same hash slot.
-     */
-    private static toRedisKeys(key: string): {
-        writerKey: string;
-        readerKey: string;
-        readerLimitKey: string;
-    } {
-        const hashTag = `{${key}}`;
-        return {
-            writerKey: `${hashTag}__writer`,
-            readerKey: `${hashTag}__reader`,
-            readerLimitKey: `${hashTag}__reader__limit`,
-        };
+    constructor(settings: RedisSharedLockAdapterSettings) {
+        const { database, useShardingKey = true } = settings;
+        this.database = database;
+        this.useShardingKey = useShardingKey;
     }
 
     private initAcquireWriterCommand(): void {
@@ -415,13 +427,32 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         this.initGetStateCommand();
     }
 
+    private shardingKey(key: string): string {
+        if (this.useShardingKey) {
+            return `{${key}}`;
+        }
+        return key;
+    }
+
+    private toRedisKeys(key: string): {
+        writerKey: string;
+        readerKey: string;
+        readerLimitKey: string;
+    } {
+        const hashTag = this.shardingKey(key);
+        return {
+            writerKey: `${hashTag}__writer`,
+            readerKey: `${hashTag}__reader`,
+            readerLimitKey: `${hashTag}__reader__limit`,
+        };
+    }
+
     async acquireWriter(
         key: string,
         lockId: string,
         ttl: Date | null,
     ): Promise<boolean> {
-        const { writerKey, readerKey, readerLimitKey } =
-            RedisSharedLockAdapter.toRedisKeys(key);
+        const { writerKey, readerKey, readerLimitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_acquire_writer(
             writerKey,
             readerKey,
@@ -434,8 +465,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
     }
 
     async releaseWriter(key: string, lockId: string): Promise<boolean> {
-        const { writerKey, readerKey, readerLimitKey } =
-            RedisSharedLockAdapter.toRedisKeys(key);
+        const { writerKey, readerKey, readerLimitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_release_writer(
             writerKey,
             readerKey,
@@ -451,8 +481,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         lockId: string,
         ttl: Date,
     ): Promise<boolean> {
-        const { writerKey, readerKey, readerLimitKey } =
-            RedisSharedLockAdapter.toRedisKeys(key);
+        const { writerKey, readerKey, readerLimitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_refresh_writer(
             writerKey,
             readerKey,
@@ -466,8 +495,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
 
     async acquireReader(settings: SharedLockAcquireSettings): Promise<boolean> {
         const { key, lockId, limit, ttl } = settings;
-        const { writerKey, readerKey, readerLimitKey } =
-            RedisSharedLockAdapter.toRedisKeys(key);
+        const { writerKey, readerKey, readerLimitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_acquire_reader(
             writerKey,
             readerKey,
@@ -481,8 +509,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
     }
 
     async releaseReader(key: string, lockId: string): Promise<boolean> {
-        const { writerKey, readerKey, readerLimitKey } =
-            RedisSharedLockAdapter.toRedisKeys(key);
+        const { writerKey, readerKey, readerLimitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_release_reader(
             writerKey,
             readerKey,
@@ -498,8 +525,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         lockId: string,
         ttl: Date,
     ): Promise<boolean> {
-        const { writerKey, readerKey, readerLimitKey } =
-            RedisSharedLockAdapter.toRedisKeys(key);
+        const { writerKey, readerKey, readerLimitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_refresh_reader(
             writerKey,
             readerKey,
@@ -512,8 +538,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
     }
 
     async forceRelease(key: string): Promise<boolean> {
-        const { writerKey, readerKey, readerLimitKey } =
-            RedisSharedLockAdapter.toRedisKeys(key);
+        const { writerKey, readerKey, readerLimitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_force_release(
             writerKey,
             readerKey,
@@ -524,8 +549,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
     }
 
     async getState(key: string): Promise<ISharedLockAdapterState | null> {
-        const { writerKey, readerKey, readerLimitKey } =
-            RedisSharedLockAdapter.toRedisKeys(key);
+        const { writerKey, readerKey, readerLimitKey } = this.toRedisKeys(key);
         const json = JSON.parse(
             await this.database.eridu_shared_lock_get_state(
                 writerKey,

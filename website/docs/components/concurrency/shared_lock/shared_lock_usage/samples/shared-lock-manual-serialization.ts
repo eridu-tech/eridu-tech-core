@@ -10,7 +10,9 @@ const redisClient = new Redis("YOUR_REDIS_CONNECTION", {
 });
 await redisClient.connect();
 
-const redisSharedLockAdapter = new RedisSharedLockAdapter(redisClient);
+const redisSharedLockAdapter = new RedisSharedLockAdapter({
+    database: redisClient,
+});
 redisSharedLockAdapter.init();
 
 const sharedLockFactory = new SharedLockFactory({
