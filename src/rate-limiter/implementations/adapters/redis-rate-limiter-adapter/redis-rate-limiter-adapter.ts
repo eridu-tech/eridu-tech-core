@@ -13,6 +13,7 @@ import {
     serializeRateLimiterPolicySettingsEnum,
 } from "@/rate-limiter/implementations/adapters/_shared/_module.js";
 import { rateLimiterFactoryLua } from "@/rate-limiter/implementations/adapters/redis-rate-limiter-adapter/lua/_module.js";
+import { containsRedisClusterHashTag } from "@/utilities/_module-exports.js";
 
 import type { Cluster, Redis, Result } from "ioredis";
 
@@ -137,7 +138,7 @@ export class RedisRateLimiterAdapter
     }
 
     private shardingKey(key: string): string {
-        if (this.useShardingKey) {
+        if (this.useShardingKey && !containsRedisClusterHashTag(key)) {
             return `{${key}}`;
         }
         return key;
