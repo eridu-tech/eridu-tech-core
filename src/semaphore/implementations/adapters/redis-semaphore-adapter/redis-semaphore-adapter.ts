@@ -3,6 +3,7 @@
  */
 
 import { semaphoreFactoryLua } from "@/semaphore/implementations/adapters/redis-semaphore-adapter/lua/_module.js";
+import { containsRedisClusterHashTag } from "@/utilities/_module-exports.js";
 
 import type { Cluster, Redis, Result } from "ioredis";
 
@@ -265,7 +266,7 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
     }
 
     private shardingKey(key: string): string {
-        if (this.useShardingKey) {
+        if (this.useShardingKey && !containsRedisClusterHashTag(key)) {
             return `{${key}}`;
         }
         return key;

@@ -53,5 +53,70 @@ describe(
             expect,
             describe,
         });
+
+        describe("setting: useShardingKey", () => {
+            test("Should wrap the key in a hash tag by default", async () => {
+                const redisAdapter = new RedisSemaphoreAdapter({
+                    database: cluster,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.acquire({
+                    key: "plain-semaphore",
+                    slotId: randomUUID(),
+                    limit: 1,
+                    ttl: null,
+                });
+
+                expect(await cluster.exists("{plain-semaphore}")).toBe(1);
+                expect(await cluster.exists("{plain-semaphore}__limit")).toBe(
+                    1,
+                );
+                expect(await cluster.exists("plain-semaphore")).toBe(0);
+            });
+
+            test("Should not wrap a key that already contains a hash tag", async () => {
+                const redisAdapter = new RedisSemaphoreAdapter({
+                    database: cluster,
+                });
+                redisAdapter.init();
+
+                await redisAdapter.acquire({
+                    key: "prefix{tagged-semaphore}",
+                    slotId: randomUUID(),
+                    limit: 1,
+                    ttl: null,
+                });
+
+                expect(await cluster.exists("prefix{tagged-semaphore}")).toBe(
+                    1,
+                );
+                expect(
+                    await cluster.exists("prefix{tagged-semaphore}__limit"),
+                ).toBe(1);
+                expect(await cluster.exists("{prefix{tagged-semaphore}}")).toBe(
+                    0,
+                );
+            });
+
+            test("Should fail on a cluster when sharding keys are disabled", async () => {
+                const redisAdapter = new RedisSemaphoreAdapter({
+                    database: cluster,
+                    useShardingKey: false,
+                });
+                redisAdapter.init();
+
+                // The plain key and its limit key hash to different slots, so
+                // the cluster rejects the script.
+                await expect(
+                    redisAdapter.acquire({
+                        key: "plain-semaphore-2",
+                        slotId: randomUUID(),
+                        limit: 1,
+                        ttl: null,
+                    }),
+                ).rejects.toThrow(/CROSSSLOT/);
+            });
+        });
     },
 );
