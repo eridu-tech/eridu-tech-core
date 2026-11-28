@@ -98,9 +98,39 @@ declare module "ioredis" {
 // acquiredSlots: Map<string, Date | null>;
 
 /**
- * To utilize the `RedisSemaphoreAdapter`, you must install the `"ioredis"` package.
+ * Configuration for `RedisSemaphoreAdapter`.
+ * Requires a Redis client.
  *
- * Note in order to use `RedisSemaphoreAdapter` correctly, ensure you use a single, consistent database across all server instances.
+ * IMPORT_PATH: `"eridu-tech/semaphore/redis-semaphore-adapter"`
+ * @group Adapters
+ */
+export type RedisSemaphoreAdapterSettings = {
+    /**
+     * The Redis client instance for semaphore state operations.
+     * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
+     */
+    database: Redis | Cluster;
+
+    /**
+     * Wraps the key in a Redis hash tag, e.g. `lock` becomes `{lock}`, so keys
+     * with the same name land in the same hash slot across clusters. Set it to
+     * `false` to use the key as is, e.g. when it already contains a hash tag.
+     *
+     * @default true
+     */
+    useShardingKey?: boolean;
+};
+
+/**
+ * @internal
+ */
+type SemaphoreKeys = {
+    slotKey: string;
+    limitKey: string;
+};
+
+/**
+ * To utilize the `RedisSemaphoreAdapter`, you must install the `"ioredis"` package.
  *
  * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
  *
@@ -108,21 +138,13 @@ declare module "ioredis" {
  * @group Adapters
  */
 export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
-    constructor(private readonly database: Redis | Cluster) {}
+    private readonly database: Redis | Cluster;
+    private readonly useShardingKey: boolean;
 
-    /**
-     * The keys share a hash tag so a cluster client routes all of them to the
-     * same hash slot.
-     */
-    private static toRedisKeys(key: string): {
-        slotKey: string;
-        limitKey: string;
-    } {
-        const slotKey = `{${key}}`;
-        return {
-            slotKey,
-            limitKey: `${slotKey}__limit`,
-        };
+    constructor(settings: RedisSemaphoreAdapterSettings) {
+        const { database, useShardingKey = true } = settings;
+        this.database = database;
+        this.useShardingKey = useShardingKey;
     }
 
     private initAcquireCommand(): void {
@@ -242,9 +264,24 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
         this.initGetStateCommand();
     }
 
+    private shardingKey(key: string): string {
+        if (this.useShardingKey) {
+            return `{${key}}`;
+        }
+        return key;
+    }
+
+    private toRedisKeys(key: string): SemaphoreKeys {
+        const slotKey = this.shardingKey(key);
+        return {
+            slotKey,
+            limitKey: `${slotKey}__limit`,
+        };
+    }
+
     async acquire(settings: SemaphoreAcquireSettings): Promise<boolean> {
         const { key, slotId, limit, ttl } = settings;
-        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
+        const { slotKey, limitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_semaphore_acquire(
             slotKey,
             limitKey,
@@ -257,7 +294,7 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
     }
 
     async release(key: string, slotId: string): Promise<boolean> {
-        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
+        const { slotKey, limitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_semaphore_release(
             slotKey,
             limitKey,
@@ -268,7 +305,7 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
     }
 
     async forceReleaseAll(key: string): Promise<boolean> {
-        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
+        const { slotKey, limitKey } = this.toRedisKeys(key);
         const hasDeleted =
             await this.database.eridu_semaphore_force_release_all(
                 slotKey,
@@ -279,7 +316,7 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
     }
 
     async refresh(key: string, slotId: string, ttl: Date): Promise<boolean> {
-        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
+        const { slotKey, limitKey } = this.toRedisKeys(key);
         const result = await this.database.eridu_semaphore_refresh(
             slotKey,
             limitKey,
@@ -291,7 +328,7 @@ export class RedisSemaphoreAdapter implements ISemaphoreAdapter, IInitizable {
     }
 
     async getState(key: string): Promise<ISemaphoreAdapterState | null> {
-        const { slotKey, limitKey } = RedisSemaphoreAdapter.toRedisKeys(key);
+        const { slotKey, limitKey } = this.toRedisKeys(key);
         const json = JSON.parse(
             await this.database.eridu_semaphore_get_state(
                 slotKey,

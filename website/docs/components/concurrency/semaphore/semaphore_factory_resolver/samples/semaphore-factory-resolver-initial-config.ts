@@ -11,7 +11,7 @@ const database = new Redis("YOUR_REDIS_CONNECTION", {
 });
 await database.connect();
 
-const redisSemaphoreAdapter = new RedisSemaphoreAdapter(database);
+const redisSemaphoreAdapter = new RedisSemaphoreAdapter({ database });
 redisSemaphoreAdapter.init();
 
 export const semaphoreFactoryResolver = new SemaphoreFactoryResolver({

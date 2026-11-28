@@ -24,7 +24,7 @@ const eventBus = new EventBus<EventMap>({
     }),
 });
 
-const redisSemaphoreAdapter = new RedisSemaphoreAdapter(redis);
+const redisSemaphoreAdapter = new RedisSemaphoreAdapter({ database: redis });
 redisSemaphoreAdapter.init();
 
 const semaphoreFactory = new SemaphoreFactory({

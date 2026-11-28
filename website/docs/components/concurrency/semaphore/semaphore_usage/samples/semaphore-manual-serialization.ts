@@ -10,7 +10,9 @@ const redisClient = new Redis("YOUR_REDIS_CONNECTION", {
 });
 await redisClient.connect();
 
-const redisSemaphoreAdapter = new RedisSemaphoreAdapter(redisClient);
+const redisSemaphoreAdapter = new RedisSemaphoreAdapter({
+    database: redisClient,
+});
 redisSemaphoreAdapter.init();
 
 const semaphoreFactory = new SemaphoreFactory({

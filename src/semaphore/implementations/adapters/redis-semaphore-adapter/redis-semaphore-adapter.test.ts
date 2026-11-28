@@ -33,7 +33,9 @@ describe(
             cluster = new Cluster(nodes, { natMap });
         }, timeout.toMilliseconds());
         beforeEach(() => {
-            const redisAdapter = new RedisSemaphoreAdapter(cluster);
+            const redisAdapter = new RedisSemaphoreAdapter({
+                database: cluster,
+            });
             redisAdapter.init();
             adapter = withPlugin(
                 redisAdapter,

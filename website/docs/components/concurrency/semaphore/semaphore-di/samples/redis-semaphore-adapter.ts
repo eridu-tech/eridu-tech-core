@@ -6,5 +6,5 @@ const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
 });
 await database.connect();
 
-export const redisSemaphoreAdapter = new RedisSemaphoreAdapter(database);
+export const redisSemaphoreAdapter = new RedisSemaphoreAdapter({ database });
 redisSemaphoreAdapter.init();
