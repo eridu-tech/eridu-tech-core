@@ -3,7 +3,10 @@ import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { Redis } from "ioredis";
 import { transactionContext } from "./transaction-context.js";
 
-const client = new Redis("YOUR_REDIS_CONNECTION_STRING");
+const client = new Redis("YOUR_REDIS_CONNECTION_STRING", {
+    lazyConnect: true,
+});
+await client.connect();
 const serde = new SuperJsonSerde();
 const eventBusAdapter = new RedisEventBusAdapter({
     client,
