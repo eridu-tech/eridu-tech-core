@@ -31,17 +31,22 @@ describe(
         let adapter: ICircuitBreakerAdapter;
         beforeAll(async () => {
             startedContainer = await new RedisContainer("redis:7.4.2").start();
-            client = new Redis(startedContainer.getConnectionUrl());
+            client = new Redis(startedContainer.getConnectionUrl(), {
+                lazyConnect: true,
+            });
+            await client.connect();
         }, timeout.toMilliseconds());
         beforeEach(() => {
+            const redisAdapter = new RedisCircuitBreakerAdapter({
+                database: client,
+                backoffPolicy:
+                    consecutiveBreakerTestSuite.backoffPolicySettings,
+                circuitBreakerPolicy:
+                    consecutiveBreakerTestSuite.circuitBreakerPolicySettings,
+            });
+            redisAdapter.init();
             adapter = withPlugin(
-                new RedisCircuitBreakerAdapter({
-                    database: client,
-                    backoffPolicy:
-                        consecutiveBreakerTestSuite.backoffPolicySettings,
-                    circuitBreakerPolicy:
-                        consecutiveBreakerTestSuite.circuitBreakerPolicySettings,
-                }),
+                redisAdapter,
                 withCircuitBreakerPrefix(randomUUID()),
             );
         });
