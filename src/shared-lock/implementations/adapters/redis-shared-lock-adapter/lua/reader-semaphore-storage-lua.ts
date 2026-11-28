@@ -14,42 +14,28 @@ export const readerSemaphoreStorageLua = `
 -- @param currentDate number
 local function ReaderSemaphoreStorage(currentDate)
     -- @param key string
-    -- @return string
-    local function getReaderKey(key)
-        return key .. "__reader"
-    end
-
-    -- @param key string
-    -- @return string
-    local function getLimitKey(key)
-        return getReaderKey(key) .. "__limit"
-    end
-
-    -- @param key string
     -- @return void
     local function removeExpiredSlots(key)
-        redis.call("zremrangebyscore", getReaderKey(key), 1, currentDate)
+        redis.call("zremrangebyscore", key, 1, currentDate)
     end
 
-    -- @param key string
+    -- @param limitKey string
     -- @return number | nil
-    local function findLimit(key)
-        return tonumber(redis.call("get", getLimitKey(key)))
+    local function findLimit(limitKey)
+        return tonumber(redis.call("get", limitKey))
     end
 
     -- @param key string
     -- @return number
     local function countSlots(key)
-        return tonumber(redis.call("zcard", getReaderKey(key)))
+        return tonumber(redis.call("zcard", key))
     end
 
     -- @param key string
+    -- @param limitKey string
     -- @return void
-    local function updateExpiration(key)
-        local readerKey = getReaderKey(key)
-        local limitKey = getLimitKey(key)
-
-        local highestScore = redis.call("zrange", readerKey, -1, -1, "WITHSCORES")[2]
+    local function updateExpiration(key, limitKey)
+        local highestScore = redis.call("zrange", key, -1, -1, "WITHSCORES")[2]
         if highestScore == nil then
             return
         end
@@ -57,26 +43,27 @@ local function ReaderSemaphoreStorage(currentDate)
         local longestExpiration = tonumber(highestScore)
         local hasUnexpireableSlot = longestExpiration == math.huge
         if hasUnexpireableSlot then
-            redis.call("persist", readerKey)
+            redis.call("persist", key)
             redis.call("persist", limitKey)
             return
         end
 
         local timeToLive = math.ceil(longestExpiration - currentDate)
         if timeToLive <= 0 then
-            redis.call("del", readerKey)
+            redis.call("del", key)
             redis.call("del", limitKey)
             return
         end
 
-        redis.call("pexpire", readerKey, timeToLive)
+        redis.call("pexpire", key, timeToLive)
         redis.call("pexpire", limitKey, timeToLive)
     end
 
     return {
         -- @param key string
+        -- @param limitKey string
         -- @return { limit number, slotCount number } | nil
-        find = function(key)
+        find = function(key, limitKey)
             removeExpiredSlots(key)
 
             local slotCount = countSlots(key)
@@ -84,7 +71,7 @@ local function ReaderSemaphoreStorage(currentDate)
                 return nil
             end
 
-            local limit = findLimit(key)
+            local limit = findLimit(limitKey)
             if limit == nil then
                 return nil
             end
@@ -95,11 +82,11 @@ local function ReaderSemaphoreStorage(currentDate)
             }
         end,
 
-        -- @param key string
+        -- @param limitKey string
         -- @param limit number
         -- @return void
-        create = function(key, limit)
-            redis.call("set", getLimitKey(key), limit)
+        create = function(limitKey, limit)
+            redis.call("set", limitKey, limit)
         end,
 
         -- @param key string
@@ -110,7 +97,7 @@ local function ReaderSemaphoreStorage(currentDate)
         -- @param slotId string
         -- @return number | nil
         findSlot = function(key, slotId)
-            local score = redis.call("zscore", getReaderKey(key), slotId)
+            local score = redis.call("zscore", key, slotId)
             if score == false or score == nil then
                 return nil
             end
@@ -123,7 +110,7 @@ local function ReaderSemaphoreStorage(currentDate)
         findSlots = function(key)
             local slots = {}
 
-            local slotsArray = redis.call("zrange", getReaderKey(key), 0, -1, "WITHSCORES")
+            local slotsArray = redis.call("zrange", key, 0, -1, "WITHSCORES")
             for i = 1, #slotsArray, 2 do
                 local expiration = tonumber(slotsArray[i + 1])
                 if expiration == math.huge then
@@ -141,37 +128,40 @@ local function ReaderSemaphoreStorage(currentDate)
         -- @param expiration number | nil
         -- @return void
         addSlot = function(key, slotId, expiration)
-            redis.call("zadd", getReaderKey(key), expiration or "+inf", slotId)
+            redis.call("zadd", key, expiration or "+inf", slotId)
         end,
 
         -- @param key string
         -- @param slotId string
         -- @return boolean
         removeSlot = function(key, slotId)
-            local removedCount = redis.call("zrem", getReaderKey(key), slotId)
+            local removedCount = redis.call("zrem", key, slotId)
             return removedCount == 1
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @return void
-        removeIfEmpty = function(key)
+        removeIfEmpty = function(key, limitKey)
             local slotCount = countSlots(key)
             if slotCount > 0 then
                 return
             end
 
-            redis.call("del", getReaderKey(key))
-            redis.call("del", getLimitKey(key))
+            redis.call("del", key)
+            redis.call("del", limitKey)
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @return void
-        remove = function(key)
-            redis.call("del", getReaderKey(key))
-            redis.call("del", getLimitKey(key))
+        remove = function(key, limitKey)
+            redis.call("del", key)
+            redis.call("del", limitKey)
         end,
 
         -- @param key string
+        -- @param limitKey string
         -- @return void
         updateExpiration = updateExpiration,
     }

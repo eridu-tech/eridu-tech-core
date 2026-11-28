@@ -5,7 +5,7 @@
 import { sharedLockFactoryLua } from "@/shared-lock/implementations/adapters/redis-shared-lock-adapter/lua/_module.js";
 import { UnexpectedError } from "@/utilities/errors.js";
 
-import type { Redis, Result } from "ioredis";
+import type { Cluster, Redis, Result } from "ioredis";
 
 import type {
     ISharedLockAdapter,
@@ -51,46 +51,66 @@ declare module "ioredis" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     interface RedisCommander<Context> {
         /**
+         * @param writerKey Key of the writer lock
+         * @param readerKey Key of the reader semaphore
+         * @param readerLimitKey Key of the reader semaphore limit
          * @param expiration As unix timestamp in miliseconds, or `null` for an unexpireable lock
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_shared_lock_acquire_writer(
-            key: string,
+            writerKey: string,
+            readerKey: string,
+            readerLimitKey: string,
             lockId: string,
             expiration: number | null,
             currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param writerKey Key of the writer lock
+         * @param readerKey Key of the reader semaphore
+         * @param readerLimitKey Key of the reader semaphore limit
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_shared_lock_release_writer(
-            key: string,
+            writerKey: string,
+            readerKey: string,
+            readerLimitKey: string,
             lockId: string,
             currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param writerKey Key of the writer lock
+         * @param readerKey Key of the reader semaphore
+         * @param readerLimitKey Key of the reader semaphore limit
          * @param expiration As unix timestamp in miliseconds
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_shared_lock_refresh_writer(
-            key: string,
+            writerKey: string,
+            readerKey: string,
+            readerLimitKey: string,
             lockId: string,
             expiration: number,
             currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param writerKey Key of the writer lock
+         * @param readerKey Key of the reader semaphore
+         * @param readerLimitKey Key of the reader semaphore limit
          * @param expiration As unix timestamp in miliseconds, or `null` for an unexpireable slot
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_shared_lock_acquire_reader(
-            key: string,
+            writerKey: string,
+            readerKey: string,
+            readerLimitKey: string,
             lockId: string,
             limit: number,
             expiration: number | null,
@@ -98,43 +118,63 @@ declare module "ioredis" {
         ): Result<1 | 0, Context>;
 
         /**
+         * @param writerKey Key of the writer lock
+         * @param readerKey Key of the reader semaphore
+         * @param readerLimitKey Key of the reader semaphore limit
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_shared_lock_release_reader(
-            key: string,
+            writerKey: string,
+            readerKey: string,
+            readerLimitKey: string,
             lockId: string,
             currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param writerKey Key of the writer lock
+         * @param readerKey Key of the reader semaphore
+         * @param readerLimitKey Key of the reader semaphore limit
          * @param expiration As unix timestamp in miliseconds
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_shared_lock_refresh_reader(
-            key: string,
+            writerKey: string,
+            readerKey: string,
+            readerLimitKey: string,
             lockId: string,
             expiration: number,
             currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param writerKey Key of the writer lock
+         * @param readerKey Key of the reader semaphore
+         * @param readerLimitKey Key of the reader semaphore limit
          * @param currentDate As unix timestamp in miliseconds
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_shared_lock_force_release(
-            key: string,
+            writerKey: string,
+            readerKey: string,
+            readerLimitKey: string,
             currentDate: number,
         ): Result<1 | 0, Context>;
 
         /**
+         * @param writerKey Key of the writer lock
+         * @param readerKey Key of the reader semaphore
+         * @param readerLimitKey Key of the reader semaphore limit
          * @param currentDate As unix timestamp in miliseconds
          * @returns {@link IRedisJsonSharedLockState | `IRedisJsonSharedLockState`} or `null` as json string.
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         eridu_shared_lock_get_state(
-            key: string,
+            writerKey: string,
+            readerKey: string,
+            readerLimitKey: string,
             currentDate: number,
         ): Result<string, Context>;
     }
@@ -145,11 +185,30 @@ declare module "ioredis" {
  *
  * Note in order to use `RedisSharedLockAdapter` correctly, ensure you use a single, consistent database across all server instances.
  *
+ * Both a standalone `Redis` client and an ioredis `Cluster` client are supported.
+ *
  * IMPORT_PATH: `"eridu-tech/shared-lock/redis-shared-lock-adapter"`
  * @group Adapters
  */
 export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
-    constructor(private readonly database: Redis) {}
+    constructor(private readonly database: Redis | Cluster) {}
+
+    /**
+     * The keys share a hash tag so a cluster client routes all of them to the
+     * same hash slot.
+     */
+    private static toRedisKeys(key: string): {
+        writerKey: string;
+        readerKey: string;
+        readerLimitKey: string;
+    } {
+        const hashTag = `{${key}}`;
+        return {
+            writerKey: `${hashTag}__writer`,
+            readerKey: `${hashTag}__reader`,
+            readerLimitKey: `${hashTag}__reader__limit`,
+        };
+    }
 
     private initAcquireWriterCommand(): void {
         if (
@@ -159,17 +218,19 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_shared_lock_acquire_writer", {
-            numberOfKeys: 1,
+            numberOfKeys: 3,
             lua: `
                 ${sharedLockFactoryLua}
 
-                local key = KEYS[1];
+                local writerKey = KEYS[1];
+                local readerKey = KEYS[2];
+                local readerLimitKey = KEYS[3];
                 local lockId = ARGV[1];
                 local expiration = tonumber(ARGV[2]);
                 local currentDate = tonumber(ARGV[3]);
 
                 local sharedLock = sharedLockFactory(currentDate)
-                return sharedLock.acquireWriter(key, lockId, expiration)
+                return sharedLock.acquireWriter(writerKey, readerKey, readerLimitKey, lockId, expiration)
             `,
         });
     }
@@ -182,16 +243,18 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_shared_lock_release_writer", {
-            numberOfKeys: 1,
+            numberOfKeys: 3,
             lua: `
                 ${sharedLockFactoryLua}
 
-                local key = KEYS[1];
+                local writerKey = KEYS[1];
+                local readerKey = KEYS[2];
+                local readerLimitKey = KEYS[3];
                 local lockId = ARGV[1];
                 local currentDate = tonumber(ARGV[2]);
 
                 local sharedLock = sharedLockFactory(currentDate)
-                return sharedLock.releaseWriter(key, lockId)
+                return sharedLock.releaseWriter(writerKey, readerKey, readerLimitKey, lockId)
             `,
         });
     }
@@ -204,17 +267,19 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_shared_lock_refresh_writer", {
-            numberOfKeys: 1,
+            numberOfKeys: 3,
             lua: `
                 ${sharedLockFactoryLua}
 
-                local key = KEYS[1];
+                local writerKey = KEYS[1];
+                local readerKey = KEYS[2];
+                local readerLimitKey = KEYS[3];
                 local lockId = ARGV[1];
                 local expiration = tonumber(ARGV[2]);
                 local currentDate = tonumber(ARGV[3]);
 
                 local sharedLock = sharedLockFactory(currentDate)
-                return sharedLock.refreshWriter(key, lockId, expiration)
+                return sharedLock.refreshWriter(writerKey, readerKey, readerLimitKey, lockId, expiration)
             `,
         });
     }
@@ -227,18 +292,20 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_shared_lock_acquire_reader", {
-            numberOfKeys: 1,
+            numberOfKeys: 3,
             lua: `
                 ${sharedLockFactoryLua}
 
-                local key = KEYS[1];
+                local writerKey = KEYS[1];
+                local readerKey = KEYS[2];
+                local readerLimitKey = KEYS[3];
                 local lockId = ARGV[1];
                 local limit = tonumber(ARGV[2]);
                 local expiration = tonumber(ARGV[3]);
                 local currentDate = tonumber(ARGV[4]);
 
                 local sharedLock = sharedLockFactory(currentDate)
-                return sharedLock.acquireReader(key, lockId, limit, expiration)
+                return sharedLock.acquireReader(writerKey, readerKey, readerLimitKey, lockId, limit, expiration)
             `,
         });
     }
@@ -251,16 +318,18 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_shared_lock_release_reader", {
-            numberOfKeys: 1,
+            numberOfKeys: 3,
             lua: `
                 ${sharedLockFactoryLua}
 
-                local key = KEYS[1];
+                local writerKey = KEYS[1];
+                local readerKey = KEYS[2];
+                local readerLimitKey = KEYS[3];
                 local lockId = ARGV[1];
                 local currentDate = tonumber(ARGV[2]);
 
                 local sharedLock = sharedLockFactory(currentDate)
-                return sharedLock.releaseReader(key, lockId)
+                return sharedLock.releaseReader(writerKey, readerKey, readerLimitKey, lockId)
             `,
         });
     }
@@ -273,17 +342,19 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_shared_lock_refresh_reader", {
-            numberOfKeys: 1,
+            numberOfKeys: 3,
             lua: `
                 ${sharedLockFactoryLua}
 
-                local key = KEYS[1];
+                local writerKey = KEYS[1];
+                local readerKey = KEYS[2];
+                local readerLimitKey = KEYS[3];
                 local lockId = ARGV[1];
                 local newExpiration = tonumber(ARGV[2]);
                 local currentDate = tonumber(ARGV[3]);
 
                 local sharedLock = sharedLockFactory(currentDate)
-                return sharedLock.refreshReader(key, lockId, newExpiration)
+                return sharedLock.refreshReader(writerKey, readerKey, readerLimitKey, lockId, newExpiration)
             `,
         });
     }
@@ -296,15 +367,17 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_shared_lock_force_release", {
-            numberOfKeys: 1,
+            numberOfKeys: 3,
             lua: `
                 ${sharedLockFactoryLua}
 
-                local key = KEYS[1];
+                local writerKey = KEYS[1];
+                local readerKey = KEYS[2];
+                local readerLimitKey = KEYS[3];
                 local currentDate = tonumber(ARGV[1]);
 
                 local sharedLock = sharedLockFactory(currentDate)
-                return sharedLock.forceRelease(key)
+                return sharedLock.forceRelease(writerKey, readerKey, readerLimitKey)
             `,
         });
     }
@@ -315,15 +388,17 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         }
 
         this.database.defineCommand("eridu_shared_lock_get_state", {
-            numberOfKeys: 1,
+            numberOfKeys: 3,
             lua: `
                 ${sharedLockFactoryLua}
 
-                local key = KEYS[1];
+                local writerKey = KEYS[1];
+                local readerKey = KEYS[2];
+                local readerLimitKey = KEYS[3];
                 local currentDate = tonumber(ARGV[1]);
 
                 local sharedLock = sharedLockFactory(currentDate)
-                local state = sharedLock.getState(key)
+                local state = sharedLock.getState(writerKey, readerKey, readerLimitKey)
                 return cjson.encode(state)
             `,
         });
@@ -345,8 +420,12 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         lockId: string,
         ttl: Date | null,
     ): Promise<boolean> {
+        const { writerKey, readerKey, readerLimitKey } =
+            RedisSharedLockAdapter.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_acquire_writer(
-            key,
+            writerKey,
+            readerKey,
+            readerLimitKey,
             lockId,
             ttl?.getTime() ?? null,
             Date.now(),
@@ -355,8 +434,12 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
     }
 
     async releaseWriter(key: string, lockId: string): Promise<boolean> {
+        const { writerKey, readerKey, readerLimitKey } =
+            RedisSharedLockAdapter.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_release_writer(
-            key,
+            writerKey,
+            readerKey,
+            readerLimitKey,
             lockId,
             Date.now(),
         );
@@ -368,8 +451,12 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         lockId: string,
         ttl: Date,
     ): Promise<boolean> {
+        const { writerKey, readerKey, readerLimitKey } =
+            RedisSharedLockAdapter.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_refresh_writer(
-            key,
+            writerKey,
+            readerKey,
+            readerLimitKey,
             lockId,
             ttl.getTime(),
             Date.now(),
@@ -379,8 +466,12 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
 
     async acquireReader(settings: SharedLockAcquireSettings): Promise<boolean> {
         const { key, lockId, limit, ttl } = settings;
+        const { writerKey, readerKey, readerLimitKey } =
+            RedisSharedLockAdapter.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_acquire_reader(
-            key,
+            writerKey,
+            readerKey,
+            readerLimitKey,
             lockId,
             limit,
             ttl?.getTime() ?? null,
@@ -390,8 +481,12 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
     }
 
     async releaseReader(key: string, lockId: string): Promise<boolean> {
+        const { writerKey, readerKey, readerLimitKey } =
+            RedisSharedLockAdapter.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_release_reader(
-            key,
+            writerKey,
+            readerKey,
+            readerLimitKey,
             lockId,
             Date.now(),
         );
@@ -403,8 +498,12 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
         lockId: string,
         ttl: Date,
     ): Promise<boolean> {
+        const { writerKey, readerKey, readerLimitKey } =
+            RedisSharedLockAdapter.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_refresh_reader(
-            key,
+            writerKey,
+            readerKey,
+            readerLimitKey,
             lockId,
             ttl.getTime(),
             Date.now(),
@@ -413,16 +512,27 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
     }
 
     async forceRelease(key: string): Promise<boolean> {
+        const { writerKey, readerKey, readerLimitKey } =
+            RedisSharedLockAdapter.toRedisKeys(key);
         const result = await this.database.eridu_shared_lock_force_release(
-            key,
+            writerKey,
+            readerKey,
+            readerLimitKey,
             Date.now(),
         );
         return result === 1;
     }
 
     async getState(key: string): Promise<ISharedLockAdapterState | null> {
+        const { writerKey, readerKey, readerLimitKey } =
+            RedisSharedLockAdapter.toRedisKeys(key);
         const json = JSON.parse(
-            await this.database.eridu_shared_lock_get_state(key, Date.now()),
+            await this.database.eridu_shared_lock_get_state(
+                writerKey,
+                readerKey,
+                readerLimitKey,
+                Date.now(),
+            ),
         ) as IRedisJsonSharedLockState | null;
         if (json === null) {
             return null;

@@ -13,35 +13,38 @@ export const sharedLockLua = `
 -- @param readerSemaphoreStorage ReaderSemaphoreStorage
 -- @return ISharedLockAdapter
 local function SharedLock(writerLockStorage, readerSemaphoreStorage)
-    -- @param key string
+    -- @param writerKey string
     -- @return boolean
-    local function hasActiveWriter(key)
-        return writerLockStorage.find(key) ~= nil
+    local function hasActiveWriter(writerKey)
+        return writerLockStorage.find(writerKey) ~= nil
     end
 
-    -- @param key string
+    -- @param readerKey string
+    -- @param readerLimitKey string
     -- @return boolean
-    local function hasActiveReader(key)
-        return readerSemaphoreStorage.find(key) ~= nil
+    local function hasActiveReader(readerKey, readerLimitKey)
+        return readerSemaphoreStorage.find(readerKey, readerLimitKey) ~= nil
     end
 
     return {
-        -- @param key string
+        -- @param writerKey string
+        -- @param readerKey string
+        -- @param readerLimitKey string
         -- @param lockId string
         -- @param expiration number | nil
         -- @return 1 | 0
-        acquireWriter = function(key, lockId, expiration)
-            if hasActiveReader(key) then
+        acquireWriter = function(writerKey, readerKey, readerLimitKey, lockId, expiration)
+            if hasActiveReader(readerKey, readerLimitKey) then
                 return 0
             end
 
-            local currentWriter = writerLockStorage.find(key)
+            local currentWriter = writerLockStorage.find(writerKey)
             local isAcquiredByDifferentOwner = currentWriter ~= nil and currentWriter.owner ~= lockId
             if isAcquiredByDifferentOwner then
                 return 0
             end
 
-            writerLockStorage.save(key, {
+            writerLockStorage.save(writerKey, {
                 owner = lockId,
                 expiration = expiration,
             })
@@ -49,15 +52,17 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
             return 1
         end,
 
-        -- @param key string
+        -- @param writerKey string
+        -- @param readerKey string
+        -- @param readerLimitKey string
         -- @param lockId string
         -- @return 1 | 0
-        releaseWriter = function(key, lockId)
-            if hasActiveReader(key) then
+        releaseWriter = function(writerKey, readerKey, readerLimitKey, lockId)
+            if hasActiveReader(readerKey, readerLimitKey) then
                 return 0
             end
 
-            local currentWriter = writerLockStorage.find(key)
+            local currentWriter = writerLockStorage.find(writerKey)
             if currentWriter == nil then
                 return 0
             end
@@ -66,21 +71,23 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
                 return 0
             end
 
-            writerLockStorage.remove(key)
+            writerLockStorage.remove(writerKey)
 
             return 1
         end,
 
-        -- @param key string
+        -- @param writerKey string
+        -- @param readerKey string
+        -- @param readerLimitKey string
         -- @param lockId string
         -- @param expiration number
         -- @return 1 | 0
-        refreshWriter = function(key, lockId, expiration)
-            if hasActiveReader(key) then
+        refreshWriter = function(writerKey, readerKey, readerLimitKey, lockId, expiration)
+            if hasActiveReader(readerKey, readerLimitKey) then
                 return 0
             end
 
-            local currentWriter = writerLockStorage.find(key)
+            local currentWriter = writerLockStorage.find(writerKey)
             if currentWriter == nil then
                 return 0
             end
@@ -95,7 +102,7 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
                 return 0
             end
 
-            writerLockStorage.save(key, {
+            writerLockStorage.save(writerKey, {
                 owner = currentWriter.owner,
                 expiration = expiration,
             })
@@ -103,22 +110,24 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
             return 1
         end,
 
-        -- @param key string
+        -- @param writerKey string
+        -- @param readerKey string
+        -- @param readerLimitKey string
         -- @param lockId string
         -- @param limit number
         -- @param expiration number | nil
         -- @return 1 | 0
-        acquireReader = function(key, lockId, limit, expiration)
-            if hasActiveWriter(key) then
+        acquireReader = function(writerKey, readerKey, readerLimitKey, lockId, limit, expiration)
+            if hasActiveWriter(writerKey) then
                 return 0
             end
 
-            local currentReader = readerSemaphoreStorage.find(key)
+            local currentReader = readerSemaphoreStorage.find(readerKey, readerLimitKey)
             if currentReader == nil then
-                readerSemaphoreStorage.create(key, limit)
+                readerSemaphoreStorage.create(readerLimitKey, limit)
                 currentReader = {
                     limit = limit,
-                    slotCount = readerSemaphoreStorage.countSlots(key),
+                    slotCount = readerSemaphoreStorage.countSlots(readerKey),
                 }
             end
 
@@ -127,56 +136,60 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
                 return 0
             end
 
-            local hasSlotId = readerSemaphoreStorage.findSlot(key, lockId) ~= nil
+            local hasSlotId = readerSemaphoreStorage.findSlot(readerKey, lockId) ~= nil
             if hasSlotId then
                 return 1
             end
 
-            readerSemaphoreStorage.addSlot(key, lockId, expiration)
-            readerSemaphoreStorage.updateExpiration(key)
+            readerSemaphoreStorage.addSlot(readerKey, lockId, expiration)
+            readerSemaphoreStorage.updateExpiration(readerKey, readerLimitKey)
 
             return 1
         end,
 
-        -- @param key string
+        -- @param writerKey string
+        -- @param readerKey string
+        -- @param readerLimitKey string
         -- @param lockId string
         -- @return 1 | 0
-        releaseReader = function(key, lockId)
-            if hasActiveWriter(key) then
+        releaseReader = function(writerKey, readerKey, readerLimitKey, lockId)
+            if hasActiveWriter(writerKey) then
                 return 0
             end
 
-            local currentReader = readerSemaphoreStorage.find(key)
+            local currentReader = readerSemaphoreStorage.find(readerKey, readerLimitKey)
             if currentReader == nil then
                 return 0
             end
 
-            local hasRemoved = readerSemaphoreStorage.removeSlot(key, lockId)
+            local hasRemoved = readerSemaphoreStorage.removeSlot(readerKey, lockId)
             if not hasRemoved then
                 return 0
             end
 
-            readerSemaphoreStorage.removeIfEmpty(key)
-            readerSemaphoreStorage.updateExpiration(key)
+            readerSemaphoreStorage.removeIfEmpty(readerKey, readerLimitKey)
+            readerSemaphoreStorage.updateExpiration(readerKey, readerLimitKey)
 
             return 1
         end,
 
-        -- @param key string
+        -- @param writerKey string
+        -- @param readerKey string
+        -- @param readerLimitKey string
         -- @param lockId string
         -- @param newExpiration number
         -- @return 1 | 0
-        refreshReader = function(key, lockId, newExpiration)
-            if hasActiveWriter(key) then
+        refreshReader = function(writerKey, readerKey, readerLimitKey, lockId, newExpiration)
+            if hasActiveWriter(writerKey) then
                 return 0
             end
 
-            local currentReader = readerSemaphoreStorage.find(key)
+            local currentReader = readerSemaphoreStorage.find(readerKey, readerLimitKey)
             if currentReader == nil then
                 return 0
             end
 
-            local expiration = readerSemaphoreStorage.findSlot(key, lockId)
+            local expiration = readerSemaphoreStorage.findSlot(readerKey, lockId)
             if expiration == nil then
                 return 0
             end
@@ -186,19 +199,21 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
                 return 0
             end
 
-            readerSemaphoreStorage.addSlot(key, lockId, newExpiration)
-            readerSemaphoreStorage.updateExpiration(key)
+            readerSemaphoreStorage.addSlot(readerKey, lockId, newExpiration)
+            readerSemaphoreStorage.updateExpiration(readerKey, readerLimitKey)
 
             return 1
         end,
 
-        -- @param key string
+        -- @param writerKey string
+        -- @param readerKey string
+        -- @param readerLimitKey string
         -- @return 1 | 0
-        forceRelease = function(key)
-            local hasSharedLock = hasActiveWriter(key) or hasActiveReader(key)
+        forceRelease = function(writerKey, readerKey, readerLimitKey)
+            local hasSharedLock = hasActiveWriter(writerKey) or hasActiveReader(readerKey, readerLimitKey)
 
-            writerLockStorage.remove(key)
-            readerSemaphoreStorage.remove(key)
+            writerLockStorage.remove(writerKey)
+            readerSemaphoreStorage.remove(readerKey, readerLimitKey)
 
             if not hasSharedLock then
                 return 0
@@ -207,11 +222,13 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
             return 1
         end,
 
-        -- @param key string
+        -- @param writerKey string
+        -- @param readerKey string
+        -- @param readerLimitKey string
         -- @return IRedisJsonSharedLockState | nil
-        getState = function(key)
-            local writer = writerLockStorage.find(key)
-            local reader = readerSemaphoreStorage.find(key)
+        getState = function(writerKey, readerKey, readerLimitKey)
+            local writer = writerLockStorage.find(writerKey)
+            local reader = readerSemaphoreStorage.find(readerKey, readerLimitKey)
             if writer == nil and reader == nil then
                 return nil
             end
@@ -226,7 +243,7 @@ local function SharedLock(writerLockStorage, readerSemaphoreStorage)
             if reader ~= nil then
                 state.reader = {
                     limit = reader.limit,
-                    acquiredSlots = readerSemaphoreStorage.findSlots(key),
+                    acquiredSlots = readerSemaphoreStorage.findSlots(readerKey),
                 }
             end
 

@@ -15,15 +15,9 @@ export const writerLockStorageLua = `
 -- @param currentDate number
 local function WriterLockStorage(currentDate)
     -- @param key string
-    -- @return string
-    local function getKey(key)
-        return key .. "__writer"
-    end
-
-    -- @param key string
     -- @return IRedisJsonWriterLockState | nil
     local function find(key)
-        local value = redis.call("get", getKey(key))
+        local value = redis.call("get", key)
         if value == false or value == nil then
             return nil
         end
@@ -42,17 +36,17 @@ local function WriterLockStorage(currentDate)
     local function save(key, state)
         local expiration = state.expiration
         if expiration == nil then
-            redis.call("set", getKey(key), cjson.encode(state))
+            redis.call("set", key, cjson.encode(state))
             return
         end
 
         local timeToLive = math.ceil(expiration - currentDate)
         if timeToLive <= 0 then
-            redis.call("del", getKey(key))
+            redis.call("del", key)
             return
         end
 
-        redis.call("set", getKey(key), cjson.encode(state), "px", timeToLive)
+        redis.call("set", key, cjson.encode(state), "px", timeToLive)
     end
 
     return {
@@ -68,7 +62,7 @@ local function WriterLockStorage(currentDate)
         -- @param key string
         -- @return void
         remove = function(key)
-            redis.call("del", getKey(key))
+            redis.call("del", key)
         end,
     }
 end
