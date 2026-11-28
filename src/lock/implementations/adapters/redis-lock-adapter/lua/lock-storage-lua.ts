@@ -4,9 +4,10 @@
 
 /**
  * Mirrors the `MemoryLockAdapter` storage: the lock state is stored together
- * with its expiration as a unix timestamp in milliseconds (`0` means the lock
- * never expires), expired entries are treated as missing and the key TTL is
- * relative so it never depends on the Redis server clock.
+ * with its expiration as a unix timestamp in milliseconds, expired entries are
+ * treated as missing and the key TTL is relative so it never depends on the
+ * Redis server clock. Locks without an expiration omit the field and never get
+ * a key TTL.
  *
  * @internal
  */
@@ -22,8 +23,7 @@ local function LockStorage(currentDate)
         end
 
         local state = cjson.decode(value)
-        local isExpirable = state.expiration ~= nil and state.expiration ~= 0
-        if isExpirable and state.expiration <= currentDate then
+        if state.expiration ~= nil and state.expiration <= currentDate then
             return nil
         end
 
@@ -34,7 +34,7 @@ local function LockStorage(currentDate)
     -- @param state IRedisJsonLockState
     -- @return void
     local function saveState(key, state)
-        if state.expiration == nil or state.expiration == 0 then
+        if state.expiration == nil then
             redis.call("set", key, cjson.encode(state))
             return
         end

@@ -25,7 +25,7 @@ local function Lock(lockStorage)
 
             lockStorage.save(key, {
                 owner = lockId,
-                expiration = expiration or 0,
+                expiration = expiration,
             })
 
             return 1
@@ -77,7 +77,7 @@ local function Lock(lockStorage)
             end
 
             local currentExpiration = currentState.expiration
-            local isUnexpireable = currentExpiration == nil or currentExpiration == 0
+            local isUnexpireable = currentExpiration == nil
             if isUnexpireable then
                 return 0
             end

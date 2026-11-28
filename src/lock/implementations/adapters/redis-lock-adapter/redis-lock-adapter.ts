@@ -19,9 +19,9 @@ type IRedisJsonLockState = {
     owner: string;
 
     /**
-     * As unix timestamp in milliseconds. `0` means the lock never expires.
+     * As unix timestamp in milliseconds. Omitted when the lock never expires.
      */
-    expiration: number;
+    expiration?: number;
 };
 
 declare module "ioredis" {
@@ -261,7 +261,9 @@ export class RedisLockAdapter implements ILockAdapter, IInitizable {
         return {
             owner: json.owner,
             expiration:
-                json.expiration === 0 ? null : new Date(json.expiration),
+                json.expiration === undefined
+                    ? null
+                    : new Date(json.expiration),
         };
     }
 }
