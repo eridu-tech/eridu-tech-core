@@ -3,6 +3,7 @@
  */
 
 import { sharedLockFactoryLua } from "@/shared-lock/implementations/adapters/redis-shared-lock-adapter/lua/_module.js";
+import { containsRedisClusterHashTag } from "@/utilities/_module-exports.js";
 import { UnexpectedError } from "@/utilities/errors.js";
 
 import type { Cluster, Redis, Result } from "ioredis";
@@ -428,7 +429,7 @@ export class RedisSharedLockAdapter implements ISharedLockAdapter, IInitizable {
     }
 
     private shardingKey(key: string): string {
-        if (this.useShardingKey) {
+        if (this.useShardingKey && !containsRedisClusterHashTag(key)) {
             return `{${key}}`;
         }
         return key;
