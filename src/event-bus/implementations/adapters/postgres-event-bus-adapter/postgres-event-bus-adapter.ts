@@ -98,7 +98,6 @@ export class PostgresEventBusAdapter
     private readonly client: Client;
     private readonly eventEmitter = new EventEmitter();
     private readonly transactionHooks: ITransactionHooks;
-    private static readonly DEFAULT_CHANNEL_NAME = "eridu_tech_event_bus";
     private readonly hash: Invocable<[channelName: string], Promisable<string>>;
     private readonly configuredChannelName: string;
     /**
@@ -132,7 +131,7 @@ export class PostgresEventBusAdapter
         const {
             client,
             serde,
-            channelName = PostgresEventBusAdapter.DEFAULT_CHANNEL_NAME,
+            channelName = "eridu_tech_event_bus",
             hash = (value) => value,
             transactionHooks = TransactionContext.noOp(null),
         } = settings;
