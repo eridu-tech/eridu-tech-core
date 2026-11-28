@@ -7,7 +7,10 @@ import { EventBus } from "eridu-tech/event-bus";
 import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 
 const serde = new SuperJsonSerde();
-const redis = new Redis("YOUR_REDIS_CONNECTION");
+const redis = new Redis("YOUR_REDIS_CONNECTION", {
+    lazyConnect: true,
+});
+await redis.connect();
 
 type EventMap = {
     "sending-lock-over-network": {
@@ -21,9 +24,12 @@ const eventBus = new EventBus<EventMap>({
     }),
 });
 
+const redisLockAdapter = new RedisLockAdapter(redis);
+redisLockAdapter.init();
+
 const lockFactory = new LockFactory({
     serde,
-    adapter: new RedisLockAdapter(redis),
+    adapter: redisLockAdapter,
 });
 const lock = lockFactory.create("resource");
 

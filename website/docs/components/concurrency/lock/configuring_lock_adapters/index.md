@@ -140,6 +140,8 @@ Create the adapter:
 
 ```
 
+The adapter implements `IInitizable`: call `init()` once to register its Redis commands before the first operation.
+
 :::danger
 Note in order to use `RedisLockAdapter` correctly, ensure you use a single, consistent database across all server instances or processes.
 :::
