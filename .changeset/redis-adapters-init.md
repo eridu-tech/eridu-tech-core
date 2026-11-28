@@ -15,9 +15,16 @@ Make the Redis adapters explicitly initializable and align their behavior with t
 
     Calling `init()` more than once is a no-op.
 
+- `RedisLockAdapter`, `RedisSemaphoreAdapter` and `RedisSharedLockAdapter` now take a settings object, so the Redis client is passed as `database`:
+
+    ```ts
+    const adapter = new RedisLockAdapter({ database: redis });
+    adapter.init();
+    ```
+
 - The Redis lock adapter now stores `{ owner, expiration }` as JSON in the lock key, and the Redis shared lock adapter does the same for its writer key. Both used to store the bare owner id, so state written by older versions is not readable; drain in-flight locks before upgrading.
 
-- `RedisSemaphoreAdapter` and `RedisSharedLockAdapter` wrap the key they receive in a Redis hash tag. The semaphore stores its state in `{key}` and `{key}__limit`, and the shared lock stores its state in `{key}__writer`, `{key}__reader` and `{key}__reader__limit`. All derived keys therefore share one hash slot, so both adapters can be used with Redis Cluster or sharded deployments. State written by older versions lives under the old key names; drain in-flight state before upgrading.
+- The Redis adapters wrap the key they receive in a Redis hash tag by default, e.g. `lock` becomes `{lock}`, so keys with the same name share one hash slot and work with Redis Cluster and sharded deployments. This applies to `RedisLockAdapter`, `RedisSemaphoreAdapter`, `RedisSharedLockAdapter`, `RedisRateLimiterAdapter` and `RedisCircuitBreakerAdapter`; the semaphore stores its state in `{key}` and `{key}__limit`, and the shared lock stores its state in `{key}__writer`, `{key}__reader` and `{key}__reader__limit`. Every one of these adapters takes a `useShardingKey` setting, set it to `false` to keep the plain key. State written by older versions lives under the old key names; drain in-flight state before upgrading.
 
 ## Bug fixes and improvements
 
