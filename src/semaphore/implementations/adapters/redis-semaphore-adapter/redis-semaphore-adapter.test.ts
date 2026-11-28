@@ -31,11 +31,16 @@ describe(
         let adapter: ISemaphoreAdapter;
         beforeAll(async () => {
             startedContainer = await new RedisContainer("redis:7.4.2").start();
-            client = new Redis(startedContainer.getConnectionUrl());
+            client = new Redis(startedContainer.getConnectionUrl(), {
+                lazyConnect: true,
+            });
+            await client.connect();
         }, timeout.toMilliseconds());
         beforeEach(() => {
+            const redisAdapter = new RedisSemaphoreAdapter(client);
+            redisAdapter.init();
             adapter = withPlugin(
-                new RedisSemaphoreAdapter(client),
+                redisAdapter,
                 withSemaphorePrefix(randomUUID()),
             );
         });
