@@ -6,11 +6,16 @@ import { Redis } from "ioredis";
 
 const serde = new SuperJsonSerde();
 
+const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
+    lazyConnect: true,
+});
+await database.connect();
+
 export const cacheResolver = new CacheResolver({
     adapters: {
         memory: new MemoryCacheAdapter(),
         redis: new RedisCacheAdapter({
-            database: new Redis("YOUR_REDIS_CONNECTION_STRING"),
+            database,
             serde,
         }),
     },
