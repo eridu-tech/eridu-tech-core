@@ -48,6 +48,8 @@ Create the adapter:
 
 ```
 
+The adapter implements `IInitizable`: call `init()` once to register its Redis commands before the first operation.
+
 ### Configuring backoff policy
 
 The `type` field is the only required field. All other fields are optional.

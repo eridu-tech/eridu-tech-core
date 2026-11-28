@@ -5,13 +5,22 @@ import { SuperJsonSerde } from "eridu-tech/serde/super-json-serde";
 import { Redis } from "ioredis";
 
 const serde = new SuperJsonSerde();
+
+const database = new Redis("YOUR_REDIS_CONNECTION_STRING", {
+    lazyConnect: true,
+});
+await database.connect();
+
+const redisRateLimiterAdapter = new RedisRateLimiterAdapter({
+    database,
+});
+redisRateLimiterAdapter.init();
+
 export const rateLimiterFactoryResolver = new RateLimiterFactoryResolver({
     serde,
     adapters: {
         memory: new MemoryRateLimiterAdapter(),
-        redis: new RedisRateLimiterAdapter({
-            database: new Redis("YOUR_REDIS_CONNECTION_STRING"),
-        }),
+        redis: redisRateLimiterAdapter,
     },
     defaultAdapter: "memory",
 });
